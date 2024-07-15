@@ -1,3 +1,5 @@
+package com.a508.wms.util;
+
 public enum PaidType {
     CARD("신용카드"),
     TRANSFER("계좌이체"),

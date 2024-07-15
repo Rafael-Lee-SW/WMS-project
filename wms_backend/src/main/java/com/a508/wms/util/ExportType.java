@@ -1,3 +1,5 @@
+package com.a508.wms.util;
+
 public enum ExportType {
     STORE("매장"),
     DISPLAY("전시"),
