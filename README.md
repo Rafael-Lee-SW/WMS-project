@@ -56,7 +56,16 @@
 
 ## 2. 채택한 개발 기술과 브랜치 전략
 
-### Next
+### React, styled-component, Next.js
+
+##### React.js 사용 이유 
+1. 우리의 프로젝트에서 핵심 기능을 담당하는 재고관리의 시각화(2D 시각화 - 실시간 연동) 기술에 대한 Library 및 예시가 React.js에 풍부하게 존재하는 점
+2. React를 통해 최소한의 DOM 수정으로 효율적이고 Interactive한 기능을 제공하기 위함
+
+##### Next.js 사용 이유
+1. React.js 만을 사용하여 client-side-rendering으로는 한꺼번에 오가는 수많은 데이터를 처리하는데 성능 및 속도 저하가 예상되어 이를 Server-side-rendering으로 처리할 수 있으며, React.js Library를 사용할 수 있는 Next.js를 사용하기로 결정
+2. Backend와 잦은 데이터 교환 및 API 통신에 따라 그에 유리한 FrontEnd Framework로 선택됨.
+    
 
 ### Jpa
 
