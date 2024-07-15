@@ -6,33 +6,40 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.Getter;
 
 @Entity
+@Getter
+@Table(name="warehouse")
 public class Warehouse extends BaseTimeEntity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @JoinColumn(name="business_id")
+    @JoinColumn(name="business_id",nullable = false)
     @ManyToOne
     private Business business;
 
-    @Column
+    @Column(nullable = false)
     private int size;
 
-    @Column
+    @Column(length=20)
     private String name;
 
-    @Column
+    @Column(nullable = false)
     private int rowCount;
 
-    @Column
+    @Column(nullable = false)
     private int columnCount;
 
-    @Column
+    @Column(nullable = false,columnDefinition = "integer default 1")
     private int priority;
 
     @Enumerated(EnumType.STRING)
