@@ -1,9 +1,8 @@
 package com.a508.wms.domain;
 
 import com.a508.wms.domain.util.BaseTimeEntity;
-import com.a508.wms.util.PaidType;
 import com.a508.wms.util.ProductStorageTypeEnum;
-import com.a508.wms.util.Status;
+import com.a508.wms.util.StatusEnum;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -25,9 +24,9 @@ public class ProductStorageType extends BaseTimeEntity {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private ProductStorageTypeEnum name;
+    private ProductStorageTypeEnum name = ProductStorageTypeEnum.ROOM_TEMPERATURE;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private Status status = Status.ACTIVE;
+    private StatusEnum statusEnum = StatusEnum.ACTIVE;
 }

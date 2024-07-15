@@ -1,8 +1,7 @@
 package com.a508.wms.domain;
 
 import com.a508.wms.domain.util.BaseTimeEntity;
-import com.a508.wms.util.PaidType;
-import com.a508.wms.util.Status;
+import com.a508.wms.util.StatusEnum;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -29,5 +28,5 @@ public class SubscriptionType extends BaseTimeEntity {
     private String name;
 
     @Enumerated(EnumType.STRING)
-    private Status status = Status.ACTIVE;
+    private StatusEnum statusEnum = StatusEnum.ACTIVE;
 }

@@ -1,6 +1,6 @@
 package com.a508.wms.util;
 
-public enum ExportType {
+public enum ExportTypeEnum {
     STORE("매장"),
     DISPLAY("전시"),
     KEEP("보관"),
@@ -8,7 +8,7 @@ public enum ExportType {
 
     private final String value;
 
-    ExportType(String value) {
+    ExportTypeEnum(String value) {
         this.value = value;
     }
 

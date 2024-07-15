@@ -1,18 +1,11 @@
 package com.a508.wms.domain;
 
 import com.a508.wms.domain.util.BaseTimeEntity;
-import com.a508.wms.util.Status;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import com.a508.wms.util.StatusEnum;
+import jakarta.persistence.*;
 import lombok.Getter;
+
+import java.util.List;
 
 @Entity
 @Getter
@@ -26,6 +19,9 @@ public class Warehouse extends BaseTimeEntity {
     @JoinColumn(name="business_id",nullable = false)
     @ManyToOne
     private Business business;
+
+    @OneToMany(mappedBy = "warehouse")
+    private List<Location> locations;
 
     @Column(nullable = false)
     private int size;
@@ -43,6 +39,11 @@ public class Warehouse extends BaseTimeEntity {
     private int priority;
 
     @Enumerated(EnumType.STRING)
-    private Status status = Status.ACTIVE;
+    private StatusEnum statusEnum = StatusEnum.ACTIVE;
 
+    // 연관관계 편의를 위한 메서드
+    public void setBusiness(Business business) {
+        this.business = business;
+        business.getWarehouses().add(this);
+    }
 }

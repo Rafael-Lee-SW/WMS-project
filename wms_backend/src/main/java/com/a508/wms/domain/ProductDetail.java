@@ -1,13 +1,16 @@
 package com.a508.wms.domain;
 
-import com.a508.wms.util.Status;
+import com.a508.wms.domain.util.BaseTimeEntity;
+import com.a508.wms.util.StatusEnum;
 import jakarta.persistence.*;
 import lombok.Getter;
+
+import java.util.List;
 
 @Entity
 @Getter
 @Table(name = "product_detail")
-public class ProductDetail {
+public class ProductDetail extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,6 +23,9 @@ public class ProductDetail {
     @ManyToOne
     @JoinColumn(name = "product_storage_type_id", nullable = false)
     private ProductStorageType productStorageType;
+
+    @OneToMany(mappedBy = "productDetail")
+    private List<Product> products;
 
     @Column(nullable = false)
     private Long barcode;
@@ -34,13 +40,13 @@ public class ProductDetail {
     private Long unit;
 
     @Column
-    private Integer originalPrice;
+    private int originalPrice;
 
     @Column
-    private Integer sellingPrice;
+    private int sellingPrice;
 
     @Enumerated(EnumType.STRING)
-    private Status status = Status.ACTIVE;
+    private StatusEnum statusEnum = StatusEnum.ACTIVE;
 
     //연관관계 편의 메서드
     public void setBusiness(Business business) {

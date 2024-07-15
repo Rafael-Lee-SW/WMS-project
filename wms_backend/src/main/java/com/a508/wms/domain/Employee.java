@@ -1,6 +1,7 @@
 package com.a508.wms.domain;
 
-import com.a508.wms.util.Status;
+import com.a508.wms.util.LoginTypeEnum;
+import com.a508.wms.util.StatusEnum;
 import jakarta.persistence.*;
 import lombok.Getter;
 
@@ -18,14 +19,15 @@ public class Employee {
     private Business business;
 
     @Column(nullable = false)
-    private int loginType;
+    @Enumerated(EnumType.STRING)
+    private LoginTypeEnum loginTypeEnum;
 
     @Column(nullable = false, length = 100)
     private String loginId;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private Status status = Status.ACTIVE;
+    private StatusEnum statusEnum = StatusEnum.ACTIVE;
 
     //연관관계 편의 메서드
     public void setBusiness(Business business) {

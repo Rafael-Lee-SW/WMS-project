@@ -1,6 +1,6 @@
 package com.a508.wms.util;
 
-public enum PaidType {
+public enum PaidTypeEnum {
     CARD("신용카드"),
     TRANSFER("계좌이체"),
     KAKAOPAY("카카오페이"),
@@ -10,7 +10,7 @@ public enum PaidType {
 
     private final String value;
 
-    PaidType(String value){
+    PaidTypeEnum(String value){
         this.value = value;
 
     }

@@ -1,9 +1,8 @@
 package com.a508.wms.domain;
 
 import com.a508.wms.domain.util.BaseTimeEntity;
-import com.a508.wms.util.ExportType;
-import com.a508.wms.util.PaidType;
-import com.a508.wms.util.Status;
+import com.a508.wms.util.ExportTypeEnum;
+import com.a508.wms.util.StatusEnum;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -38,9 +37,21 @@ public class ProductLocation extends BaseTimeEntity {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private ExportType exportType;
+    private ExportTypeEnum exportTypeEnum = ExportTypeEnum.IMPORT;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private Status status = Status.ACTIVE;
+    private StatusEnum statusEnum = StatusEnum.ACTIVE;
+
+    // 연관관계 편의 메서드
+    public void setProduct(Product product) {
+        this.product = product;
+        product.getProductLocations().add(this);
+    }
+
+    // 연관관계 편의 메서드
+    public void setFloor(Floor floor) {
+        this.floor = floor;
+        floor.getProductLocations().add(this);
+    }
 }

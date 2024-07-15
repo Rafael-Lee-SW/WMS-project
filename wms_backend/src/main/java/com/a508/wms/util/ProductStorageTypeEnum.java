@@ -1,5 +1,8 @@
 package com.a508.wms.util;
 
+import lombok.Getter;
+
+@Getter
 public enum ProductStorageTypeEnum {
     FROZEN("냉동"),
     LOW_TEMPERATURE("냉장"),
@@ -11,7 +14,4 @@ public enum ProductStorageTypeEnum {
 
     }
 
-    public String getValue() {
-        return value;
-    }
 }

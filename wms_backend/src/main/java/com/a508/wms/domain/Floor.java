@@ -1,13 +1,17 @@
 package com.a508.wms.domain;
 
-import com.a508.wms.util.Status;
+import com.a508.wms.domain.util.BaseTimeEntity;
+import com.a508.wms.util.ExportTypeEnum;
+import com.a508.wms.util.StatusEnum;
 import jakarta.persistence.*;
 import lombok.Getter;
+
+import java.util.List;
 
 @Entity
 @Getter
 @Table(name = "floor")
-public class Floor {
+public class Floor extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,11 +25,14 @@ public class Floor {
     private int floorLevel;
 
     @Column(nullable = false)
-    private int exportType;
+    private ExportTypeEnum exportTypeEnum = ExportTypeEnum.IMPORT;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private Status status = Status.ACTIVE;
+    private StatusEnum statusEnum = StatusEnum.ACTIVE;
+
+    @OneToMany(mappedBy = "floor")
+    private List<ProductLocation> productLocations;
 
     //연관관계 편의 메서드
     public void setLocation(Location location) {

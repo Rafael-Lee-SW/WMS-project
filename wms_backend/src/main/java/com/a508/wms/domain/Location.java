@@ -1,6 +1,6 @@
 package com.a508.wms.domain;
 
-import com.a508.wms.util.Status;
+import com.a508.wms.util.StatusEnum;
 import jakarta.persistence.*;
 import java.util.List;
 import lombok.Getter;
@@ -39,10 +39,14 @@ public class Location {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private Status status = Status.ACTIVE;
+    private StatusEnum statusEnum = StatusEnum.ACTIVE;
 
     @OneToMany(mappedBy = "location")
     private List<Floor> floors;
 
-    // Getters and Setters
+    // 연관관계 편의 메서드
+    public void setWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
+        warehouse.getLocations().add(this);
+    }
 }
