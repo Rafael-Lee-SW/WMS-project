@@ -1,5 +1,6 @@
 package com.a508.wms.domain;
 
+import com.a508.wms.domain.util.BaseTimeEntity;
 import com.a508.wms.util.LoginTypeEnum;
 import com.a508.wms.util.StatusEnum;
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -11,7 +12,7 @@ import lombok.Getter;
 @Entity
 @Getter
 @Table(name = "employee")
-public class Employee {
+public class Employee extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
