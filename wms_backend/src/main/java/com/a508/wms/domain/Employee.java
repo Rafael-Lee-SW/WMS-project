@@ -2,6 +2,9 @@ package com.a508.wms.domain;
 
 import com.a508.wms.util.LoginTypeEnum;
 import com.a508.wms.util.StatusEnum;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.Getter;
 
@@ -17,6 +20,9 @@ public class Employee {
     @ManyToOne
     @JoinColumn(name = "business_id", nullable = false)
     private Business business;
+
+    @Column
+    private String name;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
