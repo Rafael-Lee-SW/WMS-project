@@ -4,14 +4,13 @@ import lombok.Getter;
 
 @Getter
 public enum ProductStorageTypeEnum {
-    FROZEN("냉동"),
-    LOW_TEMPERATURE("냉장"),
-    ROOM_TEMPERATURE("상온");
+    냉동("냉동"),
+    냉장("냉장"),
+    상온("상온");
     private final String value;
 
     ProductStorageTypeEnum(String value) {
         this.value = value;
-
     }
 
 }
