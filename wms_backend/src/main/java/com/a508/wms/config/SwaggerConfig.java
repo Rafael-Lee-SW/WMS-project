@@ -6,16 +6,25 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+
 public class SwaggerConfig {
 
     @Bean
     public OpenAPI openAPI() {
         Info info = new Info()
-            .version("v1.0") //버전
-            .title("WMS API") //이름
-            .description("Wms 스웨거 입니다 "); //설명
+                .version("v1.0") //버전
+                .title("WMS API") //이름
+                .description("Wms 스웨거 입니다 "); //설명
         return new OpenAPI()
-            .info(info);
+                .info(info);
     }
-
+    @Bean
+    public OpenAPI businessApi() {
+        return new OpenAPI()
+                .info(new Info()
+                        .title("Business API")
+                        .description("사업체 관리 API")
+                        .version("1.0.0")
+                );
+    }
 }
