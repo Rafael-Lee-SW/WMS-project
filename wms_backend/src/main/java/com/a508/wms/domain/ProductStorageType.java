@@ -24,7 +24,7 @@ public class ProductStorageType extends BaseTimeEntity {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private ProductStorageTypeEnum name = ProductStorageTypeEnum.ROOM_TEMPERATURE;
+    private ProductStorageTypeEnum name = ProductStorageTypeEnum.상온;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)

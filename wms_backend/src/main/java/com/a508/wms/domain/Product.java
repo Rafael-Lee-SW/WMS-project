@@ -4,6 +4,7 @@ import com.a508.wms.domain.util.BaseTimeEntity;
 import com.a508.wms.util.StatusEnum;
 import jakarta.persistence.*;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import lombok.Getter;
@@ -28,7 +29,10 @@ public class Product extends BaseTimeEntity {
     private int productQuantity;
 
     @Column
-    private Timestamp expirationDate;
+    private LocalDateTime expirationDate;
+
+    @Column(nullable = true,length=255)
+    private String comment;
 
     @Enumerated(EnumType.STRING)
     private StatusEnum statusEnum = StatusEnum.ACTIVE;
