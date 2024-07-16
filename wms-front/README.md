@@ -245,3 +245,252 @@ Dribbble: <https://dribbble.com/creativetim>
 
 Instagram: <https://www.instagram.com/CreativeTimOfficial>
 
+
+```
+nextjs-material-kit-main
+├─ .github
+│  └─ workflows
+│     └─ main.yml
+├─ .gitignore
+├─ .npmrc
+├─ .prettierignore
+├─ CHANGELOG.md
+├─ components
+│  ├─ Badge
+│  │  └─ Badge.js
+│  ├─ Card
+│  │  ├─ Card.js
+│  │  ├─ CardBody.js
+│  │  ├─ CardFooter.js
+│  │  └─ CardHeader.js
+│  ├─ Clearfix
+│  │  └─ Clearfix.js
+│  ├─ CustomButtons
+│  │  └─ Button.js
+│  ├─ CustomDropdown
+│  │  └─ CustomDropdown.js
+│  ├─ CustomInput
+│  │  └─ CustomInput.js
+│  ├─ CustomLinearProgress
+│  │  └─ CustomLinearProgress.js
+│  ├─ CustomTabs
+│  │  └─ CustomTabs.js
+│  ├─ Footer
+│  │  └─ Footer.js
+│  ├─ Grid
+│  │  ├─ GridContainer.js
+│  │  └─ GridItem.js
+│  ├─ Header
+│  │  ├─ Header.js
+│  │  ├─ HeaderLinks.js
+│  │  └─ UserHeader.jsx
+│  ├─ InfoArea
+│  │  └─ InfoArea.js
+│  ├─ NavPills
+│  │  └─ NavPills.js
+│  ├─ PageChange
+│  │  └─ PageChange.js
+│  ├─ Pagination
+│  │  └─ Pagination.js
+│  ├─ Parallax
+│  │  ├─ Parallax.js
+│  │  └─ ParallaxUser.js
+│  ├─ Snackbar
+│  │  └─ SnackbarContent.js
+│  └─ Typography
+│     ├─ Danger.js
+│     ├─ Info.js
+│     ├─ Muted.js
+│     ├─ Primary.js
+│     ├─ Quote.js
+│     ├─ Small.js
+│     ├─ Success.js
+│     └─ Warning.js
+├─ Documentation
+│  ├─ assets
+│  │  ├─ css
+│  │  │  ├─ bootstrap.min.css
+│  │  │  ├─ demo-documentation.css
+│  │  │  └─ material-dashboard.css
+│  │  ├─ img
+│  │  │  ├─ apple-icon.png
+│  │  │  ├─ cover.jpeg
+│  │  │  ├─ faces
+│  │  │  │  └─ marc.jpg
+│  │  │  ├─ favicon.png
+│  │  │  ├─ mask.png
+│  │  │  ├─ new_logo.png
+│  │  │  ├─ reactlogo.png
+│  │  │  ├─ sidebar-1.jpg
+│  │  │  ├─ sidebar-2.jpg
+│  │  │  ├─ sidebar-3.jpg
+│  │  │  ├─ sidebar-4.jpg
+│  │  │  ├─ tim_80x80.png
+│  │  │  └─ WareHouseWallpaper.png
+│  │  └─ js
+│  │     ├─ bootstrap.min.js
+│  │     └─ jquery-3.2.1.min.js
+│  └─ tutorial-components.html
+├─ ISSUE_TEMPLATE.md
+├─ LICENSE.md
+├─ next.config.js
+├─ package.json
+├─ pages
+│  ├─ 404.js
+│  ├─ api
+│  ├─ components.jsx
+│  ├─ index.js
+│  ├─ landing.js
+│  ├─ login.js
+│  ├─ login2.jsx
+│  ├─ mypage.jsx
+│  ├─ payment.jsx
+│  ├─ profile.js
+│  ├─ signup.jsx
+│  ├─ stacking
+│  │  └─ stack.jsx
+│  ├─ subscribe.jsx
+│  ├─ test.jsx
+│  ├─ user
+│  │  └─ [id].jsx
+│  ├─ _app.js
+│  ├─ _document.js
+│  └─ _error.js
+├─ pages-sections
+│  ├─ Components-Sections
+│  │  ├─ MyContainer.jsx
+│  │  ├─ SectionBasics.js
+│  │  ├─ SectionCarousel.js
+│  │  ├─ SectionCompletedExamples.js
+│  │  ├─ SectionDownload.js
+│  │  ├─ SectionExamples.js
+│  │  ├─ SectionJavascript.js
+│  │  ├─ SectionLogin.js
+│  │  ├─ SectionNavbars.js
+│  │  ├─ SectionNotifications.js
+│  │  ├─ SectionPills.js
+│  │  ├─ SectionTabs.js
+│  │  └─ SectionTypography.js
+│  └─ LandingPage-Sections
+│     ├─ ProductSection.js
+│     ├─ TeamSection.js
+│     └─ WorkSection.js
+├─ public
+│  └─ img
+│     ├─ apple-icon.png
+│     ├─ bg.jpg
+│     ├─ bg2.jpg
+│     ├─ bg3.jpg
+│     ├─ bg4.jpg
+│     ├─ bg7.jpg
+│     ├─ examples
+│     │  ├─ clem-onojegaw.jpg
+│     │  ├─ clem-onojeghuo.jpg
+│     │  ├─ cynthia-del-rio.jpg
+│     │  ├─ mariya-georgieva.jpg
+│     │  ├─ olu-eletu.jpg
+│     │  ├─ studio-1.jpg
+│     │  ├─ studio-2.jpg
+│     │  ├─ studio-3.jpg
+│     │  ├─ studio-4.jpg
+│     │  └─ studio-5.jpg
+│     ├─ faces
+│     │  ├─ avatar.jpg
+│     │  ├─ camp.jpg
+│     │  ├─ card-profile1-square.jpg
+│     │  ├─ card-profile2-square.jpg
+│     │  ├─ card-profile4-square.jpg
+│     │  ├─ card-profile5-square.jpg
+│     │  ├─ card-profile6-square.jpg
+│     │  ├─ christian.jpg
+│     │  ├─ kendall.jpg
+│     │  └─ marc.jpg
+│     ├─ favicon.png
+│     ├─ landing-bg.jpg
+│     ├─ landing.jpg
+│     ├─ nextjs_header.jpg
+│     ├─ profile-bg.jpg
+│     ├─ profile.jpg
+│     ├─ sign.jpg
+│     └─ WareHouseWallpaper.png
+├─ README.md
+└─ styles
+   ├─ css
+   │  └─ material-kit-react.css.map
+   ├─ jss
+   │  ├─ nextjs-material-kit
+   │  │  ├─ components
+   │  │  │  ├─ badgeStyle.js
+   │  │  │  ├─ buttonStyle.js
+   │  │  │  ├─ cardBodyStyle.js
+   │  │  │  ├─ cardFooterStyle.js
+   │  │  │  ├─ cardHeaderStyle.js
+   │  │  │  ├─ cardStyle.js
+   │  │  │  ├─ customDropdownStyle.js
+   │  │  │  ├─ customInputStyle.js
+   │  │  │  ├─ customLinearProgressStyle.js
+   │  │  │  ├─ customTabsStyle.js
+   │  │  │  ├─ footerStyle.js
+   │  │  │  ├─ headerLinksStyle.js
+   │  │  │  ├─ headerStyle.js
+   │  │  │  ├─ infoStyle.js
+   │  │  │  ├─ navPillsStyle.js
+   │  │  │  ├─ paginationStyle.js
+   │  │  │  ├─ parallaxStyle.js
+   │  │  │  ├─ parallaxUserStyle.js
+   │  │  │  ├─ snackbarContentStyle.js
+   │  │  │  └─ typographyStyle.js
+   │  │  ├─ customCheckboxRadioSwitch.js
+   │  │  ├─ imagesStyles.js
+   │  │  ├─ modalStyle.js
+   │  │  ├─ pages
+   │  │  │  ├─ components.js
+   │  │  │  ├─ componentsSections
+   │  │  │  │  ├─ basicsStyle.js
+   │  │  │  │  ├─ carouselStyle.js
+   │  │  │  │  ├─ completedStyle.js
+   │  │  │  │  ├─ downloadStyle.js
+   │  │  │  │  ├─ exampleStyle.js
+   │  │  │  │  ├─ javascriptStyles.js
+   │  │  │  │  ├─ loginStyle.js
+   │  │  │  │  ├─ MyContainerStyle.jsx
+   │  │  │  │  ├─ navbarsStyle.js
+   │  │  │  │  ├─ notificationsStyles.js
+   │  │  │  │  ├─ pillsStyle.js
+   │  │  │  │  ├─ tabsStyle.js
+   │  │  │  │  └─ typographyStyle.js
+   │  │  │  ├─ landingPage.js
+   │  │  │  ├─ landingPageSections
+   │  │  │  │  ├─ productStyle.js
+   │  │  │  │  ├─ teamStyle.js
+   │  │  │  │  └─ workStyle.js
+   │  │  │  ├─ loginPage.js
+   │  │  │  ├─ profilePage.js
+   │  │  │  └─ users.js
+   │  │  ├─ popoverStyles.js
+   │  │  └─ tooltipsStyle.js
+   │  └─ nextjs-material-kit.js
+   └─ scss
+      ├─ core
+      │  ├─ mixins
+      │  │  └─ _colored-shadows.scss
+      │  ├─ variables
+      │  │  ├─ _bootstrap-material-design-base.scss
+      │  │  ├─ _bootstrap-material-design.scss
+      │  │  ├─ _brand.scss
+      │  │  ├─ _colors-map.scss
+      │  │  ├─ _colors.scss
+      │  │  ├─ _functions.scss
+      │  │  ├─ _shadow.scss
+      │  │  └─ _variables.scss
+      │  ├─ _misc.scss
+      │  ├─ _mixins.scss
+      │  ├─ _page-transition.scss
+      │  └─ _variables.scss
+      ├─ nextjs-material-kit.scss
+      └─ plugins
+         ├─ _plugin-nouislider.scss
+         ├─ _plugin-react-datetime.scss
+         └─ _plugin-react-slick.scss
+
+```
