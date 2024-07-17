@@ -5,11 +5,13 @@ import com.a508.wms.dto.LocationDto;
 import com.a508.wms.util.StatusEnum;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
@@ -20,14 +22,13 @@ import lombok.NoArgsConstructor;
 public class Location extends BaseTimeEntity {
 
     public Location(Warehouse warehouse, ProductStorageType productStorageType,
-        int xPosition, int yPosition, int width, int height, List<Floor> floors) {
+        int xPosition, int yPosition, int width, int height) {
         this.warehouse = warehouse;
         this.productStorageType = productStorageType;
         this.xPosition = xPosition;
         this.yPosition = yPosition;
         this.width = width;
         this.height = height;
-        this.floors = floors;
     }
 
     @Id
@@ -61,8 +62,23 @@ public class Location extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private StatusEnum statusEnum = StatusEnum.ACTIVE;
 
+    @Setter
     @OneToMany(mappedBy = "location")
-    private List<Floor> floors;
+    private List<Floor> floors = new ArrayList<>();
+
+    //상태값 변경 메서드 -> 삭제에 사용
+    public void updateStatusEnum(StatusEnum statusEnum) {
+        this.statusEnum = statusEnum;
+    }
+
+    public void updatePosition(int xPosition, int yPosition) {
+        this.xPosition = xPosition;
+        this.yPosition = yPosition;
+    }
+
+    public void updateName(String name) {
+        this.name = name;
+    }
 
     // 연관관계 편의 메서드
     public void setWarehouse(Warehouse warehouse) {

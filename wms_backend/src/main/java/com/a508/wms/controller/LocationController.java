@@ -6,8 +6,12 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -50,8 +54,30 @@ public class LocationController {
      * @param locationDto
      */
     @PostMapping
-    public void registerLocation(LocationDto locationDto){
+    public void registerLocation(@RequestBody LocationDto locationDto){
         log.info("registerLocation");
         locationService.save(locationDto);
     }
+
+    /**
+     * 로케이션 수정. 바꿀 정보를 locationDto에 담아 전달 -> 값 변경
+     * @param id -> locationId
+     * @param locationDto -> 바꿀 정보(이름과 좌표값들만 가능)
+     */
+    @PutMapping("/{id}")
+    public void updateLocation(@PathVariable Long id, @RequestBody LocationDto locationDto){
+        log.info("updateLocation");
+        locationService.modify(id, locationDto);
+    }
+
+    /**
+     * 로케이션 삭제 -> 로케이션의 상태값을 삭제로 변경
+     * @param id -> locationId
+     */
+    @PatchMapping("/{id}")
+    public void deleteLocation(@PathVariable Long id){
+        log.info("deleteLocation");
+        locationService.delete(id);
+    }
+
 }

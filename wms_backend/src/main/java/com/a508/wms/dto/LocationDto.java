@@ -1,10 +1,10 @@
 package com.a508.wms.dto;
 
-import com.a508.wms.domain.Floor;
 import com.a508.wms.domain.Location;
 import com.a508.wms.util.StatusEnum;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -20,12 +20,12 @@ public class LocationDto {
     private int yPosition;
     private int width;
     private int height;
-    private List<Floor> floors;
-    private Timestamp createdDate;
-    private Timestamp updatedDate;
+    private List<FloorDto> floorDtos;
+    private LocalDateTime createdDate;
+    private LocalDateTime updatedDate;
     private StatusEnum status;
 
-    public static LocationDto fromEntity(Location location) {
+    public static LocationDto fromLocation(Location location) {
         return LocationDto.builder()
             .id(location.getId())
             .warehouseId(location.getWarehouse().getId())
@@ -35,9 +35,12 @@ public class LocationDto {
             .yPosition(location.getYPosition())
             .width(location.getWidth())
             .height(location.getHeight())
+            .floorDtos(location.getFloors().stream()
+                .map(FloorDto::fromFloor)
+                .collect(Collectors.toList()))
+            .createdDate(location.getCreatedDate())
+            .updatedDate(location.getUpdatedDate())
             .status(location.getStatusEnum())
-            .createdDate(Timestamp.valueOf(location.getCreatedDate()))
-            .updatedDate(Timestamp.valueOf(location.getUpdatedDate()))
             .build();
     }
 
