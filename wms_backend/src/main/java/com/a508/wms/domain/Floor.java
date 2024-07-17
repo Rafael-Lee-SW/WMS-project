@@ -1,6 +1,7 @@
 package com.a508.wms.domain;
 
 import com.a508.wms.domain.util.BaseTimeEntity;
+import com.a508.wms.dto.FloorDto;
 import com.a508.wms.util.ExportTypeEnum;
 import com.a508.wms.util.StatusEnum;
 import jakarta.persistence.*;
@@ -39,4 +40,14 @@ public class Floor extends BaseTimeEntity {
         this.location = location;
         location.getFloors().add(this);
     }
+
+    public static Floor fromDto(FloorDto floorDto, Location location) {
+        Floor floor = new Floor();
+        floor.id = floorDto.getId();
+        floor.setLocation(location);
+        floor.floorLevel = floorDto.getFloorLevel();
+        floor.exportTypeEnum = floorDto.getExportType();
+        return floor;
+    }
+
 }
