@@ -2,12 +2,15 @@ package com.a508.wms.controller;
 
 
 import com.a508.wms.dto.ProductInfos;
+import com.a508.wms.dto.ProductRequest;
 import com.a508.wms.dto.ProductResponse;
 import com.a508.wms.service.ProductService;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -96,4 +99,15 @@ public class ProductController {
     public ResponseEntity<ProductInfos> getProduct(@PathVariable Long id){
         return ResponseEntity.ok(productService.findById(id));
     }
+
+    /**
+     * 상품을 등록하는 기능
+     * @param productRequest: Product 데이터
+     */
+
+    @PostMapping
+    public void registProduct(@RequestBody ProductRequest productRequest){
+        productService.save(productRequest);
+    }
+
 }

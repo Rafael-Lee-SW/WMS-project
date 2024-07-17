@@ -7,12 +7,24 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@NoArgsConstructor
 @Table(name = "product")
 public class Product extends BaseTimeEntity {
+
+    @Builder
+    public Product(ProductDetail productDetail, int productQuantity, LocalDateTime expirationDate,
+        String comment) {
+        this.productDetail = productDetail;
+        this.productQuantity = productQuantity;
+        this.expirationDate = expirationDate;
+        this.comment = comment;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

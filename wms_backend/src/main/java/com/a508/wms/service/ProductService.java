@@ -4,17 +4,26 @@ import com.a508.wms.domain.Product;
 import com.a508.wms.domain.ProductDetail;
 import com.a508.wms.dto.ProductDetailResponse;
 import com.a508.wms.dto.ProductInfos;
+import com.a508.wms.dto.ProductRequest;
+import com.a508.wms.repository.ProductDetailRepository;
 import com.a508.wms.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ProductService {
-    private final ProductRepository productRepository;
 
-    public ProductService(ProductRepository productRepository) {
+    private static final Logger log = LoggerFactory.getLogger(ProductService.class);
+    private final ProductRepository productRepository;
+    private final ProductDetailRepository productDetailRepository;
+
+    public ProductService(ProductRepository productRepository,
+        ProductDetailRepository productDetailRepository) {
         this.productRepository = productRepository;
+        this.productDetailRepository = productDetailRepository;
     }
 
 
@@ -107,5 +116,20 @@ public class ProductService {
             .originalPrice(productDetail.getOriginalPrice())
             .sellingPrice(productDetail.getSellingPrice())
             .build();
+    }
+
+
+    /**
+     * ProductDetail값을 통해 Product를 저장하는 기능
+     * @param request: Product 데이터
+     */
+    public void save(ProductRequest request){
+        ProductDetail productDetail=productDetailRepository.findById(request.getProductDetailId())
+            .orElseThrow(()->new IllegalArgumentException("Invalid ProductDetail Id"));
+
+        Product product=new Product(productDetail,request.getProductQuantity(),
+            request.getExpirationDate(), request.getComment());
+
+        productRepository.save(product);
     }
 }
