@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -108,6 +109,16 @@ public class ProductController {
     @PostMapping
     public void registProduct(@RequestBody ProductRequest productRequest){
         productService.save(productRequest);
+    }
+
+    /**
+     * 상품을 수정하는 기능
+     * @param id 상품 id
+     * @param productRequest 수정할 상품 정보
+     */
+    @PutMapping("/{id}")
+    public void updateProduct(@PathVariable Long id, @RequestBody ProductRequest productRequest){
+        productService.update(id,productRequest);
     }
 
 }

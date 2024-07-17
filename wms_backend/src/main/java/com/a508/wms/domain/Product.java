@@ -3,7 +3,6 @@ package com.a508.wms.domain;
 import com.a508.wms.domain.util.BaseTimeEntity;
 import com.a508.wms.util.StatusEnum;
 import jakarta.persistence.*;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -53,5 +52,12 @@ public class Product extends BaseTimeEntity {
     public void setProductDetail(ProductDetail productDetail) {
         this.productDetail = productDetail;
         productDetail.getProducts().add(this);
+    }
+
+    //데이터의 일괄 수정
+    public void updateData(int productQuantity, LocalDateTime expirationDate, String comment) {
+        this.productQuantity = productQuantity;
+        this.expirationDate = expirationDate;
+        this.comment = comment;
     }
 }

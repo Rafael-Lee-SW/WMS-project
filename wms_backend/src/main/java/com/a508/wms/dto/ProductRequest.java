@@ -8,7 +8,10 @@ import lombok.Getter;
 @Builder
 public class ProductRequest {
     private Long productDetailId;
-    private int productQuantity;
+
+    // 미입력시 -1로 설정(수정시에 필요함)
+    @Builder.Default
+    private int productQuantity=-1;
     private LocalDateTime expirationDate;
     private String comment;
 }

@@ -70,6 +70,7 @@ public class ProductDetail extends BaseTimeEntity {
         business.getProductDetails().add(this);
     }
 
+    //데이터의 일괄 수정
     public void updateData(ProductStorageType productStorageType
         ,Long barcode,String name,Long size,Long unit
     ,int originalPrice,int sellingPrice) {

@@ -132,4 +132,22 @@ public class ProductService {
 
         productRepository.save(product);
     }
+
+    /**
+     * 기존 상품 데이터를 조회하여 수정하는 기능
+     * @param id 상품 id
+     * @param request 수정할 상품 데이터
+     */
+    public void update(Long id,ProductRequest request){
+        Product product=productRepository.findById(id)
+            .orElseThrow(()->new IllegalArgumentException("Invalid Product Id"));
+
+        product.updateData(
+            (request.getProductQuantity()==-1)?product.getProductQuantity():request.getProductQuantity(),
+            (request.getExpirationDate()==null)?product.getExpirationDate():request.getExpirationDate(),
+            (request.getComment()==null)?product.getComment():request.getComment()
+        );
+
+        productRepository.save(product);
+    }
 }
