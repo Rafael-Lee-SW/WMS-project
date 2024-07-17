@@ -18,7 +18,7 @@ public class Floor extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "location_id", nullable = false)
     private Location location;
 
@@ -34,6 +34,10 @@ public class Floor extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "floor")
     private List<ProductLocation> productLocations;
+
+    public void updateStatusEnum(StatusEnum statusEnum) {
+        this.statusEnum = statusEnum;
+    }
 
     //연관관계 편의 메서드
     public void setLocation(Location location) {
