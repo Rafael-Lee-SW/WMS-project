@@ -1,12 +1,12 @@
 package com.a508.wms.controller;
 
+import com.a508.wms.controller.response.BaseSuccessResponse;
 import com.a508.wms.dto.LocationDto;
 import com.a508.wms.service.LocationService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,12 +29,12 @@ public class LocationController {
      * @return warehouseId값 없으면 전체 조회, 있으면 특정 창고가 보유한 로케이션들 조회
      */
     @GetMapping
-    public List<LocationDto> getLocations(@RequestParam(required = false) Long warehouseId) {
+    public BaseSuccessResponse<List<LocationDto>> getLocations(@RequestParam(required = false) Long warehouseId) {
        log.info("getLocations");
         if (warehouseId != null) {
-            return locationService.findByWarehouseId(warehouseId);
+            return new BaseSuccessResponse<>(locationService.findByWarehouseId(warehouseId));
         } else {
-            return locationService.findAll();
+            return new BaseSuccessResponse<>(locationService.findAll());
         }
     }
 
@@ -44,9 +44,10 @@ public class LocationController {
      * @return location이 있으면 locationDto, 없으면 null
      */
     @GetMapping("/{id}")
-    public LocationDto getLocationById(@PathVariable Long id){
+    public BaseSuccessResponse<LocationDto> getLocationById(@PathVariable Long id){
         log.info("getLocationsByWarehouseId");
-        return locationService.findById(id);
+        return new BaseSuccessResponse<>(locationService.findById(id));
+//        return locationService.findById(id);
     }
 
     /**
@@ -54,9 +55,10 @@ public class LocationController {
      * @param locationDto
      */
     @PostMapping
-    public void registerLocation(@RequestBody LocationDto locationDto){
+    public BaseSuccessResponse<Void> registerLocation(@RequestBody LocationDto locationDto){
         log.info("registerLocation");
         locationService.save(locationDto);
+        return new BaseSuccessResponse<>(null);
     }
 
     /**
@@ -65,9 +67,10 @@ public class LocationController {
      * @param locationDto -> 바꿀 정보(이름과 좌표값들만 가능)
      */
     @PutMapping("/{id}")
-    public void updateLocation(@PathVariable Long id, @RequestBody LocationDto locationDto){
+    public BaseSuccessResponse<Void> updateLocation(@PathVariable Long id, @RequestBody LocationDto locationDto){
         log.info("updateLocation");
         locationService.modify(id, locationDto);
+        return new BaseSuccessResponse<>(null);
     }
 
     /**
@@ -75,9 +78,10 @@ public class LocationController {
      * @param id -> locationId
      */
     @PatchMapping("/{id}")
-    public void deleteLocation(@PathVariable Long id){
+    public BaseSuccessResponse<Void> deleteLocation(@PathVariable Long id){
         log.info("deleteLocation");
         locationService.delete(id);
+        return new BaseSuccessResponse<>(null);
     }
 
 }
