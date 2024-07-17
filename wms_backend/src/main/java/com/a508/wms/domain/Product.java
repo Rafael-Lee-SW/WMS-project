@@ -60,4 +60,9 @@ public class Product extends BaseTimeEntity {
         this.expirationDate = expirationDate;
         this.comment = comment;
     }
+
+    //삭제 상태 변경
+    public void updateStatus(StatusEnum statusEnum) {
+        this.statusEnum = statusEnum;
+    }
 }

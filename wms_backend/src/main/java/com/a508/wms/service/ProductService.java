@@ -2,28 +2,36 @@ package com.a508.wms.service;
 
 import com.a508.wms.domain.Product;
 import com.a508.wms.domain.ProductDetail;
+import com.a508.wms.domain.ProductLocation;
 import com.a508.wms.dto.ProductDetailResponse;
 import com.a508.wms.dto.ProductInfos;
 import com.a508.wms.dto.ProductRequest;
 import com.a508.wms.repository.ProductDetailRepository;
+import com.a508.wms.repository.ProductLocationRepository;
 import com.a508.wms.repository.ProductRepository;
+import com.a508.wms.util.StatusEnum;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class ProductService {
 
-    private static final Logger log = LoggerFactory.getLogger(ProductService.class);
     private final ProductRepository productRepository;
     private final ProductDetailRepository productDetailRepository;
+    private final ProductLocationRepository productLocationRepository;
 
     public ProductService(ProductRepository productRepository,
-        ProductDetailRepository productDetailRepository) {
+        ProductDetailRepository productDetailRepository,
+        ProductLocationRepository productLocationRepository) {
         this.productRepository = productRepository;
         this.productDetailRepository = productDetailRepository;
+        this.productLocationRepository = productLocationRepository;
     }
 
 
@@ -149,5 +157,24 @@ public class ProductService {
         );
 
         productRepository.save(product);
+    }
+
+    /**
+     * 상품의 상태값을 삭제로 변경, 해당 상품에 해당하는 모든 상품 로케이션 또한 변경.
+     * @param id 상품의 id
+     */
+    @Transactional
+    public void delete(Long id){
+        Product product=productRepository.findById(id)
+            .orElseThrow(()->new IllegalArgumentException("Invalid Product Id"));
+
+        product.updateStatus(StatusEnum.DELETED);
+
+        productRepository.save(product);
+
+        for(ProductLocation productLocation:product.getProductLocations()){
+            productLocation.updateStatus(StatusEnum.DELETED);
+            productLocationRepository.save(productLocation);
+        }
     }
 }

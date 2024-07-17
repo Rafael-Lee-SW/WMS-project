@@ -6,8 +6,10 @@ import com.a508.wms.dto.ProductRequest;
 import com.a508.wms.dto.ProductResponse;
 import com.a508.wms.service.ProductService;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequestMapping("/products")
 public class ProductController {
@@ -121,4 +124,14 @@ public class ProductController {
         productService.update(id,productRequest);
     }
 
+
+    /**
+     * 상품을 삭제하는 기능 -> 상품의 상태값을 삭제로 변경
+     * @param id: 상품의 id
+     */
+    @PatchMapping("/{id}")
+    public void deleteProduct(@PathVariable Long id){
+        log.info("delete Product");
+        productService.delete(id);
+    }
 }
