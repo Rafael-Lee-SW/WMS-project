@@ -54,4 +54,9 @@ public class ProductLocation extends BaseTimeEntity {
         this.floor = floor;
         floor.getProductLocations().add(this);
     }
+
+    //삭제 상태 변경
+    public void updateStatus(StatusEnum statusEnum) {
+        this.statusEnum = statusEnum;
+    }
 }

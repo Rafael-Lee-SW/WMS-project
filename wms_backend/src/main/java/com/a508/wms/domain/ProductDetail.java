@@ -3,14 +3,30 @@ package com.a508.wms.domain;
 import com.a508.wms.domain.util.BaseTimeEntity;
 import com.a508.wms.util.StatusEnum;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 
 import java.util.List;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@NoArgsConstructor
 @Table(name = "product_detail")
 public class ProductDetail extends BaseTimeEntity {
+
+    @Builder
+    public ProductDetail(Business business, ProductStorageType productStorageType, Long barcode,
+        String name, Long size, Long unit, int originalPrice, int sellingPrice) {
+        this.business = business;
+        this.productStorageType = productStorageType;
+        this.barcode = barcode;
+        this.name = name;
+        this.size = size;
+        this.unit = unit;
+        this.originalPrice = originalPrice;
+        this.sellingPrice = sellingPrice;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -52,5 +68,23 @@ public class ProductDetail extends BaseTimeEntity {
     public void setBusiness(Business business) {
         this.business = business;
         business.getProductDetails().add(this);
+    }
+
+    //데이터의 일괄 수정
+    public void updateData(ProductStorageType productStorageType
+        ,Long barcode,String name,Long size,Long unit
+    ,int originalPrice,int sellingPrice) {
+        this.productStorageType = productStorageType;
+        this.barcode = barcode;
+        this.name = name;
+        this.size = size;
+        this.unit = unit;
+        this.originalPrice = originalPrice;
+        this.sellingPrice = sellingPrice;
+    }
+
+    //삭제 상태 변경
+    public void updateStatus(StatusEnum statusEnum) {
+        this.statusEnum = statusEnum;
     }
 }

@@ -3,16 +3,27 @@ package com.a508.wms.domain;
 import com.a508.wms.domain.util.BaseTimeEntity;
 import com.a508.wms.util.StatusEnum;
 import jakarta.persistence.*;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@NoArgsConstructor
 @Table(name = "product")
 public class Product extends BaseTimeEntity {
+
+    @Builder
+    public Product(ProductDetail productDetail, int productQuantity, LocalDateTime expirationDate,
+        String comment) {
+        this.productDetail = productDetail;
+        this.productQuantity = productQuantity;
+        this.expirationDate = expirationDate;
+        this.comment = comment;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,5 +52,17 @@ public class Product extends BaseTimeEntity {
     public void setProductDetail(ProductDetail productDetail) {
         this.productDetail = productDetail;
         productDetail.getProducts().add(this);
+    }
+
+    //데이터의 일괄 수정
+    public void updateData(int productQuantity, LocalDateTime expirationDate, String comment) {
+        this.productQuantity = productQuantity;
+        this.expirationDate = expirationDate;
+        this.comment = comment;
+    }
+
+    //삭제 상태 변경
+    public void updateStatus(StatusEnum statusEnum) {
+        this.statusEnum = statusEnum;
     }
 }

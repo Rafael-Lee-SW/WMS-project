@@ -2,19 +2,36 @@ package com.a508.wms.service;
 
 import com.a508.wms.domain.Product;
 import com.a508.wms.domain.ProductDetail;
+import com.a508.wms.domain.ProductLocation;
 import com.a508.wms.dto.ProductDetailResponse;
 import com.a508.wms.dto.ProductInfos;
+import com.a508.wms.dto.ProductRequest;
+import com.a508.wms.repository.ProductDetailRepository;
+import com.a508.wms.repository.ProductLocationRepository;
 import com.a508.wms.repository.ProductRepository;
+import com.a508.wms.util.StatusEnum;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class ProductService {
-    private final ProductRepository productRepository;
 
-    public ProductService(ProductRepository productRepository) {
+    private final ProductRepository productRepository;
+    private final ProductDetailRepository productDetailRepository;
+    private final ProductLocationRepository productLocationRepository;
+
+    public ProductService(ProductRepository productRepository,
+        ProductDetailRepository productDetailRepository,
+        ProductLocationRepository productLocationRepository) {
         this.productRepository = productRepository;
+        this.productDetailRepository = productDetailRepository;
+        this.productLocationRepository = productLocationRepository;
     }
 
 
@@ -107,5 +124,57 @@ public class ProductService {
             .originalPrice(productDetail.getOriginalPrice())
             .sellingPrice(productDetail.getSellingPrice())
             .build();
+    }
+
+
+    /**
+     * ProductDetail값을 통해 Product를 저장하는 기능
+     * @param request: Product 데이터
+     */
+    public void save(ProductRequest request){
+        ProductDetail productDetail=productDetailRepository.findById(request.getProductDetailId())
+            .orElseThrow(()->new IllegalArgumentException("Invalid ProductDetail Id"));
+
+        Product product=new Product(productDetail,request.getProductQuantity(),
+            request.getExpirationDate(), request.getComment());
+
+        productRepository.save(product);
+    }
+
+    /**
+     * 기존 상품 데이터를 조회하여 수정하는 기능
+     * @param id 상품 id
+     * @param request 수정할 상품 데이터
+     */
+    public void update(Long id,ProductRequest request){
+        Product product=productRepository.findById(id)
+            .orElseThrow(()->new IllegalArgumentException("Invalid Product Id"));
+
+        product.updateData(
+            (request.getProductQuantity()==-1)?product.getProductQuantity():request.getProductQuantity(),
+            (request.getExpirationDate()==null)?product.getExpirationDate():request.getExpirationDate(),
+            (request.getComment()==null)?product.getComment():request.getComment()
+        );
+
+        productRepository.save(product);
+    }
+
+    /**
+     * 상품의 상태값을 삭제로 변경, 해당 상품에 해당하는 모든 상품 로케이션 또한 변경.
+     * @param id 상품의 id
+     */
+    @Transactional
+    public void delete(Long id){
+        Product product=productRepository.findById(id)
+            .orElseThrow(()->new IllegalArgumentException("Invalid Product Id"));
+
+        product.updateStatus(StatusEnum.DELETED);
+
+        productRepository.save(product);
+
+        for(ProductLocation productLocation:product.getProductLocations()){
+            productLocation.updateStatus(StatusEnum.DELETED);
+            productLocationRepository.save(productLocation);
+        }
     }
 }
