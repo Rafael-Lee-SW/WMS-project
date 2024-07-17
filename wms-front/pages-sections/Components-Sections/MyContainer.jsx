@@ -107,8 +107,8 @@ const User = () => {
   const handleAddWall = (start, end) => {
     const newWall = {
       id: rectangles.length,
-      x: start.x,
-      y: start.y,
+      x: (start.x + end.x) / 2,
+      y: (start.y + end.y) / 2,
       width: newWallWidth,
       height: Math.sqrt((end.x - start.x) ** 2 + (end.y - start.y) ** 2),
       fill: newWallColor,
@@ -116,7 +116,8 @@ const User = () => {
       order: rectangles.length + 1, // 순서대로 번호 인덱싱
       name: `Wall ${rectangles.length + 1}`,
       type: "wall",
-      rotation: Math.atan2(end.y - start.y, end.x - start.x) * (180 / Math.PI),
+      rotation:
+        Math.atan2(end.y - start.y, end.x - start.x) * (180 / Math.PI) + 90,
     };
     if (!isOverlapping(newWall)) {
       setRectangles([...rectangles, newWall]);
@@ -388,14 +389,16 @@ const User = () => {
           <div className={classes.buttonsContainer}>
             {/** In /ButtonStyle.js , there are several button setting including color*/}
             <Button color="primary" round>
-              <InventoryIcon className={classes.icons} /> with icon
+              <InventoryIcon className={classes.icons} /> 창고 설정
             </Button>
             <Button color="info" round>
-              <ProductionQuantityLimitsIcon className={classes.icons} /> with
-              icon
+              <ProductionQuantityLimitsIcon className={classes.icons} /> 재고
+              관리
             </Button>
             <Button color="success" round>
-              <ListAltIcon className={classes.icons} /> with icon
+              <ListAltIcon className={classes.icons} /> 재고 현황
+            </Button>
+            <Button href="/payment"> Test Button
             </Button>
           </div>
         </div>
