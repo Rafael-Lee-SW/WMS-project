@@ -5,10 +5,12 @@ import com.a508.wms.dto.BusinessDto;
 import com.a508.wms.dto.EmployeeDto;
 import com.a508.wms.repository.BusinessRepository;
 import com.a508.wms.util.StatusEnum;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+@Slf4j
 @Service
 public class BusinessService {
 
@@ -17,7 +19,11 @@ public class BusinessService {
 
     public BusinessService() {}
 
-    // business 테이블에 사업체를 추가
+    /**
+     * 테스트용 사업체 생성 메서드로, 나중에는 사용되지 않을 예정
+     * @param businessDto : 사업체의 정보가 담긴 Dto
+     * @return
+     */
     public BusinessDto createBusiness(BusinessDto businessDto) {
         Business.Builder builder = new Business.Builder()
                 .email(businessDto.getEmail())
@@ -38,7 +44,11 @@ public class BusinessService {
         }
     }
 
-    // business 테이블에서 id로 조회
+    /**
+     * 특정 id를 가진 사업체의 정보를 조회하는 메서드
+     * @param id : 사업체 고유 번호
+     * @return BusinessDto
+     */
     public BusinessDto getBusinessById(long id) {
         try {
             Business business = businessRepository.getReferenceById(id);
@@ -51,7 +61,10 @@ public class BusinessService {
         }
     }
 
-    // business 테이블에서 모든 사업체 조회
+    /**
+     * 모든 사업체의 정보를 조회하는 메서드
+     * @return List<BusinessDto>
+     */
     public List<BusinessDto> getAllBusiness() {
         try {
             List<Business> businesses = businessRepository.findAll();
@@ -61,7 +74,13 @@ public class BusinessService {
         }
     }
 
-    // business 테이블에서 특정 사업체 수정
+    /**
+     * 사업체의 정보를 수정하는 메서드
+     * 현재 수정 가능한 부분은 사업체에 관한 개인 정보들(사업체 번호, 이름,이메일 등..)
+     * @param id : 사업체 고유 번호
+     * @param businessDto : 사업체 정보가 담긴 Dto
+     * @return BusinessDto
+     */
     public BusinessDto updateBusiness(long id, BusinessDto businessDto) {
         try {
 //            1. 기존 Business 컬럼 불러오기
@@ -70,41 +89,37 @@ public class BusinessService {
                 throw new Exception("해당 id는 활성화 상태가 아닙니다.");
             }
 //            2. 수정할 필드 값 변경하기
-            Business.Builder builder = new Business.Builder();
-            if(businessDto.getName() != null) {
-                builder.email(businessDto.getEmail());
-            }
-            if(businessDto.getPassword() != null) {
-                builder.password(businessDto.getPassword());
-            }
-            if(businessDto.getName() != null) {
-                builder.name(businessDto.getName());
-            }
-            if(businessDto.getBusinessNumber() != null) {
-                builder.businessNumber(businessDto.getBusinessNumber());
-            }
-                builder.employees(existingBusiness.getEmployees());
-            Business updatedBusiness = builder.build();
+            Business updatedBusiness = businessRepository.save(existingBusiness.toBusiness(businessDto));
 //            3. 변경 후 return
             return BusinessDto.toBusinessDto(updatedBusiness);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
-    
-    // business 테이블에서 특정 사업체 삭제(상태를 변경해서 넘기기)
-    /*public BusinessDto deleteBusiness(long id, BusinessDto businessDto) {
+    /**
+     * 사업체의 정보를 삭제하는 메서드
+     * 실제로 지우지 않고, 상태를 DELETED로 변경하여 삭제된 것 처럼 처리
+     * @param id : 사업체 고유 번호
+     * @return BusinessDto
+     */
+    public BusinessDto deleteBusiness(long id) {
         try {
+//            1. 기존 Business 컬럼 불러오기
             Business existingBusiness = businessRepository.getReferenceById(id);
-            if (existingBusiness.getStatusEnum() != StatusEnum.활성) {
+            if (existingBusiness.getStatusEnum() != StatusEnum.ACTIVE) {
                 throw new Exception("해당 id는 활성화 상태가 아닙니다.");
             }
-            businessDto.setStatus(String.valueOf(StatusEnum.삭제));
-            Business deletedBusiness = businessRepository.save(convertToBusiness(id, businessDto));
-            return convertToDTO(deletedBusiness);
+//            2. 삭제할 필드 값 변경하기
+                existingBusiness.setStatusEnum(StatusEnum.DELETED);
+//                바꿀 정보 = businessDto, 기존 정보 = existingBusiness
+//                기존 정보와 다른 경우 businessDto의 정보를 넣기
+
+            Business deletedBusiness = businessRepository.save(existingBusiness);
+//             3. 변경 후 return
+            return BusinessDto.toBusinessDto(deletedBusiness);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }*/
+    }
 
 }
