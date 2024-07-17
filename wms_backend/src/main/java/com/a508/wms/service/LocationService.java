@@ -114,13 +114,21 @@ public class LocationService {
 
     /**
      * location 삭제 -> id로 location을 조회하고 해당 location의 상태값을 DELETED로 변경
+     * location내부의 모든 층도 상태값을 DELETED로 변경
      * @param id: locationId
      */
     public void delete(Long id) {
         Location location = locationRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Invalid location ID"));
         location.updateStatusEnum(StatusEnum.DELETED);
-        locationRepository.save(location);
+        
+        List<Floor> floors = floorRepository.findAllByLocationId(location.getId()); //location의 층 전부 조회
+        for (Floor floor : floors) {
+            floor.updateStatusEnum(StatusEnum.DELETED);
+        }   //층들 전부 DELETED상태로 변경
+        
+        floorRepository.saveAll(floors); //변경사항 저장 
+        locationRepository.save(location); //변경사항 저장
     }
 
 }
