@@ -82,4 +82,9 @@ public class ProductDetail extends BaseTimeEntity {
         this.originalPrice = originalPrice;
         this.sellingPrice = sellingPrice;
     }
+
+    //삭제 상태 변경
+    public void updateStatus(StatusEnum statusEnum) {
+        this.statusEnum = statusEnum;
+    }
 }

@@ -3,6 +3,7 @@ package com.a508.wms.controller;
 import com.a508.wms.dto.ProductDetailRequest;
 import com.a508.wms.service.ProductDetailService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -41,4 +42,15 @@ public class ProductDetailController {
         log.info("update product detail");
         productDetailService.modify(id,request);
     }
+
+    /**
+     * 상품 정보의 상태값을 삭제로 변경, 해당 상품정보에 연관되는 모든 데이터의 상태 또한 삭제로 변경
+     * @param id 상품 정보 ID
+     */
+    @PatchMapping("/{id}")
+    public void deleteProductDetail(@PathVariable Long id){
+        log.info("delete product detail");
+        productDetailService.delete(id);
+    }
+
 }
