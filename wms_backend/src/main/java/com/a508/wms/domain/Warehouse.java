@@ -6,9 +6,11 @@ import jakarta.persistence.*;
 import lombok.Getter;
 
 import java.util.List;
+import lombok.Setter;
 
 @Entity
 @Getter
+@Setter
 @Table(name="warehouse")
 public class Warehouse extends BaseTimeEntity {
 
@@ -46,4 +48,5 @@ public class Warehouse extends BaseTimeEntity {
         this.business = business;
         business.getWarehouses().add(this);
     }
+
 }

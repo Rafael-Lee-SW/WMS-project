@@ -1,9 +1,11 @@
 package com.a508.wms.controller;
 
 import com.a508.wms.domain.Warehouse;
+import com.a508.wms.dto.WarehouseDto;
 import com.a508.wms.service.WarehouseService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,39 +18,49 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
+@Slf4j
 @RestController
-@RequestMapping ("/warehouses")
+@RequiredArgsConstructor
+@RequestMapping("/warehouses")
 public class WarehouseController {
+
     //의존성주입
-    @Autowired
-    private WarehouseService warehouseService;
+    private final WarehouseService warehouseService;
 
-    //모든 창고 조회
-    @GetMapping
-    public List<Warehouse> getAllWarehouses() {
-        return warehouseService.findAll();
-    }
 
-    //창고 id로 조회
-    @GetMapping("/{id}")
-    public ResponseEntity<Warehouse> getWarehouseById(@PathVariable Long id) {
-        return warehouseService.findById(id)
-            .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
-    }
-    //창고 생성
+    /*
+    사업자 id의 창고를 저장하는 기능
+    post
+     */
     @PostMapping
-    public ResponseEntity<Void> createWarehouse(@RequestBody Warehouse warehouse) {
-        warehouseService.save(warehouse);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+    public ResponseEntity<WarehouseDto> add(@RequestBody WarehouseDto warehouseDto) {
+        log.info("add warehouse {}", warehouseDto);
+        //서비스 호출
+        WarehouseDto createdWarehouse = warehouseService.createWarehouse(warehouseDto);
+        return new ResponseEntity<>(createdWarehouse, HttpStatus.CREATED);
     }
 
-    //비지니스 id로 조회
-    @GetMapping(params = "businessId")
-    public List<Warehouse> getWarehousesByBusinessId(@RequestParam Long businessId) {
-        return warehouseService.findByBusinessId(businessId);
-    }
+     /*
+    사업자 id를 파라미터로 모든 창고를 조회하는 기능
+    get
+     */
+     @GetMapping("/{id}")
+     public ResponseEntity<List<WarehouseDto>> getWarehousesByBusinessId(@PathVariable Long id) {
+         log.info("Getting warehouses for business ID: {}", id); // 로그 출력
+         List<WarehouseDto> warehouses = warehouseService.getWarehousesByBusinessId(id); // 서비스 호출하여 결과 반환
+         return new ResponseEntity<>(warehouses, HttpStatus.OK); // 200 OK 응답 반환
+     }
+
+
+    /*
+    사업자 id의 모든 창고를 조회하는 기능
+    get
+     */
+
+    /*
+    창고 id의 수직 수평 배치 수  , 지수를 수정하는 기능
+     */
+
 
 
 
