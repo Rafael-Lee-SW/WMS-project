@@ -5,11 +5,13 @@ import com.a508.wms.dto.LocationDto;
 import com.a508.wms.util.StatusEnum;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
@@ -20,14 +22,13 @@ import lombok.NoArgsConstructor;
 public class Location extends BaseTimeEntity {
 
     public Location(Warehouse warehouse, ProductStorageType productStorageType,
-        int xPosition, int yPosition, int width, int height, List<Floor> floors) {
+        int xPosition, int yPosition, int width, int height) {
         this.warehouse = warehouse;
         this.productStorageType = productStorageType;
         this.xPosition = xPosition;
         this.yPosition = yPosition;
         this.width = width;
         this.height = height;
-        this.floors = floors;
     }
 
     @Id
@@ -61,8 +62,9 @@ public class Location extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private StatusEnum statusEnum = StatusEnum.ACTIVE;
 
+    @Setter
     @OneToMany(mappedBy = "location")
-    private List<Floor> floors;
+    private List<Floor> floors = new ArrayList<>();
 
     // 연관관계 편의 메서드
     public void setWarehouse(Warehouse warehouse) {
