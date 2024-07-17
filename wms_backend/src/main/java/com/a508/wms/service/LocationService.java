@@ -10,11 +10,10 @@ import com.a508.wms.repository.FloorRepository;
 import com.a508.wms.repository.LocationRepository;
 import com.a508.wms.repository.ProductStorageTypeRepository;
 import com.a508.wms.repository.WarehouseRepository;
-import jakarta.persistence.EntityNotFoundException;
+import com.a508.wms.util.StatusEnum;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -99,4 +98,29 @@ public class LocationService {
         floorRepository.saveAll(floors);    //floor 전부 저장
         location.setFloors(floors);  //location에 층 정보 넣어주기
     }
+
+    /**
+     * location 정보 수정
+     * 수정 가능한 정보는 이름과 좌표값들
+     * @param locationDto: 바꿀 로케이션 정보들
+     */
+    public void modify(Long id, LocationDto locationDto) {
+        Location location = locationRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Invalid location ID"));
+        location.updateName(locationDto.getLocationName());
+        location.updatePosition(locationDto.getXPosition(),locationDto.getYPosition());
+        locationRepository.save(location);
+    }
+
+    /**
+     * location 삭제 -> id로 location을 조회하고 해당 location의 상태값을 DELETED로 변경
+     * @param id: locationId
+     */
+    public void delete(Long id) {
+        Location location = locationRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Invalid location ID"));
+        location.updateStatusEnum(StatusEnum.DELETED);
+        locationRepository.save(location);
+    }
+
 }

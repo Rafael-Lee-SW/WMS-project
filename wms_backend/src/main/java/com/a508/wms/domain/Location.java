@@ -66,6 +66,20 @@ public class Location extends BaseTimeEntity {
     @OneToMany(mappedBy = "location")
     private List<Floor> floors = new ArrayList<>();
 
+    //상태값 변경 메서드 -> 삭제에 사용
+    public void updateStatusEnum(StatusEnum statusEnum) {
+        this.statusEnum = statusEnum;
+    }
+
+    public void updatePosition(int xPosition, int yPosition) {
+        this.xPosition = xPosition;
+        this.yPosition = yPosition;
+    }
+
+    public void updateName(String name) {
+        this.name = name;
+    }
+
     // 연관관계 편의 메서드
     public void setWarehouse(Warehouse warehouse) {
         this.warehouse = warehouse;
