@@ -49,4 +49,32 @@ public class ProductDetailService {
 
         productDetailRepository.save(productDetail);
     }
+
+    /**
+     * 기존 상품 정보를 불러와서 수정하는 기능, 미입력값에 대해서는 기존 값으로 처리한다
+     * @param id 상품 정보 ID
+     * @param request 상품 정보 수정 Data
+     */
+    public void modify(Long id,ProductDetailRequest request) {
+        log.info("product detail request: {}", request);
+        ProductDetail productDetail=productDetailRepository.findById(id)
+                .orElseThrow(()->new IllegalArgumentException("Invalid productDetail Id"));
+
+        ProductStorageType productStorageType=productStorageTypeRepository.findById(request.getProductStorageTypeId())
+            .orElseThrow(()->new IllegalArgumentException("Invalid productStorageType Id"));
+
+        log.info("product detail target: {}", productDetail);
+
+        productDetail.updateData(
+            productStorageType,
+            request.getBarcode(),
+            request.getName(),
+            (request.getSize()==null)?productDetail.getSize():request.getSize(),
+            (request.getUnit()==null)? productDetail.getUnit() : request.getUnit(),
+            (request.getOriginalPrice()==0)? productDetail.getOriginalPrice() : request.getOriginalPrice(),
+            (request.getSellingPrice()==0)? productDetail.getSellingPrice() : request.getSellingPrice()
+        );
+
+        productDetailRepository.save(productDetail);
+    }
 }

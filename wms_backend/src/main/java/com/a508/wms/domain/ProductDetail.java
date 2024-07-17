@@ -69,4 +69,16 @@ public class ProductDetail extends BaseTimeEntity {
         this.business = business;
         business.getProductDetails().add(this);
     }
+
+    public void updateData(ProductStorageType productStorageType
+        ,Long barcode,String name,Long size,Long unit
+    ,int originalPrice,int sellingPrice) {
+        this.productStorageType = productStorageType;
+        this.barcode = barcode;
+        this.name = name;
+        this.size = size;
+        this.unit = unit;
+        this.originalPrice = originalPrice;
+        this.sellingPrice = sellingPrice;
+    }
 }
