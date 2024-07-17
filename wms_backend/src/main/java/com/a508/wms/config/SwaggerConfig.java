@@ -18,12 +18,23 @@ public class SwaggerConfig {
         return new OpenAPI()
                 .info(info);
     }
+
     @Bean
     public OpenAPI businessApi() {
         return new OpenAPI()
                 .info(new Info()
                         .title("Business API")
                         .description("사업체 관리 API")
+                        .version("1.0.0")
+                );
+    }
+
+    @Bean
+    public OpenAPI employeeApi() {
+        return new OpenAPI()
+                .info(new Info()
+                        .title("Employee API")
+                        .description("직원 관리 API")
                         .version("1.0.0")
                 );
     }
