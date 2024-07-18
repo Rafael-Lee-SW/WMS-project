@@ -38,6 +38,10 @@ public class ProductDetailService {
         this.productLocationRepository = productLocationRepository;
     }
 
+    /**
+     * 서비스 전체 상품 정보를 반환함.
+     * @return
+     */
     public List<ProductDetailResponse> getProductDetail() {
         List<ProductDetail> result=productDetailRepository.findAll();
 
@@ -45,6 +49,13 @@ public class ProductDetailService {
             .map(ProductDetailResponse::fromProductDetail)
             .toList();
     }
+
+
+    /**
+     * 사업체에 해당하는 상품정보 반환
+     * @param id: 사업체 ID
+     * @return
+     */
 
     public List<ProductDetailResponse> getProductDetailByBusinessId(Long id) {
         List<ProductDetail> result=productDetailRepository.findByBusinessId(id);

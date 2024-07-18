@@ -3,9 +3,8 @@ package com.a508.wms.service;
 import com.a508.wms.domain.Product;
 import com.a508.wms.domain.ProductDetail;
 import com.a508.wms.domain.ProductLocation;
-import com.a508.wms.dto.ProductDetailResponse;
-import com.a508.wms.dto.ProductInfos;
 import com.a508.wms.dto.ProductRequest;
+import com.a508.wms.dto.ProductResponse;
 import com.a508.wms.repository.ProductDetailRepository;
 import com.a508.wms.repository.ProductLocationRepository;
 import com.a508.wms.repository.ProductRepository;
@@ -14,8 +13,6 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -36,96 +33,68 @@ public class ProductService {
 
 
     /**
-     * DB에서 가져온 Product의 데이터를 Stream을 통해 Dto로 전환하여 반환해주는 기능
-     * @return List<ProductInfos> Product의 데이터를 가진 DTO들의 List
+     * 서비스의 모든 상품을 반환하는 기능
+     * @return
      */
-    public List<ProductInfos> findAll(){
+    public List<ProductResponse> findAll(){
         final List<Product> products=productRepository.findAll();
-        return products.stream().map(product -> ProductInfos.builder()
-            .comment(product.getComment())
-            .quantity(product.getProductQuantity())
-            .productDetail(getProductDetail(product.getProductDetail()))
-            .build())
+
+        return products.stream()
+            .map(ProductResponse::fromProduct)
             .toList();
     }
 
+
     /**
-     * 인자로 들어온 id에 해당하는 Product를 반환하는 기능
-     * id에 해당 하는 데이터가 없다면 예외 발생.
-     * @param id : Product의 id
-     * @return ProductInfos: Product의 데이터를 가진 DTO
+     * 특정 상품을 반환하는 기능
+     * @param id 상품(Product)의 id
+     * @return
      */
-    public ProductInfos findById(long id){
+    public ProductResponse findById(Long id){
         Product product=productRepository.findById(id).orElseThrow(EntityNotFoundException::new);
 
-        return ProductInfos.builder()
-            .comment(product.getComment())
-            .quantity(product.getProductQuantity())
-            .productDetail(getProductDetail(product.getProductDetail()))
-            .build();
+        return ProductResponse.fromProduct(product);
     }
 
     /**
-     * 상품 상세 id에 해당하는 상품들을 가져오는 기능
-     * @param productDetailId: 상품 상세 id (PK)
-     * @return 상품 상세 id에 해당하는 상품들의 리스트
+     * 특정 상품정보에 해당하는 상품들을 반환하는 기능
+     * @param id 상품정보(ProductDetail) id
+     * @return
      */
-    public List<ProductInfos> findByProductDetailId(long productDetailId){
-        final List<Product> products=productRepository.findByProductDetailId(productDetailId);
-        return getProductInfos(products);
+    public List<ProductResponse> findByProductDetailId(Long id){
+        final List<Product> products=productRepository.findByProductDetailId(id);
+
+        return products.stream()
+            .map(ProductResponse::fromProduct)
+            .toList();
     };
 
     /**
-     * 사업체 id에 해당하는 상품들을 가져오는 기능
-     * @param businessId: 사업체 id (PK)
-     * @return 사업체 id에 해당하는 상품들의 리스트
-     */
-    public List<ProductInfos> findByBusinessId(long businessId){
-        final List<Product> products=productRepository.findByBusinessId(businessId);
-        return getProductInfos(products);
-    }
-
-    /**
-     * 창고 id에 해당하는 상품들을 가져오는 기능
-     * @param warehouseId:창고 id (PK)
-     * @return 창고 id에 해당하는 상품들의 리스트
-     */
-    public List<ProductInfos> findByWarehouseId(long warehouseId){
-        final List<Product> products=productRepository.findByWarehouseId(warehouseId);
-        return getProductInfos(products);
-    }
-
-    /**
-     * List<Product>를 List<ProductInfos>로 변환해주는 기능
-     * @param products:product들의 데이터 리스트
+     * 특정 사업자에 해당하는 상품들을 반환하는 기능
+     * @param id 사업자(Business) id
      * @return
      */
 
-    public List<ProductInfos> getProductInfos(List<Product> products){
-        return products.stream().map(product -> com.a508.wms.dto.ProductInfos.builder()
-                .comment(product.getComment())
-                .quantity(product.getProductQuantity())
-                .productDetail(getProductDetail(product.getProductDetail()))
-                .build())
+    public List<ProductResponse> findByBusinessId(Long id){
+        final List<Product> products=productRepository.findByBusinessId(id);
+
+        return products.stream()
+            .map(ProductResponse::fromProduct)
             .toList();
     }
 
     /**
-     *
-     * @param productDetail : ProductDetail의 데이터를 Dto로 변환해주는 기능
-     * @return ProductDetailResponse : ProductDetail의 데이터를 가진 DTO
+     * 창고 id에 해당하는 상품들을 반환하는 기능
+     * @param id 창고(Warehouse)의 id
+     * @return
      */
-    public ProductDetailResponse getProductDetail(ProductDetail productDetail){
-        return ProductDetailResponse.builder()
-            .barcode(productDetail.getBarcode())
-            .name(productDetail.getName())
-            .size(productDetail.getSize())
-            .unit(productDetail.getUnit())
-            .originalPrice(productDetail.getOriginalPrice())
-            .sellingPrice(productDetail.getSellingPrice())
-            .build();
-    }
+    public List<ProductResponse> findByWarehouseId(Long id){
+        final List<Product> products=productRepository.findByWarehouseId(id);
 
+        return products.stream()
+            .map(ProductResponse::fromProduct)
+            .toList();
+    }
 
     /**
      * ProductDetail값을 통해 Product를 저장하는 기능
