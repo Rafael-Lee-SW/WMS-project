@@ -2,6 +2,7 @@ package com.a508.wms.domain;
 
 import com.a508.wms.domain.util.BaseTimeEntity;
 import com.a508.wms.dto.SubscriptionDto;
+import com.a508.wms.dto.SubscriptionTypeDto;
 import com.a508.wms.util.PaidTypeEnum;
 import com.a508.wms.util.StatusEnum;
 import jakarta.persistence.*;
@@ -20,12 +21,12 @@ public class Subscription extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @JoinColumn(name="business_id",nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="business_id", nullable = false)
     private Business business;
 
-    @JoinColumn(name="subscription_type_id",nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="subscription_type_id", nullable = false)
     private SubscriptionType subscriptionType;
 
     @CreatedDate
@@ -63,6 +64,19 @@ public class Subscription extends BaseTimeEntity {
         business.getSubscriptions().add(this);
     }
 
+    public void setStatusEnum(StatusEnum statusEnum) {
+        this.statusEnum = statusEnum;
+    }
+
+    public void setSubscriptionType(SubscriptionType subscriptionType) {
+        this.subscriptionType = subscriptionType;
+    }
+    public void setPaidTypeEnum(PaidTypeEnum paidTypeEnum) {
+        this.paidTypeEnum = paidTypeEnum;
+    }
+    public void setId(Long id) {
+        this.id = id;
+    }
     @Getter
     @Setter
     public static class Builder
@@ -106,18 +120,9 @@ public class Subscription extends BaseTimeEntity {
             return new Subscription(this);
         }
     }
-    public Subscription toSubscription(SubscriptionDto subscriptionDto) {
-        Subscription subscription = new Subscription();
-//        subsciripton이 가지고 있어야 할 정보는 business인데 dto에는 businessdto가 있고,
-//        business를 businessDto의 형태로 변환하는 메서드는 Business Entity에 있어서
-//        Business Entity에 static 메서드를 선언해야 할듯
-        subscription.id = subscriptionDto.getId();
-        subscription.business = Business.dtoToBusiness(subscriptionDto.getBusinessDto());
-        subscription.subscriptionType = subscriptionDto.getSubscriptionType();
-        subscription.statusEnum = subscriptionDto.getStatusEnum();
-        subscription.paidTypeEnum = subscriptionDto.getPaidTypeEnum();
-        subscription.startDate = subscriptionDto.getStartTime();
-        subscription.endDate = subscriptionDto.getEndTime();
-        return subscription;
-    }
+
+
+
+
+
 }

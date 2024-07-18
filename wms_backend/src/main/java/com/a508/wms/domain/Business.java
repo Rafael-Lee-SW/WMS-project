@@ -41,13 +41,13 @@ public class Business extends BaseTimeEntity {
     private List<ProductDetail> productDetails = new ArrayList<>();
 
     @OneToMany(mappedBy = "business")
-    private List<Notification> notifications = new ArrayList<>();;
+    private List<Notification> notifications = new ArrayList<>();
 
     @OneToMany(mappedBy = "business")
-    private List<Subscription> subscriptions = new ArrayList<>();;
+    private List<Subscription> subscriptions = new ArrayList<>();
 
     @OneToMany(mappedBy = "business")
-    private List<Warehouse> warehouses = new ArrayList<>();;
+    private List<Warehouse> warehouses = new ArrayList<>();
 
     public void setStatusEnum(StatusEnum statusEnum) {
         this.statusEnum = statusEnum;
