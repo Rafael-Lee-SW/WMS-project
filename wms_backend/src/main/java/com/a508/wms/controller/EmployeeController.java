@@ -15,7 +15,8 @@ import java.util.List;
 @RequestMapping("/employees")
 @Tag(name = "직원 관리", description = "직원의 CRUD 관리")
 public class EmployeeController {
-    EmployeeService employeeService;
+
+    private final EmployeeService employeeService;
 
     @Autowired
     EmployeeController(EmployeeService employeeService) {
