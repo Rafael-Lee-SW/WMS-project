@@ -1,14 +1,19 @@
 package com.a508.wms.controller;
 
 import com.a508.wms.dto.ProductDetailRequest;
+import com.a508.wms.dto.ProductDetailResponse;
 import com.a508.wms.service.ProductDetailService;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
@@ -19,6 +24,19 @@ public class ProductDetailController {
 
     public ProductDetailController(ProductDetailService productDetailService) {
         this.productDetailService = productDetailService;
+    }
+
+    @GetMapping
+    public ResponseEntity<List<ProductDetailResponse>> getProductDetail(@RequestParam(required = false) Long businessId){
+        List<ProductDetailResponse> result=null;
+        if(businessId != null){
+            result=productDetailService.getProductDetailByBusinessId(businessId);
+        }
+        else{
+            result=productDetailService.getProductDetail();
+        }
+
+        return ResponseEntity.ok(result);
     }
 
     /**
