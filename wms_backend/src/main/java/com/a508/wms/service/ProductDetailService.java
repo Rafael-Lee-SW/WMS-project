@@ -14,6 +14,7 @@ import com.a508.wms.repository.ProductRepository;
 import com.a508.wms.repository.ProductStorageTypeRepository;
 import com.a508.wms.util.StatusEnum;
 import jakarta.transaction.Transactional;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -37,12 +38,38 @@ public class ProductDetailService {
         this.productLocationRepository = productLocationRepository;
     }
 
+    /**
+     * 서비스 전체 상품 정보를 반환함.
+     * @return
+     */
+    public List<ProductDetailResponse> getProductDetail() {
+        List<ProductDetail> result=productDetailRepository.findAll();
+
+        return result.stream()
+            .map(ProductDetailResponse::fromProductDetail)
+            .toList();
+    }
+
+
+    /**
+     * 사업체에 해당하는 상품정보 반환
+     * @param id: 사업체 ID
+     * @return
+     */
+
+    public List<ProductDetailResponse> getProductDetailByBusinessId(Long id) {
+        List<ProductDetail> result=productDetailRepository.findByBusinessId(id);
+
+        return result.stream()
+            .map(ProductDetailResponse::fromProductDetail)
+            .toList();
+    }
 
     /**
      * 해당하는 사업체와 저장 타입을 가져와서 이를 통해 상품정보를 저장하는 기능
      * @param request 상품 정보
      */
-    public void save(ProductDetailRequest request) {
+    public ProductDetailResponse save(ProductDetailRequest request) {
         log.info("product detail request: {}", request);
         Business business = businessRepository.findById(request.getBusinessId())
             .orElseThrow(()->new IllegalArgumentException("Invalid business Id"));
@@ -58,7 +85,9 @@ public class ProductDetailService {
 
         log.info(productDetail.toString());
 
-        productDetailRepository.save(productDetail);
+        ProductDetail savedProductDetail=productDetailRepository.save(productDetail);
+
+        return ProductDetailResponse.fromProductDetail(savedProductDetail);
     }
 
     /**
