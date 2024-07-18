@@ -1,5 +1,6 @@
 package com.a508.wms.controller.response;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.time.LocalDateTime;
 import lombok.Getter;
 
@@ -9,16 +10,19 @@ import lombok.Getter;
  * 예외가 발생했을 때라 결과값이 따로 없음
  */
 @Getter
+@JsonPropertyOrder({"success", "statusCode", "httpStatus", "message", "timestamp"})
 public class BaseExceptionResponse {
 
     private final boolean success;
     private final int statusCode;
+    private final int httpStatus;
     private final String message;
     private final LocalDateTime timestamp;
 
-    public BaseExceptionResponse(boolean success, int statusCode, String message) {
+    public BaseExceptionResponse(boolean success, int statusCode, int httpStatus, String message) {
         this.success = success;
         this.statusCode = statusCode;
+        this.httpStatus = httpStatus;
         this.message = message;
         this.timestamp = LocalDateTime.now();
     }
