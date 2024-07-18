@@ -1,15 +1,7 @@
 // fundamental importing about React
 import React, { useState, useEffect, useRef } from "react";
 // Library of konva and color
-import {
-  Stage,
-  Layer,
-  Rect,
-  Text,
-  Line,
-  Circle,
-  Transformer,
-} from "react-konva";
+import { Stage, Layer, Rect, Text, Line, Circle } from "react-konva";
 import { SketchPicker } from "react-color";
 // plugin that creates slider
 import Slider from "nouislider";
@@ -38,7 +30,6 @@ import Paginations from "/components/Pagination/Pagination.js";
 import Badge from "/components/Badge/Badge.js";
 
 import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/MyContainerStyle.jsx";
-import { Canvas } from "canvas";
 
 // 상수 설정(그리드, 컨버스 등)
 const GRID_SIZE = 100; // 100cm = 1m
@@ -88,40 +79,6 @@ const User = () => {
   const [newWallWidth, setNewWallWidth] = useState(10);
   const [wallStartPoint, setWallStartPoint] = useState(null);
   const [wallEndPoint, setWallEndPoint] = useState(null);
-
-  // 선택된 상자의 크기를 변경하기 위한 조치
-  const transformerRef = useRef(null);
-
-  useEffect(() => {
-    if (transformerRef.current && selectedRect) {
-      const selectedNode = stageRef.current.findOne(`#rect${selectedRect.id}`);
-      if (selectedNode) {
-        transformerRef.current.nodes([selectedNode]);
-        transformerRef.current.getLayer().batchDraw();
-      }
-    }
-  }, [selectedRect]);
-
-  const handleTransformEnd = (e, id) => {
-    const node = e.target;
-    const updatedRectangles = rectangles.map((rect) => {
-      if (rect.id === id) {
-        const updatedRect = {
-          ...rect,
-          x: node.x(),
-          y: node.y(),
-          width: node.width() * node.scaleX(),
-          height: node.height() * node.scaleY(),
-        };
-        updateContainer(updatedRect, "rectangle", `rect${rect.id}`);
-        return updatedRect;
-      }
-      return rect;
-    });
-
-    setRectangles(updatedRectangles);
-    setSelectedRect(null);
-  };
 
   // 사각형을 컨버스에 추가한다.
   const handleAddRectangle = (type) => {
@@ -420,316 +377,312 @@ const User = () => {
     return Math.min(rectWidth, rectHeight) / 5;
   };
 
-  // 상대적 위치를 보여주는 Pointer에 대한 수정
-  const Pointer = (event) => {
-    const { x, y } = event.target.getStage().getPointerPosition();
-    var stageAttrs = event.target.getStage().attrs;
-    x = (x - stageAttrs.x) / stageAttrs.scaleX;
-    y = (y - stageAttrs.y) / stageAttrs.scaleY;
-    // console.log("출력 : " + Math.round(x) + " : " + Math.round(y));
-    return { x, y };
-  };
-
   //--- 리턴 Part ---
 
   return (
-    <div>
-      {/* JSX 주석 */}
-
-      {/** Main 영역 시작 */}
-
-      <main
-        style={{
-          display: "flex",
-        }}
-      >
-        {/* Left-SideBar / 좌측 사이드바  */}
-        <div
-          style={{
-            marginLeft: "20px",
-            padding: "10px",
-            border: "2px solid black",
-            borderRadius: "10px",
-            width: "15%",
-            height: "80vh",
-            overflowY: "auto",
-          }}
-        >
-          <button onClick={() => setCurrentSetting("location")}>
-            Location Set
-          </button>
-          <button onClick={() => setCurrentSetting("wall")}>Wall Set</button>
-          <button onClick={() => setCurrentSetting("specialObject")}>
-            Special Object Set
-          </button>
-          {currentSetting && currentSetting !== "wall" && (
-            <>
-              <h3>Set Properties for {currentSetting}</h3>
-              <div>
-                <label>
-                  Color:
-                  <div
-                    onClick={() => setShowColorPicker(!showColorPicker)}
-                    style={{
-                      width: "36px",
-                      height: "14px",
-                      background: newRectColor,
-                      border: "1px solid #000",
-                      cursor: "pointer",
-                    }}
-                  />
-                  {showColorPicker && (
-                    <SketchPicker
-                      color={newRectColor}
-                      onChangeComplete={(color) => setNewRectColor(color.hex)}
-                    />
-                  )}
-                </label>
-              </div>
-              <div>
-                <label>
-                  Width:
-                  <input
-                    type="range"
-                    min="5"
-                    max="500"
-                    value={newRectWidth}
-                    onChange={(e) => setNewRectWidth(Number(e.target.value))}
-                  />
-                  {newRectWidth}
-                </label>
-              </div>
-              <div>
-                <label>
-                  Height:
-                  <input
-                    type="range"
-                    min="5"
-                    max="500"
-                    value={newRectHeight}
-                    onChange={(e) => setNewRectHeight(Number(e.target.value))}
-                  />
-                  {newRectHeight}
-                </label>
-              </div>
-              <div>
-                <label>
-                  Name:
-                  <input
-                    type="text"
-                    value={newRectName}
-                    onChange={(e) => setNewRectName(e.target.value)}
-                  />
-                </label>
-              </div>
-              <button onClick={() => handleAddRectangle(currentSetting)}>
-                Create {currentSetting}
-              </button>
-            </>
-          )}
-          {currentSetting === "wall" && (
-            <>
-              <h3>Set Properties for Wall</h3>
-              <div>
-                <label>
-                  Color:
-                  <div
-                    onClick={() => setShowColorPicker(!showColorPicker)}
-                    style={{
-                      width: "36px",
-                      height: "14px",
-                      background: newWallColor,
-                      border: "1px solid #000",
-                      cursor: "pointer",
-                    }}
-                  />
-                  {showColorPicker && (
-                    <SketchPicker
-                      color={newWallColor}
-                      onChangeComplete={(color) => setNewWallColor(color.hex)}
-                    />
-                  )}
-                </label>
-              </div>
-              <div>
-                <label>
-                  Width:
-                  <input
-                    type="range"
-                    min="5"
-                    max="50"
-                    value={newWallWidth}
-                    onChange={(e) => setNewWallWidth(Number(e.target.value))}
-                  />
-                  {newWallWidth}
-                </label>
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* Canvas 영역  */}
-
-        <div
-          style={{
-            border: "2px solid black",
-            borderRadius: 20,
-            width: "60%",
-            height: "80vh",
-            margin: "0 auto",
-            position: "relative",
-            overflow: "hidden", // Canvas 영역 이외에는 잠금
-            // overflow:"scroll", // Add Scroll, if canvas exceeds div size
-            cursor:
-              currentSetting === "wall"
-                ? "url(/brick-cursor.png), auto"
-                : "default",
-          }}
-          onClick={(e) => {
-            if (currentSetting === "wall") {
-              const stage = stageRef.current;
-              // 올바른 위치를 위한 스케일링
-              const pointerPosition = stage.getPointerPosition();
-              var stageAttrs = stage.attrs;
-              pointerPosition.x =
-                (pointerPosition.x - stageAttrs.x) / stageAttrs.scaleX;
-              pointerPosition.y =
-                (pointerPosition.y - stageAttrs.y) / stageAttrs.scaleY;
-              // -----------------------
-              setTempSpots([...tempSpots, pointerPosition]);
-              if (!wallStartPoint) {
-                setWallStartPoint(pointerPosition);
-              } else {
-                handleAddWall(wallStartPoint, pointerPosition);
-              }
-            }
-          }}
-        >
-          <Stage
-            width={CANVAS_SIZE} // 1000cm = 10m
-            height={CANVAS_SIZE} // 1000cm = 10cm
-            scaleX={scale}
-            scaleY={scale}
-            draggable={true} // 만약에 캔버스를 드래그할 수 있게 만들꺼면 가능
-            ref={stageRef} // Assign the reference to the stage
-            onPointerMove={Pointer}
-          >
-            <Layer>
-              {generateGridLines()}
-              {rectangles.map((rect) => (
-                <React.Fragment key={rect.id}>
-                  <Rect
-                    key={rect.id}
-                    x={rect.x}
-                    y={rect.y}
-                    width={rect.width}
-                    height={rect.height}
-                    fill={rect.fill}
-                    draggable={rect.draggable}
-                    onDragEnd={(e) => handleDragEnd(e, rect.id)}
-                    onTransformEnd={handleTransformEnd}
-                    onMouseEnter={() => setHoveredRectId(rect.id)}
-                    onMouseLeave={() => setHoveredRectId(null)}
-                    onClick={() => setSelectedRect(rect)}
-                    stroke={
-                      selectedRect?.id === rect.id
-                        ? "red"
-                        : hoveredRectId === rect.id
-                        ? "red"
-                        : "transparent"
-                    }
-                    strokeWidth={
-                      selectedRect?.id === rect.id || hoveredRectId === rect.id
-                        ? 2
-                        : 0
-                    }
-                    rotation={rect.type === "wall" ? rect.rotation : 0}
-                    offsetX={rect.type === "wall" ? 0 : 0}
-                    offsetY={rect.type === "wall" ? rect.height / 2 : 0}
-                  />
-                  <Text
-                    x={rect.x + rect.width / 2}
-                    y={rect.y + rect.height / 4}
-                    text={`${rect.order}`}
-                    fontSize={calculateFontSize(rect.width, rect.height)}
-                    fill="white"
-                    align="center"
-                  />
-                  <Text
-                    x={rect.x + rect.width / 4}
-                    y={rect.y + (rect.height * 3) / 4}
-                    text={`${rect.name}`}
-                    fontSize={calculateFontSize(rect.width, rect.height)}
-                    fill="white"
-                    align="center"
-                  />
-                </React.Fragment>
-              ))}
-              {tempSpots.map((spot, index) => (
-                <Circle
-                  key={index}
-                  x={spot.x}
-                  y={spot.y}
-                  radius={5}
-                  fill="red"
-                />
-              ))}
-              {selectedRect && (
-                <Transformer
-                  ref={transformerRef}
-                  boundBoxFunc={(oldBox, newBox) => {
-                    if (newBox.width < 5 || newBox.height < 5) {
-                      return oldBox;
-                    }
-                    return newBox;
-                  }}
-                />
-              )}
-            </Layer>
-          </Stage>
-          <div
-            style={{
-              position: "absolute",
-              bottom: "10px",
-              right: "10px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "10px",
-            }}
-          >
-            <button onClick={handleZoomIn}>Zoom In</button>
-            <button onClick={handleZoomOut}>Zoom Out</button>
-            <button onClick={handleSave}>Save</button>
+    <div className={classes.sections}>
+      <div className={classes.container}>
+        <div className={classes.flexContainer}>
+          <div>
+            <h2>창고 및 적재함별로 어떤 상품들이 있는지를 보여주는 Components입니다.</h2>
+          </div>
+          <div className={classes.buttonsContainer}>
+            {/** In /ButtonStyle.js , there are several button setting including color*/}
+            <Button color="primary" round>
+              <InventoryIcon className={classes.icons} /> 창고 설정
+            </Button>
+            <Button color="info" round>
+              <ProductionQuantityLimitsIcon className={classes.icons} /> 재고
+              관리
+            </Button>
+            <Button color="success" round>
+              <ListAltIcon className={classes.icons} /> 재고 현황
+            </Button>
+            <Button href="/payment"> Test Button
+            </Button>
           </div>
         </div>
 
-        {/* Right-Sidebar / 우측 사이드바 영역  */}
-        <div
+        {/* JSX 주석 */}
+
+        <hr />
+
+        {/** Main 영역 시작 */}
+
+        <main
           style={{
-            marginLeft: "20px",
-            padding: "10px",
-            border: "1px solid black",
-            borderRadius: "10px",
-            width: "15%",
-            height: "80vh",
-            overflowY: "auto",
+            display: "flex",
           }}
         >
-          <h3>Seleted Rectangle</h3>
-          {selectedRect ? (
-            <div>
-              <p>ID : {selectedRect.id}</p>
-              <p>X : {selectedRect.x}</p>
-              <p>Y : {selectedRect.y}</p>
-              <p>Number : {selectedRect.order}</p>
-              <p>Name : {selectedRect.name}</p>
-              <p>Type : {selectedRect.type}</p>
+          {/* Left-SideBar / 좌측 사이드바  */}
+          <div
+            style={{
+              marginLeft: "20px",
+              padding: "10px",
+              border: "2px solid black",
+              borderRadius: "10px",
+              width: "15%",
+              height: "80vh",
+              overflowY: "auto",
+            }}
+          >
+            <button onClick={() => setCurrentSetting("location")}>
+              Location Set
+            </button>
+            <button onClick={() => setCurrentSetting("wall")}>Wall Set</button>
+            <button onClick={() => setCurrentSetting("specialObject")}>
+              Special Object Set
+            </button>
+            {currentSetting && currentSetting !== "wall" && (
+              <>
+                <h3>Set Properties for {currentSetting}</h3>
+                <div>
+                  <label>
+                    Color:
+                    <div
+                      onClick={() => setShowColorPicker(!showColorPicker)}
+                      style={{
+                        width: "36px",
+                        height: "14px",
+                        background: newRectColor,
+                        border: "1px solid #000",
+                        cursor: "pointer",
+                      }}
+                    />
+                    {showColorPicker && (
+                      <SketchPicker
+                        color={newRectColor}
+                        onChangeComplete={(color) => setNewRectColor(color.hex)}
+                      />
+                    )}
+                  </label>
+                </div>
+                <div>
+                  <label>
+                    Width:
+                    <input
+                      type="range"
+                      min="5"
+                      max="500"
+                      value={newRectWidth}
+                      onChange={(e) => setNewRectWidth(Number(e.target.value))}
+                    />
+                    {newRectWidth}
+                  </label>
+                </div>
+                <div>
+                  <label>
+                    Height:
+                    <input
+                      type="range"
+                      min="5"
+                      max="500"
+                      value={newRectHeight}
+                      onChange={(e) => setNewRectHeight(Number(e.target.value))}
+                    />
+                    {newRectHeight}
+                  </label>
+                </div>
+                <div>
+                  <label>
+                    Name:
+                    <input
+                      type="text"
+                      value={newRectName}
+                      onChange={(e) => setNewRectName(e.target.value)}
+                    />
+                  </label>
+                </div>
+                <button onClick={() => handleAddRectangle(currentSetting)}>
+                  Create {currentSetting}
+                </button>
+              </>
+            )}
+            {currentSetting === "wall" && (
+              <>
+                <h3>Set Properties for Wall</h3>
+                <div>
+                  <label>
+                    Color:
+                    <div
+                      onClick={() => setShowColorPicker(!showColorPicker)}
+                      style={{
+                        width: "36px",
+                        height: "14px",
+                        background: newWallColor,
+                        border: "1px solid #000",
+                        cursor: "pointer",
+                      }}
+                    />
+                    {showColorPicker && (
+                      <SketchPicker
+                        color={newWallColor}
+                        onChangeComplete={(color) => setNewWallColor(color.hex)}
+                      />
+                    )}
+                  </label>
+                </div>
+                <div>
+                  <label>
+                    Width:
+                    <input
+                      type="range"
+                      min="5"
+                      max="50"
+                      value={newWallWidth}
+                      onChange={(e) => setNewWallWidth(Number(e.target.value))}
+                    />
+                    {newWallWidth}
+                  </label>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Canvas 영역  */}
+
+          <div
+            style={{
+              border: "2px solid black",
+              borderRadius: 20,
+              width: "60%",
+              height: "80vh",
+              margin: "0 auto",
+              position: "relative",
+              overflow: "hidden", // Canvas 영역 이외에는 잠금
+              // overflow:"scroll", // Add Scroll, if canvas exceeds div size
+              cursor:
+                currentSetting === "wall"
+                  ? "url(/brick-cursor.png), auto"
+                  : "default",
+            }}
+            onClick={(e) => {
+              if (currentSetting === "wall") {
+                const stage = stageRef.current;
+                const pointerPosition = stage.getPointerPosition();
+                setTempSpots([...tempSpots, pointerPosition]);
+                if (!wallStartPoint) {
+                  setWallStartPoint(pointerPosition);
+                } else {
+                  handleAddWall(wallStartPoint, pointerPosition);
+                }
+              }
+            }}
+          >
+            <Stage
+              width={CANVAS_SIZE} // 1000cm = 10m
+              height={CANVAS_SIZE} // 1000cm = 10cm
+              scaleX={scale}
+              scaleY={scale}
+              draggable={true} // 만약에 캔버스를 드래그할 수 있게 만들꺼면 가능
+              ref={stageRef} // Assign the reference to the stage
+            >
+              <Layer>
+                {generateGridLines()}
+                {rectangles.map((rect) => (
+                  <React.Fragment key={rect.id}>
+                    <Rect
+                      key={rect.id}
+                      x={rect.x}
+                      y={rect.y}
+                      width={rect.width}
+                      height={rect.height}
+                      fill={rect.fill}
+                      draggable={rect.draggable}
+                      onDragEnd={(e) => handleDragEnd(e, rect.id)}
+                      onMouseEnter={() => setHoveredRectId(rect.id)}
+                      onMouseLeave={() => setHoveredRectId(null)}
+                      onClick={() => setSelectedRect(rect)}
+                      stroke={
+                        selectedRect?.id === rect.id
+                          ? "red"
+                          : hoveredRectId === rect.id
+                          ? "red"
+                          : "transparent"
+                      }
+                      strokeWidth={
+                        selectedRect?.id === rect.id ||
+                        hoveredRectId === rect.id
+                          ? 2
+                          : 0
+                      }
+                      rotation={rect.type === "wall" ? rect.rotation : 0}
+                      offsetX={rect.type === "wall" ? 0 : 0}
+                      offsetY={rect.type === "wall" ? rect.height / 2 : 0}
+                    />
+                    <Text
+                      x={rect.x + rect.width / 2}
+                      y={rect.y + rect.height / 4}
+                      text={`${rect.order}`}
+                      fontSize={calculateFontSize(rect.width, rect.height)}
+                      fill="white"
+                      align="center"
+                    />
+                    <Text
+                      x={rect.x + rect.width / 4}
+                      y={rect.y + (rect.height * 3) / 4}
+                      text={`${rect.name}`}
+                      fontSize={calculateFontSize(rect.width, rect.height)}
+                      fill="white"
+                      align="center"
+                    />
+                  </React.Fragment>
+                ))}
+                {tempSpots.map((spot, index) => (
+                  <Circle
+                    key={index}
+                    x={spot.x}
+                    y={spot.y}
+                    radius={5}
+                    fill="red"
+                  />
+                ))}
+              </Layer>
+            </Stage>
+            <div
+              style={{
+                position: "absolute",
+                bottom: "10px",
+                right: "10px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "10px",
+              }}
+            >
+              <button onClick={handleZoomIn}>Zoom In</button>
+              <button onClick={handleZoomOut}>Zoom Out</button>
+              <button onClick={handleSave}>Save</button>
             </div>
-          ) : (
-            <p>No rectangle selected</p>
-          )}
-        </div>
-      </main>
+          </div>
+
+          {/* Right-Sidebar / 우측 사이드바 영역  */}
+          <div
+            style={{
+              marginLeft: "20px",
+              padding: "10px",
+              border: "1px solid black",
+              borderRadius: "10px",
+              width: "15%",
+              height: "80vh",
+              overflowY: "auto",
+            }}
+          >
+            <h3>Seleted Rectangle</h3>
+            {selectedRect ? (
+              <div>
+                <p>ID : {selectedRect.id}</p>
+                <p>X : {selectedRect.x}</p>
+                <p>Y : {selectedRect.y}</p>
+                <p>Number : {selectedRect.order}</p>
+                <p>Name : {selectedRect.name}</p>
+                <p>Type : {selectedRect.type}</p>
+              </div>
+            ) : (
+              <p>No rectangle selected</p>
+            )}
+          </div>
+        </main>
+      </div>
     </div>
   );
 };

@@ -1,4 +1,5 @@
-import React, { useEffect } from "react";
+
+import React, { useEffect, useState } from "react";
 // nodejs library that concatenates classes
 import classNames from "classnames";
 // react components for routing our app without refresh
@@ -13,8 +14,19 @@ import GridContainer from "/components/Grid/GridContainer.js";
 import GridItem from "/components/Grid/GridItem.js";
 import Button from "/components/CustomButtons/Button.js";
 import Parallax from "/components/Parallax/ParallaxUser.js";
-// sections for this page
-import SectionBasics from "/pages-sections/Components-Sections/MyContainer.jsx";
+// // sections for this page
+// import MyContainer from "/pages-sections/Components-Sections/MyContainer.jsx";
+// // 버튼을 통해 하위 Components 를 바꾸기 위한 Test Components import
+// import MyContainerTest from "/pages-sections/Components-Sections/MyContainerTest";
+// import MyContainerThree from "/pages-sections/Components-Sections/MyContainerThree";
+// 다이나믹 import를 위한 거시기
+import dynamic from "next/dynamic";
+
+// @material-ui/icons
+import InventoryIcon from "@mui/icons-material/Inventory";
+import ProductionQuantityLimitsIcon from "@mui/icons-material/ProductionQuantityLimits";
+import ListAltIcon from "@mui/icons-material/ListAlt";
+
 import SectionNavbars from "/pages-sections/Components-Sections/SectionNavbars.js";
 import SectionTabs from "/pages-sections/Components-Sections/SectionTabs.js";
 import SectionPills from "/pages-sections/Components-Sections/SectionPills.js";
@@ -28,8 +40,23 @@ import SectionExamples from "/pages-sections/Components-Sections/SectionExamples
 import SectionDownload from "/pages-sections/Components-Sections/SectionDownload.js";
 
 import styles from "/styles/jss/nextjs-material-kit/pages/users.js";
-import AOS from 'aos';
-import 'aos/dist/aos.css';
+import AOS from "aos";
+import "aos/dist/aos.css";
+import { Preview } from "@mui/icons-material";
+
+// 다이나믹 import 테스트
+const DynamicMyContainer = dynamic(
+  () => import("/pages-sections/Components-Sections/MyContainer.jsx"),
+  {ssr : false}
+)
+const DynamicMyContainerTest = dynamic(
+  () => import("/pages-sections/Components-Sections/MyContainerTest.jsx"),
+  {ssr : false}
+)
+const DynamicMyContainerThree = dynamic(
+  () => import("/pages-sections/Components-Sections/MyContainerThree.jsx"),
+  {ssr : false}
+)
 
 const useStyles = makeStyles(styles);
 
@@ -39,9 +66,19 @@ export default function Components(props) {
 
   useEffect(() => {
     AOS.init({
-      duration: 800,
+      duration: 100,
     });
   }, []);
+
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const componentsArray = [
+    <DynamicMyContainer key="DynamicMyContainer"/>,
+    <DynamicMyContainerTest key="DynamicMyContainerTest" />,
+    <DynamicMyContainerThree key="DynamicMyContainerThree"/>,
+  ];
+  const handleNextComponent = (index) => {
+    setCurrentIndex(index);
+  };
 
   return (
     /** 헤더 영역 */
@@ -53,23 +90,41 @@ export default function Components(props) {
         color="transparent"
         changeColorOnScroll={{
           height: 400,
-          color: "white"
+          color: "white",
         }}
         {...rest}
       />
       <Parallax image="/img/WareHouseWallpaper.png">
         <div className={classes.container}>
-              <div className={classes.brand}>
-                <h1 className={classes.title}>내 창고</h1>
-              </div>
+          <div className={classes.brand}>
+            <h1 className={classes.title}>내 창고</h1>
+          </div>
         </div>
       </Parallax>
-      <div className={classNames(classes.main, classes.mainRaised)}>
-        
-        <div>
-          <SectionBasics />
-        </div>
 
+      <div className={classNames(classes.main, classes.mainRaised)}>
+        <div className={classes.sections}>
+          <div className={classes.container}>
+             {/* 큰 제목,  버튼 영역 */}
+            <div className={classes.flexContainer}>
+                <h3>현재 창고</h3>
+              <div className={classes.buttonsContainer}>
+                <Button color="primary" round onClick={() => handleNextComponent(0)}>
+                <InventoryIcon className={classes.icons} />창고 관리
+                </Button>
+                <Button color="info" round onClick={() => handleNextComponent(1)}>
+                <ProductionQuantityLimitsIcon className={classes.icons} />재고 관리
+                </Button>
+                <Button color="success" round onClick={() => handleNextComponent(2)}>
+                <ListAltIcon className={classes.icons} />재고 관리
+                </Button>
+                </div>
+            </div>
+            <hr />
+            {/* 메인 영역 */}
+            {componentsArray[currentIndex]}
+          </div>
+        </div>
       </div>
       <Footer />
     </div>
