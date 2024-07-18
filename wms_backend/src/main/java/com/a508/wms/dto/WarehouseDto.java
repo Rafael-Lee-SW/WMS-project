@@ -2,7 +2,7 @@ package com.a508.wms.dto;
 
 
 import com.a508.wms.domain.Warehouse;
-import java.sql.Timestamp;
+import com.a508.wms.util.StatusEnum;
 import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,6 +12,7 @@ import lombok.Setter;
 @Setter
 @Builder
 public class WarehouseDto {
+
     private Long id;
     private Long businessId;
     private int size;
@@ -21,9 +22,9 @@ public class WarehouseDto {
     private int priority;
     private LocalDateTime createDate;
     private LocalDateTime updateDate;
-    private int status;
+    private StatusEnum status;
 
-    public static WarehouseDto fromEntity(Warehouse warehouse) {
+    public static WarehouseDto fromWarehouse(Warehouse warehouse) {
         return WarehouseDto.builder()
             .id(warehouse.getId())
             .businessId(warehouse.getBusiness().getId())
@@ -34,6 +35,7 @@ public class WarehouseDto {
             .priority(warehouse.getPriority())
             .createDate(warehouse.getCreatedDate())
             .updateDate(warehouse.getUpdatedDate())
+            .status(warehouse.getStatusEnum())
             .build();
     }
 

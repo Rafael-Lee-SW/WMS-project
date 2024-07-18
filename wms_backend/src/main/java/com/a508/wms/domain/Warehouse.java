@@ -7,18 +7,20 @@ import lombok.Getter;
 
 import java.util.List;
 import lombok.Setter;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
 @Setter
-@Table(name="warehouse")
+@SQLRestriction("status_enum = 'Active'")
+@Table(name = "warehouse")
 public class Warehouse extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @JoinColumn(name="business_id",nullable = false)
+    @JoinColumn(name = "business_id", nullable = false)
     @ManyToOne
     private Business business;
 
@@ -28,7 +30,7 @@ public class Warehouse extends BaseTimeEntity {
     @Column(nullable = false)
     private int size;
 
-    @Column(length=20)
+    @Column(length = 20)
     private String name;
 
     @Column(nullable = false)
@@ -37,7 +39,7 @@ public class Warehouse extends BaseTimeEntity {
     @Column(nullable = false)
     private int columnCount;
 
-    @Column(nullable = false,columnDefinition = "integer default 1")
+    @Column(nullable = false, columnDefinition = "integer default 1")
     private int priority;
 
     @Enumerated(EnumType.STRING)
