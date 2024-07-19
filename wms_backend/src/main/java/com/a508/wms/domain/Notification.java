@@ -3,11 +3,15 @@ package com.a508.wms.domain;
 import com.a508.wms.domain.util.BaseTimeEntity;
 import com.a508.wms.util.StatusEnum;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Entity
 @Getter
 @Table(name = "notification")
+@RequiredArgsConstructor
+@Builder
 public class Notification extends BaseTimeEntity {
 
     @Id

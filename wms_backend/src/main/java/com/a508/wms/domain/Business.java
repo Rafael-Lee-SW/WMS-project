@@ -7,11 +7,15 @@ import jakarta.persistence.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import lombok.Getter;
+
+import lombok.*;
 
 @Entity
 @Getter
 @Table(name = "business")
+@NoArgsConstructor
+@Builder
+@AllArgsConstructor
 public class Business extends BaseTimeEntity {
 
     @Id
@@ -53,112 +57,25 @@ public class Business extends BaseTimeEntity {
         this.statusEnum = statusEnum;
     }
 
-    public Business(Builder builder) {
-        this.id = builder.id;
-        this.email = builder.email;
-        this.password = builder.password;
-        this.name = builder.name;
-        this.businessNumber = builder.businessNumber;
-        this.statusEnum = builder.statusEnum;
-    }
-
-    public Business() {
-    }
-
-    /**
-     * Builder 클래스: Dto 생성을 위한 클래스
-     */
-    @Getter
-    public static class Builder {
-        private Long id;
-        private String email;
-        private String password;
-        private String name;
-        private String businessNumber;
-        private StatusEnum statusEnum;
-        public Builder id(Long id) {
-            this.id = id;
-            return this;
-        }
-        public Builder email(String email) {
-            this.email = email;
-            return this;
-        }
-        public Builder password(String password) {
-            this.password = password;
-            return this;
-        }
-        public Builder name(String name) {
-            this.name = name;
-            return this;
-        }
-        public Builder businessNumber(String businessNumber) {
-            this.businessNumber = businessNumber;
-            return this;
-        }
-       public Builder statusEnum(StatusEnum statusEnum) {
-            this.statusEnum = statusEnum;
-            return this;
-       }
-        public Business build() {
-            return new Business(this);
-        }
-
-    }
-
-    /**
-     * BusinessDto 객체를 받아서 해당 객체의 정보를 그대로 Business 객체로 변경해주는 메서드
-     * @param businessDto
-     * @return
-     */
-    public static Business dtoToBusiness(BusinessDto businessDto) {
-        Business.Builder builder = new Business.Builder();
-        builder.email(businessDto.getEmail());
-        builder.password(businessDto.getPassword());
-        builder.businessNumber(businessDto.getBusinessNumber());
-        builder.name(businessDto.getName());
-        builder.businessNumber(businessDto.getBusinessNumber());
-        builder.statusEnum(businessDto.getStatus());
-        return builder.build();
-    }
     /**
      * BusinessDto 객체를 받아서 변경할 정보는 입력하고 기존 정보는 유지하여 Business 객체로 변경해주는 메서드
+     *
      * @param businessDto
      * @return Business
      */
     public Business toBusiness(BusinessDto businessDto) {
-        Business.Builder builder = new Business.Builder();
-        if(businessDto.getName() == null || this.name.equals(businessDto.getName())) {
-            builder.name(this.name);
-        } else {
-            builder.name(businessDto.getName());
-        }
-
-        if(businessDto.getPassword() == null || this.password.equals(businessDto.getPassword())) {
-            builder.password(this.password);
-        } else {
-            builder.password(businessDto.getPassword());
-        }
-
-        if(businessDto.getEmail() == null || this.email.equals(businessDto.getEmail())) {
-            builder.email(this.email);
-        } else {
-            builder.email(businessDto.getEmail());
-        }
-
-        if(businessDto.getBusinessNumber() == null || this.businessNumber.equals(businessDto.getBusinessNumber())) {
-            builder.businessNumber(this.businessNumber);
-        } else {
-            builder.businessNumber(businessDto.getBusinessNumber());
-        }
-
-        if(businessDto.getStatus() == null || this.statusEnum.equals(businessDto.getStatus())) {
-            builder.statusEnum(this.statusEnum);
-        } else {
-            builder.statusEnum(businessDto.getStatus());
-        }
-
-        return builder.build();
+        return Business.builder()
+                .id(this.id)  // id를 유지
+                .name(businessDto.getName() == null ? this.name : businessDto.getName())
+                .password(businessDto.getPassword() == null ? this.password : businessDto.getPassword())
+                .email(businessDto.getEmail() == null ? this.email : businessDto.getEmail())
+                .businessNumber(businessDto.getBusinessNumber() == null ? this.businessNumber : businessDto.getBusinessNumber())
+                .statusEnum(businessDto.getStatus() == null ? this.statusEnum : businessDto.getStatus())
+                .employees(this.employees) // 기존 직원 목록 유지
+                .productDetails(this.productDetails) // 기존 제품 상세 목록 유지
+                .notifications(this.notifications) // 기존 알림 목록 유지
+                .subscriptions(this.subscriptions) // 기존 구독 목록 유지
+                .warehouses(this.warehouses) // 기존 창고 목록 유지
+                .build();
     }
-
 }
