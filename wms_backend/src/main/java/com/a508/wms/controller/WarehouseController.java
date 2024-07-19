@@ -25,9 +25,8 @@ public class WarehouseController {
     //의존성주입
     private final WarehouseService warehouseService;
 
-    /*
-    사업자 id의 창고를 저장하는 기능
-    POST 방식
+    /**
+     * 사업자 id의 창고를 저장 POST 방식
      */
     @PostMapping
     public BaseSuccessResponse<WarehouseDto> createWarehouse(
@@ -38,10 +37,9 @@ public class WarehouseController {
         return new BaseSuccessResponse<>(null);
     }
 
-    /*
-    다양한 조건으로 창고를 조회하는 기능
-    GET 방식
-    */
+    /**
+     * 비지니스 id로 창고 생성 창고 id로 창고 생성 GET 방식
+     */
     @GetMapping
     public BaseSuccessResponse<List<WarehouseDto>> getWarehouses(
         @RequestParam(required = false) Long businessId,
@@ -59,10 +57,9 @@ public class WarehouseController {
         }
     }
 
-    /*
-    창고 id의 수직 수평 배치 수, 지수 등 창고의 정보를 수정하는 기능
-    PUT 방식
-    */
+    /**
+     * 창고 id로 창고 정보 수정 PUT 방식
+     */
     @PutMapping("/{warehouseId}")
     public BaseSuccessResponse<WarehouseDto> updateWarehouse(
         @PathVariable Long warehouseId,
@@ -73,9 +70,8 @@ public class WarehouseController {
         return new BaseSuccessResponse<>(updatedWarehouse);
     }
 
-    /*
-    창고 id의 상태를 비활성화 (status를 0으로 변경)
-    PATCH 방식
+    /**
+     * 창고 id의 상태를 비활성화 (status를 0으로 변경) PATCH 방식
      */
     @PatchMapping("/{businessId}")
     public BaseSuccessResponse<Void> deleteWarehouse(@PathVariable Long businessId,
