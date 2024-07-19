@@ -3,15 +3,13 @@ package com.a508.wms.dto;
 import com.a508.wms.domain.Subscription;
 import com.a508.wms.util.PaidTypeEnum;
 import com.a508.wms.util.StatusEnum;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@RequiredArgsConstructor
 public class SubscriptionDto {
     private Long id;
     private Long businessId;
@@ -21,14 +19,15 @@ public class SubscriptionDto {
 
     /**
      * Subscription 객체를 SubscriptionDto로 변경해주는 메서드
+     *
      * @param subscription
      * @return SubscriptionDto 객체
      */
-    public static SubscriptionDto toSubscriptionDto(Subscription subscription) {
+    public static SubscriptionDto fromSubscription(Subscription subscription) {
         return new SubscriptionDto(
                 subscription.getId(),
                 subscription.getBusiness().getId(),
-                SubscriptionTypeDto.toSubscriptionTypeDto(subscription.getSubscriptionType()),
+                SubscriptionTypeDto.fromSubscriptionType(subscription.getSubscriptionType()),
                 subscription.getPaidTypeEnum(),
                 subscription.getStatusEnum()
         );
@@ -36,6 +35,7 @@ public class SubscriptionDto {
 
     /**
      * SubscriptionDto 객체를 Subscription으로 변경해주는 메서드
+     *
      * @param subscriptionDto
      * @return Subscription 객체
      */
@@ -46,7 +46,7 @@ public class SubscriptionDto {
     public static Subscription toSubscription(SubscriptionDto subscriptionDto) {
         Subscription subscription = new Subscription();
         subscription.setId(subscriptionDto.getId());
-        subscription.setSubscriptionType(SubscriptionTypeDto.dtoToSubscriptionType(subscriptionDto.getSubscriptionTypeDto()));
+        subscription.setSubscriptionType(SubscriptionTypeDto.toSubscriptionType(subscriptionDto.getSubscriptionTypeDto()));
         subscription.setPaidTypeEnum(subscriptionDto.getPaidTypeEnum());
         subscription.setStatusEnum(subscriptionDto.getStatusEnum());
         return subscription;

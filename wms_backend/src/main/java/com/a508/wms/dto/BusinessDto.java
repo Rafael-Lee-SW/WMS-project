@@ -1,17 +1,15 @@
 package com.a508.wms.dto;
 
 import com.a508.wms.domain.Business;
-import com.a508.wms.domain.Employee;
 import com.a508.wms.util.StatusEnum;
 import lombok.*;
 
-import java.util.List;
-
-@NoArgsConstructor
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Getter
 @Setter
 @ToString
+@Builder
+@AllArgsConstructor
 public class BusinessDto {
     private long id;
     private String email;
@@ -22,10 +20,11 @@ public class BusinessDto {
 
     /**
      * Business 객체를 받아서 BusinessDto 객체로 변환해주는 메서드
+     *
      * @param business
      * @return BusinessDto
      */
-    public static BusinessDto toBusinessDto(Business business) {
+    public static BusinessDto fromBusiness(Business business) {
         return new BusinessDto(
                 business.getId(),
                 business.getEmail(),

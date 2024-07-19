@@ -1,6 +1,5 @@
 package com.a508.wms.dto;
 
-import com.a508.wms.domain.Business;
 import com.a508.wms.domain.Employee;
 import com.a508.wms.util.LoginTypeEnum;
 import com.a508.wms.util.StatusEnum;
@@ -11,6 +10,8 @@ import lombok.*;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
+@RequiredArgsConstructor
+@Builder
 public class EmployeeDto {
 
     private Long id;
@@ -29,7 +30,7 @@ public class EmployeeDto {
     public static EmployeeDto toEmployeeDto(Employee employee) {
         return new EmployeeDto(
                 employee.getId(),
-                BusinessDto.toBusinessDto(employee.getBusiness()),
+                BusinessDto.fromBusiness(employee.getBusiness()),
                 employee.getName(),
                 employee.getLoginTypeEnum(),
                 employee.getLoginId(),

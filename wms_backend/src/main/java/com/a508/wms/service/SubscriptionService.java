@@ -35,27 +35,30 @@ public class SubscriptionService {
 
     /**
      * 구독 테이블의 모든 정보를 반환하는 메서드
+     *
      * @return List<SubscriptionDto>
      */
     @Transactional(readOnly = true)
     public List<SubscriptionDto> getSubscriptions() {
         List<Subscription> subscriptions = subscriptionRepository.findAll();
-        log.info("subscriptions: {}", subscriptions.stream().map(SubscriptionDto::toSubscriptionDto).collect(Collectors.toList()));
-        return subscriptions.stream().map(SubscriptionDto::toSubscriptionDto).collect(Collectors.toList());
+        log.info("subscriptions: {}", subscriptions.stream().map(SubscriptionDto::fromSubscription).collect(Collectors.toList()));
+        return subscriptions.stream().map(SubscriptionDto::fromSubscription).collect(Collectors.toList());
     }
 
     /**
      * 특정 사업체의 모든 구독 정보를 반환하는 메서드
+     *
      * @param id : 사업체 고유 번호
      * @return SubscriptionDto List
      */
     public List<SubscriptionDto> getSubscriptionByBusinessId(long id) {
         List<Subscription> subscriptions = subscriptionRepository.findByBusinessId(id);
-        return subscriptions.stream().map(SubscriptionDto::toSubscriptionDto).collect(Collectors.toList());
+        return subscriptions.stream().map(SubscriptionDto::fromSubscription).collect(Collectors.toList());
     }
 
     /**
      * 특정 사업체의 구독 정보를 추가하는 메서드
+     *
      * @param id : 사업체 고유 번호, subscriptionDto:추가할 구독 정보
      * @return SubscriptionDto
      */
@@ -71,12 +74,13 @@ public class SubscriptionService {
         subscription.setBusiness(business);
         subscription.setSubscriptionType(subscriptionType);
 
-        return SubscriptionDto.toSubscriptionDto(subscriptionRepository.save(subscription));
+        return SubscriptionDto.fromSubscription(subscriptionRepository.save(subscription));
     }
 
 
     /**
      * 특정 사업체의 구독 정보를 수정하는 메서드
+     *
      * @param id : 사업체 고유 번호, subscriptionDto:수정할 구독 정보
      * @return SubscriptionDto
      */
@@ -92,11 +96,12 @@ public class SubscriptionService {
         subscription.setBusiness(business);
         subscription.setSubscriptionType(subscriptionType);
 
-        return SubscriptionDto.toSubscriptionDto(subscriptionRepository.save(subscription));
+        return SubscriptionDto.fromSubscription(subscriptionRepository.save(subscription));
     }
 
     /**
      * 특정 사업체의 구독 정보를 삭제하는 메서드
+     *
      * @param id : 구독 고유 번호
      */
     @Transactional
