@@ -7,16 +7,15 @@ import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 
 @Entity
 @Getter
 @Table(name = "subscription")
 @Builder
-@RequiredArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 public class Subscription extends BaseTimeEntity {
 
     @Id
