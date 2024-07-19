@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 @Setter
 @ToString
 @Builder
-@RequiredArgsConstructor
 public class SubscriptionTypeDto {
     private long id;
     private String name;

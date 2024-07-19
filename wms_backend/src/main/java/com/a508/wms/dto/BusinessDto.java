@@ -4,12 +4,12 @@ import com.a508.wms.domain.Business;
 import com.a508.wms.util.StatusEnum;
 import lombok.*;
 
-@RequiredArgsConstructor
 @Getter
 @Setter
 @ToString
 @Builder
 @AllArgsConstructor
+@NoArgsConstructor
 public class BusinessDto {
     private long id;
     private String email;
