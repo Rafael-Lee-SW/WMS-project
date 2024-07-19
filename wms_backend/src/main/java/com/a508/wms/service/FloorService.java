@@ -32,7 +32,7 @@ public class FloorService {
      * @param id: 층 id
      * @return FloorDto
      */
-    public FloorDto getById(@PathVariable Long id) {
+    public FloorDto findById(@PathVariable Long id) {
         return FloorDto.fromFloor(floorRepository.findById(id)
             .orElseThrow(()-> new IllegalArgumentException("Invalid Floor Id")));
     }

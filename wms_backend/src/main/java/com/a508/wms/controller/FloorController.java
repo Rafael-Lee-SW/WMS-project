@@ -4,12 +4,14 @@ import com.a508.wms.dto.FloorDto;
 import com.a508.wms.service.FloorService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/floors")
@@ -24,11 +26,13 @@ public class FloorController {
      */
     @GetMapping
     public List<FloorDto> getAllByLocationId(@RequestParam Long locationId) {
+        log.info("get all Floors by locationId: {}", locationId);
         return floorService.getAllByLocationId(locationId);
     }
 
     @GetMapping("/{id}")
     public FloorDto getById(@PathVariable Long id) {
-        return floorService.getById(id);
+        log.info("get Floor by id: {}", id);
+        return floorService.findById(id);
     }
 }
