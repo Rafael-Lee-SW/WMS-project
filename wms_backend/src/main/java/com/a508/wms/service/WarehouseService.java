@@ -108,9 +108,9 @@ public class WarehouseService {
    창고를 비활성화하는 메서드 (상태를 INACTIVE로 설정, PATCH)
     */
     @Transactional
-    public void deleteWarehouse(Long businessId, Long warehouseId) {
-        Warehouse warehouse = warehouseRepository.findByBusinessIdAndId(businessId, warehouseId)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid warehouse ID or business ID"));
+    public void deleteWarehouse(Long warehouseId) {
+        Warehouse warehouse = warehouseRepository.findById(warehouseId)
+            .orElseThrow(() -> new IllegalArgumentException("Invalid warehouse ID"));
         warehouse.setStatusEnum(StatusEnum.INACTIVE);
     }
 

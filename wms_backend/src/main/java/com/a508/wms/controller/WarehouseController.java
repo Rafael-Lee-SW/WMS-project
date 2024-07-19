@@ -70,14 +70,13 @@ public class WarehouseController {
         return new BaseSuccessResponse<>(updatedWarehouse);
     }
 
-    /**
-     * 창고 id의 상태를 비활성화 (status를 0으로 변경) PATCH 방식
-     */
-    @PatchMapping("/{businessId}")
-    public BaseSuccessResponse<Void> deleteWarehouse(@PathVariable Long businessId,
-        @PathVariable Long warehouseId) {
-        log.info("Deactivating warehouse with ID: {} for business ID: {}", warehouseId, businessId);
-        warehouseService.deleteWarehouse(businessId, warehouseId);
+    /*
+   창고 id의 상태를 비활성화 (status를 0으로 변경) PATCH 방식
+   */
+    @PatchMapping("/{warehouseId}")
+    public BaseSuccessResponse<Void> deleteWarehouse(@PathVariable Long warehouseId) {
+        log.info("Deactivating warehouse with ID: {}", warehouseId);
+        warehouseService.deleteWarehouse(warehouseId);
         return new BaseSuccessResponse<>(null);
     }
 
