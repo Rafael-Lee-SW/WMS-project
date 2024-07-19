@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-    public class WarehouseService {
+public class WarehouseService {
     //의존성 주입
 
     private final WarehouseRepository warehouseRepository;
@@ -23,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
     /*
     최초 창고를 생성하는 메서드
      */
-    public WarehouseDto createWarehouse(WarehouseDto warehouseDto) {
+    public void save(WarehouseDto warehouseDto) {
         // 사업체 ID로 사업체를 조회
         Business business = businessRepository.findById(warehouseDto.getBusinessId())
             .orElseThrow(() -> new IllegalArgumentException("Invalid business ID"));
@@ -43,42 +43,43 @@ import org.springframework.transaction.annotation.Transactional;
         warehouse.setPriority(warehouseDto.getPriority());
 
         warehouse = warehouseRepository.save(warehouse);
-        return WarehouseDto.fromEntity(warehouse);
+
     }
 
     /*
     비지니스 id로 창고 목록을 조회하는 메서드
      */
-    public List<WarehouseDto> getWarehousesByBusinessId(Long businessId) {
+    public List<WarehouseDto> findByBusinessId(Long businessId) {
         List<Warehouse> warehouses = warehouseRepository.findByBusinessId(businessId); // 창고 목록 조회
         return warehouses.stream()
-            .map(WarehouseDto::fromEntity)
+            .map(WarehouseDto::fromWarehouse)
             .collect(Collectors.toList());
     }
 
     /*
    창고 id로 창고를 조회하는 메서드
     */
-    public WarehouseDto getWarehouseById(Long id) {
+    public WarehouseDto findByWarehouseId(Long id) {
         Warehouse warehouse = warehouseRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Invalid warehouse ID"));
-        return WarehouseDto.fromEntity(warehouse);
+        return WarehouseDto.fromWarehouse(warehouse);
     }
 
     /*
    사업자 id와 창고 id를 기반으로 창고를 조회하는 메서드
     */
-    public WarehouseDto getWarehouseByBusinessIdAndWarehouseId(Long businessId, Long warehouseId) {
+    public WarehouseDto findByBusinessIdAndWarehouseId(Long businessId, Long warehouseId) {
         Warehouse warehouse = warehouseRepository.findByBusinessIdAndId(businessId, warehouseId)
             .orElseThrow(() -> new IllegalArgumentException("Invalid warehouse ID or business ID"));
-        return WarehouseDto.fromEntity(warehouse);
+        return WarehouseDto.fromWarehouse(warehouse);
     }
 
     /*
     창고 정보를 부분적으로 업데이트하는 메서드 (PATCH)
      */
     @Transactional
-    public WarehouseDto patchWarehouse(Long businessId, Long warehouseId, WarehouseDto warehouseDto) {
+    public WarehouseDto updateWarehouse(Long businessId, Long warehouseId,
+        WarehouseDto warehouseDto) {
         Warehouse warehouse = warehouseRepository.findByBusinessIdAndId(businessId, warehouseId)
             .orElseThrow(() -> new IllegalArgumentException("Invalid warehouse ID or business ID"));
 
@@ -90,19 +91,24 @@ import org.springframework.transaction.annotation.Transactional;
             warehouse.setRowCount(rowCnt);
             warehouse.setColumnCount(columnCnt);
         }
-        if (warehouseDto.getName() != null) warehouse.setName(warehouseDto.getName());
-        if (warehouseDto.getPriority() != 0) warehouse.setPriority(warehouseDto.getPriority());
+        if (warehouseDto.getName() != null) {
+            warehouse.setName(warehouseDto.getName());
+        }
+        if (warehouseDto.getPriority() != 0) {
+            warehouse.setPriority(warehouseDto.getPriority());
+        }
 
         // 수정된 창고 정보를 저장
         warehouse = warehouseRepository.save(warehouse);
 
-        return WarehouseDto.fromEntity(warehouse);
+        return WarehouseDto.fromWarehouse(warehouse);
     }
+
     /*
    창고를 비활성화하는 메서드 (상태를 INACTIVE로 설정, PATCH)
     */
     @Transactional
-    public void deactivateWarehouse(Long businessId, Long warehouseId) {
+    public void deleteWarehouse(Long businessId, Long warehouseId) {
         Warehouse warehouse = warehouseRepository.findByBusinessIdAndId(businessId, warehouseId)
             .orElseThrow(() -> new IllegalArgumentException("Invalid warehouse ID or business ID"));
         warehouse.setStatusEnum(StatusEnum.INACTIVE);
