@@ -7,8 +7,9 @@ import lombok.Getter;
 @Getter
 @Builder
 public class ProductInfos {
+
     private int quantity;
     private LocalDateTime expirationDate;
     private String comment;
-    private ProductDetailResponse productDetail;
+    private ProductDetailResponseDto productDetail;
 }

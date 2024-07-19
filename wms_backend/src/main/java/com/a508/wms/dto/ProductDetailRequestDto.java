@@ -2,10 +2,13 @@ package com.a508.wms.dto;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
 @Builder
-public class ProductDetailRequest {
+@ToString
+public class ProductDetailRequestDto {
+
     private int originalPrice;
     private int sellingPrice;
     private Long barcode;
