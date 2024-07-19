@@ -23,7 +23,7 @@ public class LocationDto {
     private List<FloorDto> floorDtos;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
-    private StatusEnum status;
+    private StatusEnum statusEnum;
 
     public static LocationDto fromLocation(Location location) {
         return LocationDto.builder()
@@ -40,7 +40,7 @@ public class LocationDto {
                 .collect(Collectors.toList()))
             .createdDate(location.getCreatedDate())
             .updatedDate(location.getUpdatedDate())
-            .status(location.getStatusEnum())
+            .statusEnum(location.getStatusEnum())
             .build();
     }
 

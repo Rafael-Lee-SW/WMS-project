@@ -8,9 +8,11 @@ import jakarta.persistence.*;
 import lombok.Getter;
 
 import java.util.List;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
+@SQLRestriction("status_enum = 'Active'")
 @Table(name = "floor")
 public class Floor extends BaseTimeEntity {
 

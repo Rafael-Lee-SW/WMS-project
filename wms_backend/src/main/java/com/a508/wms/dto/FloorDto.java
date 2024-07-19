@@ -18,7 +18,7 @@ public class FloorDto {
     private ExportTypeEnum exportType;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
-    private StatusEnum status;
+    private StatusEnum statusEnum;
 
     public static FloorDto fromFloor(Floor floor) {
         return FloorDto.builder()
@@ -28,7 +28,7 @@ public class FloorDto {
             .exportType(floor.getExportTypeEnum())
             .createdDate(floor.getCreatedDate())
             .updatedDate(floor.getUpdatedDate())
-            .status(floor.getStatusEnum())
+            .statusEnum(floor.getStatusEnum())
             .build();
     }
 }
