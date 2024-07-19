@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import Link from "next/link"
+import EditInfo from '../components/MyPage/EditInfo';
+import RegisterBusiness from '../components/MyPage/ManageBusiness';
+import ManageEmployees from '../components/MyPage/ManageEmployees';
+import Info from '../components/MyPage/Info';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -26,25 +29,49 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+// 마이페이지
 const MyPage = () => {
   const classes = useStyles();
+  const [selectedComponent, setSelectedComponent] = useState('이소희님 반갑습니다.');
 
+  // axios 로 회원정보 받아오는 코드 추가
+  // 이메일, 비밀번호, 사업체명, 사업자번호 받아오기
+
+  const renderComponent = () => {
+    switch (selectedComponent) {
+      case 'edit':
+        return <EditInfo/>;
+      case 'license':
+        return <RegisterBusiness/>;
+      case 'employees':
+        return <ManageEmployees/>;
+      case 'info':
+        return <Info/>
+      default:
+        return (
+          <div>
+            <h2>고객이름님, 반갑습니다.</h2>
+            <Info/>
+          </div>
+        )
+    }
+  }
   return (
     <div className={classes.container}>
       <div className={classes.leftPanel}>
         {/* 왼쪽 패널의 내용 */}
-        <h2>마이페이지</h2>
-        <Link href="/edit"><p>내 정보 수정</p></Link>
-        <Link href="/license"><p>사업자 등록/수정</p></Link>
-        <Link href="/employee"><p>직원 관리</p></Link>
+        <h2 onClick={() => setSelectedComponent('info')}>마이페이지</h2>
+        <p onClick={() => setSelectedComponent('edit')}>내 정보 수정</p>
+        <p onClick={() => setSelectedComponent('license')}>사업자 등록/수정</p>
+        <p onClick={() => setSelectedComponent('employees')}>직원 관리</p>
       </div>
       <div className={classes.rightPanel}>
         {/* 오른쪽 패널의 내용 */}
-        <h2>이소희님, 반갑습니다.</h2>
-        <p>이 곳에 기존 개인 정보의 내용이 들어갑니다.</p>
+        {renderComponent()}
       </div>
     </div>
   );
 }
 
 export default MyPage;
+
