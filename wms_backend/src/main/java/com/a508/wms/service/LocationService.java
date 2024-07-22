@@ -10,15 +10,20 @@ import com.a508.wms.repository.FloorRepository;
 import com.a508.wms.repository.LocationRepository;
 import com.a508.wms.repository.ProductStorageTypeRepository;
 import com.a508.wms.repository.WarehouseRepository;
+import com.a508.wms.util.constant.ExportTypeEnum;
+import com.a508.wms.util.constant.FacilityTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;
+import com.a508.wms.util.mapper.FloorMapper;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class LocationService {
 
     private final LocationRepository locationRepository;
@@ -70,15 +75,15 @@ public class LocationService {
     }
 
     /**
-     * location 정보 받아와서 DB에 저장하는 메서드
-     * 1.locationDto내부의 창고,저장타입 id를 통해 저장소에 조회해서 location에 담은 후 저장
-     * 2.floorDto들을 floor객체로 바꿔주고 내부에 location정보 담아줌
-     * 3.floor객체들을 전부 저장하고 location에도 floor 객체정보 담아줌
+     * location 정보 받아와서 DB에 저장하는 메서드 1.locationDto내부의 창고,저장타입 id를 통해 저장소에 조회해서 location에 담은 후 저장
+     * 2.floorDto들을 floor객체로 바꿔주고 내부에 location정보 담아줌 3.floor객체들을 전부 저장하고 location에도 floor 객체정보 담아줌
      *
      * @param locationDto : 프론트에서 넘어오는 location 정보 모든 작업이 하나의 트랜잭션에서 일어나야하므로 @Transactional 추가
      */
     @Transactional
     public void save(LocationDto locationDto) {
+        log.info("Saving location: {}", locationDto);
+
         Warehouse warehouse = warehouseRepository.findById(locationDto.getWarehouseId())
             .orElseThrow(() -> new IllegalArgumentException("Invalid warehouse ID"));
         ProductStorageType productStorageType = productStorageTypeRepository.findById(
@@ -89,19 +94,41 @@ public class LocationService {
             locationDto.getYPosition(), locationDto.getWidth(),
             locationDto.getHeight());
         location.setWarehouse(warehouse);
+
+        log.info("save occured");
         locationRepository.save(location); //우선 로케이션 저장
 
         List<FloorDto> floorDtos = locationDto.getFloorDtos();
 
+        log.info("Floor convert");
         List<Floor> floors = floorDtos.stream()
             .map(floorDto -> {
-                return Floor.fromDto(floorDto, location);    // Floor 객체로 변환, location정보 넣어주기
+                modifyExportType(floorDto, warehouse);
+                log.info("{}", floorDto);
+                // Floor 객체로 변환, location정보 넣어주기
+                return FloorMapper.fromFloor(floorDto, location);
             })
             .toList();
 
+        log.info("floors save");
         floorRepository.saveAll(floors);    //floor 전부 저장
         location.setFloors(floors);  //location에 층 정보 넣어주기
     }
+
+    /**
+     * 창고의 타입에 맞게 floor의 타입을 수정 하는 기능
+     *
+     * @param floorDto
+     * @param warehouse : 해당 floor에 해당하는 Warehouse, 타입 확인을 위함.
+     * @return Floor : 타입이 반영된 Floor 객체
+     */
+    private void modifyExportType(FloorDto floorDto, Warehouse warehouse) {
+        //warehouse가 STORE(매장)인 경우
+        if (warehouse.getFacilityType().equals(FacilityTypeEnum.STORE)) {
+            floorDto.setExportType(ExportTypeEnum.STORE);
+        }
+    }
+
 
     /**
      * location 정보 수정 수정 가능한 정보는 이름과 좌표값들

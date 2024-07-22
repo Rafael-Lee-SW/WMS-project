@@ -1,18 +1,33 @@
 package com.a508.wms.domain;
 
 import com.a508.wms.domain.util.BaseTimeEntity;
-import com.a508.wms.dto.FloorDto;
 import com.a508.wms.util.constant.ExportTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;
-import jakarta.persistence.*;
-import lombok.Getter;
-
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
 @SQLRestriction("status_enum = 'Active'")
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "floor")
 public class Floor extends BaseTimeEntity {
 
@@ -30,6 +45,7 @@ public class Floor extends BaseTimeEntity {
     @Column(nullable = false)
     private ExportTypeEnum exportTypeEnum = ExportTypeEnum.IMPORT;
 
+    @Builder.Default
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private StatusEnum statusEnum = StatusEnum.ACTIVE;
@@ -46,14 +62,4 @@ public class Floor extends BaseTimeEntity {
         this.location = location;
         location.getFloors().add(this);
     }
-
-    public static Floor fromDto(FloorDto floorDto, Location location) {
-        Floor floor = new Floor();
-        floor.id = floorDto.getId();
-        floor.setLocation(location);
-        floor.floorLevel = floorDto.getFloorLevel();
-        floor.exportTypeEnum = floorDto.getExportType();
-        return floor;
-    }
-
 }
