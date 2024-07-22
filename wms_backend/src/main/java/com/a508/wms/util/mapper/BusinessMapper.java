@@ -53,6 +53,11 @@ public class BusinessMapper {
         return business;
     }
 
+    /**
+     * Business -> BusinessDto 변환
+     * @param business
+     * @return BusinessDto
+     */
     public static BusinessDto fromBusiness(Business business) {
         BusinessDto businessDto = BusinessDto.builder()
                 .id(business.getId())

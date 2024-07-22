@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 public class SubscriptionMapper {
     /**
      * SubscriptionDto 객체를 Subscription으로 변경해주는 메서드
-     * business, subscriptiontype 제외. 직접 설정하기
+     * business, subscriptionType 제외. 직접 설정하기
      * @param subscriptionDto
      * @return Subscription 객체
      */
