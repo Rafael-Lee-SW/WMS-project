@@ -11,7 +11,6 @@ import lombok.ToString;
 public class ProductRequestDto {
 
     private Long productDetailId;
-
     // 미입력시 -1로 설정(수정시에 필요함)
     @Builder.Default
     private int productQuantity = -1;

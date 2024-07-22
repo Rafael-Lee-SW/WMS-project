@@ -2,11 +2,21 @@ package com.a508.wms.domain;
 
 import com.a508.wms.domain.util.BaseTimeEntity;
 import com.a508.wms.util.constant.StatusEnum;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
-
-import java.util.List;
 import lombok.NoArgsConstructor;
 
 @Entity
@@ -41,7 +51,7 @@ public class ProductDetail extends BaseTimeEntity {
     private ProductStorageType productStorageType;
 
     @OneToMany(mappedBy = "productDetail")
-    private List<Product> products;
+    private List<Product> products = new ArrayList<>();
 
     @Column(nullable = false)
     private Long barcode;
@@ -72,8 +82,8 @@ public class ProductDetail extends BaseTimeEntity {
 
     //데이터의 일괄 수정
     public void updateData(ProductStorageType productStorageType
-        ,Long barcode,String name,Long size,Long unit
-    ,int originalPrice,int sellingPrice) {
+        , Long barcode, String name, Long size, Long unit
+        , int originalPrice, int sellingPrice) {
         this.productStorageType = productStorageType;
         this.barcode = barcode;
         this.name = name;

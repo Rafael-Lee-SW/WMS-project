@@ -1,6 +1,5 @@
 package com.a508.wms.dto;
 
-import com.a508.wms.domain.Product;
 import com.a508.wms.util.constant.StatusEnum;
 import java.time.LocalDateTime;
 import lombok.Builder;
@@ -20,13 +19,4 @@ public class ProductResponseDto {
     private LocalDateTime createdDate;
     private LocalDateTime updateDate;
     private StatusEnum statusEnum;
-
-    public static ProductResponseDto fromProduct(Product product) {
-        return ProductResponseDto.builder()
-            .comment(product.getComment())
-            .expirationDate(product.getExpirationDate())
-            .comment(product.getComment())
-            .productDetail(ProductDetailResponseDto.fromProductDetail(product.getProductDetail()))
-            .build();
-    }
 }

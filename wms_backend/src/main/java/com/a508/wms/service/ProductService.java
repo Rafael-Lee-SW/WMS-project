@@ -1,16 +1,24 @@
 package com.a508.wms.service;
 
+import com.a508.wms.domain.Floor;
 import com.a508.wms.domain.Product;
 import com.a508.wms.domain.ProductDetail;
+import com.a508.wms.domain.ProductLocation;
+import com.a508.wms.dto.ProductDetailResponseDto;
+import com.a508.wms.dto.ProductImportDto;
 import com.a508.wms.dto.ProductRequestDto;
 import com.a508.wms.dto.ProductResponseDto;
+import com.a508.wms.repository.FloorRepository;
+import com.a508.wms.repository.LocationRepository;
 import com.a508.wms.repository.ProductDetailRepository;
 import com.a508.wms.repository.ProductLocationRepository;
 import com.a508.wms.repository.ProductRepository;
 import com.a508.wms.util.constant.StatusEnum;
+import com.a508.wms.util.mapper.ProductMapper;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,6 +31,9 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ProductDetailRepository productDetailRepository;
     private final ProductLocationRepository productLocationRepository;
+    private final ProductDetailService productDetailService;
+    private final LocationRepository locationRepository;
+    private final FloorRepository floorRepository;
 
     /**
      * 서비스의 모든 상품을 반환하는 기능
@@ -33,7 +44,7 @@ public class ProductService {
         final List<Product> products = productRepository.findAll();
 
         return products.stream()
-            .map(ProductResponseDto::fromProduct)
+            .map(ProductMapper::fromProduct)
             .toList();
     }
 
@@ -47,7 +58,7 @@ public class ProductService {
     public ProductResponseDto findById(Long id) {
         Product product = productRepository.findById(id).orElseThrow(EntityNotFoundException::new);
 
-        return ProductResponseDto.fromProduct(product);
+        return ProductMapper.fromProduct(product);
     }
 
     /**
@@ -60,7 +71,7 @@ public class ProductService {
         final List<Product> products = productRepository.findByProductDetailId(id);
 
         return products.stream()
-            .map(ProductResponseDto::fromProduct)
+            .map(ProductMapper::fromProduct)
             .toList();
     }
 
@@ -75,7 +86,7 @@ public class ProductService {
         final List<Product> products = productRepository.findByBusinessId(id);
 
         return products.stream()
-            .map(ProductResponseDto::fromProduct)
+            .map(ProductMapper::fromProduct)
             .toList();
     }
 
@@ -89,7 +100,7 @@ public class ProductService {
         final List<Product> products = productRepository.findByWarehouseId(id);
 
         return products.stream()
-            .map(ProductResponseDto::fromProduct)
+            .map(ProductMapper::fromProduct)
             .toList();
     }
 
@@ -148,4 +159,95 @@ public class ProductService {
 
         productLocationRepository.saveAll(product.getProductLocations());
     }
+
+    /**
+     * 상품들의 입고처리를 수행함.
+     *
+     * @param requests
+     */
+    @Transactional
+    public void importProducts(List<ProductImportDto> requests) {
+        log.info("Importing products");
+        Long businessId = requests.get(0).getBusinessId();
+        //각 사업자별 입고처리된 상품들이 들어갈 default floor
+        Floor defaultFloor = floorRepository.findDefaultFloorByBusinessId(businessId);
+
+        log.info("default floor Id: {}", defaultFloor.getId());
+
+        for (ProductImportDto request : requests) {
+            importProduct(request, defaultFloor);
+            log.info("finish save product");
+        }
+    }
+
+    /**
+     * 한 상품의 입고처리를 수행함
+     *
+     * @param request
+     * @param defaultFloor: 입고 처리 된 상품이 들어가는 default 층
+     */
+    private void importProduct(ProductImportDto request, Floor defaultFloor) {
+        log.info("Importing product");
+        Product importProduct = saveProduct(request);
+
+        //Mapping Product
+        ProductLocation productLocation = ProductLocation.builder()
+            .product(importProduct)
+            .floor(defaultFloor)
+            .product_quantity(importProduct.getProductQuantity())
+            .exportTypeEnum(defaultFloor.getExportTypeEnum())
+            .build();
+
+        productLocationRepository.save(productLocation);
+    }
+
+    /**
+     * 입고로 들어온 상품의 데이터를 DB에 저장한다.
+     *
+     * @param request
+     * @return
+     */
+    private Product saveProduct(ProductImportDto request) {
+        log.info("Saving product: {}", request);
+        ProductDetail productDetail = getProductDetail(request);
+
+        log.info("product detail: {}", productDetail);
+        Product product = Product.builder()
+            .productQuantity(request.getProduct().getProductQuantity())
+            .comment(request.getProduct().getComment())
+            .expirationDate(request.getProduct().getExpirationDate())
+            .productDetail(productDetail)
+            .build();
+
+        productRepository.save(product);
+        return product;
+    }
+
+    /**
+     * 저장하려는 상품정보가 현재 DB에 있는지 확인하고 없으면 추가하는 기능
+     *
+     * @param request
+     * @return
+     */
+    private ProductDetail getProductDetail(ProductImportDto request) {
+        Optional<ProductDetail> optionalProductDetail = productDetailRepository.findByBusinessIdAndBarcode(
+            request.getBusinessId(), request.getProductDetail().getBarcode());
+
+        if (optionalProductDetail.isPresent()) {
+            log.info("Found product detail: {}", optionalProductDetail.get());
+            return optionalProductDetail.get();
+        }
+
+        log.info("not found product detail");
+
+        request.getProductDetail().setBusinessId(request.getBusinessId());
+
+        //없으면 ProductDetail을 새로 만들어야함.
+        ProductDetailResponseDto productDetailResponseDto = productDetailService.save(
+            request.getProductDetail());
+
+        log.info("productDetailDto: {}", productDetailResponseDto);
+        return productDetailRepository.getReferenceById(productDetailResponseDto.getId());
+    }
+
 }

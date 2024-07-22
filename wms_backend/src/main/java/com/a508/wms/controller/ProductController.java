@@ -2,6 +2,7 @@ package com.a508.wms.controller;
 
 
 import com.a508.wms.controller.response.BaseSuccessResponse;
+import com.a508.wms.dto.ProductImportDto;
 import com.a508.wms.dto.ProductRequestDto;
 import com.a508.wms.dto.ProductResponseDto;
 import com.a508.wms.service.ProductService;
@@ -106,6 +107,23 @@ public class ProductController {
         log.info("delete product by id: {}", id);
         productService.delete(id);
 
+        return new BaseSuccessResponse<>(null);
+    }
+
+
+    /**
+     * 물품들의 입고처리를 수행하는 기능
+     *
+     * @param importProducts: 입고되는 상품의 정보(엑셀의 한 row)
+     * @return
+     */
+    @PostMapping("/import")
+    public BaseSuccessResponse<Void> importProducts(
+        @RequestBody List<ProductImportDto> importProducts
+    ) {
+        log.info("import products: {}", importProducts);
+
+        productService.importProducts(importProducts);
         return new BaseSuccessResponse<>(null);
     }
 }

@@ -1,15 +1,16 @@
 package com.a508.wms.dto;
 
-import com.a508.wms.domain.ProductDetail;
 import com.a508.wms.util.constant.StatusEnum;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
 @Getter
 @Builder
+@Setter
 @ToString
 public class ProductDetailResponseDto {
 
@@ -26,18 +27,4 @@ public class ProductDetailResponseDto {
     private LocalDateTime createdDate;
     private LocalDateTime updateDate;
     private StatusEnum statusEnum;
-
-    public static ProductDetailResponseDto fromProductDetail(ProductDetail productDetail) {
-        return ProductDetailResponseDto.builder()
-            .barcode(productDetail.getBarcode())
-            .name(productDetail.getName())
-            .size(productDetail.getSize())
-            .unit(productDetail.getUnit())
-            .originalPrice(productDetail.getOriginalPrice())
-            .sellingPrice(productDetail.getSellingPrice())
-            .productResponseDtos(productDetail.getProducts().stream()
-                .map(ProductResponseDto::fromProduct)
-                .toList())
-            .build();
-    }
 }

@@ -13,6 +13,7 @@ import com.a508.wms.repository.ProductLocationRepository;
 import com.a508.wms.repository.ProductRepository;
 import com.a508.wms.repository.ProductStorageTypeRepository;
 import com.a508.wms.util.constant.StatusEnum;
+import com.a508.wms.util.mapper.ProductDetailMapper;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +41,7 @@ public class ProductDetailService {
         List<ProductDetail> result = productDetailRepository.findAll();
 
         return result.stream()
-            .map(ProductDetailResponseDto::fromProductDetail)
+            .map(ProductDetailMapper::fromProductDetail)
             .toList();
     }
 
@@ -56,7 +57,7 @@ public class ProductDetailService {
         List<ProductDetail> result = productDetailRepository.findByBusinessId(id);
 
         return result.stream()
-            .map(ProductDetailResponseDto::fromProductDetail)
+            .map(ProductDetailMapper::fromProductDetail)
             .toList();
     }
 
@@ -80,11 +81,11 @@ public class ProductDetailService {
             request.getOriginalPrice(), request.getSellingPrice()
         );
 
-        log.info(productDetail.toString());
-
         ProductDetail savedProductDetail = productDetailRepository.save(productDetail);
 
-        return ProductDetailResponseDto.fromProductDetail(savedProductDetail);
+        log.info("product Detail ID{}", savedProductDetail.getId());
+
+        return ProductDetailMapper.fromProductDetail(savedProductDetail);
     }
 
     /**
