@@ -10,7 +10,7 @@ import com.a508.wms.repository.FloorRepository;
 import com.a508.wms.repository.LocationRepository;
 import com.a508.wms.repository.ProductStorageTypeRepository;
 import com.a508.wms.repository.WarehouseRepository;
-import com.a508.wms.util.StatusEnum;
+import com.a508.wms.util.constant.StatusEnum;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;

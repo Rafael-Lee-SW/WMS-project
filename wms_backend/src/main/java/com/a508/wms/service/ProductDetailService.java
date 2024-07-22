@@ -12,7 +12,7 @@ import com.a508.wms.repository.ProductDetailRepository;
 import com.a508.wms.repository.ProductLocationRepository;
 import com.a508.wms.repository.ProductRepository;
 import com.a508.wms.repository.ProductStorageTypeRepository;
-import com.a508.wms.util.StatusEnum;
+import com.a508.wms.util.constant.StatusEnum;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

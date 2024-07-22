@@ -1,8 +1,8 @@
 package com.a508.wms.dto;
 
 import com.a508.wms.domain.Employee;
-import com.a508.wms.util.LoginTypeEnum;
-import com.a508.wms.util.StatusEnum;
+import com.a508.wms.util.constant.LoginTypeEnum;
+import com.a508.wms.util.constant.StatusEnum;
 import lombok.*;
 
 @Setter

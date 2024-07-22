@@ -1,4 +1,4 @@
-package com.a508.wms.util;
+package com.a508.wms.util.constant;
 
 public enum LoginTypeEnum {
     GOOGLE("구글"),

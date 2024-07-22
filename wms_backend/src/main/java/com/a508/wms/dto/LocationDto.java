@@ -1,7 +1,7 @@
 package com.a508.wms.dto;
 
 import com.a508.wms.domain.Location;
-import com.a508.wms.util.StatusEnum;
+import com.a508.wms.util.constant.StatusEnum;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;

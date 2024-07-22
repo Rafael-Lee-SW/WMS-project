@@ -5,7 +5,7 @@ import com.a508.wms.domain.Warehouse;
 import com.a508.wms.dto.WarehouseDto;
 import com.a508.wms.repository.BusinessRepository;
 import com.a508.wms.repository.WarehouseRepository;
-import com.a508.wms.util.StatusEnum;
+import com.a508.wms.util.constant.StatusEnum;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;

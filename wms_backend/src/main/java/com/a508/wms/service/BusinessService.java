@@ -3,7 +3,7 @@ package com.a508.wms.service;
 import com.a508.wms.domain.Business;
 import com.a508.wms.dto.BusinessDto;
 import com.a508.wms.repository.BusinessRepository;
-import com.a508.wms.util.StatusEnum;
+import com.a508.wms.util.constant.StatusEnum;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

@@ -1,8 +1,8 @@
 package com.a508.wms.dto;
 
 import com.a508.wms.domain.Floor;
-import com.a508.wms.util.ExportTypeEnum;
-import com.a508.wms.util.StatusEnum;
+import com.a508.wms.util.constant.ExportTypeEnum;
+import com.a508.wms.util.constant.StatusEnum;
 import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
