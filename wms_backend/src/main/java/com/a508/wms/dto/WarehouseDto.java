@@ -2,6 +2,7 @@ package com.a508.wms.dto;
 
 
 import com.a508.wms.domain.Warehouse;
+import com.a508.wms.util.FacilityTypeEnum;
 import com.a508.wms.util.StatusEnum;
 import java.time.LocalDateTime;
 import lombok.Builder;
@@ -20,6 +21,7 @@ public class WarehouseDto {
     private int rowCount;
     private int columnCount;
     private int priority;
+    private FacilityTypeEnum facilityType;
     private LocalDateTime createDate;
     private LocalDateTime updateDate;
     private StatusEnum status;
@@ -32,6 +34,7 @@ public class WarehouseDto {
             .name(warehouse.getName())
             .rowCount(warehouse.getRowCount())
             .columnCount(warehouse.getColumnCount())
+            .facilityType(warehouse.getFacilityType())
             .priority(warehouse.getPriority())
             .createDate(warehouse.getCreatedDate())
             .updateDate(warehouse.getUpdatedDate())

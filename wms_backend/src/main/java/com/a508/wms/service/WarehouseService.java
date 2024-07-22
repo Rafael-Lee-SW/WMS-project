@@ -41,7 +41,7 @@ public class WarehouseService {
         warehouse.setRowCount(rowCnt);
         warehouse.setColumnCount(columnCnt);
         warehouse.setPriority(warehouseDto.getPriority());
-
+        warehouse.setFacilityType(warehouseDto.getFacilityType());
         warehouse = warehouseRepository.save(warehouse);
 
     }
@@ -66,16 +66,7 @@ public class WarehouseService {
     }
 
     /*
-   사업자 id와 창고 id를 기반으로 창고를 조회하는 메서드
-    */
-    public WarehouseDto findByBusinessIdAndWarehouseId(Long businessId, Long warehouseId) {
-        Warehouse warehouse = warehouseRepository.findByBusinessIdAndId(businessId, warehouseId)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid warehouse ID or business ID"));
-        return WarehouseDto.fromWarehouse(warehouse);
-    }
-
-    /*
-    창고 정보를 부분적으로 업데이트하는 메서드 (PATCH)
+    창고 정보를 부분적으로 업데이트하는 메서드
      */
     @Transactional
     public WarehouseDto updateWarehouse(Long businessId, Long warehouseId,
@@ -85,7 +76,6 @@ public class WarehouseService {
 
         if (warehouseDto.getSize() != 0) {
             warehouse.setSize(warehouseDto.getSize());
-            // 수직 및 수평 배치 수를 다시 계산
             int rowCnt = calculateRowCount(warehouseDto.getSize());
             int columnCnt = calculateRowCount(warehouseDto.getSize());
             warehouse.setRowCount(rowCnt);
@@ -97,9 +87,11 @@ public class WarehouseService {
         if (warehouseDto.getPriority() != 0) {
             warehouse.setPriority(warehouseDto.getPriority());
         }
+        if (warehouseDto.getFacilityType() != null) {
+            warehouse.setFacilityType(warehouseDto.getFacilityType());
+        }
 
-        // 수정된 창고 정보를 저장
-        warehouse = warehouseRepository.save(warehouse);
+        warehouseRepository.save(warehouse);
 
         return WarehouseDto.fromWarehouse(warehouse);
     }
