@@ -1,8 +1,5 @@
 import styled from "styled-components";
 import Button from "/components/CustomButtons/Button.js";
-// import MailIcon from "../public/svg/mail.svg";
-// import PersonIcon from "../public/svg/person.svg";
-// import PasswordIcon from "../public/svg/password.svg";
 
 const Container = styled.form`
 
