@@ -58,8 +58,11 @@ public class Floor extends BaseTimeEntity {
     }
 
     //연관관계 편의 메서드
-    public void setLocation(Location location) {
+    public Floor setLocation(Location location) {
         this.location = location;
-        location.getFloors().add(this);
+        if (!location.getFloors().contains(this)) {
+            location.getFloors().add(this);
+        }
+        return this;
     }
 }

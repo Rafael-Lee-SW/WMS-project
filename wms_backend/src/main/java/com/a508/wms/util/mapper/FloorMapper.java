@@ -1,20 +1,36 @@
 package com.a508.wms.util.mapper;
 
 import com.a508.wms.domain.Floor;
-import com.a508.wms.domain.Location;
 import com.a508.wms.dto.FloorDto;
 import org.springframework.stereotype.Component;
 
 @Component
 public class FloorMapper {
 
-    public static Floor fromFloor(FloorDto floorDto, Location location) {
-        Floor floor = Floor.builder()
-            .id(floorDto.getId())
-            .location(location)
-            .floorLevel(floorDto.getFloorLevel())
-            .exportTypeEnum(floorDto.getExportType())
-            .build();
-        return floor;
+    /**
+     * Floor가 포함하고 있는 location 객체를 제외하고 Convert. 해당 메서드를 호출한 Service Layer에서 location을 직접 설정하기
+     * @param floorDto
+     * @return
+     */
+    public static Floor fromDto(FloorDto floorDto) {
+       return Floor.builder()
+               .id(floorDto.getId())
+               .floorLevel(floorDto.getFloorLevel())
+               .exportTypeEnum(floorDto.getExportType())
+               .statusEnum(floorDto.getStatusEnum())
+               .build();
+
     }
+    public static FloorDto fromFloor(Floor floor) {
+        return FloorDto.builder()
+                .id(floor.getId())
+                .locationId(floor.getLocation().getId())
+                .floorLevel(floor.getFloorLevel())
+                .exportType(floor.getExportTypeEnum())
+                .createdDate(floor.getCreatedDate())
+                .updatedDate(floor.getUpdatedDate())
+                .statusEnum(floor.getStatusEnum())
+                .build();
+    }
+
 }

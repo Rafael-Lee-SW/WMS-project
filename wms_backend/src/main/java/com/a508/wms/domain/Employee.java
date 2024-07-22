@@ -51,20 +51,5 @@ public class Employee extends BaseTimeEntity {
         this.statusEnum = statusEnum;
     }
 
-    /**
-     * EmployeeDto 객체를 받아서 변경할 정보는 입력하고 기존 정보는 유지하여 Employee 객체로 변경해주는 메서드
-     *
-     * @param employeeDto
-     * @return Employee
-     */
-    public Employee toEmployee(EmployeeDto employeeDto) {
-        return Employee.builder()
-                .id(this.id)
-                .business(this.business)
-                .name(employeeDto.getName() == null ? this.name : employeeDto.getName())
-                .loginTypeEnum(employeeDto.getLoginType() == null ? this.loginTypeEnum : employeeDto.getLoginType())
-                .loginId(employeeDto.getLoginId() == null ? this.loginId : employeeDto.getLoginId())
-                .statusEnum(employeeDto.getStatus() == null ? this.statusEnum : employeeDto.getStatus())
-                .build();
-    }
+
 }

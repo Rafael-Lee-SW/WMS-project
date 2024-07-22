@@ -14,6 +14,7 @@ import com.a508.wms.util.constant.ExportTypeEnum;
 import com.a508.wms.util.constant.FacilityTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;
 import com.a508.wms.util.mapper.FloorMapper;
+import com.a508.wms.util.mapper.LocationMapper;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +41,7 @@ public class LocationService {
         List<Location> locations = locationRepository.findAll();
         List<LocationDto> locationDtos = new ArrayList<>();
         for (Location location : locations) {
-            locationDtos.add(LocationDto.fromLocation(location));
+            locationDtos.add(LocationMapper.fromLocation(location));
         }
         return locationDtos;
     }
@@ -54,7 +55,7 @@ public class LocationService {
     public LocationDto findById(Long id) {
         Location location = locationRepository.findById(id).orElse(null);
         if (location != null) {
-            return LocationDto.fromLocation(location);
+            return LocationMapper.fromLocation(location);
         }
         return null;
     }
@@ -69,7 +70,7 @@ public class LocationService {
         List<Location> locations = locationRepository.findLocationsByWarehouseId(warehouseId);
         List<LocationDto> locationDtos = new ArrayList<>();
         for (Location location : locations) {
-            locationDtos.add(LocationDto.fromLocation(location));
+            locationDtos.add(LocationMapper.fromLocation(location));
         }
         return locationDtos;
     }
@@ -102,13 +103,13 @@ public class LocationService {
 
         log.info("Floor convert");
         List<Floor> floors = floorDtos.stream()
-            .map(floorDto -> {
-                modifyExportType(floorDto, warehouse);
-                log.info("{}", floorDto);
-                // Floor 객체로 변환, location정보 넣어주기
-                return FloorMapper.fromFloor(floorDto, location);
-            })
-            .toList();
+                .map(floorDto -> {
+                    modifyExportType(floorDto, warehouse);
+                    log.info("{}", floorDto);
+                    // Floor 객체로 변환, location정보 넣어주기
+                    return FloorMapper.fromDto(floorDto).setLocation(location);
+                })
+                        .toList();
 
         log.info("floors save");
         floorRepository.saveAll(floors);    //floor 전부 저장
@@ -138,9 +139,9 @@ public class LocationService {
     public LocationDto update(Long id, LocationDto locationDto) {
         Location location = locationRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Invalid location ID"));
-        location.updateName(locationDto.getLocationName());
+        location.updateName(locationDto.getName());
         location.updatePosition(locationDto.getXPosition(), locationDto.getYPosition());
-        return LocationDto.fromLocation(locationRepository.save(location));
+        return LocationMapper.fromLocation(locationRepository.save(location));
     }
 
     /**

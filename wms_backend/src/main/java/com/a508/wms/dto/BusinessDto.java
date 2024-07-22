@@ -4,6 +4,9 @@ import com.a508.wms.domain.Business;
 import com.a508.wms.util.constant.StatusEnum;
 import lombok.*;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 @Getter
 @Setter
 @ToString
@@ -16,22 +19,17 @@ public class BusinessDto {
     private String password;
     private String name;
     private String businessNumber;
-    private StatusEnum status;
+    private LocalDateTime createdDate;
+    private LocalDateTime updatedDate;
+    private StatusEnum statusEnum;
+    private List<EmployeeDto> employeeDtoList;
+    private List<ProductDetailRequestDto> productDetailRequestDtoList;
+    private List<ProductDetailResponseDto> productDetailResponseDtoList;
+    private List<NotificationDto> notificationDtoList;
+    private List<SubscriptionDto> subscriptionDtoList;
+    private List<WarehouseDto> warehouseDtoList;
 
-    /**
-     * Business 객체를 받아서 BusinessDto 객체로 변환해주는 메서드
-     *
-     * @param business
-     * @return BusinessDto
-     */
-    public static BusinessDto fromBusiness(Business business) {
-        return new BusinessDto(
-                business.getId(),
-                business.getEmail(),
-                business.getPassword(),
-                business.getName(),
-                business.getBusinessNumber(),
-                business.getStatusEnum());
-    }
+
+
 
 }

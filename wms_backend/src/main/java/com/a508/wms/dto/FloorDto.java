@@ -23,15 +23,5 @@ public class FloorDto {
     private LocalDateTime updatedDate;
     private StatusEnum statusEnum;
 
-    public static FloorDto fromFloor(Floor floor) {
-        return FloorDto.builder()
-            .id(floor.getId())
-            .locationId(floor.getLocation().getId())
-            .floorLevel(floor.getFloorLevel())
-            .exportType(floor.getExportTypeEnum())
-            .createdDate(floor.getCreatedDate())
-            .updatedDate(floor.getUpdatedDate())
-            .statusEnum(floor.getStatusEnum())
-            .build();
-    }
+
 }

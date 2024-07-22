@@ -17,7 +17,7 @@ public class LocationDto {
     private Long id;
     private Long warehouseId;
     private Long productStorageTypeId;
-    private String locationName;
+    private String name;
     private int xPosition;
     private int yPosition;
     private int width;
@@ -26,24 +26,5 @@ public class LocationDto {
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
     private StatusEnum statusEnum;
-
-    public static LocationDto fromLocation(Location location) {
-        return LocationDto.builder()
-            .id(location.getId())
-            .warehouseId(location.getWarehouse().getId())
-            .productStorageTypeId(location.getProductStorageType().getId())
-            .locationName(location.getName())
-            .xPosition(location.getXPosition())
-            .yPosition(location.getYPosition())
-            .width(location.getWidth())
-            .height(location.getHeight())
-            .floorDtos(location.getFloors().stream()
-                .map(FloorDto::fromFloor)
-                .collect(Collectors.toList()))
-            .createdDate(location.getCreatedDate())
-            .updatedDate(location.getUpdatedDate())
-            .statusEnum(location.getStatusEnum())
-            .build();
-    }
 
 }
