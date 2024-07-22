@@ -1,11 +1,21 @@
 package com.a508.wms.domain;
 
 import com.a508.wms.domain.util.BaseTimeEntity;
+import com.a508.wms.util.FacilityTypeEnum;
 import com.a508.wms.util.StatusEnum;
-import jakarta.persistence.*;
-import lombok.Getter;
-
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import java.util.List;
+import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.SQLRestriction;
 
@@ -41,6 +51,10 @@ public class Warehouse extends BaseTimeEntity {
 
     @Column(nullable = false, columnDefinition = "integer default 1")
     private int priority;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private FacilityTypeEnum facilityType;
 
     @Enumerated(EnumType.STRING)
     private StatusEnum statusEnum = StatusEnum.ACTIVE;
