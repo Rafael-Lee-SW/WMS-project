@@ -1,8 +1,7 @@
 import styled from "styled-components";
-import Button from "/components/CustomButtons/Button.js";
-// import MailIcon from "../public/svg/mail.svg";
-// import PersonIcon from "../public/svg/person.svg";
-// import PasswordIcon from "../public/svg/password.svg";
+import { useState } from "react";
+import axios from "axios";
+import { useRouter } from "next/router";
 
 const Container = styled.form`
 
@@ -35,28 +34,48 @@ const Container = styled.form`
     `;
 
 // 회원가입 폼
-const SignUp = () => {
+export default function SignUp() {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConformPassword] = useState('');
+    const [message, setMessage] = useState('');
+
+    const router = useRouter();
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (password !== confirmPassword) {
+            setMessage('비밀번호가 다릅니다.');
+            return;
+        }
+        try {
+            const response = await axios.post('', { email, password});
+            setMessage('회원가입이 완료되었습니다.');
+            router.push('/login');
+        } catch (error) {
+            setMessage('회원가입이 처리되지 않았습니다.' + error.response.data);
+        }
+    };
+
     return (
-        <Container>
+        <Container onSubmit={handleSubmit}>
+            <h1>회원가입</h1>
             <div>
-                <h2>회원가입</h2>
+                <div className="input-wrapper">
+                    <h3>이메일</h3>
+                    <input type="text" value={email} onChange={(e) => setEmail(e.target.value)} required/>
+                </div>
+                <div className="input-wrapper">
+                    <h3>비밀번호</h3>
+                    <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required/>
+                </div>
+                <div className="input-wrapper">
+                    <h3>비밀번호 확인</h3>
+                    <input type="password" value={confirmPassword} onChange={(e) => setConformPassword(e.target.value)} required/>
+                </div>
+                <button type="submit">회원가입</button>
             </div>
-            <div className="input-wrapper">
-                <input type="email" name="email" placeholder="이메일 주소" />
-                {/* <MailIcon /> */}
-            </div>
-            <div className="input-wrapper">
-                <input placeholder="이름(예:홍길동)" />
-                {/* <PersonIcon /> */}
-            </div>
-            <div className="input-wrapper">
-                <input type="password" placeholder="비밀번호 설정하기" />
-                {/* <PasswordIcon /> */}
-            </div>
-            <Button color="primary">회원가입</Button>
+            { message && <p>{message}</p>}
         </Container>
     )
 }
-
-export default SignUp;
-
