@@ -1,17 +1,18 @@
 "use client";
 
-//not directly use the react-window
+// Import React and required hooks
 import React, { useState, useRef } from "react";
+
+// Import MUI components
 import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
 import Fab from "@mui/material/Fab";
 import Button from "@mui/material/Button";
+
+// Import SheetJS xlsx for Excel operations
 import * as XLSX from "xlsx";
 
-/**
- * 목표 : 데이터는 SheetJS xlsx를 통해 불러온 다음 JSON으로 가공
- * 이를 HansonTable을 통해서 유연하고 자연스러운 수정하기
- */
+// Import Handsontable plugins and cell types
 import {
   AutoColumnSize,
   Autofill,
@@ -27,15 +28,19 @@ import {
   NumericCellType,
   registerCellType,
 } from "handsontable/cellTypes";
+
+// Import Handsontable and its styles
 import "@handsontable/react";
 import { HotTable, HotColumn } from "@handsontable/react";
 import "pikaday/css/pikaday.css";
 import "handsontable/dist/handsontable.full.css";
-// 행렬 조작을 위한 jsx file 소환
-import { addClassesToRows, alignHeaders } from "./test/hooksCallbacks";
+
+// Import custom hooks and callbacks
+import { addClassesToRows, alignHeaders } from "/pages/test/hooksCallbacks.jsx";
 
 import Handsontable from "handsontable";
 
+// Register cell types and plugins
 registerCellType(CheckboxCellType);
 registerCellType(NumericCellType);
 
@@ -47,20 +52,21 @@ registerPlugin(DropdownMenu);
 registerPlugin(Filters);
 registerPlugin(HiddenRows);
 
-//Starting point of Excel control
+// Starting point of Excel control
 const ExcelImport = () => {
   const [tableData, setTableData] = useState([]);
   const [columns, setColumns] = useState([]);
   const [isChoosingColumn, setIsChoosingColumn] = useState(false);
   const hotTableRef = useRef(null); // Reference to the Handsontable instance
+  let columnCounter = 0;
 
-  // Json 형태로 바꿔주는 메서드
+  // Convert data to array of arrays and set table data
   const convertToArrayOfArrays = (data) => {
     setTableData(data);
     return data;
   };
 
-  // 엑셀 불러오기
+  // Import Excel file and process it
   const importExcel = (input) => {
     let file;
     if (input.target && input.target.files) {
@@ -88,6 +94,7 @@ const ExcelImport = () => {
     reader.readAsArrayBuffer(file);
   };
 
+  // Download the table data as an Excel file
   const downloadExcel = () => {
     const worksheet = XLSX.utils.aoa_to_sheet([
       columns.map((col) => col.label),
@@ -98,6 +105,7 @@ const ExcelImport = () => {
     XLSX.writeFile(workbook, "ADN_project엑셀테스트.xlsx");
   };
 
+  // Load local Excel file
   const loadLocalExcel = async () => {
     const response = await fetch("/excel/Uniqlo.xlsx");
     const data = await response.arrayBuffer();
@@ -106,8 +114,8 @@ const ExcelImport = () => {
     });
     importExcel(file);
   };
-  let columnCounter = 0;
 
+  // Apply color to the specified column
   const applyColumnColor = (columnIndex) => {
     const hotInstance = hotTableRef.current.hotInstance;
 
@@ -129,6 +137,7 @@ const ExcelImport = () => {
     hotInstance.render();
   };
 
+  // Handle column click event to apply color
   const handleColumnClick = (event, coords) => {
     if (isChoosingColumn) {
       applyColumnColor(coords.col);
@@ -141,7 +150,7 @@ const ExcelImport = () => {
     }
   };
 
-  // Assuming there's a button action that sets `isChoosingColumn` to true
+  // Start choosing columns for color change
   const startChoosingColumns = () => {
     setIsChoosingColumn(true);
     columnCounter = 0; // Reset counter when starting a new action
@@ -188,19 +197,14 @@ const ExcelImport = () => {
           </Button>
         </Grid>
         <Grid item xs={6} md={4}>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => {
-              setIsChoosingColumn(true);
-            }}
-          >
+          <Button variant="contained" color="primary" onClick={startChoosingColumns}>
             컬럼 색상 변경
           </Button>
         </Grid>
       </div>
       <div>
         <HotTable
+        height={600}
           ref={hotTableRef}
           data={tableData}
           colHeaders={columns.map((col) => col.label)}

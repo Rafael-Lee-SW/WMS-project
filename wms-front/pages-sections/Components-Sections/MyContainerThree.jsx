@@ -101,6 +101,10 @@ const ExcelImport = () => {
       }));
       setColumns(formattedColumns);
       fileData.splice(0, 1);
+      console.log("헤더!")
+      console.log(headers);
+      console.log("실제 데이타!");
+      console.log(fileData);
       convertToJson(headers, fileData);
     };
     reader.readAsArrayBuffer(file);

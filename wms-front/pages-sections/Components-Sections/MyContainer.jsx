@@ -39,6 +39,7 @@ import Badge from "/components/Badge/Badge.js";
 
 import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/MyContainerStyle.jsx";
 import { Canvas } from "canvas";
+import { LocalConvenienceStoreOutlined } from "@mui/icons-material";
 
 // 상수 설정(그리드, 컨버스 등)
 const GRID_SIZE = 100; // 100cm = 1m
@@ -47,6 +48,8 @@ const GRID_SIZE_SUB_10 = 10; // 10cm
 const CANVAS_SIZE = 1000; // 100 = 1000cm = 10m
 
 const useStyles = makeStyles(styles);
+
+// ----- 본격적인 창고 설정 반환 -------
 
 const User = () => {
   const classes = useStyles();
@@ -71,6 +74,8 @@ const User = () => {
   const [hoveredRectId, setHoveredRectId] = useState(null);
   // 마지막으로 클릭한 상자를 추적하는 상태 추가
   const [selectedRect, setSelectedRect] = useState(null);
+  // 마지막으로 클릭한 상자를 수정하는 폼을 띄우기 위한 상태 추가
+  const [selectedRectTransform, setSelectedRectTransform] = useState(null);
 
   // Tracking the current setting mode
   const [currentSetting, setCurrentSetting] = useState(null); // Track current setting mode
@@ -89,40 +94,6 @@ const User = () => {
   const [wallStartPoint, setWallStartPoint] = useState(null);
   const [wallEndPoint, setWallEndPoint] = useState(null);
 
-  // 선택된 상자의 크기를 변경하기 위한 조치
-  const transformerRef = useRef(null);
-
-  useEffect(() => {
-    if (transformerRef.current && selectedRect) {
-      const selectedNode = stageRef.current.findOne(`#rect${selectedRect.id}`);
-      if (selectedNode) {
-        transformerRef.current.nodes([selectedNode]);
-        transformerRef.current.getLayer().batchDraw();
-      }
-    }
-  }, [selectedRect]);
-
-  const handleTransformEnd = (e, id) => {
-    const node = e.target;
-    const updatedRectangles = rectangles.map((rect) => {
-      if (rect.id === id) {
-        const updatedRect = {
-          ...rect,
-          x: node.x(),
-          y: node.y(),
-          width: node.width() * node.scaleX(),
-          height: node.height() * node.scaleY(),
-        };
-        updateContainer(updatedRect, "rectangle", `rect${rect.id}`);
-        return updatedRect;
-      }
-      return rect;
-    });
-
-    setRectangles(updatedRectangles);
-    setSelectedRect(null);
-  };
-
   // 사각형을 컨버스에 추가한다.
   const handleAddRectangle = (type) => {
     const newRect = {
@@ -136,6 +107,7 @@ const User = () => {
       order: rectangles.length + 1, // 순서대로 번호 인덱싱
       name: newRectName || `Rect ${rectangles.length + 1}`,
       type: type, // set the type of the rectangle
+      rotation : 0, // 초기 회전값
     };
     setRectangles([...rectangles, newRect]);
     updateContainer(newRect, "rectangle", `rect${newRect.id}`);
@@ -148,10 +120,11 @@ const User = () => {
 
   //벽을 추가한다.
   const handleAddWall = (start, end) => {
+    // 벽이 입력되는 end point가 벽의 중심이다.
     const newWall = {
       id: rectangles.length,
-      x: (start.x + end.x) / 2,
-      y: (start.y + end.y) / 2,
+      x: end.x,
+      y: end.y,
       width: newWallWidth,
       height: Math.sqrt((end.x - start.x) ** 2 + (end.y - start.y) ** 2),
       fill: newWallColor,
@@ -159,10 +132,11 @@ const User = () => {
       order: rectangles.length + 1, // 순서대로 번호 인덱싱
       name: `Wall ${rectangles.length + 1}`,
       type: "wall",
-      rotation:
-        Math.atan2(end.y - start.y, end.x - start.x) * (180 / Math.PI) + 90,
+      rotation: Math.round(
+        Math.atan2(end.y - start.y, end.x - start.x) * (180 / Math.PI) + 90
+      ),
     };
-    if (!isOverlapping(newWall)) {
+    // if (!isOverlapping(newWall)) {
       setRectangles([...rectangles, newWall]);
       updateContainer(newWall, "wall", `wall${newWall.id}`);
       // Reset wall points
@@ -171,78 +145,14 @@ const User = () => {
       // Reset settings to default after adding
       setNewWallColor("brown");
       setNewWallWidth(10);
-    } else {
-      alert("Wall overlaps with another rectangle.");
-      // Reset wall points
-      setWallStartPoint(null);
-      setWallEndPoint(null);
-    }
+    // } else {
+    //   alert("Wall overlaps with another rectangle.");
+    //   // Reset wall points
+    //   setWallStartPoint(null);
+    //   setWallEndPoint(null);
+    // }
   };
 
-  const isOverlapping = (rect) => {
-    return rectangles.some((otherRect) =>
-      rectIntersect(
-        {
-          x: rect.x,
-          y: rect.y,
-          width: rect.width,
-          height: rect.height,
-        },
-        otherRect
-      )
-    );
-  };
-
-  // 사각형 드래그 행동이 끝난 뒤에 발생하는 Event
-  // 이동 후에 다른 사각형이랑 겹치면 놓을 수 있는 위치 중
-  // 가장 가까운 위치로 놓게 됨.
-  const handleDragEnd = (e, id) => {
-    const updatedRectangles = rectangles.map((rect) => {
-      if (rect.id === id) {
-        let x = Math.round(e.target.x());
-        let y = Math.round(e.target.y());
-        const draggedRect = {
-          x: x,
-          y: y,
-          width: rect.width,
-          height: rect.height,
-        };
-
-        // Adjust to prevent overlap with other rectangles
-        rectangles.forEach((otherRect) => {
-          if (otherRect.id !== rect.id) {
-            if (rectIntersect(draggedRect, otherRect)) {
-              // Calculate the closest non-overlapping position
-              const adjustedPosition = getClosestNonOverlapPosition(
-                draggedRect,
-                otherRect
-              );
-              x = adjustedPosition.x;
-              y = adjustedPosition.y;
-            }
-          }
-        });
-
-        // Ensure the rectangle stays within the canvas boundaries
-        if (x < 0) x = 0;
-        if (y < 0) y = 0;
-        if (x + rect.width > CANVAS_SIZE) x = CANVAS_SIZE - rect.width;
-        if (y + rect.height > CANVAS_SIZE) y = CANVAS_SIZE - rect.height;
-
-        const updatedRect = {
-          ...rect,
-          x: x,
-          y: y,
-        };
-
-        updateContainer(updatedRect, "rectangle", `rect${rect.id}`);
-        return updatedRect;
-      }
-      return rect;
-    });
-
-    setRectangles(updatedRectangles);
-  };
 
   // Container Update Function (창고 배열 저장)
   const updateContainer = (rect, type, code) => {
@@ -262,63 +172,6 @@ const User = () => {
     setContainer(newContainer);
   };
 
-  // Function to check if two rectangles intersect
-  const rectIntersect = (rect1, rect2) => {
-    return (
-      rect1.x < rect2.x + rect2.width &&
-      rect1.x + rect1.width > rect2.x &&
-      rect1.y < rect2.y + rect2.height &&
-      rect1.y + rect1.height > rect2.y
-    );
-  };
-
-  // Connected with above function
-  // Function to find the closest non-overlapping position
-  // 가장 가깝고 놓을 수 있는 위치를 찾는 것.
-  // Function to find closest non-overlapping position
-  const getClosestNonOverlapPosition = (draggedRect, otherRect) => {
-    const overlapX = Math.max(
-      0,
-      Math.min(
-        draggedRect.x + draggedRect.width,
-        otherRect.x + otherRect.width
-      ) - Math.max(draggedRect.x, otherRect.x)
-    );
-    const overlapY = Math.max(
-      0,
-      Math.min(
-        draggedRect.y + draggedRect.height,
-        otherRect.y + otherRect.height
-      ) - Math.max(draggedRect.y, otherRect.y)
-    );
-
-    if (overlapX === 0 && overlapY === 0) {
-      // No overlap, return current position
-      return { x: draggedRect.x, y: draggedRect.y };
-    }
-
-    // Calculate closest non-overlapping position
-    let newX = draggedRect.x;
-    let newY = draggedRect.y;
-
-    if (overlapX > overlapY) {
-      // Adjust vertically
-      if (draggedRect.y < otherRect.y) {
-        newY = otherRect.y - draggedRect.height;
-      } else {
-        newY = otherRect.y + otherRect.height;
-      }
-    } else {
-      // Adjust horizontally
-      if (draggedRect.x < otherRect.x) {
-        newX = otherRect.x - draggedRect.width;
-      } else {
-        newX = otherRect.x + otherRect.width;
-      }
-    }
-
-    return { x: newX, y: newY };
-  };
   // 컨버스에 있는 사각형들의 정보를 저장한다.
   const handleSave = () => {
     const rectData = rectangles.map((rect) => ({
@@ -415,11 +268,6 @@ const User = () => {
     return lines;
   };
 
-  // Font Size 를 자동으로 계산하여 조정하는 거시기
-  const calculateFontSize = (rectWidth, rectHeight) => {
-    return Math.min(rectWidth, rectHeight) / 5;
-  };
-
   // 상대적 위치를 보여주는 Pointer에 대한 수정
   const Pointer = (event) => {
     const { x, y } = event.target.getStage().getPointerPosition();
@@ -428,6 +276,14 @@ const User = () => {
     y = (y - stageAttrs.y) / stageAttrs.scaleY;
     // console.log("출력 : " + Math.round(x) + " : " + Math.round(y));
     return { x, y };
+  };
+
+  // 빈 공간을 클릭했을 때 사각형 선택 해제하는 함수
+  const checkDeselect = (e) => {
+    const clickedOnEmpty = e.target === e.target.getStage();
+    if (clickedOnEmpty) {
+      setSelectedRectTransform(null);
+    }
   };
 
   //--- 리턴 Part ---
@@ -455,16 +311,14 @@ const User = () => {
             overflowY: "auto",
           }}
         >
-          <button onClick={() => setCurrentSetting("location")}>
-            Location Set
-          </button>
-          <button onClick={() => setCurrentSetting("wall")}>Wall Set</button>
+          <button onClick={() => setCurrentSetting("location")}>재고함</button>
+          <button onClick={() => setCurrentSetting("wall")}>벽</button>
           <button onClick={() => setCurrentSetting("specialObject")}>
-            Special Object Set
+            특수 객체
           </button>
           {currentSetting && currentSetting !== "wall" && (
             <>
-              <h3>Set Properties for {currentSetting}</h3>
+              <h3>{currentSetting} 설정</h3>
               <div>
                 <label>
                   Color:
@@ -613,58 +467,35 @@ const User = () => {
             draggable={true} // 만약에 캔버스를 드래그할 수 있게 만들꺼면 가능
             ref={stageRef} // Assign the reference to the stage
             onPointerMove={Pointer}
+            onMouseDown={checkDeselect} // 마우스 다운 시 선택 해체
+            onTouchStart={checkDeselect} // 처시 시작 시 선택 해체
           >
             <Layer>
               {generateGridLines()}
-              {rectangles.map((rect) => (
-                <React.Fragment key={rect.id}>
-                  <Rect
-                    key={rect.id}
-                    x={rect.x}
-                    y={rect.y}
-                    width={rect.width}
-                    height={rect.height}
-                    fill={rect.fill}
-                    draggable={rect.draggable}
-                    onDragEnd={(e) => handleDragEnd(e, rect.id)}
-                    onTransformEnd={handleTransformEnd}
-                    onMouseEnter={() => setHoveredRectId(rect.id)}
-                    onMouseLeave={() => setHoveredRectId(null)}
-                    onClick={() => setSelectedRect(rect)}
-                    stroke={
-                      selectedRect?.id === rect.id
-                        ? "red"
-                        : hoveredRectId === rect.id
-                        ? "red"
-                        : "transparent"
-                    }
-                    strokeWidth={
-                      selectedRect?.id === rect.id || hoveredRectId === rect.id
-                        ? 2
-                        : 0
-                    }
-                    rotation={rect.type === "wall" ? rect.rotation : 0}
-                    offsetX={rect.type === "wall" ? 0 : 0}
-                    offsetY={rect.type === "wall" ? rect.height / 2 : 0}
-                  />
-                  <Text
-                    x={rect.x + rect.width / 2}
-                    y={rect.y + rect.height / 4}
-                    text={`${rect.order}`}
-                    fontSize={calculateFontSize(rect.width, rect.height)}
-                    fill="white"
-                    align="center"
-                  />
-                  <Text
-                    x={rect.x + rect.width / 4}
-                    y={rect.y + (rect.height * 3) / 4}
-                    text={`${rect.name}`}
-                    fontSize={calculateFontSize(rect.width, rect.height)}
-                    fill="white"
-                    align="center"
-                  />
-                </React.Fragment>
+
+              {rectangles.map((rect, i) => (
+                <RectangleTransformer
+                  key={rect.id} // 각 사각형에 고유 키 설정
+                  x={rect.x} // 텍스트를 띄우기 위한 위치 정보
+                  y={rect.y}
+                  width={rect.width}
+                  height={rect.height}
+                  fill={rect.fill}
+                  shapeProps={rect} // 모양 속성 전달
+                  isSelected={rect.id === selectedRectTransform} // 사각형이 선택되었는지 확인
+                  onSelect={() => {
+                    setSelectedRectTransform(rect.id);
+                    setSelectedRect(rect); // 클릭 시 사각형 선택
+                    // console.log(selectedRect.id)
+                  }}
+                  onChange={(newAttrs) => {
+                    const rects = rectangles.slice();
+                    rects[i] = newAttrs;
+                    setRectangles(rects); // 사각형 속성 업데이트
+                  }}
+                />
               ))}
+              {/* 벽 생성을 위한 가이드라인 점 */}
               {tempSpots.map((spot, index) => (
                 <Circle
                   key={index}
@@ -674,17 +505,6 @@ const User = () => {
                   fill="red"
                 />
               ))}
-              {selectedRect && (
-                <Transformer
-                  ref={transformerRef}
-                  boundBoxFunc={(oldBox, newBox) => {
-                    if (newBox.width < 5 || newBox.height < 5) {
-                      return oldBox;
-                    }
-                    return newBox;
-                  }}
-                />
-              )}
             </Layer>
           </Stage>
           <div
@@ -715,6 +535,20 @@ const User = () => {
             overflowY: "auto",
           }}
         >
+          <h3>현재 적재함 목록</h3>
+          {rectangles.length !== 0 ? (
+            <div>
+              <ul>
+                {rectangles
+                  .filter((rectangles) => rectangles.type === "location")
+                  .map((rectangles, index) => (
+                    <li key={index}>{rectangles.id}번</li>
+                  ))}
+              </ul>
+            </div>
+          ) : (
+            <p>현재 재고함이 없습니다.</p>
+          )}
           <h3>Seleted Rectangle</h3>
           {selectedRect ? (
             <div>
@@ -724,6 +558,7 @@ const User = () => {
               <p>Number : {selectedRect.order}</p>
               <p>Name : {selectedRect.name}</p>
               <p>Type : {selectedRect.type}</p>
+              <p>rotation : {selectedRect.rotation}</p>
             </div>
           ) : (
             <p>No rectangle selected</p>
@@ -731,6 +566,93 @@ const User = () => {
         </div>
       </main>
     </div>
+  );
+};
+
+// -----   상자 설정 변경기 영역   ------
+// RectangleTransformer 컴포넌트는 각 사각형의 렌더링 및 변형을 처리
+// Rectangle 컴포넌트는 각 사각형의 렌더링 및 변형을 처리합니다
+const RectangleTransformer = ({
+  shapeProps,
+  isSelected,
+  onSelect,
+  onChange,
+}) => {
+  const shapeRef = useRef(); // 사각형 모양에 대한 참조
+  const trRef = useRef(); // 변형 도구에 대한 참조
+
+
+  // 사각형이 선택되었을 때 변형기를 연결하기 위한 Effect 훅
+  useEffect(() => {
+    if (isSelected) {
+      trRef.current.nodes([shapeRef.current]);
+      trRef.current.getLayer().batchDraw();
+    }
+  }, [isSelected]);
+
+  return (
+    <React.Fragment>
+      {/* 사각형 모양 */}
+      <Rect
+        onClick={onSelect} // 사각형 선택을 위한 클릭 이벤트 처리
+        onTap={onSelect} // 터치 디바이스를 위한 탭 이벤트 처리
+        ref={shapeRef}
+        {...shapeProps}
+        draggable // 사각형을 드래그 가능하게 함
+        // 드래그 종료 이벤트 -- 사각형 위치 업데이트
+        onDragEnd={(e) => {
+          onChange({
+            ...shapeProps,
+            x: Math.round(e.target.x()), //드래그 종료 후에 반올림한 위치로 이동함.
+            y: Math.round(e.target.y()),
+          });
+        }}
+        // 변형 종료 이벤트 -- 사각형 크기 및 위치 업데이트
+        onTransformEnd={(e) => {
+          const node = shapeRef.current; // 현재 도형에 대한 정보를 업데이트 받는다.
+          const scaleX = node.scaleX();
+          const scaleY = node.scaleY();
+
+          node.scaleX(1);
+          node.scaleY(1);
+          onChange({
+            ...shapeProps,
+            x: Math.round(node.x()), // 변형 후에 반올림한 위치로 이동
+            y: Math.round(node.y()),
+            width: Math.max(5, node.width() * scaleX), // 최소 너비 보장
+            height: Math.max(5, node.height() * scaleY), // 최소 높이 보장
+            rotation: Math.round(node.rotation()), // 반올림한 각도
+          });
+        }}
+      />
+      <Text
+        text={shapeProps.name}
+        x={shapeProps.x}
+        y={shapeProps.y}
+        width={shapeProps.width}
+        height={shapeProps.height}
+        fontSize={ Math.min(shapeProps.width, shapeProps.height) /5 }
+        fontFamily="Arial"
+        fill="white"
+        align="center"
+        verticalAlign="middle"
+        listening={false} // 텍스트를 클릭할 수 없도록 비활성화
+      />
+      {isSelected && (
+        // 사각형을 크기 조정 및 회전하는 변형 도구
+        <Transformer
+          ref={trRef}
+          flipEnabled={false} // 뒤집기 비활성화
+          boundBoxFunc={(oldBox, newBox) => {
+            // 최소 크기로 크기 조정 제한
+            if (Math.abs(newBox.width) < 5 || Math.abs(newBox.height) < 5) {
+              return oldBox;
+            }
+            return newBox;
+          }}
+        />
+      )}
+    </React.Fragment>
   );
 };
 

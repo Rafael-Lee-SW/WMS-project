@@ -53,14 +53,15 @@ const DynamicMyContainerTest = dynamic(
   () => import("/pages-sections/Components-Sections/MyContainerTest.jsx"),
   {ssr : false}
 )
-const DynamicMyContainerThree = dynamic(
-  () => import("/pages-sections/Components-Sections/MyContainerThree.jsx"),
+const DynamicMyContainerProduct = dynamic(
+  () => import("/pages-sections/Components-Sections/MyContainerProduct.jsx"),
   {ssr : false}
 )
 
 const useStyles = makeStyles(styles);
 
 export default function Components(props) {
+
   const classes = useStyles();
   const { ...rest } = props;
 
@@ -71,11 +72,13 @@ export default function Components(props) {
   }, []);
 
   const [currentIndex, setCurrentIndex] = useState(0);
+
   const componentsArray = [
     <DynamicMyContainer key="DynamicMyContainer"/>,
     <DynamicMyContainerTest key="DynamicMyContainerTest" />,
-    <DynamicMyContainerThree key="DynamicMyContainerThree"/>,
+    <DynamicMyContainerProduct key="DynamicMyContainerProduct"/>,
   ];
+
   const handleNextComponent = (index) => {
     setCurrentIndex(index);
   };
@@ -116,7 +119,7 @@ export default function Components(props) {
                 <ProductionQuantityLimitsIcon className={classes.icons} />재고 관리
                 </Button>
                 <Button color="success" round onClick={() => handleNextComponent(2)}>
-                <ListAltIcon className={classes.icons} />재고 관리
+                <ListAltIcon className={classes.icons} />재고 현황
                 </Button>
                 </div>
             </div>
