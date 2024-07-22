@@ -1,8 +1,8 @@
 package com.a508.wms.domain;
 
 import com.a508.wms.domain.util.BaseTimeEntity;
-import com.a508.wms.util.ProductStorageTypeEnum;
-import com.a508.wms.util.StatusEnum;
+import com.a508.wms.util.constant.ProductStorageTypeEnum;
+import com.a508.wms.util.constant.StatusEnum;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

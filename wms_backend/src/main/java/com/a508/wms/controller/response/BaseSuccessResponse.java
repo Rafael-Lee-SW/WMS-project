@@ -1,6 +1,6 @@
 package com.a508.wms.controller.response;
 
-import static com.a508.wms.util.ResponseEnum.SUCCESS;
+import static com.a508.wms.util.constant.ResponseEnum.SUCCESS;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;

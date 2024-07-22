@@ -1,8 +1,8 @@
 package com.a508.wms.dto;
 
 import com.a508.wms.domain.Subscription;
-import com.a508.wms.util.PaidTypeEnum;
-import com.a508.wms.util.StatusEnum;
+import com.a508.wms.util.constant.PaidTypeEnum;
+import com.a508.wms.util.constant.StatusEnum;
 import lombok.*;
 
 @Getter

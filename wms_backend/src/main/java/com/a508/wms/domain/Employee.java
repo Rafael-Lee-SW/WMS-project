@@ -2,8 +2,8 @@ package com.a508.wms.domain;
 
 import com.a508.wms.domain.util.BaseTimeEntity;
 import com.a508.wms.dto.EmployeeDto;
-import com.a508.wms.util.LoginTypeEnum;
-import com.a508.wms.util.StatusEnum;
+import com.a508.wms.util.constant.LoginTypeEnum;
+import com.a508.wms.util.constant.StatusEnum;
 import jakarta.persistence.*;
 import lombok.*;
 import org.slf4j.Logger;
