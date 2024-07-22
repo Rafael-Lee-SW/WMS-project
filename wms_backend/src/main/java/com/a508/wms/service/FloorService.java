@@ -5,6 +5,8 @@ import com.a508.wms.dto.FloorDto;
 import com.a508.wms.repository.FloorRepository;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.a508.wms.util.mapper.FloorMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,7 +25,7 @@ public class FloorService {
     public List<FloorDto> getAllByLocationId(Long locationId) {
         List<Floor> floors = floorRepository.findAllByLocationId(locationId);
         return floors.stream()
-            .map(FloorDto::fromFloor)
+            .map(FloorMapper::fromFloor)
             .collect(Collectors.toList());
     }
 
@@ -33,7 +35,7 @@ public class FloorService {
      * @return FloorDto
      */
     public FloorDto findById(@PathVariable Long id) {
-        return FloorDto.fromFloor(floorRepository.findById(id)
+        return FloorMapper.fromFloor(floorRepository.findById(id)
             .orElseThrow(()-> new IllegalArgumentException("Invalid Floor Id")));
     }
 }

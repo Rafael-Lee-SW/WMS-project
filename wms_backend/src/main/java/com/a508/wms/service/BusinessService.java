@@ -4,11 +4,15 @@ import com.a508.wms.domain.Business;
 import com.a508.wms.dto.BusinessDto;
 import com.a508.wms.repository.BusinessRepository;
 import com.a508.wms.util.constant.StatusEnum;
+import com.a508.wms.util.mapper.BusinessMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+
+import static com.a508.wms.util.mapper.BusinessMapper.fromBusiness;
+import static com.a508.wms.util.mapper.BusinessMapper.fromDto;
 
 @Slf4j
 @Service
@@ -36,7 +40,7 @@ public class BusinessService {
         Business business = builder.build();
         try {
             Business savedBusiness = businessRepository.save(business);
-            return BusinessDto.fromBusiness(savedBusiness);
+            return fromBusiness(savedBusiness);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -54,7 +58,7 @@ public class BusinessService {
             if (business.getStatusEnum() != StatusEnum.ACTIVE) {
                 throw new Exception("해당 id는 활성화 상태가 아닙니다.");
             }
-            return BusinessDto.fromBusiness(business);
+            return fromBusiness(business);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -66,13 +70,12 @@ public class BusinessService {
      * @return List<BusinessDto>
      */
     public List<BusinessDto> findAll() {
-        try {
-            List<Business> businesses = businessRepository.findAll();
-            return businesses.stream().map(BusinessDto::fromBusiness).toList();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        List<Business> businesses = businessRepository.findAll();
+        return businesses.stream()
+                .map(BusinessMapper::fromBusiness)
+                .toList();
     }
+
 
     /**
      * 사업체의 정보를 수정하는 메서드
@@ -90,9 +93,9 @@ public class BusinessService {
                 throw new Exception("해당 id는 활성화 상태가 아닙니다.");
             }
 //            2. 수정할 필드 값 변경하기
-            Business updatedBusiness = businessRepository.save(existingBusiness.toBusiness(businessDto));
+            Business updatedBusiness = businessRepository.save(fromDto(businessDto));
 //            3. 변경 후 return
-            return BusinessDto.fromBusiness(updatedBusiness);
+            return BusinessMapper.fromBusiness(updatedBusiness);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -114,12 +117,10 @@ public class BusinessService {
             }
 //            2. 삭제할 필드 값 변경하기
             existingBusiness.setStatusEnum(StatusEnum.DELETED);
-//                바꿀 정보 = businessDto, 기존 정보 = existingBusiness
-//                기존 정보와 다른 경우 businessDto의 정보를 넣기
 
             Business deletedBusiness = businessRepository.save(existingBusiness);
 //             3. 변경 후 return
-            return BusinessDto.fromBusiness(deletedBusiness);
+            return fromBusiness(deletedBusiness);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

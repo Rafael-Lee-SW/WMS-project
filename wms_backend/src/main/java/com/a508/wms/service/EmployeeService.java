@@ -4,6 +4,7 @@ import com.a508.wms.domain.Employee;
 import com.a508.wms.dto.EmployeeDto;
 import com.a508.wms.repository.EmployeeRepository;
 import com.a508.wms.util.constant.StatusEnum;
+import com.a508.wms.util.mapper.EmployeeMapper;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +27,8 @@ public class EmployeeService {
      */
     public List<EmployeeDto> findAll() {
         List<Employee> employees = employeeRepository.findAll();
-        return employees.stream().map(EmployeeDto::toEmployeeDto).toList();
+        return employees.stream().map(EmployeeMapper::fromEmployee)
+                .toList();
     }
 
     /**
@@ -37,7 +39,7 @@ public class EmployeeService {
      */
     public EmployeeDto findById(long id) {
         Optional<Employee> employee = employeeRepository.findById(id);
-        return employee.map(EmployeeDto::toEmployeeDto).orElse(null);
+        return EmployeeMapper.fromEmployee(employee.orElse(null));
     }
 
     /**
@@ -48,7 +50,8 @@ public class EmployeeService {
      */
     public List<EmployeeDto> findByBusinessId(long businessId) {
         List<Employee> employees = employeeRepository.findByBusinessId(businessId);
-        return employees.stream().map(EmployeeDto::toEmployeeDto).toList();
+        return employees.stream().map(EmployeeMapper::fromEmployee)
+                .toList();
     }
 
     /**
@@ -61,7 +64,7 @@ public class EmployeeService {
     public EmployeeDto update(long id, EmployeeDto employeeDto) {
         Employee employee = employeeRepository.findById(id).orElse(null);
         if (employee != null)
-            return EmployeeDto.toEmployeeDto(employeeRepository.save(employee.toEmployee(employeeDto)));
+            return EmployeeMapper.fromEmployee(EmployeeMapper.fromDto(employeeDto));
         return null;
     }
 
@@ -75,8 +78,7 @@ public class EmployeeService {
         Employee employee = employeeRepository.findById(id).orElseThrow(null);
         if(employee != null) {
         employee.setStatusEnum(StatusEnum.DELETED);
-        Employee deletedEmployee = employeeRepository.save(employee);
-        return EmployeeDto.toEmployeeDto(deletedEmployee);
+        return EmployeeMapper.fromEmployee(employee);
         }
         return null;
     }

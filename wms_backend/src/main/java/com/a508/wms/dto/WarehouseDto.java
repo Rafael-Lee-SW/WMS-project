@@ -5,6 +5,8 @@ import com.a508.wms.domain.Warehouse;
 import com.a508.wms.util.constant.FacilityTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;
 import java.time.LocalDateTime;
+import java.util.List;
+
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -25,21 +27,7 @@ public class WarehouseDto {
     private LocalDateTime createDate;
     private LocalDateTime updateDate;
     private StatusEnum status;
+    private List<LocationDto> locations;
 
-    public static WarehouseDto fromWarehouse(Warehouse warehouse) {
-        return WarehouseDto.builder()
-            .id(warehouse.getId())
-            .businessId(warehouse.getBusiness().getId())
-            .size(warehouse.getSize())
-            .name(warehouse.getName())
-            .rowCount(warehouse.getRowCount())
-            .columnCount(warehouse.getColumnCount())
-            .facilityType(warehouse.getFacilityType())
-            .priority(warehouse.getPriority())
-            .createDate(warehouse.getCreatedDate())
-            .updateDate(warehouse.getUpdatedDate())
-            .status(warehouse.getStatusEnum())
-            .build();
-    }
 
 }

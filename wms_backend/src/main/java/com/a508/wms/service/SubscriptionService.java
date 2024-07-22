@@ -8,6 +8,7 @@ import com.a508.wms.repository.BusinessRepository;
 import com.a508.wms.repository.SubscriptionRepository;
 import com.a508.wms.repository.SubscriptionTypeRepository;
 import com.a508.wms.util.constant.StatusEnum;
+import com.a508.wms.util.mapper.SubscriptionMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,8 +42,8 @@ public class SubscriptionService {
     @Transactional(readOnly = true)
     public List<SubscriptionDto> getSubscriptions() {
         List<Subscription> subscriptions = subscriptionRepository.findAll();
-        log.info("subscriptions: {}", subscriptions.stream().map(SubscriptionDto::fromSubscription).collect(Collectors.toList()));
-        return subscriptions.stream().map(SubscriptionDto::fromSubscription).collect(Collectors.toList());
+        log.info("subscriptions: {}", subscriptions.stream().map(SubscriptionMapper::fromSubscription).toList());
+        return subscriptions.stream().map(SubscriptionMapper::fromSubscription).toList();
     }
 
     /**
@@ -53,7 +54,7 @@ public class SubscriptionService {
      */
     public List<SubscriptionDto> getSubscriptionByBusinessId(long id) {
         List<Subscription> subscriptions = subscriptionRepository.findByBusinessId(id);
-        return subscriptions.stream().map(SubscriptionDto::fromSubscription).collect(Collectors.toList());
+        return subscriptions.stream().map(SubscriptionMapper::fromSubscription).toList();
     }
 
     /**
@@ -67,14 +68,15 @@ public class SubscriptionService {
         Business business = businessRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid business Id:" + id));
 
-        SubscriptionType subscriptionType = subscriptionTypeRepository.findById(subscriptionDto.getSubscriptionTypeDto().getId())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid subscription type Id:" + subscriptionDto.getSubscriptionTypeDto().getId()));
+        SubscriptionType subscriptionType = subscriptionTypeRepository.findById(subscriptionDto.getSubscriptionTypeId())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid subscription type Id:"
+                        + subscriptionDto.getSubscriptionTypeId()));
 
-        Subscription subscription = SubscriptionDto.toSubscription(subscriptionDto);
+        Subscription subscription = SubscriptionMapper.fromDto(subscriptionDto);
         subscription.setBusiness(business);
         subscription.setSubscriptionType(subscriptionType);
 
-        return SubscriptionDto.fromSubscription(subscriptionRepository.save(subscription));
+        return SubscriptionMapper.fromSubscription(subscriptionRepository.save(subscription));
     }
 
 
@@ -89,14 +91,15 @@ public class SubscriptionService {
         Business business = businessRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid business Id:" + id));
 
-        SubscriptionType subscriptionType = subscriptionTypeRepository.findById(subscriptionDto.getSubscriptionTypeDto().getId())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid subscription type Id:" + subscriptionDto.getSubscriptionTypeDto().getId()));
+        SubscriptionType subscriptionType = subscriptionTypeRepository.findById(subscriptionDto.getSubscriptionTypeId())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid subscription type Id:"
+                        + subscriptionDto.getSubscriptionTypeId()));
 
-        Subscription subscription = SubscriptionDto.toSubscription(subscriptionDto);
+        Subscription subscription = SubscriptionMapper.fromDto(subscriptionDto);
         subscription.setBusiness(business);
         subscription.setSubscriptionType(subscriptionType);
 
-        return SubscriptionDto.fromSubscription(subscriptionRepository.save(subscription));
+        return SubscriptionMapper.fromSubscription(subscriptionRepository.save(subscription));
     }
 
     /**

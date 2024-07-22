@@ -8,6 +8,8 @@ import com.a508.wms.repository.WarehouseRepository;
 import com.a508.wms.util.constant.StatusEnum;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.a508.wms.util.mapper.WarehouseMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,8 +54,8 @@ public class WarehouseService {
     public List<WarehouseDto> findByBusinessId(Long businessId) {
         List<Warehouse> warehouses = warehouseRepository.findByBusinessId(businessId); // 창고 목록 조회
         return warehouses.stream()
-            .map(WarehouseDto::fromWarehouse)
-            .collect(Collectors.toList());
+            .map(WarehouseMapper::fromWarehouse)
+                .toList();
     }
 
     /*
@@ -62,7 +64,7 @@ public class WarehouseService {
     public WarehouseDto findByWarehouseId(Long id) {
         Warehouse warehouse = warehouseRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Invalid warehouse ID"));
-        return WarehouseDto.fromWarehouse(warehouse);
+        return WarehouseMapper.fromWarehouse(warehouse);
     }
 
     /*
@@ -93,7 +95,7 @@ public class WarehouseService {
 
         warehouseRepository.save(warehouse);
 
-        return WarehouseDto.fromWarehouse(warehouse);
+        return WarehouseMapper.fromWarehouse(warehouse);
     }
 
     /*
@@ -104,6 +106,7 @@ public class WarehouseService {
         Warehouse warehouse = warehouseRepository.findById(warehouseId)
             .orElseThrow(() -> new IllegalArgumentException("Invalid warehouse ID"));
         warehouse.setStatusEnum(StatusEnum.INACTIVE);
+        warehouseRepository.save(warehouse);
     }
 
     private int calculateRowCount(int size) {

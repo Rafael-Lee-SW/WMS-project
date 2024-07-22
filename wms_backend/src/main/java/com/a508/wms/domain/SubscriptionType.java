@@ -20,11 +20,11 @@ public class SubscriptionType extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private int cost;
-
     @Column(nullable = false, length = 20)
     private String name;
+
+    @Column(nullable = false)
+    private int cost;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
