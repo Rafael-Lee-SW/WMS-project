@@ -7,7 +7,7 @@ import com.a508.wms.dto.SubscriptionDto;
 import com.a508.wms.repository.BusinessRepository;
 import com.a508.wms.repository.SubscriptionRepository;
 import com.a508.wms.repository.SubscriptionTypeRepository;
-import com.a508.wms.util.StatusEnum;
+import com.a508.wms.util.constant.StatusEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

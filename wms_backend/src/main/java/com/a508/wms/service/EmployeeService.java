@@ -3,7 +3,7 @@ package com.a508.wms.service;
 import com.a508.wms.domain.Employee;
 import com.a508.wms.dto.EmployeeDto;
 import com.a508.wms.repository.EmployeeRepository;
-import com.a508.wms.util.StatusEnum;
+import com.a508.wms.util.constant.StatusEnum;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

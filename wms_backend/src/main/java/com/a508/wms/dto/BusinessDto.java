@@ -1,7 +1,7 @@
 package com.a508.wms.dto;
 
 import com.a508.wms.domain.Business;
-import com.a508.wms.util.StatusEnum;
+import com.a508.wms.util.constant.StatusEnum;
 import lombok.*;
 
 @Getter
