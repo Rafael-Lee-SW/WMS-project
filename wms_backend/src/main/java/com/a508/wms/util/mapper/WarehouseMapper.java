@@ -14,9 +14,9 @@ import java.util.stream.Collectors;
 @Component
 public class WarehouseMapper {
     /**
-     * , Business business, ProductStorageType productStorageType 제외. business와 locations 직접 설정하기
+     * WarehouseDto -> Warehouse 객체. business와 locations 직접 설정하기
      * @param warehouseDto
-     * @return
+     * @return Warehouse
      */
     public static Warehouse fromDto(WarehouseDto warehouseDto) {
         Warehouse warehouse = Warehouse.builder()
@@ -31,6 +31,12 @@ public class WarehouseMapper {
 
         return warehouse;
     }
+
+    /**
+     * Warehouse -> WarehouseDto 변환
+     * @param warehouse
+     * @return WarehouseDto
+     */
     public static WarehouseDto fromWarehouse(Warehouse warehouse) {
         return WarehouseDto.builder()
                 .id(warehouse.getId())

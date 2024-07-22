@@ -2,9 +2,6 @@ package com.a508.wms.util.mapper;
 
 import com.a508.wms.domain.Floor;
 import com.a508.wms.domain.Location;
-import com.a508.wms.domain.ProductStorageType;
-import com.a508.wms.domain.Warehouse;
-import com.a508.wms.dto.FloorDto;
 import com.a508.wms.dto.LocationDto;
 import org.springframework.stereotype.Component;
 
@@ -37,9 +34,9 @@ public class LocationMapper {
     }
 
     /**
-     * Warehouse warehouse, ProductStorageType productStorageType 제외, Service에서 Floor 직접 설정
+     * LocationDto -> Location 변환
      * @param locationDto
-     * @return
+     * @return Location
      */
     public static Location fromDto(LocationDto locationDto) {
         Location location = Location.builder()

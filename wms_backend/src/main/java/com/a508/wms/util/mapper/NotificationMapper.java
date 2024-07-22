@@ -26,7 +26,7 @@ public class NotificationMapper {
 
     /**
      * from notificationDto, business -> notification
-     * , Business business 제외. 직접 설정하기
+     *  business 제외. 직접 설정하기
      * @param notificationDto
      * @return Notification
      */
