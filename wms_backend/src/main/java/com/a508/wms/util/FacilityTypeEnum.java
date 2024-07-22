@@ -1,6 +1,11 @@
 package com.a508.wms.util;
 
 public enum FacilityTypeEnum {
-    STORE,
-    WAREHOUSE
+    STORE("매장"),
+    WAREHOUSE("창고");
+    private final String value;
+
+    private FacilityTypeEnum(String value) {
+        this.value = value;
+    }
 }
