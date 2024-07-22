@@ -1,6 +1,5 @@
 package com.a508.wms.dto;
 
-import com.a508.wms.domain.Business;
 import com.a508.wms.util.constant.StatusEnum;
 import lombok.*;
 
@@ -14,6 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class BusinessDto {
+
     private long id;
     private String email;
     private String password;
@@ -28,8 +28,6 @@ public class BusinessDto {
     private List<NotificationDto> notificationDtoList;
     private List<SubscriptionDto> subscriptionDtoList;
     private List<WarehouseDto> warehouseDtoList;
-
-
 
 
 }
