@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 
+// 회원정보랜더링
 export default function Info() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);

@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useState } from "react";
 
+// 사업자 관리
 const ManageBusiness = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);

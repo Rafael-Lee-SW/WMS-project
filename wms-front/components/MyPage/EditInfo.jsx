@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react"
 
+// 개인정보수정
 const EditInfo = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -8,6 +9,8 @@ const EditInfo = () => {
         email: '',
         password: '',
     });
+
+    // 기존 정보 받아오기
 
     // useEffect(() => {
     //     axios.get('').then(response => {

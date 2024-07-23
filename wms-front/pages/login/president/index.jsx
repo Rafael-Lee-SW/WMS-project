@@ -58,7 +58,7 @@ export default function PresidentLogin() {
         router.push('/')
       }
     } catch (error) {
-      alert('Invalid credentials');
+      alert('잘못된 사용자입니다.');
     }
   };
 
