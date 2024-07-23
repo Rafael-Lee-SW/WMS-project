@@ -49,8 +49,8 @@ const DynamicMyContainer = dynamic(
   () => import("/pages-sections/Components-Sections/MyContainer.jsx"),
   {ssr : false}
 )
-const DynamicMyContainerTest = dynamic(
-  () => import("/pages-sections/Components-Sections/MyContainerTest.jsx"),
+const DynamicMyContainerDual = dynamic(
+  () => import("/pages-sections/Components-Sections/MyContainerDual.jsx"),
   {ssr : false}
 )
 const DynamicMyContainerProduct = dynamic(
@@ -75,7 +75,7 @@ export default function Components(props) {
 
   const componentsArray = [
     <DynamicMyContainer key="DynamicMyContainer"/>,
-    <DynamicMyContainerTest key="DynamicMyContainerTest" />,
+    <DynamicMyContainerDual key="DynamicMyContainerDual" />,
     <DynamicMyContainerProduct key="DynamicMyContainerProduct"/>,
   ];
 

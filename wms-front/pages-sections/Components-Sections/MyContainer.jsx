@@ -41,6 +41,11 @@ import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/MyC
 import { Canvas } from "canvas";
 import { LocalConvenienceStoreOutlined } from "@mui/icons-material";
 
+//라인 생성 테스트를 위한 다이나믹 import
+import dynamic from "next/dynamic";
+const LineCreate = dynamic(() => import('/components/LineCreate.jsx'), { ssr: false });
+
+
 // 상수 설정(그리드, 컨버스 등)
 const GRID_SIZE = 100; // 100cm = 1m
 const GRID_SIZE_SUB_50 = 50; // 50cm
@@ -52,6 +57,7 @@ const useStyles = makeStyles(styles);
 // ----- 본격적인 창고 설정 반환 -------
 
 const User = () => {
+
   const classes = useStyles();
   const stageRef = useRef(null); // Create a reference for the stage
 
@@ -107,7 +113,7 @@ const User = () => {
       order: rectangles.length + 1, // 순서대로 번호 인덱싱
       name: newRectName || `Rect ${rectangles.length + 1}`,
       type: type, // set the type of the rectangle
-      rotation : 0, // 초기 회전값
+      rotation: 0, // 초기 회전값
     };
     setRectangles([...rectangles, newRect]);
     updateContainer(newRect, "rectangle", `rect${newRect.id}`);
@@ -137,14 +143,14 @@ const User = () => {
       ),
     };
     // if (!isOverlapping(newWall)) {
-      setRectangles([...rectangles, newWall]);
-      updateContainer(newWall, "wall", `wall${newWall.id}`);
-      // Reset wall points
-      setWallStartPoint(null);
-      setWallEndPoint(null);
-      // Reset settings to default after adding
-      setNewWallColor("brown");
-      setNewWallWidth(10);
+    setRectangles([...rectangles, newWall]);
+    updateContainer(newWall, "wall", `wall${newWall.id}`);
+    // Reset wall points
+    setWallStartPoint(null);
+    setWallEndPoint(null);
+    // Reset settings to default after adding
+    setNewWallColor("brown");
+    setNewWallWidth(10);
     // } else {
     //   alert("Wall overlaps with another rectangle.");
     //   // Reset wall points
@@ -152,7 +158,6 @@ const User = () => {
     //   setWallEndPoint(null);
     // }
   };
-
 
   // Container Update Function (창고 배열 저장)
   const updateContainer = (rect, type, code) => {
@@ -171,9 +176,9 @@ const User = () => {
     );
     setContainer(newContainer);
   };
-
+  
   // 컨버스에 있는 사각형들의 정보를 저장한다.
-  const handleSave = () => {
+  const handleSave = async () => {
     const rectData = rectangles.map((rect) => ({
       id: rect.id,
       x: rect.x,
@@ -183,9 +188,49 @@ const User = () => {
       fill: rect.fill,
       type: rect.type,
       name: rect.name,
+      rotation: rect.rotation,
     }));
     console.log("Canvas data", rectData);
     console.log("container", container);
+
+    try {
+      const response = await fetch("/api/save-map", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(rectData),
+      });
+
+      if (response.ok) {
+        console.log("Map data saved successfully");
+      } else {
+        console.error("Error saving map data");
+      }
+    } catch (error) {
+      console.error("Error saving map data:", error);
+    }
+  };
+
+  // Load the rectangle data from the local public/map directory
+  const loadMapFromLocal = async () => {
+    try {
+      const response = await fetch("/api/load-map", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        const mapData = await response.json();
+        setRectangles(mapData);
+      } else {
+        console.error("Error loading map data");
+      }
+    } catch (error) {
+      console.error("Error loading map data:", error);
+    }
   };
 
   // 줌-인 줌-아웃 기능
@@ -434,10 +479,13 @@ const User = () => {
             position: "relative",
             overflow: "hidden", // Canvas 영역 이외에는 잠금
             // overflow:"scroll", // Add Scroll, if canvas exceeds div size
+            // cursor: "url('brickCursor.cur'), auto",
             cursor:
+              //   // url(../public/img/brickCursor.cur)
               currentSetting === "wall"
-                ? "url(/brick-cursor.png), auto"
-                : "default",
+                ? "crosshair"
+                : // ? "unset"
+                  "default",
           }}
           onClick={(e) => {
             if (currentSetting === "wall") {
@@ -520,6 +568,7 @@ const User = () => {
             <button onClick={handleZoomIn}>Zoom In</button>
             <button onClick={handleZoomOut}>Zoom Out</button>
             <button onClick={handleSave}>Save</button>
+            <button onClick={loadMapFromLocal}>Load</button>
           </div>
         </div>
 
@@ -565,6 +614,8 @@ const User = () => {
           )}
         </div>
       </main>
+      {/* 라인 생성을 위한 테스트 부분 */}
+      <LineCreate/>
     </div>
   );
 };
@@ -580,7 +631,6 @@ const RectangleTransformer = ({
 }) => {
   const shapeRef = useRef(); // 사각형 모양에 대한 참조
   const trRef = useRef(); // 변형 도구에 대한 참조
-
 
   // 사각형이 선택되었을 때 변형기를 연결하기 위한 Effect 훅
   useEffect(() => {
@@ -631,7 +681,7 @@ const RectangleTransformer = ({
         y={shapeProps.y}
         width={shapeProps.width}
         height={shapeProps.height}
-        fontSize={ Math.min(shapeProps.width, shapeProps.height) /5 }
+        fontSize={Math.min(shapeProps.width, shapeProps.height) / 5}
         fontFamily="Arial"
         fill="white"
         align="center"

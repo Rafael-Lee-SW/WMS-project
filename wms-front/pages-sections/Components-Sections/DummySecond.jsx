@@ -174,6 +174,23 @@ const ExcelImport = () => {
     XLSX.writeFile(workbook, "ADN_project엑셀테스트.xlsx");
   };
 
+  //웹에 있는 엑셀을 JSON 형태로 Local에 저장
+  const downloadJsonFile = (jsonData, fileName) => {
+    const dataStr = JSON.stringify(jsonData, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
+  const downloadExcelForLocal = () => {
+    downloadJsonFile(tableData, "data.json");
+  };
+
   // 로컬 프로젝트에 있는 파일 불러오기
   const loadLocalExcel = async () => {
     const response = await fetch("/excel/Uniqlo.xlsx");
@@ -312,6 +329,13 @@ const ExcelImport = () => {
                 onClick={loadLocalExcel}
               >
                 로컬 엑셀 파일 불러오기
+              </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={downloadExcelForLocal}
+              >
+                JSON 다운로드
               </Button>
             </Grid>
             <Grid item xs={12}>

@@ -115,6 +115,53 @@ const ExcelImport = () => {
     importExcel(file);
   };
 
+  
+  // -- json save & load part
+
+  // Save the table data as a JSON file in the local public/excel directory
+  const saveJsonToLocal = async () => {
+    try {
+      const response = await fetch('/api/save-json', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(tableData),
+      });
+
+      if (response.ok) {
+        console.log('JSON data saved successfully');
+      } else {
+        console.error('Error saving JSON data');
+      }
+    } catch (error) {
+      console.error('Error saving JSON data:', error);
+    }
+  };
+
+   // Load the JSON data file from the local public/excel directory
+   const loadJsonFromLocal = async () => {
+    try {
+      const response = await fetch('/api/load-json', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const jsonData = await response.json();
+        setTableData(jsonData);
+      } else {
+        console.error('Error loading JSON data');
+      }
+    } catch (error) {
+      console.error('Error loading JSON data:', error);
+    }
+  };
+
+  // -- json save & load part
+
   // Apply color to the specified column
   const applyColumnColor = (columnIndex) => {
     const hotInstance = hotTableRef.current.hotInstance;
@@ -199,6 +246,12 @@ const ExcelImport = () => {
         <Grid item xs={6} md={4}>
           <Button variant="contained" color="primary" onClick={startChoosingColumns}>
             컬럼 색상 변경
+          </Button>
+          <Button variant="contained" color="primary" onClick={saveJsonToLocal}>
+            JSON 저장
+          </Button>
+          <Button variant="contained" color="primary" onClick={loadJsonFromLocal}>
+            JSON 로드
           </Button>
         </Grid>
       </div>
