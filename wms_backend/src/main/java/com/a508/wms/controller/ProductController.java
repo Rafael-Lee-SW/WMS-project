@@ -2,6 +2,8 @@ package com.a508.wms.controller;
 
 
 import com.a508.wms.controller.response.BaseSuccessResponse;
+import com.a508.wms.dto.ProductExportRequestDto;
+import com.a508.wms.dto.ProductExportResponseDto;
 import com.a508.wms.dto.ProductImportDto;
 import com.a508.wms.dto.ProductRequestDto;
 import com.a508.wms.dto.ProductResponseDto;
@@ -125,5 +127,21 @@ public class ProductController {
 
         productService.importProducts(importProducts);
         return new BaseSuccessResponse<>(null);
+    }
+
+    /**
+     * 물품들의 출고 처리를 하는 로직
+     *
+     * @param exportProducts : 출고되는 상품의 정보(엑셀의 한 row)
+     * @return
+     */
+
+    @PostMapping("/export")
+    public BaseSuccessResponse<List<ProductExportResponseDto>> exportProducts(
+        @RequestBody List<ProductExportRequestDto> exportProducts
+    ) {
+        log.info("export products: {}", exportProducts);
+        productService.exportProducts(exportProducts);
+        return new BaseSuccessResponse<>(productService.exportProducts(exportProducts));
     }
 }

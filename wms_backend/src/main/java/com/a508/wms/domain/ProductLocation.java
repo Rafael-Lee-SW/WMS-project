@@ -66,4 +66,8 @@ public class ProductLocation extends BaseTimeEntity {
     public void updateStatus(StatusEnum statusEnum) {
         this.statusEnum = statusEnum;
     }
+
+    public void updateProductQuantity(int product_quantity) {
+        this.product_quantity = product_quantity;
+    }
 }
