@@ -361,7 +361,7 @@ public class ProductService {
         Product product = productRepository.findById(productLocation.getProduct().getId())
             .orElseThrow(() -> new IllegalArgumentException("Invalid productLocation Id"));
 
-        productLocation.updateProductQuantity(quantity);
+        productLocation.setProductQuantity(quantity);
         product.updateData(quantity, product.getExpirationDate(), product.getComment());
 
         productLocationRepository.save(productLocation);
