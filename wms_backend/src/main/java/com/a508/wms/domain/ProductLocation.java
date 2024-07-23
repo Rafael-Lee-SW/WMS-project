@@ -50,6 +50,9 @@ public class ProductLocation extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private StatusEnum statusEnum = StatusEnum.ACTIVE;
 
+    public void setProductQuantity(int productQuantity) {
+        this.product_quantity = productQuantity;
+    }
     // 연관관계 편의 메서드
     public void setProduct(Product product) {
         this.product = product;
@@ -66,4 +69,6 @@ public class ProductLocation extends BaseTimeEntity {
     public void updateStatus(StatusEnum statusEnum) {
         this.statusEnum = statusEnum;
     }
+
+
 }
