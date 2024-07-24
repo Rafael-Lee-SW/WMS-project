@@ -28,21 +28,21 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
 
     @Query(value = "SELECT pd.barcode, " +
-        "SUM(CASE WHEN pl.exportTypeEnum IN ('STORE', 'DISPLAY') THEN p.productQuantity ELSE 0 END) AS possibleQuantity, "
+        "SUM(CASE WHEN pl.export_type_enum IN ('STORE', 'DISPLAY') THEN p.product_quantity ELSE 0 END) AS possibleQuantity, "
         +
-        "SUM(CASE WHEN pl.exportTypeEnum = 'KEEP' THEN p.productQuantity ELSE 0 END) AS movableQuantity "
+        "SUM(CASE WHEN pl.export_type_enum = 'KEEP' THEN p.product_quantity ELSE 0 END) AS movableQuantity "
         +
-        "FROM Product p " +
-        "JOIN p.productDetail pd " +
-        "JOIN p.productLocations pl " +
-        "JOIN pd.business b " +
+        "FROM product p " +
+        "JOIN product_detail pd ON p.product_detail_id = pd.id " +
+        "JOIN product_location pl ON p.id = pl.product_id " +
+        "JOIN business b ON pd.business_id = b.id " +
         "WHERE pd.barcode = :barcode AND b.id = :businessId " +
         "GROUP BY pd.barcode", nativeQuery = true)
     ProductQuantityDto findQuantityByBarcodeAndBusinessId(@Param("barcode") Long barcode,
         @Param("businessId") Long businessId);
 
     @Query(value =
-        "SELECT w.name AS warehouseName, l.name AS locationName, f.floor_level AS floorLevel, pl.id AS productLocationId  "
+        "SELECT w.name AS warehouseName, l.name AS locationName, f.floor_level AS floorLevel, pl.id AS productLocationId, "
             +
             "pd.name AS productName, p.product_quantity AS productQuantity " +
             "FROM product p " +

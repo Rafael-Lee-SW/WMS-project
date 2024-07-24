@@ -1,18 +1,16 @@
 package com.a508.wms.dto;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+public interface ProductPickingLocationDto {
 
-@Getter
-@Setter
-@Builder
-public class ProductPickingLocationDto {
+    String getWarehouseName();
 
-    private String warehouseName;
-    private String locationName;
-    private String productName;
-    private int floorLevel;
-    private Long productLocationId;
-    private int productQuantity;
+    String getLocationName();
+
+    String getProductName();
+
+    Integer getFloorLevel();
+
+    Long getProductLocationId();
+
+    Integer getProductQuantity();
 }

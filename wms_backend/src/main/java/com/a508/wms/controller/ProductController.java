@@ -141,7 +141,6 @@ public class ProductController {
         @RequestBody List<ProductExportRequestDto> exportProducts
     ) {
         log.info("export products: {}", exportProducts);
-        productService.exportProducts(exportProducts);
         return new BaseSuccessResponse<>(productService.exportProducts(exportProducts));
     }
 }

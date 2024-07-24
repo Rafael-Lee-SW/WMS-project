@@ -274,6 +274,7 @@ public class ProductService {
         Map<Long, List<ProductExportRequestDto>> exports = requests.stream()
             .collect(Collectors.groupingBy((ProductExportRequestDto::getTrackingNumber)));
 
+        log.info("exports Size: {}", exports.size());
         //송장별로 처리
         List<ProductExportResponseDto> result = exports.entrySet().stream()
             .map(entry -> {
@@ -283,6 +284,8 @@ public class ProductService {
                     .path(path)
                     .build();
             }).toList();
+
+        log.info("result: {}", result);
 
         return result;
     }
@@ -304,6 +307,9 @@ public class ProductService {
             //남은양
             int remains = exportProduct.getQuantity();
 
+            log.info("candidates Size: {}", candidates.size());
+            log.info("remains:{}", remains);
+
             for (ProductPickingLocationDto candidate : candidates) {
                 if (candidate.getProductQuantity() == 0) {
                     continue;
@@ -323,6 +329,8 @@ public class ProductService {
                         .productName(candidate.getProductName())
                         .amount(candidate.getProductQuantity() - remains)
                         .build());
+
+                    path.put(candidate.getWarehouseName(), pickings);
                     break;
                 }
 
@@ -355,6 +363,7 @@ public class ProductService {
      */
 
     private void updateProductQuantity(Long productLocationId, int quantity) {
+        log.info("quantity:{}", quantity);
         ProductLocation productLocation = productLocationRepository.findById(productLocationId)
             .orElseThrow(() -> new IllegalArgumentException("Invalid productLocation Id"));
 
@@ -399,7 +408,7 @@ public class ProductService {
 
         if (!movingProductBarcodes.isEmpty()) {
             throw new IllegalArgumentException(
-                "해당 물품들의 이동이 필요합니다." + movingProductBarcodes.toString());
+                "해당 물품들의 이동이 필요합니다." + movingProductBarcodes);
         }
     }
 
