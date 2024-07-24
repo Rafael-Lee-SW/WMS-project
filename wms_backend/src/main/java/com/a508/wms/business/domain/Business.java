@@ -1,12 +1,12 @@
-package com.a508.wms.business;
+package com.a508.wms.business.domain;
 
-import com.a508.wms.employee.Employee;
-import com.a508.wms.notification.Notification;
-import com.a508.wms.productdetail.ProductDetail;
-import com.a508.wms.subscription.Subscription;
+import com.a508.wms.employee.domain.Employee;
+import com.a508.wms.notification.domain.Notification;
+import com.a508.wms.productdetail.domain.ProductDetail;
+import com.a508.wms.subscription.domain.Subscription;
 import com.a508.wms.util.BaseTimeEntity;
 import com.a508.wms.util.constant.StatusEnum;
-import com.a508.wms.warehouse.Warehouse;
+import com.a508.wms.warehouse.domain.Warehouse;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;

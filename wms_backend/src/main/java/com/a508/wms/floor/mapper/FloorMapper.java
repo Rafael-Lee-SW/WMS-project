@@ -1,5 +1,7 @@
-package com.a508.wms.floor;
+package com.a508.wms.floor.mapper;
 
+import com.a508.wms.floor.domain.Floor;
+import com.a508.wms.floor.dto.FloorDto;
 import org.springframework.stereotype.Component;
 
 @Component

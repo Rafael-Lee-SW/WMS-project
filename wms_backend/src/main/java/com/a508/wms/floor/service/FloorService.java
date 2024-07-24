@@ -1,8 +1,12 @@
-package com.a508.wms.floor;
+package com.a508.wms.floor.service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.a508.wms.floor.domain.Floor;
+import com.a508.wms.floor.dto.FloorDto;
+import com.a508.wms.floor.mapper.FloorMapper;
+import com.a508.wms.floor.repository.FloorRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;

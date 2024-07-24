@@ -1,4 +1,4 @@
-package com.a508.wms.notification;
+package com.a508.wms.notification.exception;
 
 public class NotificationException {
 }

@@ -1,17 +1,19 @@
-package com.a508.wms.business;
+package com.a508.wms.business.mapper;
 
-import com.a508.wms.employee.Employee;
-import com.a508.wms.employee.EmployeeDto;
-import com.a508.wms.employee.EmployeeMapper;
-import com.a508.wms.notification.Notification;
-import com.a508.wms.notification.NotificationDto;
-import com.a508.wms.subscription.Subscription;
-import com.a508.wms.subscription.SubscriptionDto;
-import com.a508.wms.notification.NotificationMapper;
-import com.a508.wms.subscription.SubscriptionMapper;
-import com.a508.wms.warehouse.Warehouse;
-import com.a508.wms.warehouse.WarehouseDto;
-import com.a508.wms.warehouse.WarehouseMapper;
+import com.a508.wms.business.domain.Business;
+import com.a508.wms.business.dto.BusinessDto;
+import com.a508.wms.employee.domain.Employee;
+import com.a508.wms.employee.dto.EmployeeDto;
+import com.a508.wms.employee.mapper.EmployeeMapper;
+import com.a508.wms.notification.domain.Notification;
+import com.a508.wms.notification.dto.NotificationDto;
+import com.a508.wms.subscription.domain.Subscription;
+import com.a508.wms.subscription.dto.SubscriptionDto;
+import com.a508.wms.notification.mapper.NotificationMapper;
+import com.a508.wms.subscription.mapper.SubscriptionMapper;
+import com.a508.wms.warehouse.domain.Warehouse;
+import com.a508.wms.warehouse.dto.WarehouseDto;
+import com.a508.wms.warehouse.mapper.WarehouseMapper;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

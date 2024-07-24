@@ -1,4 +1,4 @@
-package com.a508.wms.employee;
+package com.a508.wms.employee.domain;
 
 import com.a508.wms.business.domain.Business;
 import com.a508.wms.util.BaseTimeEntity;

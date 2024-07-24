@@ -1,7 +1,7 @@
-package com.a508.wms.floor;
+package com.a508.wms.floor.domain;
 
-import com.a508.wms.location.Location;
-import com.a508.wms.product.ProductLocation;
+import com.a508.wms.location.domain.Location;
+import com.a508.wms.productlocation.domain.ProductLocation;
 import com.a508.wms.util.BaseTimeEntity;
 import com.a508.wms.util.constant.ExportTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;

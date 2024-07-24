@@ -1,6 +1,6 @@
-package com.a508.wms.product;
+package com.a508.wms.product.dto;
 
-import com.a508.wms.productdetail.ProductDetailResponseDto;
+import com.a508.wms.productdetail.dto.ProductDetailResponseDto;
 import com.a508.wms.util.constant.StatusEnum;
 import java.time.LocalDateTime;
 import lombok.Builder;

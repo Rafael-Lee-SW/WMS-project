@@ -1,4 +1,4 @@
-package com.a508.wms.employee;
+package com.a508.wms.employee.repository;
 
 import com.a508.wms.employee.domain.Employee;
 import org.springframework.data.jpa.repository.JpaRepository;

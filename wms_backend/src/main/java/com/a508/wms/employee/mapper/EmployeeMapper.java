@@ -1,4 +1,4 @@
-package com.a508.wms.employee;
+package com.a508.wms.employee.mapper;
 
 import com.a508.wms.employee.domain.Employee;
 import com.a508.wms.employee.dto.EmployeeDto;

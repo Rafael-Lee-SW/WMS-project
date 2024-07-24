@@ -1,13 +1,16 @@
-package com.a508.wms.location;
+package com.a508.wms.location.service;
 
 import com.a508.wms.floor.domain.Floor;
 import com.a508.wms.location.domain.Location;
-import com.a508.wms.productstoragetype.ProductStorageType;
-import com.a508.wms.warehouse.Warehouse;
+import com.a508.wms.location.dto.LocationDto;
+import com.a508.wms.location.mapper.LocationMapper;
+import com.a508.wms.location.repository.LocationRepository;
+import com.a508.wms.productstoragetype.domain.ProductStorageType;
+import com.a508.wms.warehouse.domain.Warehouse;
 import com.a508.wms.floor.dto.FloorDto;
 import com.a508.wms.floor.repository.FloorRepository;
-import com.a508.wms.productstoragetype.ProductStorageTypeRepository;
-import com.a508.wms.warehouse.WarehouseRepository;
+import com.a508.wms.productstoragetype.repository.ProductStorageTypeRepository;
+import com.a508.wms.warehouse.repository.WarehouseRepository;
 import com.a508.wms.util.constant.ExportTypeEnum;
 import com.a508.wms.util.constant.FacilityTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;

@@ -1,4 +1,4 @@
-package com.a508.wms.employee;
+package com.a508.wms.employee.dto;
 
 import com.a508.wms.util.constant.LoginTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;

@@ -1,11 +1,17 @@
-package com.a508.wms.product;
+package com.a508.wms.product.service;
 
 import com.a508.wms.floor.domain.Floor;
-import com.a508.wms.productdetail.ProductDetail;
-import com.a508.wms.productdetail.ProductDetailResponseDto;
+import com.a508.wms.product.domain.Product;
+import com.a508.wms.product.dto.*;
+import com.a508.wms.product.mapper.ProductMapper;
+import com.a508.wms.product.repository.ProductRepository;
+import com.a508.wms.productdetail.domain.ProductDetail;
+import com.a508.wms.productdetail.dto.ProductDetailResponseDto;
 import com.a508.wms.floor.repository.FloorRepository;
-import com.a508.wms.productdetail.ProductDetailRepository;
-import com.a508.wms.productdetail.ProductDetailService;
+import com.a508.wms.productdetail.repository.ProductDetailRepository;
+import com.a508.wms.productdetail.service.ProductDetailService;
+import com.a508.wms.productlocation.domain.ProductLocation;
+import com.a508.wms.productlocation.repository.ProductLocationRepository;
 import com.a508.wms.util.constant.StatusEnum;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;

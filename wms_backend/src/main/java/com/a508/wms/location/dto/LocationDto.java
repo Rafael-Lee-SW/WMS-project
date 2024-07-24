@@ -1,4 +1,4 @@
-package com.a508.wms.location;
+package com.a508.wms.location.dto;
 
 import com.a508.wms.floor.dto.FloorDto;
 import com.a508.wms.util.constant.StatusEnum;

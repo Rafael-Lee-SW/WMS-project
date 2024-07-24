@@ -1,8 +1,8 @@
-package com.a508.wms.productdetail;
+package com.a508.wms.productdetail.domain;
 
 import com.a508.wms.business.domain.Business;
-import com.a508.wms.productstoragetype.ProductStorageType;
-import com.a508.wms.product.Product;
+import com.a508.wms.productstoragetype.domain.ProductStorageType;
+import com.a508.wms.product.domain.Product;
 import com.a508.wms.util.BaseTimeEntity;
 import com.a508.wms.util.constant.StatusEnum;
 import jakarta.persistence.Column;

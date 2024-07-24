@@ -1,6 +1,6 @@
-package com.a508.wms.productdetail;
+package com.a508.wms.productdetail.dto;
 
-import com.a508.wms.product.ProductResponseDto;
+import com.a508.wms.product.dto.ProductResponseDto;
 import com.a508.wms.util.constant.StatusEnum;
 import java.time.LocalDateTime;
 import java.util.List;

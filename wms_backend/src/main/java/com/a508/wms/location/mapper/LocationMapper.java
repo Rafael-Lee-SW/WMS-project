@@ -1,8 +1,9 @@
-package com.a508.wms.location;
+package com.a508.wms.location.mapper;
 
 import com.a508.wms.floor.domain.Floor;
 import com.a508.wms.floor.mapper.FloorMapper;
 import com.a508.wms.location.domain.Location;
+import com.a508.wms.location.dto.LocationDto;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

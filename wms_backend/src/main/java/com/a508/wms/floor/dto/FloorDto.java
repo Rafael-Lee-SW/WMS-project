@@ -1,4 +1,4 @@
-package com.a508.wms.floor;
+package com.a508.wms.floor.dto;
 
 import com.a508.wms.util.constant.ExportTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;

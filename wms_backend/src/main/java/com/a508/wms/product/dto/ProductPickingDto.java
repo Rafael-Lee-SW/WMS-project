@@ -1,4 +1,4 @@
-package com.a508.wms.product;
+package com.a508.wms.product.dto;
 
 import lombok.Builder;
 import lombok.Getter;

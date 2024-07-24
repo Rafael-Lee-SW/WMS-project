@@ -1,4 +1,4 @@
-package com.a508.wms.location;
+package com.a508.wms.location.repository;
 
 import java.util.List;
 

@@ -1,5 +1,9 @@
-package com.a508.wms.business;
+package com.a508.wms.business.service;
 
+import com.a508.wms.business.domain.Business;
+import com.a508.wms.business.dto.BusinessDto;
+import com.a508.wms.business.mapper.BusinessMapper;
+import com.a508.wms.business.repository.BusinessRepository;
 import com.a508.wms.util.constant.StatusEnum;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -7,8 +11,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-import static com.a508.wms.business.BusinessMapper.fromBusiness;
-import static com.a508.wms.business.BusinessMapper.fromDto;
+import static com.a508.wms.business.mapper.BusinessMapper.fromBusiness;
+import static com.a508.wms.business.mapper.BusinessMapper.fromDto;
 
 @Slf4j
 @Service

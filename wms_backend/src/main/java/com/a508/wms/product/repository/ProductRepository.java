@@ -1,6 +1,10 @@
-package com.a508.wms.product;
+package com.a508.wms.product.repository;
 
 import java.util.List;
+
+import com.a508.wms.product.domain.Product;
+import com.a508.wms.product.dto.ProductPickingLocationDto;
+import com.a508.wms.product.dto.ProductQuantityDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -36,7 +40,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
         "WHERE pd.barcode = :barcode AND b.id = :businessId " +
         "GROUP BY pd.barcode", nativeQuery = true)
     ProductQuantityDto findQuantityByBarcodeAndBusinessId(@Param("barcode") Long barcode,
-        @Param("businessId") Long businessId);
+                                                          @Param("businessId") Long businessId);
 
     @Query(value =
         "SELECT w.name AS warehouseName, l.name AS locationName, f.floor_level AS floorLevel, pl.id AS productLocationId, "
@@ -54,7 +58,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "CAST(SUBSTRING_INDEX(l.name, '-', -1) AS UNSIGNED)",
         nativeQuery = true)
     List<ProductPickingLocationDto> findPickingLocation(@Param("barcode") Long barcode,
-        @Param("businessId") Long businessId);
+                                                        @Param("businessId") Long businessId);
 }
 // 창고명, 로케이션 명, 층 수, productLocationId
 // warehouse,location,floor,productLocation,productDetail,product
