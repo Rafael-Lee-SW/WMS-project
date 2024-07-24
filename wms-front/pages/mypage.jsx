@@ -4,6 +4,7 @@ import EditInfo from '../components/MyPage/EditInfo';
 import RegisterBusiness from '../components/MyPage/ManageBusiness';
 import ManageEmployees from '../components/MyPage/ManageEmployees';
 import Info from '../components/MyPage/Info';
+import Alarm from '../components/MyPage/Alarm';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -40,6 +41,8 @@ const MyPage = () => {
   // 클릭 이벤트를 통해서 랜더링할 컴포넌트 지정
   const renderComponent = () => {
     switch (selectedComponent) {
+      case 'alarm':
+        return <Alarm />;
       case 'edit':
         return <EditInfo/>;
       case 'license':
@@ -62,6 +65,7 @@ const MyPage = () => {
       <div className={classes.leftPanel}>
         {/* 왼쪽 패널의 내용 */}
         <h2 onClick={() => setSelectedComponent('info')}>마이페이지</h2>
+        <p onClick={() => setSelectedComponent('alarm')}>알람</p>
         <p onClick={() => setSelectedComponent('edit')}>내 정보 수정</p>
         <p onClick={() => setSelectedComponent('license')}>사업자 등록/수정</p>
         <p onClick={() => setSelectedComponent('employees')}>직원 관리</p>
