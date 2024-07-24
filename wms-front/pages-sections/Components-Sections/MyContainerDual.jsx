@@ -501,10 +501,10 @@ const Complicated = () => {
 
       if (response.ok) {
         const jsonData = await response.json();
-        console.log(jsonData);
+        // console.log(jsonData);
         const rectangleData = jsonData.filter((row) => row[0] === String(id));
-        console.log(id);
-        console.log(rectangleData);
+        // console.log(id);
+        // console.log(rectangleData);
         return rectangleData || [];
       } else {
         console.error("Error loading JSON data");
@@ -516,14 +516,13 @@ const Complicated = () => {
     }
   };
 
+  // 엑셀기록과 함께 해당하는 상자를 누르면 데이터를 보여주는 함수
   const [rectangleData, setRectangleData] = useState([]);
 
   useEffect(() => {
     if (selectedRect) {
-      console.log("이거되냐?");
 
       fetchRectangleData(selectedRect.id).then((data) => {
-        console.log(data);
         setRectangleData(data);
       });
     }

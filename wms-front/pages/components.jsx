@@ -6,9 +6,8 @@ import Link from "next/link";
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
 // core components
-import Header from "/components/Header/HomeHeader.js";
-import HeaderLinks from "/components/Header/HomeHeaderLinks.js";
-import BusinessHeaderLink from "/components/Header/BusinessHeaderLinks.js"
+import Header from "/components/Header/Header.js";
+import HeaderLinks from "/components/Header/HeaderLinks.js";
 import Footer from "/components/Footer/Footer.js";
 import GridContainer from "/components/Grid/GridContainer.js";
 import GridItem from "/components/Grid/GridItem.js";
@@ -49,7 +48,7 @@ export default function Components(props) {
     <div>
       <Header
         brand="ADN Project for Inventory Manangement"
-        rightLinks={<BusinessHeaderLink />}
+        rightLinks={<HeaderLinks />}
         fixed
         color="transparent"
         changeColorOnScroll={{

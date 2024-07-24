@@ -43,8 +43,10 @@ import { LocalConvenienceStoreOutlined } from "@mui/icons-material";
 
 //라인 생성 테스트를 위한 다이나믹 import
 import dynamic from "next/dynamic";
-const LineCreate = dynamic(() => import('/components/LineCreate.jsx'), { ssr: false });
-
+import Konva from "konva";
+const LineCreate = dynamic(() => import("/components/LineCreate.jsx"), {
+  ssr: false,
+});
 
 // 상수 설정(그리드, 컨버스 등)
 const GRID_SIZE = 100; // 100cm = 1m
@@ -57,7 +59,6 @@ const useStyles = makeStyles(styles);
 // ----- 본격적인 창고 설정 반환 -------
 
 const User = () => {
-
   const classes = useStyles();
   const stageRef = useRef(null); // Create a reference for the stage
 
@@ -103,15 +104,15 @@ const User = () => {
   // 사각형을 컨버스에 추가한다.
   const handleAddRectangle = (type) => {
     const newRect = {
-      id: rectangles.length,
+      id: rectangles.length.toString(),
       x: 50,
       y: 50,
       width: newRectWidth,
       height: newRectHeight,
       fill: newRectColor,
       draggable: true,
-      order: rectangles.length + 1, // 순서대로 번호 인덱싱
-      name: newRectName || `Rect ${rectangles.length + 1}`,
+      order: rectangles.length, // 순서대로 번호 인덱싱
+      name: newRectName || `Rect ${rectangles.length}`,
       type: type, // set the type of the rectangle
       rotation: 0, // 초기 회전값
     };
@@ -122,41 +123,6 @@ const User = () => {
     setNewRectWidth(50);
     setNewRectHeight(50);
     setNewRectName("");
-  };
-
-  //벽을 추가한다.
-  const handleAddWall = (start, end) => {
-    // 벽이 입력되는 end point가 벽의 중심이다.
-    const newWall = {
-      id: rectangles.length,
-      x: end.x,
-      y: end.y,
-      width: newWallWidth,
-      height: Math.sqrt((end.x - start.x) ** 2 + (end.y - start.y) ** 2),
-      fill: newWallColor,
-      draggable: true,
-      order: rectangles.length + 1, // 순서대로 번호 인덱싱
-      name: `Wall ${rectangles.length + 1}`,
-      type: "wall",
-      rotation: Math.round(
-        Math.atan2(end.y - start.y, end.x - start.x) * (180 / Math.PI) + 90
-      ),
-    };
-    // if (!isOverlapping(newWall)) {
-    setRectangles([...rectangles, newWall]);
-    updateContainer(newWall, "wall", `wall${newWall.id}`);
-    // Reset wall points
-    setWallStartPoint(null);
-    setWallEndPoint(null);
-    // Reset settings to default after adding
-    setNewWallColor("brown");
-    setNewWallWidth(10);
-    // } else {
-    //   alert("Wall overlaps with another rectangle.");
-    //   // Reset wall points
-    //   setWallStartPoint(null);
-    //   setWallEndPoint(null);
-    // }
   };
 
   // Container Update Function (창고 배열 저장)
@@ -176,7 +142,7 @@ const User = () => {
     );
     setContainer(newContainer);
   };
-  
+
   // 컨버스에 있는 사각형들의 정보를 저장한다.
   const handleSave = async () => {
     const rectData = rectangles.map((rect) => ({
@@ -317,8 +283,16 @@ const User = () => {
   const Pointer = (event) => {
     const { x, y } = event.target.getStage().getPointerPosition();
     var stageAttrs = event.target.getStage().attrs;
-    x = (x - stageAttrs.x) / stageAttrs.scaleX;
-    y = (y - stageAttrs.y) / stageAttrs.scaleY;
+
+    if (!stageAttrs.x) {
+      // 드래그 하지 않음
+      x = x / stageAttrs.scaleX;
+      y = y / stageAttrs.scaleY;
+    } else {
+      // 드래그해서 새로운 stageAttrs의 x,y가 생김
+      x = (x - stageAttrs.x) / stageAttrs.scaleX;
+      y = (y - stageAttrs.y) / stageAttrs.scaleY;
+    }
     // console.log("출력 : " + Math.round(x) + " : " + Math.round(y));
     return { x, y };
   };
@@ -330,6 +304,215 @@ const User = () => {
       setSelectedRectTransform(null);
     }
   };
+
+  // 커서를 위한 let cursor 정의
+  let customCursor;
+  if (currentSetting === "wall") {
+    customCursor = "crosshair";
+  } else if (currentSetting === "grab") {
+    customCursor = "grab";
+  } else {
+    customCursor = "default";
+  }
+
+  /**
+   * 도형과 도형을 선으로 잇는 기능을 위한 거시기
+   */
+  // 선을 잇는 기능을 넣기 위한 거시기
+  const [line, setLine] = useState(null);
+  const [startPos, setStartPos] = useState(null);
+  const layerRef = useRef();
+  // const stageRef = useRef(); already exist for other function
+
+  // 선을 그리는 함수
+  const drawLine = (start, end) => {
+    const newLine = new Konva.Line({
+      stroke: "black",
+      points: [start.x, start.y, end.x, end.y],
+      listening: false,
+    });
+    layerRef.current.add(newLine);
+    layerRef.current.batchDraw();
+  };
+
+  /**
+   * 실시간 반응을 위한 UseEffect part
+   *
+   * - 특히 벽을 생성하는 것으 선을 그려서 생성하도록 변경할 예정
+   */
+
+  //실시간 반응을 위해서 currentSetting에 대한 함수 작동을 메서드로 넘기기
+  const changeCurrentSetting = (value) => {
+    setCurrentSetting(value);
+  };
+  // 선을 적용하기 위한 UseEffect
+  useEffect(() => {
+    const stage = stageRef.current;
+    const layer = layerRef.current;
+    /**
+     * 기존에는 세 개의 원을 추가했으나, 우리는 이미 존재하는 우리 객체에 대해 적용
+     */
+
+    //Event Handler for 'mousedown' Stage 위에 올렸을 때,
+    const handleMouseDown = () => {
+      // 정확한 위치를 얻어온다.
+      if (currentSetting === "wall") {
+        const pos = stage.getPointerPosition();
+        var stageAttrs = stage.attrs; // 보정을 위한 거시기
+
+        if (!stageAttrs.x) {
+          // 드래그 하지 않음
+          pos.x = pos.x / stageAttrs.scaleX; //줌에 따른 따른 위치 스케일링
+          pos.y = pos.y / stageAttrs.scaleY;
+        } else {
+          // 드래그해서 새로운 stageAttrs의 x,y가 생김
+          pos.x = (pos.x - stageAttrs.x) / stageAttrs.scaleX; //줌에 따른 따른 위치 스케일링
+          pos.y = (pos.y - stageAttrs.y) / stageAttrs.scaleY;
+        }
+        // 무조건 10 pixel 단위로 반올림하여 시작 위치 보정
+        pos.x = Math.round(pos.x / 10) * 10;
+        pos.y = Math.round(pos.y / 10) * 10;
+
+        setStartPos(pos); // 선의 시작 위치 기록
+        const newLine = new Konva.Line({
+          stroke: "black",
+          listening: false, // Hit detective 감지 안됨
+          points: [pos.x, pos.y, pos.x, pos.y],
+        });
+        layer.add(newLine);
+        setLine(newLine);
+      }
+    };
+
+    //Event Handler for 'mousemove' stage 위에서 움직일 때,
+    const handleMouseMove = () => {
+      if (currentSetting === "wall") {
+        if (!line) return;
+        // 정확한 위치를 얻어온다.
+        const pos = stage.getPointerPosition();
+        var stageAttrs = stage.attrs; // 보정을 위한 거시기
+        if (!stageAttrs.x) {
+          // 드래그 하지 않음
+          pos.x = pos.x / stageAttrs.scaleX; //줌에 따른 따른 위치 스케일링
+          pos.y = pos.y / stageAttrs.scaleY;
+        } else {
+          // 드래그해서 새로운 stageAttrs의 x,y가 생김
+          pos.x = (pos.x - stageAttrs.x) / stageAttrs.scaleX; //줌에 따른 따른 위치 스케일링
+          pos.y = (pos.y - stageAttrs.y) / stageAttrs.scaleY;
+        }
+
+        const points = [startPos.x, startPos.y, pos.x, pos.y];
+        //라인 그리기
+        line.points(points);
+        layer.batchDraw();
+      }
+    };
+
+    //Event Handler for 'mouseup' stage 위에서 마우스를 뗄 때,
+    const handleMouseUp = (e) => {
+      if (currentSetting === "wall") {
+        //라인이 없으면 작동 X
+        if (!line) return;
+        //타겟을 찾으면 라인 생성
+        if (e.target.hasName("target")) {
+          // 정확한 위치를 얻어온다.
+          const pos = stage.getPointerPosition();
+          var stageAttrs = stage.attrs; // 보정을 위한 거시기
+          if (!stageAttrs.x) {
+            // 드래그 하지 않음
+            pos.x = pos.x / stageAttrs.scaleX; //줌에 따른 따른 위치 스케일링
+            pos.y = pos.y / stageAttrs.scaleY;
+          } else {
+            // 드래그해서 새로운 stageAttrs의 x,y가 생김
+            pos.x = (pos.x - stageAttrs.x) / stageAttrs.scaleX; //줌에 따른 따른 위치 스케일링
+            pos.y = (pos.y - stageAttrs.y) / stageAttrs.scaleY;
+          }
+          drawLine(startPos, pos);
+          setLine(null);
+          setStartPos(null);
+          line.destroy();
+        } else {
+          line.destroy();
+          layer.draw();
+          //벽을 추가하기 위한 메서드
+          // 정확한 위치를 얻어온다.
+          const pos = stage.getPointerPosition();
+          var stageAttrs = stage.attrs; // 보정을 위한 거시기
+          if (!stageAttrs.x) {
+            // 드래그 하지 않음
+            pos.x = pos.x / stageAttrs.scaleX; //줌에 따른 따른 위치 스케일링
+            pos.y = pos.y / stageAttrs.scaleY;
+          } else {
+            // 드래그해서 새로운 stageAttrs의 x,y가 생김
+            pos.x = (pos.x - stageAttrs.x) / stageAttrs.scaleX; //줌에 따른 따른 위치 스케일링
+            pos.y = (pos.y - stageAttrs.y) / stageAttrs.scaleY;
+          }
+          handleAddWall(startPos, pos);
+
+          setLine(null);
+          setStartPos(null);
+        }
+      }
+    };
+
+    //벽을 추가한다.
+    const handleAddWall = (start, end) => {
+      /**
+       * wall setting 일때만 변경될 수 있도록 설정
+       */
+      console.log("벽 생성 function에서 현재 세팅은? : " + currentSetting);
+      if (currentSetting === "wall") {
+        // 벽이 입력되는 end point가 벽의 중심이다.
+        const newWall = {
+          id: rectangles.length.toString(),
+          x: end.x,
+          y: end.y,
+          width: newWallWidth,
+          height: Math.sqrt((end.x - start.x) ** 2 + (end.y - start.y) ** 2),
+          fill: newWallColor,
+          draggable: true,
+          order: rectangles.length + 1, // 순서대로 번호 인덱싱
+          name: `Wall ${rectangles.length + 1}`,
+          type: "wall",
+          rotation: Math.round(
+            Math.atan2(end.y - start.y, end.x - start.x) * (180 / Math.PI) + 90
+          ),
+        };
+        // if (!isOverlapping(newWall)) {
+        setRectangles([...rectangles, newWall]);
+        updateContainer(newWall, "wall", `wall${newWall.id}`);
+        // Reset wall points
+        setWallStartPoint(null);
+        setWallEndPoint(null);
+        // Reset settings to default after adding
+        setNewWallColor("brown");
+        setNewWallWidth(10);
+        // } else {
+        //   alert("Wall overlaps with another rectangle.");
+        //   // Reset wall points
+        //   setWallStartPoint(null);
+        //   setWallEndPoint(null);
+        // }
+        console.log("거시기");
+      }
+    };
+
+    if (currentSetting === "wall") {
+      // Event Listeners 추가하기
+      stage.on("mousedown", handleMouseDown);
+      stage.on("mousemove", handleMouseMove);
+      stage.on("mouseup", handleMouseUp);
+    }
+    //레이어의 초기 상태 그리기
+    layer.draw();
+
+    // Clean-up the Function to remove event Listeners
+    return () => {
+      stage.off("mousedown", handleMouseDown);
+      stage.off("mousemove", handleMouseMove);
+      stage.off("mouseup", handleMouseUp);
+    };
+  }, [line, startPos, currentSetting]);
 
   //--- 리턴 Part ---
 
@@ -356,9 +539,11 @@ const User = () => {
             overflowY: "auto",
           }}
         >
-          <button onClick={() => setCurrentSetting("location")}>재고함</button>
-          <button onClick={() => setCurrentSetting("wall")}>벽</button>
-          <button onClick={() => setCurrentSetting("specialObject")}>
+          <button onClick={() => changeCurrentSetting("location")}>
+            재고함
+          </button>
+          <button onClick={() => changeCurrentSetting("wall")}>벽</button>
+          <button onClick={() => changeCurrentSetting("specialObject")}>
             특수 객체
           </button>
           {currentSetting && currentSetting !== "wall" && (
@@ -480,45 +665,45 @@ const User = () => {
             overflow: "hidden", // Canvas 영역 이외에는 잠금
             // overflow:"scroll", // Add Scroll, if canvas exceeds div size
             // cursor: "url('brickCursor.cur'), auto",
-            cursor:
-              //   // url(../public/img/brickCursor.cur)
-              currentSetting === "wall"
-                ? "crosshair"
-                : // ? "unset"
-                  "default",
+            cursor: customCursor,
+            //   // url(../public/img/brickCursor.cur)
+            // currentSetting === "wall"
+            // ? "crosshair"
+            // : // ? "unset"
+            // "",
           }}
-          onClick={(e) => {
-            if (currentSetting === "wall") {
-              const stage = stageRef.current;
-              // 올바른 위치를 위한 스케일링
-              const pointerPosition = stage.getPointerPosition();
-              var stageAttrs = stage.attrs;
-              pointerPosition.x =
-                (pointerPosition.x - stageAttrs.x) / stageAttrs.scaleX;
-              pointerPosition.y =
-                (pointerPosition.y - stageAttrs.y) / stageAttrs.scaleY;
-              // -----------------------
-              setTempSpots([...tempSpots, pointerPosition]);
-              if (!wallStartPoint) {
-                setWallStartPoint(pointerPosition);
-              } else {
-                handleAddWall(wallStartPoint, pointerPosition);
-              }
-            }
-          }}
+          // onClick={(e) => {
+          //   if (currentSetting === "wall") {
+          //     const stage = stageRef.current;
+          //     // 올바른 위치를 위한 스케일링
+          //     const pointerPosition = stage.getPointerPosition();
+          //     var stageAttrs = stage.attrs;
+          //     pointerPosition.x =
+          //       (pointerPosition.x - stageAttrs.x) / stageAttrs.scaleX;
+          //     pointerPosition.y =
+          //       (pointerPosition.y - stageAttrs.y) / stageAttrs.scaleY;
+          //     // -----------------------
+          //     setTempSpots([...tempSpots, pointerPosition]);
+          //     if (!wallStartPoint) {
+          //       setWallStartPoint(pointerPosition);
+          //     } else {
+          //       handleAddWall(wallStartPoint, pointerPosition);
+          //     }
+          //   }
+          // }}
         >
           <Stage
             width={CANVAS_SIZE} // 1000cm = 10m
             height={CANVAS_SIZE} // 1000cm = 10cm
             scaleX={scale}
             scaleY={scale}
-            draggable={true} // 만약에 캔버스를 드래그할 수 있게 만들꺼면 가능
+            draggable={currentSetting === "wall" ? false : true}
             ref={stageRef} // Assign the reference to the stage
             onPointerMove={Pointer}
             onMouseDown={checkDeselect} // 마우스 다운 시 선택 해체
             onTouchStart={checkDeselect} // 처시 시작 시 선택 해체
           >
-            <Layer>
+            <Layer ref={layerRef}>
               {generateGridLines()}
 
               {rectangles.map((rect, i) => (
@@ -544,7 +729,7 @@ const User = () => {
                 />
               ))}
               {/* 벽 생성을 위한 가이드라인 점 */}
-              {tempSpots.map((spot, index) => (
+              {/* {tempSpots.map((spot, index) => (
                 <Circle
                   key={index}
                   x={spot.x}
@@ -552,7 +737,7 @@ const User = () => {
                   radius={5}
                   fill="red"
                 />
-              ))}
+              ))} */}
             </Layer>
           </Stage>
           <div
@@ -615,7 +800,7 @@ const User = () => {
         </div>
       </main>
       {/* 라인 생성을 위한 테스트 부분 */}
-      <LineCreate/>
+      <LineCreate />
     </div>
   );
 };
