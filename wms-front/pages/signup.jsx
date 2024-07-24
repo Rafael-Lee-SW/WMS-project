@@ -1,40 +1,27 @@
-import styled from "styled-components";
 import { useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/router";
+import { makeStyles } from "@material-ui/core";
 
-const Container = styled.form`
-
-    width: 568px;
-    padding: 32px;
-    background-color: white;
-
-    .input-wrapper {
-    position: relative;
-    margin-bottom: 16px;
-    input {
-        position: relative;
-        width: 100%;
-        height: 46px;
-        padding: 0 44px 0 11px;
-        border: 1px solid;
-        border-radius: 4px;
-        font-size: 16px;
-        outline: none;
-        ::placeholder {
-            color: gray;
-        }
-      }
-    svg {
-        position: absolute;
-        right: 11px;
-        top: 16px;
-      }
+const useStyles = makeStyles((theme) => ({
+    container: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100vh',
+        textAlign: 'center',
+    },
+    input_wrapper: {
+        marginBottom: '16px',
     }
-    `;
+    
+}))
 
 // 회원가입 폼
 export default function SignUp() {
+    const classes = useStyles();
+
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConformPassword] = useState('');
@@ -58,18 +45,18 @@ export default function SignUp() {
     };
 
     return (
-        <Container onSubmit={handleSubmit}>
+        <Container onSubmit={handleSubmit} className={classes.container}>
             <h1>회원가입</h1>
             <div>
-                <div className="input-wrapper">
+                <div className={classes.input_wrapper}>
                     <h3>이메일</h3>
-                    <input type="text" value={email} onChange={(e) => setEmail(e.target.value)} required/>
+                    <input placeholder="abcd@ssafy.com" type="text" value={email} onChange={(e) => setEmail(e.target.value)} required/>
                 </div>
-                <div className="input-wrapper">
+                <div className={classes.input_wrapper}>
                     <h3>비밀번호</h3>
                     <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required/>
                 </div>
-                <div className="input-wrapper">
+                <div className={classes.input_wrapper}>
                     <h3>비밀번호 확인</h3>
                     <input type="password" value={confirmPassword} onChange={(e) => setConformPassword(e.target.value)} required/>
                 </div>
