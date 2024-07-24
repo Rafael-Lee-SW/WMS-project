@@ -41,13 +41,6 @@ import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/MyC
 import { Canvas } from "canvas";
 import { LocalConvenienceStoreOutlined } from "@mui/icons-material";
 
-//라인 생성 테스트를 위한 다이나믹 import
-import dynamic from "next/dynamic";
-import Konva from "konva";
-const LineCreate = dynamic(() => import("/components/LineCreate.jsx"), {
-  ssr: false,
-});
-
 // 상수 설정(그리드, 컨버스 등)
 const GRID_SIZE = 100; // 100cm = 1m
 const GRID_SIZE_SUB_50 = 50; // 50cm
@@ -61,6 +54,7 @@ const useStyles = makeStyles(styles);
 const User = () => {
   const classes = useStyles();
   const stageRef = useRef(null); // Create a reference for the stage
+  const layerRef = useRef(null); // Create a reference for the layer
 
   // Initial Setting the container array 초기 세팅
   const initialContainer = Array.from({ length: CANVAS_SIZE }, () =>
@@ -69,7 +63,7 @@ const User = () => {
       code: "air",
     }))
   );
-  // Container for savinng the info.
+  // Container for saving the info.
   const [container, setContainer] = useState(initialContainer);
   // 사각형을 추가하고 관리하는 State 추가
   const [rectangles, setRectangles] = useState([]);
@@ -321,7 +315,7 @@ const User = () => {
   // 선을 잇는 기능을 넣기 위한 거시기
   const [line, setLine] = useState(null);
   const [startPos, setStartPos] = useState(null);
-  const layerRef = useRef();
+  // const layerRef = useRef(); already exist for other function
   // const stageRef = useRef(); already exist for other function
 
   // 선을 그리는 함수
@@ -430,9 +424,9 @@ const User = () => {
           drawLine(startPos, pos);
           setLine(null);
           setStartPos(null);
-          line.destroy();
+          line.remove();
         } else {
-          line.destroy();
+          line.remove();
           layer.draw();
           //벽을 추가하기 위한 메서드
           // 정확한 위치를 얻어온다.
@@ -506,11 +500,163 @@ const User = () => {
     //레이어의 초기 상태 그리기
     layer.draw();
 
+    /**
+     * Anchor에 관한 함수를 넣는 곳
+     */
+    const buildAnchor = (x, y, id) => {
+      // 앙커 역할을 하는 Circle 객체 생성
+      const anchor = new Konva.Circle({
+        x: x, // 앵커의 x 좌표
+        y: y, // 앵커의 y 좌표
+        radius: 10, // 원의 반지름
+        stroke: "#666", // 원 테두리의 색상
+        fill: "#ddd", // 원을 채울 색상
+        strokeWidth: 2, // 원 테두리의 너비
+        draggable: true, // 원을 드래그 가능하게 설정
+        id: id,
+        name: "anchor",
+        listening: true, // 이벤트 리스닝 활성화
+      });
+
+      // 마우스오버 이벤트 리스너 추가하여 커서 스타일과 테두리 너비 변경
+      anchor.on("mouseover", function () {
+        document.body.style.cursor = "pointer";
+        this.strokeWidth(4);
+        this.draw();
+      });
+      // 마우스아웃 이벤트 리스너 추가하여 커서 스타일과 테두리 너비 재설정
+      anchor.on("mouseout", function () {
+        document.body.style.cursor = "default";
+        this.strokeWidth(2);
+        this.draw();
+      });
+
+      // 드래그 이동 이벤트 리스너 추가하여 사각형 업데이트
+      anchor.on("dragmove", function () {
+        updateRectangles();
+        this.moveToTop(); // 앵커를 맨 위로 이동
+        this.draw();
+      });
+
+      anchor.on("dragstart", function () {
+        this.moveToTop(); // 드래그 시작 시 앵커를 맨 위로 이동
+        this.draw();
+        // console.log("업뎃")
+      });
+
+      return anchor;
+    };
+
+    // 앵커 위치를 기준으로 사각형의 위치와 크기를 업데이트하는 함수
+    const updateRectangles = () => {
+      const q = quad; // 이차 곡선 앵커에 대한 참조
+      const b = bezier; // 베지어 곡선 앵커에 대한 참조
+
+      // ID로 사각형 찾기
+      const quadRect = layerRef.current.findOne("#quadRect");
+      const bezierRect = layerRef.current.findOne("#bezierRect");
+
+      // 이차 사각형의 위치와 크기 업데이트
+      const quadMidX = (q.start.x() + q.end.x()) / 2;
+      const quadMidY = (q.start.y() + q.end.y()) / 2;
+      const quadWidth = Math.hypot(
+        q.end.x() - q.start.x(),
+        q.end.y() - q.start.y()
+      );
+      const quadAngle =
+        Math.atan2(q.end.y() - q.start.y(), q.end.x() - q.start.x()) *
+        (180 / Math.PI);
+
+      quadRect.position({
+        x: quadMidX,
+        y: quadMidY,
+      });
+      quadRect.size({ width: quadWidth, height: 20 });
+      quadRect.offsetX(quadWidth / 2);
+      quadRect.offsetY(10);
+      quadRect.rotation(quadAngle);
+
+      // 베지어 사각형의 위치와 크기 업데이트
+      const bezierMidX = (b.start.x() + b.end.x()) / 2;
+      const bezierMidY = (b.start.y() + b.end.y()) / 2;
+      const bezierWidth = Math.hypot(
+        b.end.x() - b.start.x(),
+        b.end.y() - b.start.y()
+      );
+      const bezierAngle =
+        Math.atan2(b.end.y() - b.start.y(), b.end.x() - b.start.x()) *
+        (180 / Math.PI);
+
+      bezierRect.position({
+        x: bezierMidX,
+        y: bezierMidY,
+      });
+      bezierRect.size({ width: bezierWidth, height: 20 });
+      bezierRect.offsetX(bezierWidth / 2);
+      bezierRect.offsetY(10);
+      bezierRect.rotation(bezierAngle);
+    };
+
+    // 이차 사각형의 앵커에 대한 참조를 저장하기 위한 특수 객체
+    const quad = {
+      start: buildAnchor(60, 30, "quadStart"), // 시작 앵커
+      end: buildAnchor(240, 110, "quadEnd"), // 끝 앵커
+    };
+
+    // 베지어 사각형의 앵커에 대한 참조를 저장하기 위한 특수 객체
+    const bezier = {
+      start: buildAnchor(280, 20, "bezierStart"), // 시작 앵커
+      end: buildAnchor(530, 40, "bezierEnd"), // 끝 앵커
+    };
+    /**
+     * Anchor 생성을 위한 useEffect 부분 삽입
+     */
+
+    layer.add(quad.start);
+    layer.add(quad.end);
+    layer.add(bezier.start);
+    layer.add(bezier.end);
+
+    // 이차 점들에 대한 사각형 생성
+    const quadRect = new Konva.Rect({
+      stroke: "black", // 사각형 테두리의 색상
+      strokeWidth: 4, // 사각형 테두리의 너비
+      id: "quadRect", // 사각형의 ID
+    });
+    // 레이어에 사각형 추가
+    layer.add(quadRect);
+
+    // 베지어 점들에 대한 사각형 생성
+    const bezierRect = new Konva.Rect({
+      stroke: "black", // 사각형 테두리의 색상
+      strokeWidth: 4, // 사각형 테두리의 너비
+      id: "bezierRect", // 사각형의 ID
+    });
+    // 레이어에 사각형 추가
+    layer.add(bezierRect);
+
+    // 앵커 위치에 맞게 사각형을 업데이트
+    updateRectangles();
+
+    // Ensure anchors are on top using zIndex
+    quad.start.zIndex(layer.children.length - 1);
+    quad.end.zIndex(layer.children.length - 1);
+    bezier.start.zIndex(layer.children.length - 1);
+    bezier.end.zIndex(layer.children.length - 1);
+
     // Clean-up the Function to remove event Listeners
     return () => {
       stage.off("mousedown", handleMouseDown);
       stage.off("mousemove", handleMouseMove);
       stage.off("mouseup", handleMouseUp);
+      /**
+       * Anchor 파트
+       */
+      quad.start.remove();
+      quad.end.remove();
+      bezier.start.remove();
+      bezier.end.remove();
+      stage.off("mousedown mousemove mouseup");
     };
   }, [line, startPos, currentSetting]);
 
@@ -799,8 +945,6 @@ const User = () => {
           )}
         </div>
       </main>
-      {/* 라인 생성을 위한 테스트 부분 */}
-      <LineCreate />
     </div>
   );
 };
