@@ -21,25 +21,25 @@ public class ProductLocationController {
     public BaseSuccessResponse<?> getProductLocation(@RequestParam(value = "productid", required = false) Long productId,
                                                      @RequestParam(value = "floorid", required = false) Long floorId,
                                                      @RequestParam(value = "id", required = false) Long id,
-                                                     @RequestParam(value = "barcode", required = false) Long barcode) {
-        if(productId != null)
-        {
-            log.info("get productLocation By productId {}", productId);
-            return new BaseSuccessResponse<>(productLocationService.findByProductId(productId));
-        } else if (floorId != null)
-        {
-            log.info("get productLocation By floorId {}", floorId);
-            return new BaseSuccessResponse<>(productLocationService.findByFloorId(floorId));
-        }
-        else if (id != null)
-        {
-            log.info("get productLocation By id {}", id);
-            return new BaseSuccessResponse<>(productLocationService.findById(id));
-        } else if (barcode != null) {
-            log.info("get productLocation By barcode {}", barcode);
-            return new BaseSuccessResponse<>(productLocationService.findByBarcode(barcode));
-        }else {
-            return new BaseSuccessResponse<>(new BaseExceptionResponse(false,404,404,"failed"));
+                                                     @RequestParam(value = "barcode", required = false) Long barcode) throws BaseExceptionResponse {
+        try {
+            if (productId != null) {
+                log.info("get productLocation By productId {}", productId);
+                return new BaseSuccessResponse<>(productLocationService.findByProductId(productId));
+            } else if (floorId != null) {
+                log.info("get productLocation By floorId {}", floorId);
+                return new BaseSuccessResponse<>(productLocationService.findByFloorId(floorId));
+            } else if (id != null) {
+                log.info("get productLocation By id {}", id);
+                return new BaseSuccessResponse<>(productLocationService.findById(id));
+            } else if (barcode != null) {
+                log.info("get productLocation By barcode {}", barcode);
+                return new BaseSuccessResponse<>(productLocationService.findByBarcode(barcode));
+            } else {
+                throw new BaseExceptionResponse(false, 404, 404, "error");
+            }
+        } catch (Exception e) {
+            throw new BaseExceptionResponse(false,500,500,"ISE");
         }
     }
     @PatchMapping
