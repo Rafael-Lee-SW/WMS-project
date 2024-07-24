@@ -5,11 +5,15 @@ import com.a508.wms.domain.Product;
 import com.a508.wms.domain.ProductDetail;
 import com.a508.wms.domain.ProductLocation;
 import com.a508.wms.dto.ProductDetailResponseDto;
+import com.a508.wms.dto.ProductExportRequestDto;
+import com.a508.wms.dto.ProductExportResponseDto;
 import com.a508.wms.dto.ProductImportDto;
+import com.a508.wms.dto.ProductPickingDto;
+import com.a508.wms.dto.ProductPickingLocationDto;
+import com.a508.wms.dto.ProductQuantityDto;
 import com.a508.wms.dto.ProductRequestDto;
 import com.a508.wms.dto.ProductResponseDto;
 import com.a508.wms.repository.FloorRepository;
-import com.a508.wms.repository.LocationRepository;
 import com.a508.wms.repository.ProductDetailRepository;
 import com.a508.wms.repository.ProductLocationRepository;
 import com.a508.wms.repository.ProductRepository;
@@ -17,8 +21,12 @@ import com.a508.wms.util.constant.StatusEnum;
 import com.a508.wms.util.mapper.ProductMapper;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -32,7 +40,6 @@ public class ProductService {
     private final ProductDetailRepository productDetailRepository;
     private final ProductLocationRepository productLocationRepository;
     private final ProductDetailService productDetailService;
-    private final LocationRepository locationRepository;
     private final FloorRepository floorRepository;
 
     /**
@@ -250,4 +257,194 @@ public class ProductService {
         return productDetailRepository.getReferenceById(productDetailResponseDto.getId());
     }
 
+    /**
+     * 물품들의 출고 판단 및 처리를 하는 기능
+     *
+     * @param requests
+     * @return
+     */
+    @Transactional
+    public List<ProductExportResponseDto> exportProducts(List<ProductExportRequestDto> requests) {
+        //재고 확인
+        productQuantityCheck(requests);
+
+        //경로 처리 및 수량 반영
+
+        //송장번호별로 데이터를 묶음.
+        Map<Long, List<ProductExportRequestDto>> exports = requests.stream()
+            .collect(Collectors.groupingBy((ProductExportRequestDto::getTrackingNumber)));
+
+        log.info("exports Size: {}", exports.size());
+        //송장별로 처리
+        List<ProductExportResponseDto> result = exports.entrySet().stream()
+            .map(entry -> {
+                Map<String, List<ProductPickingDto>> path = calculatePath(entry.getValue());
+                return ProductExportResponseDto.builder()
+                    .trackingNumber(entry.getKey())
+                    .path(path)
+                    .build();
+            }).toList();
+
+        log.info("result: {}", result);
+
+        return result;
+    }
+
+    /**
+     * 각 송장별 출고 처리를 진행하여 결과 경로를 반환하는 기능
+     *
+     * @param invoice : 한 송장의 출고 상품 내역 정보
+     * @return
+     */
+    private Map<String, List<ProductPickingDto>> calculatePath(
+        List<ProductExportRequestDto> invoice) {
+        Map<String, List<ProductPickingDto>> path = new HashMap<>();
+        for (ProductExportRequestDto exportProduct : invoice) {
+            //목적 상품에 해당하는 모든 로케이션 data
+            List<ProductPickingLocationDto> candidates = productRepository.findPickingLocation(
+                exportProduct.getBarcode(), exportProduct.getBusinessId());
+
+            //남은양
+            int remains = exportProduct.getQuantity();
+
+            log.info("candidates Size: {}", candidates.size());
+            log.info("remains:{}", remains);
+
+            for (ProductPickingLocationDto candidate : candidates) {
+                if (candidate.getProductQuantity() == 0) {
+                    continue;
+                }
+
+                if (candidate.getProductQuantity() >= remains) {
+                    //candidate의 값을 remain 뺀 값으로 만들기.
+                    updateProductQuantity(candidate.getProductLocationId(),
+                        candidate.getProductQuantity() - remains);
+                    //path에 추가
+                    List<ProductPickingDto> pickings = path.getOrDefault(
+                        candidate.getWarehouseName(), new ArrayList<>());
+
+                    pickings.add(ProductPickingDto.builder()
+                        .locationName(candidate.getLocationName())
+                        .floorLevel(candidate.getFloorLevel())
+                        .productName(candidate.getProductName())
+                        .amount(candidate.getProductQuantity() - remains)
+                        .build());
+
+                    path.put(candidate.getWarehouseName(), pickings);
+                    break;
+                }
+
+                remains -= candidate.getProductQuantity();
+
+                //candidate의 값을 0으로 만들기.
+                updateProductQuantity(candidate.getProductLocationId(), 0);
+
+                //path에 추가
+                List<ProductPickingDto> pickings = path.getOrDefault(
+                    candidate.getWarehouseName(), new ArrayList<>());
+
+                pickings.add(ProductPickingDto.builder()
+                    .locationName(candidate.getLocationName())
+                    .floorLevel(candidate.getFloorLevel())
+                    .productName(candidate.getProductName())
+                    .amount(0)
+                    .build());
+            }
+        }
+
+        return path;
+    }
+
+    /**
+     * 출고되는 물품의 수량을 변경하는 로직
+     *
+     * @param productLocationId
+     * @param quantity
+     */
+
+    private void updateProductQuantity(Long productLocationId, int quantity) {
+        log.info("quantity:{}", quantity);
+        ProductLocation productLocation = productLocationRepository.findById(productLocationId)
+            .orElseThrow(() -> new IllegalArgumentException("Invalid productLocation Id"));
+
+        Product product = productRepository.findById(productLocation.getProduct().getId())
+            .orElseThrow(() -> new IllegalArgumentException("Invalid productLocation Id"));
+
+        productLocation.setProductQuantity(quantity);
+        product.updateData(quantity, product.getExpirationDate(), product.getComment());
+
+        productLocationRepository.save(productLocation);
+        productRepository.save(product);
+    }
+
+    /**
+     * 현제 출고 명령이 재고상 가능한 상태인지 판단해주는 기능,예외처리 안되면 출고 가능
+     *
+     * @param requests
+     */
+    private void productQuantityCheck(List<ProductExportRequestDto> requests) {
+        Long businessId = requests.get(0).getBusinessId();
+        //각 물품별 총합
+        Map<Long, Integer> productTotalCount = requests.stream().collect(
+            Collectors.groupingBy((ProductExportRequestDto::getBarcode),
+                Collectors.summingInt(ProductExportRequestDto::getQuantity)));
+
+        //물품별 총 재고에 따른 타입 분류 (나중에 Integer를 Enum으로 바꿔도 좋을듯)
+        Map<Long, Integer> productQuantityResult = productTotalCount.entrySet().stream()
+            .collect(Collectors.toMap(Map.Entry::getKey,
+                entry -> calculateProductQuantity(entry.getKey(), entry.getValue(), businessId)));
+
+        //불가능 하나라도 있으면 에러 반환
+        if (containsImpossibleExportProduct(productQuantityResult)) {
+            throw new IllegalArgumentException("수량 부족");
+        }
+
+        //재고 이동해야 하는 물품들 확인
+        List<Long> movingProductBarcodes = new ArrayList<>();
+
+        productQuantityResult.entrySet().stream()
+            .filter(entry -> entry.getValue() == 1)
+            .forEach(entry -> movingProductBarcodes.add(entry.getKey()));
+
+        if (!movingProductBarcodes.isEmpty()) {
+            throw new IllegalArgumentException(
+                "해당 물품들의 이동이 필요합니다." + movingProductBarcodes);
+        }
+    }
+
+    /**
+     * 전체 재고량이 부족하여 출고가 불가능한 경우가 있는지 확인하는 기능.
+     *
+     * @param productQuantityResult
+     * @return
+     */
+    private boolean containsImpossibleExportProduct(Map<Long, Integer> productQuantityResult) {
+        return productQuantityResult.entrySet().stream()
+            .anyMatch(entry -> entry.getValue() == 2);
+    }
+
+    /**
+     * 각 물품별 재고에 따른 출고 가능 여부를 확인하여 매핑해주는 기능.
+     *
+     * @param barcode
+     * @param quantity
+     * @param businessId
+     * @return
+     */
+    private Integer calculateProductQuantity(Long barcode, Integer quantity, Long businessId) {
+        //매장+전시의 총합과 보관의 총합이 들어있는 게산 결과 반환.
+        ProductQuantityDto productQuantityDto = productRepository.findQuantityByBarcodeAndBusinessId(
+            barcode, businessId);
+
+        if (productQuantityDto.getPossibleQuantity() >= quantity) {
+            return 0; //추가 명령 처리 x
+        }
+
+        if (productQuantityDto.getPossibleQuantity() +
+            productQuantityDto.getMovableQuantity() >= quantity) {
+            return 1; //보충 처리
+        }
+
+        return 2; //처리 불가.
+    }
 }
