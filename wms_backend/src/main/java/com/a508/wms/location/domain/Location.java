@@ -1,7 +1,7 @@
-package com.a508.wms.location;
+package com.a508.wms.location.domain;
 
-import com.a508.wms.productstoragetype.ProductStorageType;
-import com.a508.wms.warehouse.Warehouse;
+import com.a508.wms.productstoragetype.domain.ProductStorageType;
+import com.a508.wms.warehouse.domain.Warehouse;
 import com.a508.wms.floor.domain.Floor;
 import com.a508.wms.util.BaseTimeEntity;
 import com.a508.wms.util.constant.StatusEnum;

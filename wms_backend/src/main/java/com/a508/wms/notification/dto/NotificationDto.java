@@ -1,4 +1,4 @@
-package com.a508.wms.notification;
+package com.a508.wms.notification.dto;
 
 import com.a508.wms.util.constant.StatusEnum;
 import lombok.Builder;

@@ -1,6 +1,8 @@
-package com.a508.wms.floor;
+package com.a508.wms.floor.repository;
 
 import java.util.List;
+
+import com.a508.wms.floor.domain.Floor;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

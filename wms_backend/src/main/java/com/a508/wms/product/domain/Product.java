@@ -1,6 +1,7 @@
-package com.a508.wms.product;
+package com.a508.wms.product.domain;
 
-import com.a508.wms.productdetail.ProductDetail;
+import com.a508.wms.productlocation.domain.ProductLocation;
+import com.a508.wms.productdetail.domain.ProductDetail;
 import com.a508.wms.util.BaseTimeEntity;
 import com.a508.wms.util.constant.StatusEnum;
 import jakarta.persistence.Column;

@@ -1,5 +1,7 @@
-package com.a508.wms.location;
+package com.a508.wms.location.controller;
 
+import com.a508.wms.location.dto.LocationDto;
+import com.a508.wms.location.service.LocationService;
 import com.a508.wms.util.BaseSuccessResponse;
 
 import java.util.List;

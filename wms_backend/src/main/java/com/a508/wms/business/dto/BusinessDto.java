@@ -1,12 +1,12 @@
-package com.a508.wms.business;
+package com.a508.wms.business.dto;
 
-import com.a508.wms.employee.EmployeeDto;
-import com.a508.wms.notification.NotificationDto;
-import com.a508.wms.productdetail.ProductDetailRequestDto;
-import com.a508.wms.productdetail.ProductDetailResponseDto;
-import com.a508.wms.subscription.SubscriptionDto;
+import com.a508.wms.employee.dto.EmployeeDto;
+import com.a508.wms.notification.dto.NotificationDto;
+import com.a508.wms.productdetail.dto.ProductDetailRequestDto;
+import com.a508.wms.productdetail.dto.ProductDetailResponseDto;
+import com.a508.wms.subscription.dto.SubscriptionDto;
 import com.a508.wms.util.constant.StatusEnum;
-import com.a508.wms.warehouse.WarehouseDto;
+import com.a508.wms.warehouse.dto.WarehouseDto;
 import lombok.*;
 
 import java.time.LocalDateTime;

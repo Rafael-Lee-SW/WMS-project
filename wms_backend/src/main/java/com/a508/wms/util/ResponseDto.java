@@ -1,4 +1,4 @@
-package com.a508.wms.controller.response;
+package com.a508.wms.util;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

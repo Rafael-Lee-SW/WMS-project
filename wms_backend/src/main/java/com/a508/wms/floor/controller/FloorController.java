@@ -1,6 +1,9 @@
-package com.a508.wms.floor;
+package com.a508.wms.floor.controller;
 
 import java.util.List;
+
+import com.a508.wms.floor.dto.FloorDto;
+import com.a508.wms.floor.service.FloorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;

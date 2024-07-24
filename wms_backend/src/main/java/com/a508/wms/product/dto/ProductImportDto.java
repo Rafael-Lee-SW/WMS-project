@@ -1,6 +1,6 @@
-package com.a508.wms.product;
+package com.a508.wms.product.dto;
 
-import com.a508.wms.productdetail.ProductDetailRequestDto;
+import com.a508.wms.productdetail.dto.ProductDetailRequestDto;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;

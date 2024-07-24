@@ -1,4 +1,4 @@
-package com.a508.wms.product;
+package com.a508.wms.product.dto;
 
 public interface ProductPickingLocationDto {
 

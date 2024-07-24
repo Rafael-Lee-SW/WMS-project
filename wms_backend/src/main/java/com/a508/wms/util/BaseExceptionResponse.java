@@ -1,6 +1,5 @@
-package com.a508.wms.controller.response;
+package com.a508.wms.util;
 
-import com.a508.wms.util.constant.StatusEnum;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.time.LocalDateTime;
 import lombok.Getter;

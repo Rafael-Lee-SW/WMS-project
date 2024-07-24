@@ -1,4 +1,4 @@
-package com.a508.wms.domain.util;
+package com.a508.wms.util;
 
 import jakarta.persistence.*;
 import lombok.Getter;

@@ -1,5 +1,8 @@
-package com.a508.wms.productdetail;
+package com.a508.wms.productdetail.controller;
 
+import com.a508.wms.productdetail.dto.ProductDetailRequestDto;
+import com.a508.wms.productdetail.dto.ProductDetailResponseDto;
+import com.a508.wms.productdetail.service.ProductDetailService;
 import com.a508.wms.util.BaseSuccessResponse;
 
 import java.util.List;

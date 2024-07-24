@@ -1,5 +1,7 @@
-package com.a508.wms.notification;
+package com.a508.wms.notification.mapper;
 
+import com.a508.wms.notification.domain.Notification;
+import com.a508.wms.notification.dto.NotificationDto;
 import org.springframework.stereotype.Component;
 
 @Component
