@@ -10,21 +10,37 @@ import org.springframework.http.ResponseEntity;
 @Getter
 @AllArgsConstructor
 public class ResponseDto {
+    // 응답 코드
     private String code;
+    // 응답 메시지
     private String message;
 
+    /**
+     * 기본 생성자
+     * 성공 코드와 메시지를 기본값으로 설정합니다.
+     */
     public ResponseDto() {
         this.code = ResponseCode.SUCCESS;
         this.message = ResponseMessage.SUCCESS;
     }
-   public static ResponseEntity<ResponseDto> databaseError() {
-        ResponseDto responseBody = new ResponseDto(ResponseCode.DATABASE_ERROR, ResponseMessage.DATABASE_ERROR);
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseBody);
 
-   }
-    public static ResponseEntity<ResponseDto> validationFail() {
-        ResponseDto responseBody = new ResponseDto(ResponseCode.DATABASE_ERROR,ResponseMessage.DATABASE_ERROR);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseBody);
+    /**
+     * 데이터베이스 오류 응답을 생성합니다.
+     *
+     * @return 데이터베이스 오류 응답 엔터티
+     */
+    public static ResponseEntity<ResponseDto> databaseError() {
+        ResponseDto responseBody = new ResponseDto(ResponseCode.DATABASE_ERROR, ResponseMessage.DATABASE_ERROR);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseBody);
     }
 
+    /**
+     * 유효성 검사 실패 응답을 생성합니다.
+     *
+     * @return 유효성 검사 실패 응답 엔터티
+     */
+    public static ResponseEntity<ResponseDto> validationFail() {
+        ResponseDto responseBody = new ResponseDto(ResponseCode.VALIDTION_FAIL, ResponseMessage.VALIDTION_FAIL);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseBody);
+    }
 }

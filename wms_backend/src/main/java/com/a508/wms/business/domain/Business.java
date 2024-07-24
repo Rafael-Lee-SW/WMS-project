@@ -42,6 +42,16 @@ public class Business extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private StatusEnum statusEnum = StatusEnum.ACTIVE;
 
+    // 추가된 필드들
+    @Column(length = 50)
+    private String nickname;
+
+    @Column(nullable = false, length = 10)
+    private String socialLoginType = "일반"; // 기본값은 '일반'
+
+    @Column(nullable = false)
+    private int role = 0; // 기본값은 0 (직원)
+
     @OneToMany(mappedBy = "business")
     private List<Employee> employees = new ArrayList<>();
 

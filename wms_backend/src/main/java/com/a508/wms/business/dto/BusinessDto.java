@@ -25,6 +25,9 @@ public class BusinessDto {
     private String password;
     private String name;
     private String businessNumber;
+    private String nickname;
+    private String socialLoginType; // 소셜 로그인 타입
+    private int role; // 관리자 여부 (0: 직원, 1: 사장)
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
     private StatusEnum statusEnum;
