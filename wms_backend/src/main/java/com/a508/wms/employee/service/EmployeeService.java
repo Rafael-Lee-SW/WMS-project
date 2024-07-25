@@ -3,22 +3,17 @@ package com.a508.wms.employee.service;
 import com.a508.wms.employee.domain.Employee;
 import com.a508.wms.employee.dto.EmployeeDto;
 import com.a508.wms.employee.mapper.EmployeeMapper;
-import com.a508.wms.employee.repository.EmployeeRepository;
-import com.a508.wms.util.constant.StatusEnum;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EmployeeService {
 
-    private static final Logger log = LoggerFactory.getLogger(EmployeeService.class);
-    private EmployeeRepository employeeRepository;
+    private final EmployeeModuleService employeeModuleService;
 
     /**
      * 전체 직원을 조회하는 메서드
@@ -26,9 +21,10 @@ public class EmployeeService {
      * @return List<EmployeeDto> (전체 직원)
      */
     public List<EmployeeDto> findAll() {
-        List<Employee> employees = employeeRepository.findAll();
+        List<Employee> employees = employeeModuleService.findAll();
+
         return employees.stream().map(EmployeeMapper::fromEmployee)
-                .toList();
+            .toList();
     }
 
     /**
@@ -38,8 +34,8 @@ public class EmployeeService {
      * @return employeeDto
      */
     public EmployeeDto findById(long id) {
-        Optional<Employee> employee = employeeRepository.findById(id);
-        return EmployeeMapper.fromEmployee(employee.orElse(null));
+        Employee employee = employeeModuleService.findById(id);
+        return EmployeeMapper.fromEmployee(employee);
     }
 
     /**
@@ -49,10 +45,12 @@ public class EmployeeService {
      * @return List<EmployeeDto> (특정 사업체의 전체 직원)
      */
     public List<EmployeeDto> findByBusinessId(long businessId) {
-        List<Employee> employees = employeeRepository.findByBusinessId(businessId);
+        List<Employee> employees = employeeModuleService.findByBusinessId(businessId);
+
         return employees.stream().map(EmployeeMapper::fromEmployee)
-                .toList();
+            .toList();
     }
+
 
     /**
      * 직원 1명의 정보를 수정하는 메서드
@@ -62,10 +60,13 @@ public class EmployeeService {
      * @return employeeDto : 변경된 직원의 정보
      */
     public EmployeeDto update(long id, EmployeeDto employeeDto) {
-        Employee employee = employeeRepository.findById(id).orElse(null);
-        if (employee != null)
-            return EmployeeMapper.fromEmployee(EmployeeMapper.fromDto(employeeDto));
-        return null;
+        //있는지 확인
+        Employee employee = employeeModuleService.findById(id);
+
+        employeeDto.setId(id);
+        Employee updatedEmployee = employeeModuleService.save(EmployeeMapper.fromDto(employeeDto));
+
+        return EmployeeMapper.fromEmployee(updatedEmployee);
     }
 
     /**
@@ -75,11 +76,9 @@ public class EmployeeService {
      * @return employeeDto : 변경된 직원의 정보
      */
     public EmployeeDto delete(long id) {
-        Employee employee = employeeRepository.findById(id).orElseThrow(null);
-        if(employee != null) {
-        employee.setStatusEnum(StatusEnum.DELETED);
-        return EmployeeMapper.fromEmployee(employee);
-        }
-        return null;
+        Employee employee = employeeModuleService.findById(id);
+        Employee deletedEmployee = employeeModuleService.delete(employee);
+
+        return EmployeeMapper.fromEmployee(deletedEmployee);
     }
 }

@@ -6,6 +6,7 @@ import com.a508.wms.product.dto.ProductQuantityDto;
 import com.a508.wms.product.dto.ProductRequestDto;
 import com.a508.wms.product.repository.ProductRepository;
 import com.a508.wms.productdetail.domain.ProductDetail;
+import com.a508.wms.util.constant.StatusEnum;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -73,6 +74,42 @@ public class ProductModuleService {
     }
 
     /**
+     * 상품 id(PK)와 유통기한을 통해 특정한 상품을 반환하는 기능
+     *
+     * @param productId
+     * @param expirationDate
+     * @return
+     */
+    public Optional<Product> findByIdAndExpirationDate(Long productId,
+        LocalDateTime expirationDate) {
+        return productRepository.findByIdAndExpirationDate(productId, expirationDate);
+    }
+
+    /**
+     * 사업체 id(PK)와 barcode를 통해 픽업 가능한 층을 반환하는 기능
+     *
+     * @param barcode
+     * @param businessId
+     * @return
+     */
+    public List<ProductPickingLocationDto> findPickingLocation(Long barcode, Long businessId) {
+        return productRepository.findPickingLocation(barcode, businessId);
+    }
+
+    /**
+     * 사업체 id(PK)와 barcode를 통해 export type별 합을 반환하는 기능
+     *
+     * @param barcode
+     * @param businessId
+     * @return
+     */
+    public ProductQuantityDto findProductQuantityByBarcodeAndBusinessId(Long barcode,
+        Long businessId) {
+        return productRepository.findQuantityByBarcodeAndBusinessId(
+            barcode, businessId);
+    }
+
+    /**
      * ProductDetail값을 통해 Product를 저장하는 기능
      *
      * @param request: Product 데이터
@@ -111,17 +148,14 @@ public class ProductModuleService {
         productRepository.save(product);
     }
 
-    public Optional<Product> findByIdAndExpirationDate(Long id, LocalDateTime expirationDate) {
-        return productRepository.findByIdAndExpirationDate(id, expirationDate);
-    }
-
-    public List<ProductPickingLocationDto> findPickingLocation(Long barcode, Long businessId) {
-        return productRepository.findPickingLocation(barcode, businessId);
-    }
-
-    public ProductQuantityDto findProductQuantityByBarcodeAndBusinessId(Long barcode,
-        Long businessId) {
-        return productRepository.findQuantityByBarcodeAndBusinessId(
-            barcode, businessId);
+    /**
+     * 상품을 soft delete하는 기능.
+     *
+     * @param product
+     * @return
+     */
+    public Product delete(Product product) {
+        product.updateStatus(StatusEnum.DELETED);
+        return save(product);
     }
 }

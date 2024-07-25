@@ -1,28 +1,27 @@
 package com.a508.wms.productlocation.service;
 
 import com.a508.wms.floor.domain.Floor;
-import com.a508.wms.floor.repository.FloorRepository;
-import com.a508.wms.location.repository.LocationRepository;
+import com.a508.wms.floor.service.FloorModuleService;
+import com.a508.wms.location.service.LocationModuleService;
 import com.a508.wms.productlocation.domain.ProductLocation;
 import com.a508.wms.productlocation.dto.ProductLocationRequestDto;
 import com.a508.wms.productlocation.dto.ProductLocationResponseDto;
 import com.a508.wms.productlocation.mapper.ProductLocationMapper;
-import com.a508.wms.productlocation.repository.ProductLocationRepository;
 import com.a508.wms.util.constant.ExportTypeEnum;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class ProductLocationService {
-    private final ProductLocationRepository productLocationRepository;
-    private final FloorRepository floorRepository;
-    private final LocationRepository locationRepository;
+
+    private final ProductLocationModuleService productLocationModuleService;
+    private final FloorModuleService floorModuleService;
+    private final LocationModuleService locationModuleService;
 
     /**
      * productId가 동일한 상품을 productLocation 테이블에서 찾아서 반환
@@ -35,7 +34,10 @@ public class ProductLocationService {
          * 1. productLocationRepository에서 productId가 동일한 상품 찾기
          * 2. 해당 상품을 return
          */
-        return ProductLocationMapper.fromProductLocations(productLocationRepository.findByProductId(productId));
+        List<ProductLocation> productLocations = productLocationModuleService.findByProductId(
+            productId);
+
+        return ProductLocationMapper.fromProductLocations(productLocations);
     }
 
     /**
@@ -45,52 +47,58 @@ public class ProductLocationService {
      * @return ProdutLocationResponseDto
      */
     public List<ProductLocationResponseDto> findByFloorId(Long floorId) {
-        /*
-         * 1. productLocationRepository에서 floorId가 동일한 상품 찾기
-         * 2. 해당 상품 return
-         */
+        List<ProductLocation> productLocations = productLocationModuleService.findByFloorId(
+            floorId);
 
-        return ProductLocationMapper.fromProductLocations(productLocationRepository.findByFloorId(floorId));
+        return ProductLocationMapper.fromProductLocations(productLocations);
     }
 
     /**
      * id가 동일한 상품을 productLocation 테이블에서 찾아서 반환
      *
-     * @param id
+     * @param productLocationId
      * @return ProdutLocationResponseDto
      */
-    public ProductLocationResponseDto findById(long id) {
-        return ProductLocationMapper.fromProductLocation(productLocationRepository.findById(id).orElseThrow(null));
+    public ProductLocationResponseDto findById(long productLocationId) {
+        ProductLocation productLocation = productLocationModuleService.findById(productLocationId);
+
+        return ProductLocationMapper.fromProductLocation(productLocation);
     }
 
     /**
      * barcode가 동일한 상품을 productLocation 테이블에서 찾아서 반환
+     *
      * @param barcode
      * @return List<ProductLocationResponseDto>
      */
     public List<ProductLocationResponseDto> findByBarcode(long barcode) {
-        return ProductLocationMapper.fromProductLocations(productLocationRepository.findByBarcode(barcode));
+        List<ProductLocation> productLocations = productLocationModuleService.findByBarcode(
+            barcode);
+
+        return ProductLocationMapper.fromProductLocations(productLocations);
     }
 
     /**
-     * 상품의 위치를 이동
-     * productLocationRequestDto에서 입력받은 productLocationId를 기반으로 찾는다.
-     * 1. 바코드를 입력하면 findByBarcode를 호출해서 리스트를 넘겨주고, 유저가 그중 하나를 선택
-     * 2. 하나를 선택했을 때 update를 호출하고 변경할 상품의 수량을 입력.
-     * 3. 만약 다른 곳에 이동하고 싶은 경우에는 locationName(oo-oo)과 floor의 floor_level을 입력받기
+     * 상품의 위치를 이동 productLocationRequestDto에서 입력받은 productLocationId를 기반으로 찾는다. 1. 바코드를 입력하면
+     * findByBarcode를 호출해서 리스트를 넘겨주고, 유저가 그중 하나를 선택 2. 하나를 선택했을 때 update를 호출하고 변경할 상품의 수량을 입력. 3. 만약
+     * 다른 곳에 이동하고 싶은 경우에는 locationName(oo-oo)과 floor의 floor_level을 입력받기
+     *
      * @param productLocationRequestDto
      * @return 새로 추가된 productLocationResponseDto
      */
     @Transactional
     public ProductLocationResponseDto update(ProductLocationRequestDto productLocationRequestDto) {
         log.info("productLocationRequestDto: {}", productLocationRequestDto);
-        ProductLocation productLocation = productLocationRepository.findById(productLocationRequestDto.getId())
-                .orElseThrow();
+        ProductLocation productLocation = productLocationModuleService.findById(
+            productLocationRequestDto.getId());
 //        2. if(현재 상품 로케이션의 재고 개수가 더 많은 경우)사용자가 원하는 개수만큼의 재고를 가진 데이터 추가
-        if (productLocationRequestDto.getProductQuantity() > 0 && productLocation.getProduct_quantity() >= productLocationRequestDto.getProductQuantity()) {
+        if (productLocationRequestDto.getProductQuantity() > 0
+            && productLocation.getProduct_quantity()
+            >= productLocationRequestDto.getProductQuantity()) {
             ProductLocation.ProductLocationBuilder builder = ProductLocation.builder();
 
-            int oldProductQuantity = productLocation.getProduct_quantity() - productLocationRequestDto.getProductQuantity();
+            int oldProductQuantity = productLocation.getProduct_quantity()
+                - productLocationRequestDto.getProductQuantity();
             productLocation.setProductQuantity(oldProductQuantity);
             int newProductQuantity = productLocationRequestDto.getProductQuantity();
 //            이동을 요청한 로케이션의 보관타입이 전시인 경우 매장,아니라면 전시로 이동
@@ -99,13 +107,14 @@ public class ProductLocationService {
                 newExportTypeEnum = ExportTypeEnum.STORE;
             }
 //            사용자가 특정 로케이션에 입력하길 원하는 경우
-            if (productLocationRequestDto.getLocationName() != null && productLocationRequestDto.getFloorLevel() > 0) {
+            if (productLocationRequestDto.getLocationName() != null
+                && productLocationRequestDto.getFloorLevel() > 0) {
 //                locationName을 가지고 locationid를 조회하고 floor에서 floorlevel = level이고 locationid = floor.locationid인거 찾기
-            long locationId = locationRepository.findLocationByName(
+                long locationId = locationModuleService.findByName(
                     productLocationRequestDto.getLocationName()).getId();
-            Floor floor = floorRepository.findByLocationIdAndFloorLevel(
+                Floor floor = floorModuleService.findByLocationIdAndFloorLevel(
                     locationId, productLocationRequestDto.getFloorLevel());
-            builder.floor(floor);
+                builder.floor(floor);
             } else {
                 builder.floor(productLocation.getFloor()); // 아니라면 기존의 floor 사용
             }
@@ -113,12 +122,15 @@ public class ProductLocationService {
             builder.exportTypeEnum(newExportTypeEnum);
             builder.product(productLocation.getProduct());
 //            기존거 업데이트
-            productLocationRepository.save(productLocation);
+            productLocationModuleService.save(productLocation);
 //            새거 추가
-            ProductLocation updatedProductLocation = productLocationRepository.save(builder.build());
+            ProductLocation updatedProductLocation = productLocationModuleService.save(
+                builder.build());
             return ProductLocationMapper.fromProductLocation(updatedProductLocation);
         }
 //        TODO:재고 이동에 실패할 경우 리턴 뭐 할지 생각하기
-        else return null;
+        else {
+            return null;
+        }
     }
 }

@@ -2,6 +2,7 @@ package com.a508.wms.productdetail.mapper;
 
 import com.a508.wms.product.mapper.ProductMapper;
 import com.a508.wms.productdetail.domain.ProductDetail;
+import com.a508.wms.productdetail.dto.ProductDetailRequestDto;
 import com.a508.wms.productdetail.dto.ProductDetailResponseDto;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +27,24 @@ public class ProductDetailMapper {
             .productResponseDtos(productDetail.getProducts().stream()
                 .map(ProductMapper::fromProduct)
                 .toList())
+            .build();
+    }
+
+    /**
+     * requestDto -> entity로 변환하는 기능
+     *
+     * @param productDetailRequestDto
+     * @return
+     */
+    public static ProductDetail fromDto(ProductDetailRequestDto productDetailRequestDto) {
+        return ProductDetail.builder()
+            .productStorageTypeEnum(productDetailRequestDto.getProductStorageTypeEnum())
+            .barcode(productDetailRequestDto.getBarcode())
+            .name(productDetailRequestDto.getName())
+            .size(productDetailRequestDto.getSize())
+            .unit(productDetailRequestDto.getUnit())
+            .originalPrice(productDetailRequestDto.getOriginalPrice())
+            .sellingPrice(productDetailRequestDto.getSellingPrice())
             .build();
     }
 }

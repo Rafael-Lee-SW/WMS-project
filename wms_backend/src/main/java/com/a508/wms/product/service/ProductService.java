@@ -1,7 +1,9 @@
 package com.a508.wms.product.service;
 
+import com.a508.wms.business.domain.Business;
+import com.a508.wms.business.service.BusinessModuleService;
 import com.a508.wms.floor.domain.Floor;
-import com.a508.wms.floor.repository.FloorRepository;
+import com.a508.wms.floor.service.FloorModuleService;
 import com.a508.wms.product.domain.Product;
 import com.a508.wms.product.dto.ProductExportRequestDto;
 import com.a508.wms.product.dto.ProductExportResponseDto;
@@ -13,11 +15,10 @@ import com.a508.wms.product.dto.ProductRequestDto;
 import com.a508.wms.product.dto.ProductResponseDto;
 import com.a508.wms.product.mapper.ProductMapper;
 import com.a508.wms.productdetail.domain.ProductDetail;
-import com.a508.wms.productdetail.dto.ProductDetailResponseDto;
+import com.a508.wms.productdetail.mapper.ProductDetailMapper;
 import com.a508.wms.productdetail.service.ProductDetailModuleService;
-import com.a508.wms.productdetail.service.ProductDetailService;
 import com.a508.wms.productlocation.domain.ProductLocation;
-import com.a508.wms.productlocation.repository.ProductLocationRepository;
+import com.a508.wms.productlocation.service.ProductLocationModuleService;
 import com.a508.wms.util.constant.StatusEnum;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
@@ -35,11 +36,11 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ProductService {
 
-    private final ProductLocationRepository productLocationRepository;
-    private final ProductDetailService productDetailService;
-    private final FloorRepository floorRepository;
     private final ProductModuleService productModuleService;
     private final ProductDetailModuleService productDetailModuleService;
+    private final ProductLocationModuleService productLocationModuleService;
+    private final FloorModuleService floorModuleService;
+    private final BusinessModuleService businessModuleService;
 
     /**
      * 서비스의 모든 상품을 반환하는 기능
@@ -159,7 +160,7 @@ public class ProductService {
         product.getProductLocations()
             .forEach(productLocation -> productLocation.updateStatus(StatusEnum.DELETED));
 
-        productLocationRepository.saveAll(product.getProductLocations());
+        productLocationModuleService.saveAll(product.getProductLocations());
     }
 
     /**
@@ -170,9 +171,10 @@ public class ProductService {
     @Transactional
     public void importProducts(List<ProductImportDto> requests) {
         log.info("Importing products");
-        Long businessId = requests.get(0).getBusinessId();
+        Long warehouseId = requests.get(0).getWarehouseId();
+
         //입력된 창고에 정의된 default floor
-        Floor defaultFloor = floorRepository.findFloorByWarehouseId(businessId, -1);
+        Floor defaultFloor = floorModuleService.findByWarehouseIdAndLevel(warehouseId, -1);
 
         log.info("default floor Id: {}", defaultFloor.getId());
 
@@ -200,7 +202,7 @@ public class ProductService {
             .exportTypeEnum(defaultFloor.getExportTypeEnum())
             .build();
 
-        productLocationRepository.save(productLocation);
+        productLocationModuleService.save(productLocation);
     }
 
     /**
@@ -238,11 +240,11 @@ public class ProductService {
         request.getProductDetail().setBusinessId(request.getBusinessId());
 
         //없으면 ProductDetail을 새로 만들어야함.
-        ProductDetailResponseDto productDetailResponseDto = productDetailService.save(
-            request.getProductDetail());
+        Business business = businessModuleService.findById(request.getBusinessId());
+        ProductDetail productDetail = ProductDetailMapper.fromDto(request.getProductDetail());
 
-        log.info("productDetailDto: {}", productDetailResponseDto);
-        return productDetailModuleService.getReferenceById(productDetailResponseDto.getId());
+        productDetail.setBusiness(business);
+        return productDetailModuleService.save(productDetail);
     }
 
     /**
@@ -386,15 +388,13 @@ public class ProductService {
 
     private void updateProductQuantity(Long productLocationId, int quantity) {
         log.info("quantity:{}", quantity);
-        ProductLocation productLocation = productLocationRepository.findById(productLocationId)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid productLocation Id"));
-
+        ProductLocation productLocation = productLocationModuleService.findById(productLocationId);
         Product product = productModuleService.findById(productLocation.getProduct().getId());
 
         productLocation.setProductQuantity(quantity);
         product.updateData(quantity, product.getExpirationDate(), product.getComment());
 
-        productLocationRepository.save(productLocation);
+        productLocationModuleService.save(productLocation);
         productModuleService.save(product);
     }
 
