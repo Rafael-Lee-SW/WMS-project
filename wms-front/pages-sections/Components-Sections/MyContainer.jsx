@@ -39,7 +39,7 @@ import Badge from "/components/Badge/Badge.js";
 
 import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/MyContainerStyle.jsx";
 import { Canvas } from "canvas";
-import { LocalConvenienceStoreOutlined } from "@mui/icons-material";
+import { LocalConvenienceStoreOutlined, Opacity } from "@mui/icons-material";
 
 // 상수 설정(그리드, 컨버스 등)
 const GRID_SIZE = 100; // 100cm = 1m
@@ -94,6 +94,9 @@ const User = () => {
   const [newWallWidth, setNewWallWidth] = useState(10);
   const [wallStartPoint, setWallStartPoint] = useState(null);
   const [wallEndPoint, setWallEndPoint] = useState(null);
+
+  const [draggingAnchor, setDraggingAnchor] = useState(null);
+  const [hoveredAnchor, setHoveredAnchor] = useState(null);
 
   // 사각형을 컨버스에 추가한다.
   const handleAddRectangle = (type) => {
@@ -315,8 +318,6 @@ const User = () => {
   // 선을 잇는 기능을 넣기 위한 거시기
   const [line, setLine] = useState(null);
   const [startPos, setStartPos] = useState(null);
-  // const layerRef = useRef(); already exist for other function
-  // const stageRef = useRef(); already exist for other function
 
   // 선을 그리는 함수
   const drawLine = (start, end) => {
@@ -339,8 +340,13 @@ const User = () => {
   const changeCurrentSetting = (value) => {
     setCurrentSetting(value);
   };
+
+  const [lineData, setLineData] = useState({ startX: '', startY: '', endX: '', endY: '' });
+  const anchorsRef = useRef([]);
+
   // 선을 적용하기 위한 UseEffect
   useEffect(() => {
+
     const stage = stageRef.current;
     const layer = layerRef.current;
     /**
@@ -370,6 +376,7 @@ const User = () => {
         setStartPos(pos); // 선의 시작 위치 기록
         const newLine = new Konva.Line({
           stroke: "black",
+          strokeWidth: 5,
           listening: false, // Hit detective 감지 안됨
           points: [pos.x, pos.y, pos.x, pos.y],
         });
@@ -473,8 +480,8 @@ const User = () => {
           ),
         };
         // if (!isOverlapping(newWall)) {
-        setRectangles([...rectangles, newWall]);
-        updateContainer(newWall, "wall", `wall${newWall.id}`);
+        // setRectangles([...rectangles, newWall]);
+        // updateContainer(newWall, "wall", `wall${newWall.id}`);
         // Reset wall points
         setWallStartPoint(null);
         setWallEndPoint(null);
@@ -487,10 +494,136 @@ const User = () => {
         //   setWallStartPoint(null);
         //   setWallEndPoint(null);
         // }
-        console.log("거시기");
+        const newAnchorTop = buildAnchor(start.x , start.y);
+        const newAnchorBottom = buildAnchor(end.x , end.y);
+
+        const newLine = new Konva.Line({
+          points: [start.x, start.y, end.x, end.y],
+          stroke: 'black',
+          strokeWidth: 10,
+          lineCap: 'round',
+          // dash: [10, 10, 0, 10],
+          // opacity: 0.3,
+        });
+        const layer = layerRef.current;
+        layer.add(newLine);
+    
+        anchorsRef.current.push({ start: newAnchorTop, end: newAnchorBottom, line: newLine });
+        layer.batchDraw();
+
       }
     };
 
+    const buildAnchor = (x, y) => {
+      const layer = layerRef.current;
+  
+      const anchor = new Konva.Circle({
+        x: x,
+        y: y,
+        radius: 20,
+        stroke: '#666',
+        fill: '#ddd',
+        opacity : 0,
+        strokeWidth: 2,
+        draggable: true,
+      });
+      layer.add(anchor);
+  
+      anchor.on('mouseover', function () {
+        document.body.style.cursor = 'pointer';
+        this.strokeWidth(4);
+        this.opacity(1);
+        this.moveToTop()
+      });
+      anchor.on('mouseout', function () {
+        document.body.style.cursor = 'default';
+        this.strokeWidth(2);
+        this.opacity(0);
+        this.moveToTop()
+      });
+  
+      anchor.on('dragmove', function () {
+        updateDottedLines();
+        highlightOverlappingAnchors(this);
+        this.moveToTop()
+      });
+  
+      anchor.on('dragend', function () {
+        mergeAnchors(this);
+        this.moveToTop()
+      });
+  
+      return anchor;
+    };
+
+    const updateDottedLines = () => {
+      anchorsRef.current.forEach(({ line, start, end }) => {
+        line.points([start.x(), start.y(), end.x(), end.y()]);
+      });
+      layerRef.current.batchDraw();
+    };
+  
+    const highlightOverlappingAnchors = (draggedAnchor) => {
+      const stage = stageRef.current;
+      stage.find('Circle').forEach((anchor) => {
+        if (anchor === draggedAnchor) return;
+        if (isOverlapping(draggedAnchor, anchor)) {
+          anchor.stroke('#ff0000');
+          anchor.opacity(1);
+          anchor.moveToTop()
+        } else {
+          anchor.stroke('#666');
+          anchor.opacity(0);
+          anchor.moveToTop()
+        }
+      });
+    };
+  
+    const isOverlapping = (anchor1, anchor2) => {
+      const a1 = anchor1.getClientRect();
+      const a2 = anchor2.getClientRect();
+      return !(
+        a1.x > a2.x + a2.width ||
+        a1.x + a1.width < a2.x ||
+        a1.y > a2.y + a2.height ||
+        a1.y + a1.height < a2.y
+      );
+    };
+  
+    const mergeAnchors = (draggedAnchor) => {
+      const stage = stageRef.current;
+      const layer = layerRef.current;
+      let merged = false;
+  
+      stage.find('Circle').forEach((anchor) => {
+        if (anchor === draggedAnchor) return;
+        if (isOverlapping(draggedAnchor, anchor)) {
+          updateAnchorReferences(draggedAnchor, anchor);
+          draggedAnchor.destroy(); // Remove the dragged anchor
+          layer.batchDraw();
+          merged = true;
+        }
+      });
+      if (!merged) {
+        draggedAnchor.stroke('#666');
+        layer.batchDraw();
+      }
+    };
+  
+    const updateAnchorReferences = (draggedAnchor, anchor) => {
+      let count = 0;
+      anchorsRef.current.forEach((anchorObj) => {
+        if (anchorObj.start === draggedAnchor) anchorObj.start = anchor;
+        if (anchorObj.end === draggedAnchor) anchorObj.end = anchor;
+        count++;
+      });
+      console.log(count)
+      updateDottedLines();
+    };
+
+    /**
+     * 벽 생성 관련 마우스 컨트롤 Mouse
+     */
     if (currentSetting === "wall") {
       // Event Listeners 추가하기
       stage.on("mousedown", handleMouseDown);
@@ -503,160 +636,12 @@ const User = () => {
     /**
      * Anchor에 관한 함수를 넣는 곳
      */
-    const buildAnchor = (x, y, id) => {
-      // 앙커 역할을 하는 Circle 객체 생성
-      const anchor = new Konva.Circle({
-        x: x, // 앵커의 x 좌표
-        y: y, // 앵커의 y 좌표
-        radius: 10, // 원의 반지름
-        stroke: "#666", // 원 테두리의 색상
-        fill: "#ddd", // 원을 채울 색상
-        strokeWidth: 2, // 원 테두리의 너비
-        draggable: true, // 원을 드래그 가능하게 설정
-        id: id,
-        name: "anchor",
-        listening: true, // 이벤트 리스닝 활성화
-      });
-
-      // 마우스오버 이벤트 리스너 추가하여 커서 스타일과 테두리 너비 변경
-      anchor.on("mouseover", function () {
-        document.body.style.cursor = "pointer";
-        this.strokeWidth(4);
-        this.draw();
-      });
-      // 마우스아웃 이벤트 리스너 추가하여 커서 스타일과 테두리 너비 재설정
-      anchor.on("mouseout", function () {
-        document.body.style.cursor = "default";
-        this.strokeWidth(2);
-        this.draw();
-      });
-
-      // 드래그 이동 이벤트 리스너 추가하여 사각형 업데이트
-      anchor.on("dragmove", function () {
-        updateRectangles();
-        this.moveToTop(); // 앵커를 맨 위로 이동
-        this.draw();
-      });
-
-      anchor.on("dragstart", function () {
-        this.moveToTop(); // 드래그 시작 시 앵커를 맨 위로 이동
-        this.draw();
-        // console.log("업뎃")
-      });
-
-      return anchor;
-    };
-
-    // 앵커 위치를 기준으로 사각형의 위치와 크기를 업데이트하는 함수
-    const updateRectangles = () => {
-      const q = quad; // 이차 곡선 앵커에 대한 참조
-      const b = bezier; // 베지어 곡선 앵커에 대한 참조
-
-      // ID로 사각형 찾기
-      const quadRect = layerRef.current.findOne("#quadRect");
-      const bezierRect = layerRef.current.findOne("#bezierRect");
-
-      // 이차 사각형의 위치와 크기 업데이트
-      const quadMidX = (q.start.x() + q.end.x()) / 2;
-      const quadMidY = (q.start.y() + q.end.y()) / 2;
-      const quadWidth = Math.hypot(
-        q.end.x() - q.start.x(),
-        q.end.y() - q.start.y()
-      );
-      const quadAngle =
-        Math.atan2(q.end.y() - q.start.y(), q.end.x() - q.start.x()) *
-        (180 / Math.PI);
-
-      quadRect.position({
-        x: quadMidX,
-        y: quadMidY,
-      });
-      quadRect.size({ width: quadWidth, height: 20 });
-      quadRect.offsetX(quadWidth / 2);
-      quadRect.offsetY(10);
-      quadRect.rotation(quadAngle);
-
-      // 베지어 사각형의 위치와 크기 업데이트
-      const bezierMidX = (b.start.x() + b.end.x()) / 2;
-      const bezierMidY = (b.start.y() + b.end.y()) / 2;
-      const bezierWidth = Math.hypot(
-        b.end.x() - b.start.x(),
-        b.end.y() - b.start.y()
-      );
-      const bezierAngle =
-        Math.atan2(b.end.y() - b.start.y(), b.end.x() - b.start.x()) *
-        (180 / Math.PI);
-
-      bezierRect.position({
-        x: bezierMidX,
-        y: bezierMidY,
-      });
-      bezierRect.size({ width: bezierWidth, height: 20 });
-      bezierRect.offsetX(bezierWidth / 2);
-      bezierRect.offsetY(10);
-      bezierRect.rotation(bezierAngle);
-    };
-
-    // 이차 사각형의 앵커에 대한 참조를 저장하기 위한 특수 객체
-    const quad = {
-      start: buildAnchor(60, 30, "quadStart"), // 시작 앵커
-      end: buildAnchor(240, 110, "quadEnd"), // 끝 앵커
-    };
-
-    // 베지어 사각형의 앵커에 대한 참조를 저장하기 위한 특수 객체
-    const bezier = {
-      start: buildAnchor(280, 20, "bezierStart"), // 시작 앵커
-      end: buildAnchor(530, 40, "bezierEnd"), // 끝 앵커
-    };
-    /**
-     * Anchor 생성을 위한 useEffect 부분 삽입
-     */
-
-    layer.add(quad.start);
-    layer.add(quad.end);
-    layer.add(bezier.start);
-    layer.add(bezier.end);
-
-    // 이차 점들에 대한 사각형 생성
-    const quadRect = new Konva.Rect({
-      stroke: "black", // 사각형 테두리의 색상
-      strokeWidth: 4, // 사각형 테두리의 너비
-      id: "quadRect", // 사각형의 ID
-    });
-    // 레이어에 사각형 추가
-    layer.add(quadRect);
-
-    // 베지어 점들에 대한 사각형 생성
-    const bezierRect = new Konva.Rect({
-      stroke: "black", // 사각형 테두리의 색상
-      strokeWidth: 4, // 사각형 테두리의 너비
-      id: "bezierRect", // 사각형의 ID
-    });
-    // 레이어에 사각형 추가
-    layer.add(bezierRect);
-
-    // 앵커 위치에 맞게 사각형을 업데이트
-    updateRectangles();
-
-    // Ensure anchors are on top using zIndex
-    quad.start.zIndex(layer.children.length - 1);
-    quad.end.zIndex(layer.children.length - 1);
-    bezier.start.zIndex(layer.children.length - 1);
-    bezier.end.zIndex(layer.children.length - 1);
 
     // Clean-up the Function to remove event Listeners
     return () => {
       stage.off("mousedown", handleMouseDown);
       stage.off("mousemove", handleMouseMove);
       stage.off("mouseup", handleMouseUp);
-      /**
-       * Anchor 파트
-       */
-      quad.start.remove();
-      quad.end.remove();
-      bezier.start.remove();
-      bezier.end.remove();
-      stage.off("mousedown mousemove mouseup");
     };
   }, [line, startPos, currentSetting]);
 
