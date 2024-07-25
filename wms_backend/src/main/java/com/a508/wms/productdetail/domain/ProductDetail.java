@@ -1,8 +1,8 @@
 package com.a508.wms.productdetail.domain;
 
 import com.a508.wms.business.domain.Business;
-import com.a508.wms.productstoragetype.domain.ProductStorageType;
 import com.a508.wms.product.domain.Product;
+import com.a508.wms.productstoragetype.domain.ProductStorageType;
 import com.a508.wms.util.BaseTimeEntity;
 import com.a508.wms.util.constant.StatusEnum;
 import jakarta.persistence.Column;
@@ -30,7 +30,7 @@ public class ProductDetail extends BaseTimeEntity {
 
     @Builder
     public ProductDetail(Business business, ProductStorageType productStorageType, Long barcode,
-                         String name, Long size, Long unit, int originalPrice, int sellingPrice) {
+        String name, Long size, Long unit, int originalPrice, int sellingPrice) {
         this.business = business;
         this.productStorageType = productStorageType;
         this.barcode = barcode;

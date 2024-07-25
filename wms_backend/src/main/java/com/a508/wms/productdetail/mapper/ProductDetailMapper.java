@@ -1,8 +1,8 @@
 package com.a508.wms.productdetail.mapper;
 
 import com.a508.wms.product.mapper.ProductMapper;
-import com.a508.wms.productdetail.dto.ProductDetailResponseDto;
 import com.a508.wms.productdetail.domain.ProductDetail;
+import com.a508.wms.productdetail.dto.ProductDetailResponseDto;
 import org.springframework.stereotype.Component;
 
 @Component
