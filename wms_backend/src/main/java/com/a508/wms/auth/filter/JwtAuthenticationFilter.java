@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -27,6 +29,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtProvider jwtProvider;
     private final BusinessRepository businessRepository;
+    private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     /**
      * 1. 토큰값이 null이 아니고
@@ -34,32 +37,37 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * 3. 유저정보를 꺼내온다
      */
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-        FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
             // 1. "Authorization" 헤더에서 Bearer 토큰을 가져옴
             String token = parseBearerToken(request);
+            logger.info("Token: {}", token);
 
             // 2. 토큰이 null이면 다음 필터로 진행
             if (token == null) {
+                logger.info("Token is null, proceeding to next filter.");
                 filterChain.doFilter(request, response);
                 return;
             }
 
             // 3. 토큰 유효성 검증
             String userId = jwtProvider.validate(token);
+            logger.info("UserId: {}", userId);
 
             // 4. 유효하지 않은 토큰이면 다음 필터로 진행
             if (userId == null) {
+                logger.info("Invalid token, proceeding to next filter.");
                 filterChain.doFilter(request, response);
                 return;
             }
 
             // 5. 유저 ID로 Business 엔티티 조회
             Business business = businessRepository.findById(Long.parseLong(userId)).orElse(null);
+            logger.info("Business: {}", business);
 
             // 6. Business 엔티티가 없을 경우 다음 필터로 진행
             if (business == null) {
+                logger.info("Business entity not found, proceeding to next filter.");
                 filterChain.doFilter(request, response);
                 return;
             }
@@ -79,8 +87,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
 
             // 9. Authentication 토큰 생성 및 설정
-            AbstractAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(userId, null, authorities);
+            AbstractAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userId, null, authorities);
             authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
             // 10. SecurityContext에 Authentication 설정
@@ -88,7 +95,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             SecurityContextHolder.setContext(securityContext);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error during JWT authentication", e);
         }
 
         // 11. 다음 필터로 진행
@@ -100,13 +107,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * 2. 헤더가 비어있지 않은지 확인
      * 3. Bearer로 시작하는지 확인
      * 4. Bearer 다음의 실제 토큰 값을 추출
-     *
      * @param request HTTP 요청 객체
      * @return 추출된 JWT 토큰
      */
     private String parseBearerToken(HttpServletRequest request) {
         // 1. "Authorization" 헤더에서 Bearer 토큰 가져오기
         String bearerToken = request.getHeader("Authorization");
+        logger.info("Authorization Header: {}", bearerToken);
 
         // 2. 헤더가 비어있지 않은지 확인
         if (!StringUtils.hasText(bearerToken)) {

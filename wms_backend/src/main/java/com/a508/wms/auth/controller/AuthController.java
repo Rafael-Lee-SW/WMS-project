@@ -1,6 +1,8 @@
 package com.a508.wms.auth.controller;
 
+import com.a508.wms.auth.dto.request.auth.EmailCertificationRequestDto;
 import com.a508.wms.auth.dto.request.auth.IdCheckRequestDto;
+import com.a508.wms.auth.dto.response.auth.EmailCertificationResponseDto;
 import com.a508.wms.auth.dto.response.auth.IdCheckResponseDto;
 import com.a508.wms.auth.service.AuthService;
 import jakarta.validation.Valid;
@@ -20,6 +22,11 @@ public class AuthController {
 
     private final AuthService authService;
 
+    /**
+     * 중복 이메일 체크하는 메서드
+     * @param requestBody
+     * @return
+     */
     @PostMapping("/id-check")
     public ResponseEntity<? super IdCheckResponseDto> idCheck(
         @RequestBody @Valid IdCheckRequestDto requestBody
@@ -27,6 +34,20 @@ public class AuthController {
         ResponseEntity<? super IdCheckResponseDto> response = authService.idCheck(requestBody);
         return response;
     }
+
+    /**
+     * email check하는 메서드
+     * @return
+     */
+    @PostMapping("/email-certification")
+    public ResponseEntity<? super EmailCertificationResponseDto> emailCertification(
+        @RequestBody @Valid EmailCertificationRequestDto requestBody
+    ){
+        ResponseEntity<? super EmailCertificationResponseDto> response =
+            authService.emailCertification(requestBody);
+        return response;
+    }
+
 
 
 }
