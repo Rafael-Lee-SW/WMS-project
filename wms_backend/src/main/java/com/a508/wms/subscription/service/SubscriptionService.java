@@ -1,36 +1,28 @@
 package com.a508.wms.subscription.service;
 
 import com.a508.wms.business.domain.Business;
+import com.a508.wms.business.repository.BusinessRepository;
 import com.a508.wms.subscription.domain.Subscription;
 import com.a508.wms.subscription.dto.SubscriptionDto;
 import com.a508.wms.subscription.mapper.SubscriptionMapper;
 import com.a508.wms.subscription.repository.SubscriptionRepository;
 import com.a508.wms.subscriptiontype.domain.SubscriptionType;
-import com.a508.wms.business.repository.BusinessRepository;
 import com.a508.wms.subscriptiontype.repository.SubscriptionTypeRepository;
 import com.a508.wms.util.constant.StatusEnum;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class SubscriptionService {
 
-    private static final Logger log = LoggerFactory.getLogger(SubscriptionService.class);
     private final SubscriptionRepository subscriptionRepository;
     private final BusinessRepository businessRepository;
     private final SubscriptionTypeRepository subscriptionTypeRepository;
-
-    @Autowired
-    public SubscriptionService(SubscriptionRepository subscriptionRepository, BusinessRepository businessRepository, SubscriptionTypeRepository subscriptionTypeRepository) {
-        this.subscriptionRepository = subscriptionRepository;
-        this.businessRepository = businessRepository;
-        this.subscriptionTypeRepository = subscriptionTypeRepository;
-    }
 
 
     /**
@@ -41,7 +33,8 @@ public class SubscriptionService {
     @Transactional(readOnly = true)
     public List<SubscriptionDto> getSubscriptions() {
         List<Subscription> subscriptions = subscriptionRepository.findAll();
-        log.info("subscriptions: {}", subscriptions.stream().map(SubscriptionMapper::fromSubscription).toList());
+        log.info("subscriptions: {}",
+            subscriptions.stream().map(SubscriptionMapper::fromSubscription).toList());
         return subscriptions.stream().map(SubscriptionMapper::fromSubscription).toList();
     }
 
@@ -65,11 +58,12 @@ public class SubscriptionService {
     @Transactional
     public SubscriptionDto addSubscription(long id, SubscriptionDto subscriptionDto) {
         Business business = businessRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid business Id:" + id));
+            .orElseThrow(() -> new IllegalArgumentException("Invalid business Id:" + id));
 
-        SubscriptionType subscriptionType = subscriptionTypeRepository.findById(subscriptionDto.getSubscriptionTypeId())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid subscription type Id:"
-                        + subscriptionDto.getSubscriptionTypeId()));
+        SubscriptionType subscriptionType = subscriptionTypeRepository.findById(
+                subscriptionDto.getSubscriptionTypeId())
+            .orElseThrow(() -> new IllegalArgumentException("Invalid subscription type Id:"
+                + subscriptionDto.getSubscriptionTypeId()));
 
         Subscription subscription = SubscriptionMapper.fromDto(subscriptionDto);
         subscription.setBusiness(business);
@@ -88,11 +82,12 @@ public class SubscriptionService {
     @Transactional
     public SubscriptionDto updateSubscription(long id, SubscriptionDto subscriptionDto) {
         Business business = businessRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid business Id:" + id));
+            .orElseThrow(() -> new IllegalArgumentException("Invalid business Id:" + id));
 
-        SubscriptionType subscriptionType = subscriptionTypeRepository.findById(subscriptionDto.getSubscriptionTypeId())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid subscription type Id:"
-                        + subscriptionDto.getSubscriptionTypeId()));
+        SubscriptionType subscriptionType = subscriptionTypeRepository.findById(
+                subscriptionDto.getSubscriptionTypeId())
+            .orElseThrow(() -> new IllegalArgumentException("Invalid subscription type Id:"
+                + subscriptionDto.getSubscriptionTypeId()));
 
         Subscription subscription = SubscriptionMapper.fromDto(subscriptionDto);
         subscription.setBusiness(business);
@@ -109,7 +104,7 @@ public class SubscriptionService {
     @Transactional
     public void deleteSubscription(long id) {
         Subscription subscription = subscriptionRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid subscription Id:" + id));
+            .orElseThrow(() -> new IllegalArgumentException("Invalid subscription Id:" + id));
         subscription.setStatusEnum(StatusEnum.DELETED);
         subscriptionRepository.save(subscription);
     }

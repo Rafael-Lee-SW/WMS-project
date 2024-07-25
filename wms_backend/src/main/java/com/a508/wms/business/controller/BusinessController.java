@@ -5,7 +5,14 @@ import com.a508.wms.business.service.BusinessService;
 import com.a508.wms.util.BaseSuccessResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/businesses")
@@ -52,21 +59,20 @@ public class BusinessController {
     }
 
     /**
-     * 사업체의 정보를 수정하는 메서드
-     * 현재 수정 가능한 부분은 사업체에 관한 개인 정보들(사업체 번호, 이름,이메일 등..)
+     * 사업체의 정보를 수정하는 메서드 현재 수정 가능한 부분은 사업체에 관한 개인 정보들(사업체 번호, 이름,이메일 등..)
      *
      * @param id          : 사업체 고유 번호
      * @param businessDto : 사업체 정보가 담긴 Dto
      * @return BusinessDto
      */
     @PutMapping("/{id}")
-    public BaseSuccessResponse<?> updateBusiness(@PathVariable long id, @RequestBody BusinessDto businessDto) {
-        return new BaseSuccessResponse<>(businessService.update(id, businessDto));
+    public BaseSuccessResponse<?> updateBusiness(@PathVariable long id,
+        @RequestBody BusinessDto businessDto) {
+        return new BaseSuccessResponse<>(businessService.update(businessDto));
     }
 
     /**
-     * 사업체의 정보를 삭제하는 메서드
-     * 실제로 지우지 않고, 상태를 DELETED로 변경하여 삭제된 것 처럼 처리
+     * 사업체의 정보를 삭제하는 메서드 실제로 지우지 않고, 상태를 DELETED로 변경하여 삭제된 것 처럼 처리
      *
      * @param id : 사업체 고유 번호
      * @return BusinessDto

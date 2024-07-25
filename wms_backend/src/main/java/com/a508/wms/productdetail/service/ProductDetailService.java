@@ -1,17 +1,13 @@
 package com.a508.wms.productdetail.service;
 
 import com.a508.wms.business.domain.Business;
-import com.a508.wms.business.repository.BusinessRepository;
-import com.a508.wms.product.domain.Product;
-import com.a508.wms.product.repository.ProductRepository;
+import com.a508.wms.business.service.BusinessModuleService;
+import com.a508.wms.product.service.ProductModuleService;
 import com.a508.wms.productdetail.domain.ProductDetail;
 import com.a508.wms.productdetail.dto.ProductDetailRequestDto;
 import com.a508.wms.productdetail.dto.ProductDetailResponseDto;
 import com.a508.wms.productdetail.mapper.ProductDetailMapper;
-import com.a508.wms.productdetail.repository.ProductDetailRepository;
-import com.a508.wms.productlocation.domain.ProductLocation;
-import com.a508.wms.productlocation.repository.ProductLocationRepository;
-import com.a508.wms.util.constant.StatusEnum;
+import com.a508.wms.productlocation.service.ProductLocationModuleService;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -23,10 +19,10 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ProductDetailService {
 
-    private final ProductDetailRepository productDetailRepository;
-    private final BusinessRepository businessRepository;
-    private final ProductRepository productRepository;
-    private final ProductLocationRepository productLocationRepository;
+    private final ProductDetailModuleService productDetailModuleService;
+    private final BusinessModuleService businessModuleService;
+    private final ProductModuleService productModuleService;
+    private final ProductLocationModuleService productLocationModuleService;
 
 
     /**
@@ -35,7 +31,7 @@ public class ProductDetailService {
      * @return
      */
     public List<ProductDetailResponseDto> getProductDetail() {
-        List<ProductDetail> result = productDetailRepository.findAll();
+        List<ProductDetail> result = productDetailModuleService.findAll();
 
         return result.stream()
             .map(ProductDetailMapper::fromProductDetail)
@@ -46,12 +42,12 @@ public class ProductDetailService {
     /**
      * 사업체에 해당하는 상품정보 반환
      *
-     * @param id: 사업체 ID
+     * @param businessId: 사업체 ID
      * @return
      */
 
-    public List<ProductDetailResponseDto> getProductDetailByBusinessId(Long id) {
-        List<ProductDetail> result = productDetailRepository.findByBusinessId(id);
+    public List<ProductDetailResponseDto> getProductDetailByBusinessId(Long businessId) {
+        List<ProductDetail> result = productDetailModuleService.findByBusinessId(businessId);
 
         return result.stream()
             .map(ProductDetailMapper::fromProductDetail)
@@ -65,8 +61,7 @@ public class ProductDetailService {
      */
     public ProductDetailResponseDto save(ProductDetailRequestDto request) {
         log.info("product detail request: {}", request);
-        Business business = businessRepository.findById(request.getBusinessId())
-            .orElseThrow(() -> new IllegalArgumentException("Invalid business Id"));
+        Business business = businessModuleService.findById(request.getBusinessId());
 
         ProductDetail productDetail = new ProductDetail(
             business, request.getProductStorageTypeEnum(), request.getBarcode(),
@@ -74,7 +69,7 @@ public class ProductDetailService {
             request.getOriginalPrice(), request.getSellingPrice()
         );
 
-        ProductDetail savedProductDetail = productDetailRepository.save(productDetail);
+        ProductDetail savedProductDetail = productDetailModuleService.save(productDetail);
 
         log.info("product Detail ID{}", savedProductDetail.getId());
 
@@ -89,8 +84,7 @@ public class ProductDetailService {
      */
     public void modify(Long id, ProductDetailRequestDto request) {
         log.info("product detail request: {}", request);
-        ProductDetail productDetail = productDetailRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid productDetail Id"));
+        ProductDetail productDetail = productDetailModuleService.findById(id);
 
         log.info("product detail target: {}", productDetail);
 
@@ -105,7 +99,7 @@ public class ProductDetailService {
             (request.getSellingPrice() == 0) ? productDetail.getSellingPrice()
                 : request.getSellingPrice());
 
-        productDetailRepository.save(productDetail);
+        productDetailModuleService.save(productDetail);
     }
 
     /**
@@ -116,20 +110,14 @@ public class ProductDetailService {
     @Transactional
     public void delete(Long id) {
         log.info("product detail request: {}", id);
-        ProductDetail productDetail = productDetailRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid ProductDetail ID"));
+        ProductDetail productDetail = productDetailModuleService.findById(id);
 
-        productDetail.updateStatus(StatusEnum.DELETED);
+        productDetailModuleService.delete(productDetail);
 
-        for (Product product : productDetail.getProducts()) {
-            product.updateStatus(StatusEnum.DELETED);
-
-            productRepository.save(product);
-
-            for (ProductLocation productLocation : product.getProductLocations()) {
-                productLocation.updateStatus(StatusEnum.DELETED);
-                productLocationRepository.save(productLocation);
-            }
-        }
+        productDetail.getProducts().forEach(product -> {
+            productModuleService.delete(product);
+            product.getProductLocations().forEach(productLocationModuleService::delete
+            );
+        });
     }
 }
