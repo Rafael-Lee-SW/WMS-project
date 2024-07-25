@@ -7,12 +7,21 @@ import com.a508.wms.subscription.domain.Subscription;
 import com.a508.wms.util.BaseTimeEntity;
 import com.a508.wms.util.constant.StatusEnum;
 import com.a508.wms.warehouse.domain.Warehouse;
-import jakarta.persistence.*;
-
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
-
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
@@ -70,23 +79,26 @@ public class Business extends BaseTimeEntity {
     public void setStatusEnum(StatusEnum statusEnum) {
         this.statusEnum = statusEnum;
     }
+
     public void setEmployees(List<Employee> employees) {
         this.employees = employees;
     }
+
     public void setProductDetails(List<ProductDetail> productDetails) {
         this.productDetails = productDetails;
     }
+
     public void setNotifications(List<Notification> notifications) {
         this.notifications = notifications;
     }
+
     public void setSubscriptions(List<Subscription> subscriptions) {
         this.subscriptions = subscriptions;
     }
+
     public void setWarehouses(List<Warehouse> warehouses) {
         this.warehouses = warehouses;
     }
-
-
 
 
 }

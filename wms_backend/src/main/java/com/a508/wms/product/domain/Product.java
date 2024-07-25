@@ -1,7 +1,7 @@
 package com.a508.wms.product.domain;
 
-import com.a508.wms.productlocation.domain.ProductLocation;
 import com.a508.wms.productdetail.domain.ProductDetail;
+import com.a508.wms.productlocation.domain.ProductLocation;
 import com.a508.wms.util.BaseTimeEntity;
 import com.a508.wms.util.constant.StatusEnum;
 import jakarta.persistence.Column;
@@ -29,7 +29,7 @@ public class Product extends BaseTimeEntity {
 
     @Builder
     public Product(ProductDetail productDetail, int productQuantity, LocalDateTime expirationDate,
-                   String comment) {
+        String comment) {
         this.productDetail = productDetail;
         this.productQuantity = productQuantity;
         this.expirationDate = expirationDate;

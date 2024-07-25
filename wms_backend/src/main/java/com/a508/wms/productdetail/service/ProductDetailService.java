@@ -1,18 +1,16 @@
 package com.a508.wms.productdetail.service;
 
 import com.a508.wms.business.domain.Business;
+import com.a508.wms.business.repository.BusinessRepository;
 import com.a508.wms.product.domain.Product;
+import com.a508.wms.product.repository.ProductRepository;
 import com.a508.wms.productdetail.domain.ProductDetail;
 import com.a508.wms.productdetail.dto.ProductDetailRequestDto;
 import com.a508.wms.productdetail.dto.ProductDetailResponseDto;
 import com.a508.wms.productdetail.mapper.ProductDetailMapper;
 import com.a508.wms.productdetail.repository.ProductDetailRepository;
 import com.a508.wms.productlocation.domain.ProductLocation;
-import com.a508.wms.productstoragetype.domain.ProductStorageType;
-import com.a508.wms.business.repository.BusinessRepository;
 import com.a508.wms.productlocation.repository.ProductLocationRepository;
-import com.a508.wms.product.repository.ProductRepository;
-import com.a508.wms.productstoragetype.repository.ProductStorageTypeRepository;
 import com.a508.wms.util.constant.StatusEnum;
 import jakarta.transaction.Transactional;
 import java.util.List;
@@ -27,7 +25,6 @@ public class ProductDetailService {
 
     private final ProductDetailRepository productDetailRepository;
     private final BusinessRepository businessRepository;
-    private final ProductStorageTypeRepository productStorageTypeRepository;
     private final ProductRepository productRepository;
     private final ProductLocationRepository productLocationRepository;
 
@@ -71,12 +68,8 @@ public class ProductDetailService {
         Business business = businessRepository.findById(request.getBusinessId())
             .orElseThrow(() -> new IllegalArgumentException("Invalid business Id"));
 
-        ProductStorageType productStorageType = productStorageTypeRepository.findById(
-                request.getProductStorageTypeId())
-            .orElseThrow(() -> new IllegalArgumentException("Invalid productStorageType Id"));
-
         ProductDetail productDetail = new ProductDetail(
-            business, productStorageType, request.getBarcode(),
+            business, request.getProductStorageTypeEnum(), request.getBarcode(),
             request.getName(), request.getSize(), request.getUnit(),
             request.getOriginalPrice(), request.getSellingPrice()
         );
@@ -99,14 +92,10 @@ public class ProductDetailService {
         ProductDetail productDetail = productDetailRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Invalid productDetail Id"));
 
-        ProductStorageType productStorageType = productStorageTypeRepository.findById(
-                request.getProductStorageTypeId())
-            .orElseThrow(() -> new IllegalArgumentException("Invalid productStorageType Id"));
-
         log.info("product detail target: {}", productDetail);
 
         productDetail.updateData(
-            productStorageType,
+            request.getProductStorageTypeEnum(),
             request.getBarcode(),
             request.getName(),
             (request.getSize() == null) ? productDetail.getSize() : request.getSize(),
@@ -114,8 +103,7 @@ public class ProductDetailService {
             (request.getOriginalPrice() == 0) ? productDetail.getOriginalPrice()
                 : request.getOriginalPrice(),
             (request.getSellingPrice() == 0) ? productDetail.getSellingPrice()
-                : request.getSellingPrice()
-        );
+                : request.getSellingPrice());
 
         productDetailRepository.save(productDetail);
     }
