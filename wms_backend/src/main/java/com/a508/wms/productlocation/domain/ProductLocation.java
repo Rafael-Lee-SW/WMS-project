@@ -45,6 +45,7 @@ public class ProductLocation extends BaseTimeEntity {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private ExportTypeEnum exportTypeEnum = ExportTypeEnum.IMPORT;
 
     @Builder.Default

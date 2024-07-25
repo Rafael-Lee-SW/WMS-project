@@ -2,8 +2,8 @@ package com.a508.wms.productdetail.domain;
 
 import com.a508.wms.business.domain.Business;
 import com.a508.wms.product.domain.Product;
-import com.a508.wms.productstoragetype.domain.ProductStorageType;
 import com.a508.wms.util.BaseTimeEntity;
+import com.a508.wms.util.constant.ProductStorageTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -29,10 +29,10 @@ import lombok.NoArgsConstructor;
 public class ProductDetail extends BaseTimeEntity {
 
     @Builder
-    public ProductDetail(Business business, ProductStorageType productStorageType, Long barcode,
-        String name, Long size, Long unit, int originalPrice, int sellingPrice) {
+    public ProductDetail(Business business, ProductStorageTypeEnum productStorageTypeEnum, Long barcode,
+                         String name, Long size, Long unit, int originalPrice, int sellingPrice) {
         this.business = business;
-        this.productStorageType = productStorageType;
+        this.productStorageTypeEnum = productStorageTypeEnum;
         this.barcode = barcode;
         this.name = name;
         this.size = size;
@@ -49,9 +49,9 @@ public class ProductDetail extends BaseTimeEntity {
     @JoinColumn(name = "business_id", nullable = false)
     private Business business;
 
-    @ManyToOne
-    @JoinColumn(name = "product_storage_type_id", nullable = false)
-    private ProductStorageType productStorageType;
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    public ProductStorageTypeEnum productStorageTypeEnum;
 
     @OneToMany(mappedBy = "productDetail")
     private List<Product> products = new ArrayList<>();
@@ -83,21 +83,21 @@ public class ProductDetail extends BaseTimeEntity {
         business.getProductDetails().add(this);
     }
 
+    //삭제 상태 변경
+    public void updateStatus(StatusEnum statusEnum) {
+        this.statusEnum = statusEnum;
+    }
+
     //데이터의 일괄 수정
-    public void updateData(ProductStorageType productStorageType
+    public void updateData(ProductStorageTypeEnum productStorageTypeEnum
         , Long barcode, String name, Long size, Long unit
         , int originalPrice, int sellingPrice) {
-        this.productStorageType = productStorageType;
+        this.productStorageTypeEnum = productStorageTypeEnum;
         this.barcode = barcode;
         this.name = name;
         this.size = size;
         this.unit = unit;
         this.originalPrice = originalPrice;
         this.sellingPrice = sellingPrice;
-    }
-
-    //삭제 상태 변경
-    public void updateStatus(StatusEnum statusEnum) {
-        this.statusEnum = statusEnum;
     }
 }

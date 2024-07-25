@@ -19,7 +19,7 @@ public class LocationMapper {
         return LocationDto.builder()
                 .id(location.getId())
                 .warehouseId(location.getWarehouse().getId())
-                .productStorageTypeId(location.getProductStorageType().getId())
+                .productStorageTypeEnum(location.getProductStorageTypeEnum())
                 .name(location.getName())
                 .xPosition(location.getXPosition())
                 .yPosition(location.getYPosition())

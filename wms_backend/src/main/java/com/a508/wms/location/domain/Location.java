@@ -1,6 +1,6 @@
 package com.a508.wms.location.domain;
 
-import com.a508.wms.productstoragetype.domain.ProductStorageType;
+import com.a508.wms.util.constant.ProductStorageTypeEnum;
 import com.a508.wms.warehouse.domain.Warehouse;
 import com.a508.wms.floor.domain.Floor;
 import com.a508.wms.util.BaseTimeEntity;
@@ -25,10 +25,10 @@ import org.hibernate.annotations.SQLRestriction;
 @Table(name = "location")
 public class Location extends BaseTimeEntity {
 
-    public Location(Warehouse warehouse, ProductStorageType productStorageType,
+    public Location(Warehouse warehouse, ProductStorageTypeEnum productStorageTypeEnum,
                     int xPosition, int yPosition, int width, int height) {
         this.warehouse = warehouse;
-        this.productStorageType = productStorageType;
+        this.productStorageTypeEnum = productStorageTypeEnum;
         this.xPosition = xPosition;
         this.yPosition = yPosition;
         this.width = width;
@@ -43,31 +43,38 @@ public class Location extends BaseTimeEntity {
     @JoinColumn(name = "warehouse_id", nullable = false)
     private Warehouse warehouse;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_storage_type_id", nullable = false)
-    private ProductStorageType productStorageType;
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private ProductStorageTypeEnum productStorageTypeEnum;
 
     @Column(nullable = false, length = 10)
+    @Builder.Default
     private String name = "00-00";
 
     @Column(nullable = false)
-    private int xPosition;
+    @Builder.Default
+    private int xPosition = -1;
 
     @Column(nullable = false)
-    private int yPosition;
+    @Builder.Default
+    private int yPosition = -1;
 
     @Column(nullable = false)
-    private int width;
+    @Builder.Default
+    private int width = -1;
 
     @Column(nullable = false)
-    private int height;
+    @Builder.Default
+    private int height = -1;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private StatusEnum statusEnum = StatusEnum.ACTIVE;
 
     @Setter
     @OneToMany(mappedBy = "location")
+    @Builder.Default
     private List<Floor> floors = new ArrayList<>();
 
     //상태값 변경 메서드 -> 삭제에 사용
