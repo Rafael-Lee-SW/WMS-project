@@ -33,7 +33,7 @@ export default class MyApp extends App {
           />
           <title>ADN project Template finding</title>
           <link rel="preconnect" href="https://fonts.googleapis.com"/>
-          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin = "true"/>
           <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR&family=Nanum+Brush+Script&family=Nanum+Gothic+Coding&display=swap" rel="stylesheet"/>
         </Head>
         <SessionProvider session={pageProps.session}>
