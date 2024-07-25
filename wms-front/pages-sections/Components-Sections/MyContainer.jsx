@@ -22,6 +22,10 @@ import Radio from "@material-ui/core/Radio";
 import Switch from "@material-ui/core/Switch";
 // @material-ui/icons
 import Favorite from "@material-ui/icons/Favorite";
+import ZoomInIcon from "@mui/icons-material/ZoomIn";
+import ZoomOutIcon from "@mui/icons-material/ZoomOut";
+import SaveIcon from "@mui/icons-material/Save";
+import UnarchiveIcon from "@mui/icons-material/Unarchive";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import ProductionQuantityLimitsIcon from "@mui/icons-material/ProductionQuantityLimits";
 import ListAltIcon from "@mui/icons-material/ListAlt";
@@ -79,13 +83,14 @@ const User = () => {
   const [selectedRectTransform, setSelectedRectTransform] = useState(null);
 
   // Tracking the current setting mode
-  const [currentSetting, setCurrentSetting] = useState(null); // Track current setting mode
+  const [currentSetting, setCurrentSetting] = useState("location"); // Track current setting mode
   const [showColorPicker, setShowColorPicker] = useState(false); // Control visibility of the color picker
 
   // New State for rectangle settings - Default exits, and changable now.
   const [newRectColor, setNewRectColor] = useState("blue");
   const [newRectWidth, setNewRectWidth] = useState(50);
   const [newRectHeight, setNewRectHeight] = useState(50);
+  const [newRectZIndex, setNewRectZIndex] = useState(1);
   const [newRectName, setNewRectName] = useState("");
   const [newRectType, setNewRectType] = useState(""); // new type for rectangle
 
@@ -341,12 +346,16 @@ const User = () => {
     setCurrentSetting(value);
   };
 
-  const [lineData, setLineData] = useState({ startX: '', startY: '', endX: '', endY: '' });
+  const [lineData, setLineData] = useState({
+    startX: "",
+    startY: "",
+    endX: "",
+    endY: "",
+  });
   const anchorsRef = useRef([]);
 
   // 선을 적용하기 위한 UseEffect
   useEffect(() => {
-
     const stage = stageRef.current;
     const layer = layerRef.current;
     /**
@@ -494,65 +503,68 @@ const User = () => {
         //   setWallStartPoint(null);
         //   setWallEndPoint(null);
         // }
-        const newAnchorTop = buildAnchor(start.x , start.y);
-        const newAnchorBottom = buildAnchor(end.x , end.y);
+        const newAnchorTop = buildAnchor(start.x, start.y);
+        const newAnchorBottom = buildAnchor(end.x, end.y);
 
         const newLine = new Konva.Line({
           points: [start.x, start.y, end.x, end.y],
-          stroke: 'black',
+          stroke: "black",
           strokeWidth: 10,
-          lineCap: 'round',
+          lineCap: "round",
           // dash: [10, 10, 0, 10],
           // opacity: 0.3,
         });
         const layer = layerRef.current;
         layer.add(newLine);
-    
-        anchorsRef.current.push({ start: newAnchorTop, end: newAnchorBottom, line: newLine });
-        layer.batchDraw();
 
+        anchorsRef.current.push({
+          start: newAnchorTop,
+          end: newAnchorBottom,
+          line: newLine,
+        });
+        layer.batchDraw();
       }
     };
 
     const buildAnchor = (x, y) => {
       const layer = layerRef.current;
-  
+
       const anchor = new Konva.Circle({
         x: x,
         y: y,
         radius: 20,
-        stroke: '#666',
-        fill: '#ddd',
-        opacity : 0,
+        stroke: "#666",
+        fill: "#ddd",
+        opacity: 0,
         strokeWidth: 2,
         draggable: true,
       });
       layer.add(anchor);
-  
-      anchor.on('mouseover', function () {
-        document.body.style.cursor = 'pointer';
+
+      anchor.on("mouseover", function () {
+        document.body.style.cursor = "pointer";
         this.strokeWidth(4);
         this.opacity(1);
-        this.moveToTop()
+        this.moveToTop();
       });
-      anchor.on('mouseout', function () {
-        document.body.style.cursor = 'default';
+      anchor.on("mouseout", function () {
+        document.body.style.cursor = "default";
         this.strokeWidth(2);
         this.opacity(0);
-        this.moveToTop()
+        this.moveToTop();
       });
-  
-      anchor.on('dragmove', function () {
+
+      anchor.on("dragmove", function () {
         updateDottedLines();
         highlightOverlappingAnchors(this);
-        this.moveToTop()
+        this.moveToTop();
       });
-  
-      anchor.on('dragend', function () {
+
+      anchor.on("dragend", function () {
         mergeAnchors(this);
-        this.moveToTop()
+        this.moveToTop();
       });
-  
+
       return anchor;
     };
 
@@ -562,23 +574,23 @@ const User = () => {
       });
       layerRef.current.batchDraw();
     };
-  
+
     const highlightOverlappingAnchors = (draggedAnchor) => {
       const stage = stageRef.current;
-      stage.find('Circle').forEach((anchor) => {
+      stage.find("Circle").forEach((anchor) => {
         if (anchor === draggedAnchor) return;
         if (isOverlapping(draggedAnchor, anchor)) {
-          anchor.stroke('#ff0000');
+          anchor.stroke("#ff0000");
           anchor.opacity(1);
-          anchor.moveToTop()
+          anchor.moveToTop();
         } else {
-          anchor.stroke('#666');
+          anchor.stroke("#666");
           anchor.opacity(0);
-          anchor.moveToTop()
+          anchor.moveToTop();
         }
       });
     };
-  
+
     const isOverlapping = (anchor1, anchor2) => {
       const a1 = anchor1.getClientRect();
       const a2 = anchor2.getClientRect();
@@ -589,13 +601,13 @@ const User = () => {
         a1.y + a1.height < a2.y
       );
     };
-  
+
     const mergeAnchors = (draggedAnchor) => {
       const stage = stageRef.current;
       const layer = layerRef.current;
       let merged = false;
-  
-      stage.find('Circle').forEach((anchor) => {
+
+      stage.find("Circle").forEach((anchor) => {
         if (anchor === draggedAnchor) return;
         if (isOverlapping(draggedAnchor, anchor)) {
           updateAnchorReferences(draggedAnchor, anchor);
@@ -605,11 +617,11 @@ const User = () => {
         }
       });
       if (!merged) {
-        draggedAnchor.stroke('#666');
+        draggedAnchor.stroke("#666");
         layer.batchDraw();
       }
     };
-  
+
     const updateAnchorReferences = (draggedAnchor, anchor) => {
       let count = 0;
       anchorsRef.current.forEach((anchorObj) => {
@@ -617,7 +629,7 @@ const User = () => {
         if (anchorObj.end === draggedAnchor) anchorObj.end = anchor;
         count++;
       });
-      console.log(count)
+      console.log(count);
       updateDottedLines();
     };
 
@@ -649,67 +661,131 @@ const User = () => {
 
   return (
     <div>
-      {/* JSX 주석 */}
-
       {/** Main 영역 시작 */}
-
       <main
         style={{
           display: "flex",
+          height: "85vh",
+          backgroundColor: "white",
+          boxShadow: "0 0 10px rgba(0,0,0,0.1)",
+          borderRadius: "10px",
+          overflow: "hidden",
         }}
       >
         {/* Left-SideBar / 좌측 사이드바  */}
         <div
           style={{
-            marginLeft: "20px",
-            padding: "10px",
-            border: "2px solid black",
-            borderRadius: "10px",
-            width: "15%",
+            marginLeft: "0",
+            padding: "8px",
+            border: "2px solid #aaaaaa",
+            borderRadius: "14px",
+            width: "20%",
             height: "80vh",
             overflowY: "auto",
           }}
         >
-          <button onClick={() => changeCurrentSetting("location")}>
+          <Button
+            style={{
+              width: "20%",
+              fontSize: "14px",
+            }}
+            onClick={() => changeCurrentSetting("location")}
+          >
             재고함
-          </button>
-          <button onClick={() => changeCurrentSetting("wall")}>벽</button>
-          <button onClick={() => changeCurrentSetting("specialObject")}>
+          </Button>
+          <Button
+            style={{
+              width: "20%",
+              fontSize: "14px",
+            }}
+            onClick={() => changeCurrentSetting("wall")}
+          >
+            벽
+          </Button>
+          <Button
+            style={{
+              width: "20%",
+              fontSize: "14px",
+            }}
+            onClick={() => changeCurrentSetting("specialObject")}
+          >
             특수 객체
-          </button>
+          </Button>
           {currentSetting && currentSetting !== "wall" && (
-            <>
+            <div>
               <h3>{currentSetting} 설정</h3>
               <div>
-                <label>
-                  Color:
+                <label
+                  style={{
+                    display: "flex",
+                  }}
+                >
                   <div
                     onClick={() => setShowColorPicker(!showColorPicker)}
                     style={{
-                      width: "36px",
-                      height: "14px",
+                      width: "3vh",
+                      height: "3vh",
                       background: newRectColor,
                       border: "1px solid #000",
                       cursor: "pointer",
                     }}
                   />
+                  <div
+                    style={{
+                      marginLeft: "1vh",
+                    }}
+                  >
+                    색상을 지정하세요
+                  </div>
                   {showColorPicker && (
                     <SketchPicker
+                      styles={{
+                        width: "1000px",
+                      }}
                       color={newRectColor}
                       onChangeComplete={(color) => setNewRectColor(color.hex)}
                     />
                   )}
                 </label>
+                <hr
+                  style={{
+                    color: "#aaaaaa",
+                  }}
+                />
               </div>
+              <p
+                style={{
+                  color: "#aaaaaa",
+                }}
+              >
+                단수와 크기를 정하세요
+              </p>
               <div>
+                <div>
+                  <label>
+                    Zndex :
+                    <input
+                      type="range"
+                      min="1"
+                      max="10"
+                      value={newRectZIndex}
+                      onChange={(e) => setNewRectZIndex(Number(e.target.value))}
+                    />
+                    {newRectZIndex}
+                  </label>
+                </div>
                 <label>
                   Width:
                   <input
                     type="range"
-                    min="5"
+                    min="10"
                     max="500"
                     value={newRectWidth}
-                    onChange={(e) => setNewRectWidth(Number(e.target.value))}
+                    onChange={(e) =>
+                      setNewRectWidth(
+                        Math.round(Number(e.target.value) / 10) * 10
+                      )
+                    }
                   />
                   {newRectWidth}
                 </label>
@@ -719,28 +795,65 @@ const User = () => {
                   Height:
                   <input
                     type="range"
-                    min="5"
+                    min="10"
                     max="500"
                     value={newRectHeight}
-                    onChange={(e) => setNewRectHeight(Number(e.target.value))}
+                    onChange={(e) =>
+                      setNewRectHeight(
+                        Math.round(Number(e.target.value) / 10) * 10
+                      )
+                    }
                   />
                   {newRectHeight}
                 </label>
               </div>
+              <hr />
+              <p
+                style={{
+                  color: "#aaaaaa",
+                }}
+              >
+                이름과 속성을 지정해주세요
+              </p>
               <div>
                 <label>
-                  Name:
+                  Name :
                   <input
                     type="text"
                     value={newRectName}
                     onChange={(e) => setNewRectName(e.target.value)}
+                    style={{
+                      marginLeft: "3px",
+                      width: "14vh",
+                    }}
                   />
                 </label>
               </div>
-              <button onClick={() => handleAddRectangle(currentSetting)}>
-                Create {currentSetting}
-              </button>
-            </>
+              <div>
+                <label>
+                  속성 :
+                  <input
+                    type="text"
+                    value={newRectName}
+                    onChange={(e) => setNewRectName(e.target.value)}
+                    style={{
+                      marginLeft: "3px",
+                      width: "15vh",
+                    }}
+                  />
+                </label>
+              </div>
+              <Button
+                onClick={() => handleAddRectangle(currentSetting)}
+                style={{
+                  width: "100%",
+                  marginTop: "50%",
+                  fontSize: "18px",
+                }}
+              >
+                생성하기
+              </Button>
+            </div>
           )}
           {currentSetting === "wall" && (
             <>
@@ -787,120 +900,105 @@ const User = () => {
 
         <div
           style={{
-            border: "2px solid black",
-            borderRadius: 20,
+            border: "2px solid #aaaaaa",
+            backgroundColor: "#aaaaaa",
+            borderRadius: 5,
             width: "60%",
             height: "80vh",
             margin: "0 auto",
             position: "relative",
             overflow: "hidden", // Canvas 영역 이외에는 잠금
-            // overflow:"scroll", // Add Scroll, if canvas exceeds div size
-            // cursor: "url('brickCursor.cur'), auto",
-            cursor: customCursor,
-            //   // url(../public/img/brickCursor.cur)
-            // currentSetting === "wall"
-            // ? "crosshair"
-            // : // ? "unset"
-            // "",
+            cursor: customCursor, // 커스텀 커서를 활용하여 상태별로 커서 변경
           }}
-          // onClick={(e) => {
-          //   if (currentSetting === "wall") {
-          //     const stage = stageRef.current;
-          //     // 올바른 위치를 위한 스케일링
-          //     const pointerPosition = stage.getPointerPosition();
-          //     var stageAttrs = stage.attrs;
-          //     pointerPosition.x =
-          //       (pointerPosition.x - stageAttrs.x) / stageAttrs.scaleX;
-          //     pointerPosition.y =
-          //       (pointerPosition.y - stageAttrs.y) / stageAttrs.scaleY;
-          //     // -----------------------
-          //     setTempSpots([...tempSpots, pointerPosition]);
-          //     if (!wallStartPoint) {
-          //       setWallStartPoint(pointerPosition);
-          //     } else {
-          //       handleAddWall(wallStartPoint, pointerPosition);
-          //     }
-          //   }
-          // }}
         >
-          <Stage
-            width={CANVAS_SIZE} // 1000cm = 10m
-            height={CANVAS_SIZE} // 1000cm = 10cm
-            scaleX={scale}
-            scaleY={scale}
-            draggable={currentSetting === "wall" ? false : true}
-            ref={stageRef} // Assign the reference to the stage
-            onPointerMove={Pointer}
-            onMouseDown={checkDeselect} // 마우스 다운 시 선택 해체
-            onTouchStart={checkDeselect} // 처시 시작 시 선택 해체
+          <div
+            style={{
+              border: "2px solid #aaaaaa",
+              backgroundColor: "white",
+              borderRadius: 5,
+              width: "95%",
+              height: "88%",
+              margin: "2% auto",
+              position: "relative",
+              overflow: "hidden", // Canvas 영역 이외에는 잠금
+              cursor: customCursor, // 커스텀 커서를 활용하여 상태별로 커서 변경
+            }}
           >
-            <Layer ref={layerRef}>
-              {generateGridLines()}
+            <Stage
+              width={CANVAS_SIZE} // 1000cm = 10m
+              height={CANVAS_SIZE} // 1000cm = 10cm
+              scaleX={scale}
+              scaleY={scale}
+              draggable={currentSetting === "wall" ? false : true}
+              ref={stageRef} // Assign the reference to the stage
+              onPointerMove={Pointer}
+              onMouseDown={checkDeselect} // 마우스 다운 시 선택 해체
+              onTouchStart={checkDeselect} // 처시 시작 시 선택 해체
+            >
+              <Layer ref={layerRef}>
+                {generateGridLines()}
 
-              {rectangles.map((rect, i) => (
-                <RectangleTransformer
-                  key={rect.id} // 각 사각형에 고유 키 설정
-                  x={rect.x} // 텍스트를 띄우기 위한 위치 정보
-                  y={rect.y}
-                  width={rect.width}
-                  height={rect.height}
-                  fill={rect.fill}
-                  shapeProps={rect} // 모양 속성 전달
-                  isSelected={rect.id === selectedRectTransform} // 사각형이 선택되었는지 확인
-                  onSelect={() => {
-                    setSelectedRectTransform(rect.id);
-                    setSelectedRect(rect); // 클릭 시 사각형 선택
-                    // console.log(selectedRect.id)
-                  }}
-                  onChange={(newAttrs) => {
-                    const rects = rectangles.slice();
-                    rects[i] = newAttrs;
-                    setRectangles(rects); // 사각형 속성 업데이트
-                  }}
-                />
-              ))}
-              {/* 벽 생성을 위한 가이드라인 점 */}
-              {/* {tempSpots.map((spot, index) => (
-                <Circle
-                  key={index}
-                  x={spot.x}
-                  y={spot.y}
-                  radius={5}
-                  fill="red"
-                />
-              ))} */}
-            </Layer>
-          </Stage>
+                {rectangles.map((rect, i) => (
+                  <RectangleTransformer
+                    key={rect.id} // 각 사각형에 고유 키 설정
+                    x={rect.x} // 텍스트를 띄우기 위한 위치 정보
+                    y={rect.y}
+                    width={rect.width}
+                    height={rect.height}
+                    fill={rect.fill}
+                    shapeProps={rect} // 모양 속성 전달
+                    isSelected={rect.id === selectedRectTransform} // 사각형이 선택되었는지 확인
+                    onSelect={() => {
+                      setSelectedRectTransform(rect.id);
+                      setSelectedRect(rect); // 클릭 시 사각형 선택
+                      // console.log(selectedRect.id)
+                    }}
+                    onChange={(newAttrs) => {
+                      const rects = rectangles.slice();
+                      rects[i] = newAttrs;
+                      setRectangles(rects); // 사각형 속성 업데이트
+                    }}
+                  />
+                ))}
+              </Layer>
+            </Stage>
+          </div>
           <div
             style={{
               position: "absolute",
               bottom: "10px",
               right: "10px",
               display: "flex",
-              flexDirection: "column",
               gap: "10px",
             }}
           >
-            <button onClick={handleZoomIn}>Zoom In</button>
-            <button onClick={handleZoomOut}>Zoom Out</button>
-            <button onClick={handleSave}>Save</button>
-            <button onClick={loadMapFromLocal}>Load</button>
+            <Button justIcon round color="success" onClick={handleZoomIn}>
+              <ZoomInIcon className={classes.icons} />
+            </Button>
+            <Button justIcon round color="primary" onClick={handleZoomOut}>
+              <ZoomOutIcon className={classes.icons} />
+            </Button>
+            <Button justIcon round color="primary" onClick={handleSave}>
+              <SaveIcon className={classes.icons} />
+            </Button>
+            <Button justIcon round color="primary" onClick={loadMapFromLocal}>
+              <UnarchiveIcon className={classes.icons} />
+            </Button>
           </div>
         </div>
 
         {/* Right-Sidebar / 우측 사이드바 영역  */}
         <div
           style={{
-            marginLeft: "20px",
             padding: "10px",
-            border: "1px solid black",
-            borderRadius: "10px",
-            width: "15%",
+            border: "2px solid #aaaaaa",
+            borderRadius: "15px",
+            width: "18%",
             height: "80vh",
             overflowY: "auto",
           }}
         >
-          <h3>현재 적재함 목록</h3>
+          <h3>재고함 목록</h3>
           {rectangles.length !== 0 ? (
             <div>
               <ul>
@@ -914,16 +1012,14 @@ const User = () => {
           ) : (
             <p>현재 재고함이 없습니다.</p>
           )}
-          <h3>Seleted Rectangle</h3>
+          <hr />
+          <h3>선택된 재고함</h3>
           {selectedRect ? (
             <div>
               <p>ID : {selectedRect.id}</p>
-              <p>X : {selectedRect.x}</p>
-              <p>Y : {selectedRect.y}</p>
               <p>Number : {selectedRect.order}</p>
               <p>Name : {selectedRect.name}</p>
               <p>Type : {selectedRect.type}</p>
-              <p>rotation : {selectedRect.rotation}</p>
             </div>
           ) : (
             <p>No rectangle selected</p>

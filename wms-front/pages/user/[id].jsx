@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 // nodejs library that concatenates classes
 import classNames from "classnames";
@@ -108,9 +107,11 @@ export default function Components(props) {
       <div className={classNames(classes.main, classes.mainRaised)}>
         <div className={classes.sections}>
           <div className={classes.container}>
-             {/* 큰 제목,  버튼 영역 */}
+             <br/>
             <div className={classes.flexContainer}>
-                <h3>현재 창고</h3>
+              <div className={classes.currentWarehouse}>
+                현재 창고 : 1번
+              </div>
               <div className={classes.buttonsContainer}>
                 <Button color="primary" round onClick={() => handleNextComponent(0)}>
                 <InventoryIcon className={classes.icons} />창고 관리
@@ -121,7 +122,7 @@ export default function Components(props) {
                 <Button color="success" round onClick={() => handleNextComponent(2)}>
                 <ListAltIcon className={classes.icons} />재고 현황
                 </Button>
-                </div>
+              </div>
             </div>
             <hr />
             {/* 메인 영역 */}

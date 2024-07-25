@@ -14,18 +14,12 @@ const componentsStyle = {
     display: "inline-block",
     position: "relative",
     color : "yellow",
-    // border : 10,
-    // borderWidth: "10px",   // Added borderWidth
-    // borderColor: "black",  // Added borderColor
-    // borderStyle: "solid",  // Added borderStyle
-    // borderRadius : "10px",
-    // outline : "white solid 4px",
     textShadow: `
       -2px -2px 0 #000,  
        2px -2px 0 #000,
       -2px  2px 0 #000,
        2px  2px 0 #000
-    `, // Added text shadow to create a border effect
+    `,
   },
   subtitle: {
     fontSize: "1.313rem",
@@ -37,7 +31,7 @@ const componentsStyle = {
        2px -2px 0 #000,
       -2px  2px 0 #000,
        2px  2px 0 #000
-    `, // Added text shadow to create a border effect
+    `,
   },
   main: {
     background: "#FFFFFF",
@@ -59,6 +53,19 @@ const componentsStyle = {
   },
   textCenter: {
     textAlign: "center"
+  },
+  flexContainer: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  buttonsContainer: {
+    display: "flex",
+    gap: "10px",
+  },
+  currentWarehouse: {
+    fontSize: "1.8rem",
+    fontWeight: "bold",
   }
 };
 
