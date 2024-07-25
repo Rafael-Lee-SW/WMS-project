@@ -13,6 +13,9 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: 'center',
     height: '100vh',
     textAlign: 'center', // 텍스트 중앙 정렬
+    backgroundImage: "url('/img/subscribe.jpg')",
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    backgroundBlendMode: "overlay",
   },
   header: {
     marginBottom: theme.spacing(2),

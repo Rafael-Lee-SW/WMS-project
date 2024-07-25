@@ -1,22 +1,30 @@
 import { useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/router";
-import { makeStyles } from "@material-ui/core";
+import { Container, Input, makeStyles } from "@material-ui/core";
+import GridContainer from "/components/Grid/GridContainer.js";
+import GridItem from "/components/Grid/GridItem.js";
+import Card from "/components/Card/Card.js";
+import CardHeader from "/components/Card/CardHeader.js";
+import CardBody from "/components/Card/CardBody.js";
+import Button from "/components/CustomButtons/Button.js";
+import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/signupStyle.js";
 
-const useStyles = makeStyles((theme) => ({
-    container: {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: '100vh',
-        textAlign: 'center',
-    },
-    input_wrapper: {
-        marginBottom: '16px',
-    }
+const useStyles = makeStyles(styles)
+// const useStyles = makeStyles((theme) => ({
+//     container: {
+//         display: 'flex',
+//         flexDirection: 'column',
+//         alignItems: 'center',
+//         justifyContent: 'center',
+//         height: '100vh',
+//         textAlign: 'center',
+//     },
+//     input_wrapper: {
+//         marginBottom: '16px',
+//     }
     
-}))
+// }))
 
 // 회원가입 폼
 export default function SignUp() {
@@ -45,24 +53,79 @@ export default function SignUp() {
     };
 
     return (
-        <Container onSubmit={handleSubmit} className={classes.container}>
-            <h1>회원가입</h1>
-            <div>
-                <div className={classes.input_wrapper}>
-                    <h3>이메일</h3>
-                    <input placeholder="abcd@ssafy.com" type="text" value={email} onChange={(e) => setEmail(e.target.value)} required/>
-                </div>
-                <div className={classes.input_wrapper}>
-                    <h3>비밀번호</h3>
-                    <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required/>
-                </div>
-                <div className={classes.input_wrapper}>
-                    <h3>비밀번호 확인</h3>
-                    <input type="password" value={confirmPassword} onChange={(e) => setConformPassword(e.target.value)} required/>
-                </div>
-                <button type="submit">회원가입</button>
-            </div>
-            { message && <p>{message}</p>}
-        </Container>
+    <div className={classes.section} onSubmit={handleSubmit}>
+    <h2 className={classes.h2}>환영합니다!</h2>
+    <h3 className={classes.p}>회원가입 후 ADN의 서비스를 이용해보세요.</h3>
+      <div className={classes.container}>
+        <GridContainer justify="center">
+          <GridItem xs={12} sm={6} md={4}>
+            <Card>
+              <form className={classes.form}>
+                <CardHeader className={classes.cardHeader}>
+                  <h4>회원가입</h4>
+                </CardHeader>
+                <CardBody className={classes.cardBody}>
+                      <Input
+                        fullWidth
+                        className={classes.input}
+                        type="text"
+                        placeholder='아이디'
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                      >
+                      </Input>
+                      <Input
+                        fullWidth
+                        className={classes.input}
+                        type="password"
+                        placeholder='비밀번호'
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                      >
+                      </Input>
+                      <Input
+                        fullWidth
+                        className={classes.input}
+                        type="password"
+                        placeholder='비밀번호확인'
+                        value={confirmPassword}
+                        onChange={(e) => setConformPassword(e.target.value)}
+                      >
+                      </Input>
+                      <Button
+                        fullWidth
+                        type="submit"
+                      >
+                        회원가입
+                      </Button>
+                </CardBody>
+              </form>
+            </Card>
+          </GridItem>
+        </GridContainer>
+      </div>
+    </div>
+        // <Container onSubmit={handleSubmit} className={classes.container}>
+        //     <div>
+        //         <div>
+        //             <h2>환영합니다!</h2>
+        //             <h3>회원가입 후 ADN의 서비스를 이용해보세요.</h3>
+        //         </div>
+        //         <div className={classes.input_wrapper}>
+        //             <h3>이메일</h3>
+        //             <input placeholder="abcd@ssafy.com" type="text" value={email} onChange={(e) => setEmail(e.target.value)} required/>
+        //         </div>
+        //         <div className={classes.input_wrapper}>
+        //             <h3>비밀번호</h3>
+        //             <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required/>
+        //         </div>
+        //         <div className={classes.input_wrapper}>
+        //             <h3>비밀번호 확인</h3>
+        //             <input type="password" value={confirmPassword} onChange={(e) => setConformPassword(e.target.value)} required/>
+        //         </div>
+        //         <button type="submit">회원가입</button>
+        //     </div>
+        //     { message && <p>{message}</p>}
+        // </Container>
     )
 }
