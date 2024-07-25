@@ -1,4 +1,4 @@
-package com.a508.wms.auth.response;
+package com.a508.wms.auth.dto.response;
 
 import com.a508.wms.auth.common.ResponseCode;
 import com.a508.wms.auth.common.ResponseMessage;
