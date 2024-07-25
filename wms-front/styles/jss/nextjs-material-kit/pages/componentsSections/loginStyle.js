@@ -44,6 +44,12 @@ const loginStyle = {
     padding: "0",
     margin: "10px"
   },
+  input: {
+    height: "35px",
+    width: "180px",
+    padding: "0",
+    margin: "10px"
+  },
   socialIcons: {
     maxWidth: "24px",
     marginTop: "0",
