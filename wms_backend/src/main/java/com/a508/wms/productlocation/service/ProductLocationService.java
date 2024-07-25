@@ -49,6 +49,7 @@ public class ProductLocationService {
          * 1. productLocationRepository에서 floorId가 동일한 상품 찾기
          * 2. 해당 상품 return
          */
+
         return ProductLocationMapper.fromProductLocations(productLocationRepository.findByFloorId(floorId));
     }
 

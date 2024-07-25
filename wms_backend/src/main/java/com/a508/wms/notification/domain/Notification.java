@@ -26,10 +26,12 @@ public class Notification extends BaseTimeEntity {
     private String content;
 
     @Column(nullable = false)
+    @Builder.Default
     private boolean readOrNot = false;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private StatusEnum statusEnum = StatusEnum.ACTIVE;
 
     //연관관계 편의 매서드

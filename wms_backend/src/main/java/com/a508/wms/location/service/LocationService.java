@@ -5,11 +5,9 @@ import com.a508.wms.location.domain.Location;
 import com.a508.wms.location.dto.LocationDto;
 import com.a508.wms.location.mapper.LocationMapper;
 import com.a508.wms.location.repository.LocationRepository;
-import com.a508.wms.productstoragetype.domain.ProductStorageType;
 import com.a508.wms.warehouse.domain.Warehouse;
 import com.a508.wms.floor.dto.FloorDto;
 import com.a508.wms.floor.repository.FloorRepository;
-import com.a508.wms.productstoragetype.repository.ProductStorageTypeRepository;
 import com.a508.wms.warehouse.repository.WarehouseRepository;
 import com.a508.wms.util.constant.ExportTypeEnum;
 import com.a508.wms.util.constant.FacilityTypeEnum;
@@ -29,7 +27,6 @@ public class LocationService {
 
     private final LocationRepository locationRepository;
     private final WarehouseRepository warehouseRepository;
-    private final ProductStorageTypeRepository productStorageTypeRepository;
     private final FloorRepository floorRepository;
 
     /**
@@ -82,20 +79,19 @@ public class LocationService {
      * @param locationDto : 프론트에서 넘어오는 location 정보 모든 작업이 하나의 트랜잭션에서 일어나야하므로 @Transactional 추가
      */
     @Transactional
-    public void save(LocationDto locationDto) {
+    public LocationDto save(LocationDto locationDto) {
         log.info("Saving location: {}", locationDto);
 
         Warehouse warehouse = warehouseRepository.findById(locationDto.getWarehouseId())
             .orElseThrow(() -> new IllegalArgumentException("Invalid warehouse ID"));
-        ProductStorageType productStorageType = productStorageTypeRepository.findById(
-                locationDto.getProductStorageTypeId())
-            .orElseThrow(() -> new IllegalArgumentException("Invalid product storage type ID"));
 
-        Location location = new Location(warehouse, productStorageType, locationDto.getXPosition(),
-            locationDto.getYPosition(), locationDto.getWidth(),
-            locationDto.getHeight());
-        location.setWarehouse(warehouse);
-
+        Location location = Location.builder()
+                .warehouse(warehouse)
+                .productStorageTypeEnum(locationDto.getProductStorageTypeEnum())
+                .xPosition(locationDto.getXPosition())
+                .yPosition(locationDto.getYPosition())
+                .height(locationDto.getHeight())
+                        .build();
         log.info("save occured");
         locationRepository.save(location); //우선 로케이션 저장
 
@@ -114,6 +110,7 @@ public class LocationService {
         log.info("floors save");
         floorRepository.saveAll(floors);    //floor 전부 저장
         location.setFloors(floors);  //location에 층 정보 넣어주기
+        return LocationMapper.fromLocation(location);
     }
 
     /**

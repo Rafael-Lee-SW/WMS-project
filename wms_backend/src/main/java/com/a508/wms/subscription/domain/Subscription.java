@@ -46,6 +46,7 @@ public class Subscription extends BaseTimeEntity {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private StatusEnum statusEnum = StatusEnum.ACTIVE;
 
     // 연관관계 편의 메서드

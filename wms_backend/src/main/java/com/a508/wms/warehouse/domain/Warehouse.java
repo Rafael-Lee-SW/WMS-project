@@ -62,6 +62,7 @@ public class Warehouse extends BaseTimeEntity {
     private FacilityTypeEnum facilityType;
 
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private StatusEnum statusEnum = StatusEnum.ACTIVE;
 
     // 연관관계 편의를 위한 메서드
