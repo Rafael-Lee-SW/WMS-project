@@ -19,6 +19,7 @@ public class EmailProvider {
 
     public boolean sendCertificationMail(String email, String certificationNumber) {
         try {
+            logger.info("이메일 전송 시도 중: {}", email);
             MimeMessage message = javaMailSender.createMimeMessage();
             MimeMessageHelper messageHelper = new MimeMessageHelper(message, true);
             String htmlContent = getCertificationMessage(certificationNumber);
@@ -28,10 +29,10 @@ public class EmailProvider {
             messageHelper.setText(htmlContent, true);
             javaMailSender.send(message);
             logger.info("메일 전송 성공: {}", email);
-            return true;
+            return true;  // 이메일 전송 성공 시 true 반환
         } catch (Exception e) {
             logger.error("메일 전송 실패: {}", email, e);
-            return false;
+            return false;  // 이메일 전송 실패 시 false 반환
         }
     }
 
