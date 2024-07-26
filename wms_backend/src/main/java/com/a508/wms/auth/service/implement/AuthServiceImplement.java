@@ -179,8 +179,14 @@ public class AuthServiceImplement implements AuthService {
             String encodedPassword = passwordEncoder.encode(password);
             dto.setPassword(encodedPassword);
 
-            business business = new Business(dto);
+            Business business = new Business(dto);
+            businessRepository.save(business);
+            // 데이터베이스에 Business 엔티티 저장
 
+            certificationRepository.delete(certificationEntity);
+
+
+            businessRepository.save(business);
         }catch(Exception e){
             e.printStackTrace();
             return ResponseDto.databaseError();
