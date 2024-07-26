@@ -47,11 +47,12 @@
 
 
 
-- Front : HTML, React
+- Front : HTML, React, Next.js, Node.js 20.15.0
 - Back-end : SpringBoot :3.3.1 , JDK : 17 , mySql , MicroServiceArchitecture
 - 버전 및 이슈관리 : Gitlab, Gitlab Issues, Gitlab Project
 - 협업 툴 : Jira ,Discord, Notion, 
 - 서비스 배포 환경 : Docker
+- 보안 : OAuth 2.0, spring Security
 - 컨벤션 : https://google.github.io/styleguide/javaguide.html
 <br>
 
@@ -67,6 +68,14 @@
 1. React.js 만을 사용하여 client-side-rendering으로는 한꺼번에 오가는 수많은 데이터를 처리하는데 성능 및 속도 저하가 예상되어 이를 Server-side-rendering으로 처리할 수 있으며, React.js Library를 사용할 수 있는 Next.js를 사용하기로 결정
 2. Backend와 잦은 데이터 교환 및 API 통신에 따라 그에 유리한 FrontEnd Framework로 선택됨.
     
+##### FrontEnd Library 사용 현황
+0. React Library : 반응형 웹을 만들기위해 React 도입
+1. Konva library : Canvas에서 자유롭게 그림을 그리고 도형을 추가할 수 있는 라이브러리
+2. SheetJs : Excel 불러오고, 다운로드 받고, 이를 JSON화 시키는 데에 활용
+3. HandsonTable : SheetJs로 불러온 데이터를 실제 Excel처럼 가공하는데에 특화
+4. Material-ui : 아이콘, 디자인적 요소에 도움
+5. mui-datatables : 수정이 어렵지만 Ui적으로 깔끔하게 Excel을 제시하는 라이브러리
+6. lodash.debounce : Function 최적화를 위해서 도입한 라이브러리(현재는 사용 X)
 
 ### Jpa
 
