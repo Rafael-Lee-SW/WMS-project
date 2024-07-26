@@ -2,7 +2,7 @@
 
 #  Web WMS(Warehouse Management System) Project README
 
-![readme_mockup2](/uploads/468f9ee1011ccdc80943d8778d7e5eee/image.png )
+![readme_mockup2](/READMEfile/main.png )
 
 - 배포 URL :
 - Test ID :
@@ -12,12 +12,13 @@
 
 ## 프로젝트 소개
 
-- Web WMS는 개인 혹은 중소규모 사업장에서도 재고관리 시스템을 사용할 수 있도록 하는 Web 서비스 입니다.
-- Web WMS는 다음과 같은 기능에 집중하여 물류비 감소를 도와주는 재고 관리 시스템입니다. 
+**Web WMS는 무인 매장이나 창고에서 여러 위치의 재고를 효율적으로 관리할 수 있는 재고 관리 시스템입니다.** <br><br>
+**다음과 같은 기능으로 다중 로케이션의 재고를 효율적으로 관리합니다.**
 - 적정 재고 수준 유지
-- 재고 비용 감소
+- 매장 품절율 최소화
 - 재고 공간 최적화
 - 작업자 동선 최소화 
+- 수요 예측
 
 
 
@@ -29,11 +30,11 @@
 
 | **김유석** | **이한솔** | **이수완** | 
 | :------: |  :------: | :------: | 
-| [<img src="/uploads/93d59f2acb4947bdd1e3e63679aa02f0/3489BB53-1715-4F13-A0A5-E165584953DD.jpg" height=150 width=100> <br/> @유석](https://it-whale.tistory.com/) | [<img src="/uploads/ce687618dd49a792be2d1dfc927e08a1/61B0F576-9A0A-4B70-A275-F8A1A565076F.jpg" height=150 width=100> <br/> @한솔](https://github.com/solmysoul1) | [<img src="/uploads/8d327a35818c9edcc06482cd052fe9bf/rn_image_picker_lib_temp_e3630312-496e-4fcd-ab13-a41959f33e73__1_.jpg" height=150 width=100> <br/> @수완](https://github.com/heejiyang) | 
+| [<img src="/READMEfile/yuseok.jpg" height=150 width=100> <br/> @유석](https://it-whale.tistory.com/) | [<img src="/READMEfile/hansol.jpg" height=150 width=100> <br/> @한솔](https://github.com/solmysoul1) | [<img src="/READMEfile/soowan.jpg" height=150 width=100> <br/> @수완](https://github.com/heejiyang) | 
 
 | **이동열** | **김준혁** |  **신권일** |
 | :------: | :------: | :------: |
-| [<img src="/uploads/426e016e72e6efe7c5b338daee8134e1/이동열님_반명함_제출용_용량작게_크기작게.jpg" height=150 width=100> <br/> @동열](https://it-whale.tistory.com/) | [<img src="/uploads/9b797e71c23b6c1296618bf8a1db29e8/image.png" height=150 width=100> <br/> @준혁](https://github.com/Cheorizzang) | [<img src="/uploads/fae8579604bac9c9db0e6d7774301393/신권일_사진.jpg" height=150 width=100> <br/> @권일](https://github.com/heejiyang) | 
+| [<img src="/READMEfile/dongyeol.jpg" height=150 width=100> <br/> @동열](https://it-whale.tistory.com/) | [<img src="/READMEfile/junhyeok.png" height=150 width=100> <br/> @준혁](https://github.com/Cheorizzang) | [<img src="/READMEfile/kyunil.jpg" height=150 width=100> <br/> @권일](https://github.com/heejiyang) | 
 
 
 
@@ -72,7 +73,7 @@
 ### Mysql
 
 ### 브랜치 전략
-<img src="/uploads/ab407df174ce97be5002af51cbb2db93/image.png">
+<img src="/READMEfile/Branch strategy.png">
 
 ## Commit Message
 #태그 : 제목의 형태이며 :뒤에만 space가 있음에 유의한다.
@@ -102,49 +103,26 @@
 
 - **FE보조**
     
-
 <br>
     
 ### 이동열
 
-- **UI**
-
-- **기능**
- 
 
 <br>
 
 ### 김준혁
 
-- **UI**
-
-- **기능**
-  
-
 <br>
 
 ### 신권일
 
-- **UI**
- 
-- **기능**
-
-    
 <br>
 
 ### 이한솔
 
-- **UI**
- 
-- **기능**
-
 <br>
 
 ### 이수완
-
-- **UI**
- 
-- **기능**
 
 <br>
 
@@ -170,10 +148,6 @@
 ## 7. 페이지별 기능
 
 ### 로그인
-- 로그인
-- 로그아웃
-- 회원정보수정
-- 권한 부여
 
 ### 상품등록
 
@@ -188,18 +162,10 @@
 ### 상품별 조회
 
 ### 출고 등록 
-- 송장번호 상품 수량 Excel 업로드
 
 ### 알람 기능 
-- 발주 알림
-- 재고 보충 알림 -> 확인 시 재고 이동
-- 재고 미전시 알림 -> 확인 시 재고 이동 
 
 ### 경로 압축 
- - 재고 배치 비효율 알림 -> 확인버튼 -> TO로케이션 FROM 로케이션 WHAT상품 수량 출력(알림)
-  -> 재고 이동(압축)
-
-
 
 
 
@@ -212,23 +178,43 @@
 
 ## 8. 트러블 슈팅
 
+## 2024-07-18 문제 해결 내용
+### Soft Delete 적용
+- **문제 상황**: 프로젝트에서 JPA를 사용하여 소프트 딜리트(Soft Delete)를 일괄적으로 적용해야 하는 상황이 발생했습니다.
+- **해결 방안**: `@SQLRestriction` 어노테이션을 통해 소프트 딜리트 기능을 구현하여 문제를 해결했습니다.
+
+    ```java
+    @Entity
+    @Getter
+    @NoArgsConstructor
+    @SQLRestriction("status_enum = 'Active'")
+    @Table(name = "product")
+    public class Product extends BaseTimeEntity {
+        // ...
+    }
+    ```
+- **시도했던 방법**: 최초에는 `@Where` 어노테이션을 통해 문제를 해결하려고 했습니다.
+    - 그러나 현재 Hibernate 버전에서는 해당 어노테이션이 Deprecated 상태입니다.
+- **최종 해결 방법**: `@SQLRestriction` 어노테이션을 통해 소프트 딜리트를 구현했습니다.
+    - 적용이 되지 않아야 하는 쿼리에 대해서는 JPA Repository에서 `@Query` 어노테이션을 사용하여 해결했습니다.
+
+## 2024-07-19 문제 해결 내용
+### Entity 순환참조 해결
+- **문제 상황**: A엔티티 안에 B엔티티 정보가 있고, B엔티티 안에 A엔티티가 있어서 발생한 순환참조 문제
+- **해결 방안**: 객체를 그대로 리턴하는 것이 아닌, Dto에 담아서 리턴.
+
 
 
 <br>
 
 ## 9. 개선 목표
 
-- **24-07-30 성능 개선 내용**
-    
-    ![성능개선 후](https://user-images.githubusercontent.com/106502312/212872369-7ceeb2cf-d551-41d2-bfb0-01e35e9903fe.png)
-    
-    - 이미지 최적화
-        - `<img>` 요소에 `width` , `height` 속성값을 명시해 불필요한 Reflow를 방지했습니다.
-        - browser-image-compression 라이브러리를 사용해 유저가 업로드하는 이미지를 압축했습니다.
-        - Intersection Observer API를 사용해 Lazy Loading 기법을 적용하여 홈 피드의 게시글 이미지가 viewport 내에 들어오는 순간 로딩되도록 변경했습니다.
-    - 웹폰트 최적화
-        - WOFF2 포맷을 추가하고 가장 우선적으로 적용되도록 선언했습니다.
-        - 서브셋 폰트로 교체해 용량을 줄였습니다.
+- **24-00-00 성능 개선 내용**
+### indexing 
+- 물류 데이터 속도 개선
+
+### 정규화 반정규화
+- 물류 데이터 속도 개선 
     
 <br>
 

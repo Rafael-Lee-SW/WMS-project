@@ -8,7 +8,6 @@ import Card from "/components/Card/Card.js";
 import CardHeader from "/components/Card/CardHeader.js";
 import CardBody from "/components/Card/CardBody.js";
 import Button from "/components/CustomButtons/Button.js";
-import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/signupStyle.js";
 
 const useStyles = makeStyles(styles)
 // const useStyles = makeStyles((theme) => ({
