@@ -32,6 +32,14 @@ const useStyles = makeStyles((theme) => ({
     borderColor: '#000',
     backgroundColor: '#fff',
   },
+  div: {
+    padding: "20px"
+  },
+  box: {
+    padding: "10px",
+    width: "100px",
+    height: "100px",
+  },
 }));
 
 
@@ -60,7 +68,17 @@ const MembershipDetail = () => {
     <GridContainer className={classes.container}>
         <h1 style={{ color: headerColor }} className={classes.header}>{ title }</h1>
         <Divider className={classes.divider} />
-        <p>창고 { option1 }개</p>
+        <h3>창고 { option1 }개</h3>
+        <div className={classes.div}>
+          {Array.from({ length: option1 }).map((_, index) => (
+            <img 
+              key={index}
+              src="img/box.png" 
+              alt="box"
+              className={classes.box}
+            />
+          ))}
+        </div>
     </GridContainer>
   )
 

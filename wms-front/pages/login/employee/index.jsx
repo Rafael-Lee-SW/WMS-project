@@ -11,7 +11,7 @@ import Button from "/components/CustomButtons/Button.js";
 
 import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/loginStyle.js";
 import { signIn, signOut, useSession } from 'next-auth/react';
-
+``
 const useStyles = makeStyles(styles);
 
 // 고용인 소셜 로그인
@@ -26,52 +26,47 @@ export default function employeeLogin() {
           <GridItem xs={12} sm={6} md={4}>
             <Card>
               <form className={classes.form}>
-                <CardHeader color="primary" className={classes.cardHeader}>
+                <CardHeader className={classes.cardHeader}>
                   <h4>로그인</h4>
                 </CardHeader>
                 
-                <CardBody>
+                <CardBody className={classes.cardBody}>
                   {status === 'loading' ? (
                     <p>Loading...</p>
                   ) : !session ? (
                     <>
                       <Button
                         fullWidth
-                        color="default"
                         onClick={() => signIn('google')}
-                        className={classes.googleButton}
+                        className={classes.button}
                       >
                         <img 
-                          src="/img/google-login.png"
+                          src="/img/google.png"
                           alt="Sign in with Google"
-                          style={{ width: '180px', height: '45px' }}
-                          className={classes.googleButtonImage}
+                          style={{ width: '220px', height: '45px' }}
+                          className={classes.buttonImage}
                         />
                       </Button>
                       <Button
                         fullWidth
-                        color="default"
                         onClick={() => signIn('naver')}
-                        className={classes.naverButton}
+                        className={classes.button}
                       >
                         <img 
-                          src="/img/naver-login.png"
+                          src="/img/naver.png"
                           alt="Sign in with Naver"
-                          style={{ width: '180px', height: '45px' }}
-                          className={classes.naverButtonImage}
+                          style={{ width: '220px', height: '45px' }}
                         />
                       </Button>
                       <Button
                         fullWidth
-                        color="default"
                         onClick={() => signIn('kakao')}
-                        className={classes.kakaoButton}
+                        className={classes.button}
                       >
                         <img 
-                          src="/img/kakao-login.png"
+                          src="/img/kakao.png"
                           alt="Sign in with Kakao"
-                          style={{ width: '200px', height: '45px' }}
-                          className={classes.kakaoButtonImage}
+                          style={{ width: '220px', height: '45px' }}
                         />
                       </Button>
                     </>

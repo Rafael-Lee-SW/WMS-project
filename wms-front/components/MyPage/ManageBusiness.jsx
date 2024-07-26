@@ -1,6 +1,27 @@
+import { Button, Input, makeStyles } from "@material-ui/core";
 import axios from "axios";
 import { useState } from "react";
 
+const useStyles = makeStyles((theme) => ({
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    height: '100vh',
+    textAlign: 'center', 
+    padding: "10px"
+  },
+  div: {
+    padding: "10px"
+  },
+  button: {
+    margin: "10px",
+    backgroundColor: "lightgray",
+    height: "30px"
+  }
+}))
+
+// 사업자 관리
 const ManageBusiness = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -10,6 +31,8 @@ const ManageBusiness = () => {
         businessImage: ''
     });
     const [isRegistered, setIsRegistered] = useState(false);
+    const classes = useStyles();
+
     
     // API 호출하여 사업자 정보 가져오기
 //     useEffect(() => {
@@ -74,36 +97,39 @@ const ManageBusiness = () => {
   };
 
   return (
-    <div>
+    <div className={classes.container}>
       <h2>사업자 등록/수정</h2>
       <form onSubmit={handleSubmit}>
-        <div>
-          <label>사업자 이름:</label>
-          <input
+        <div className={classes.div}>
+          <Input
             type="text"
             name="businessName"
             value={businessInfo.businessName}
             onChange={handleChange}
+            placeholder="사업자 이름"
           />
         </div>
-        <div>
-          <label>사업자 번호:</label>
-          <input
+        <div className={classes.div}>
+          <Input
             type="text"
             name="businessNumber"
             value={businessInfo.businessNumber}
             onChange={handleChange}
+            placeholder="사업자 번호"
           />
         </div>
-        <div>
-          <label>사업자 등록증 이미지:</label>
-          <input
+        <div className={classes.div}>
+          <Input
             type="file"
             name="businessImage"
             onChange={handleChange}
+            placeholder="사업자 등록증 이미지"
           />
         </div>
-        <button type="submit">저장</button>
+        <Button 
+        type="submit"
+        className={classes.button}
+        >저장</Button>
       </form>
       {isRegistered && (
         <button onClick={handleDelete}>삭제</button>

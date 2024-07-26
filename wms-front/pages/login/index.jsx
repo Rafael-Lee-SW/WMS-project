@@ -39,7 +39,7 @@ const Login = () => {
 
   return (
     <GridContainer className={classes.container}>
-      <h2 className={classes.header}>로그인</h2>
+      <h2>ADN에 오신걸 환영합니다.</h2>
       <h3 className={classes.subheader}>로그인 옵션을 선택해주세요.</h3>
       <Divider className={classes.divider} />
       <Button href='/login/president' style={{ color: "brown" }} variant="outlined" className={classes.button}>사장으로 로그인하기</Button>

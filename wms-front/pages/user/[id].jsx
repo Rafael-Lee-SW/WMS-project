@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 // nodejs library that concatenates classes
 import classNames from "classnames";
@@ -49,18 +48,19 @@ const DynamicMyContainer = dynamic(
   () => import("/pages-sections/Components-Sections/MyContainer.jsx"),
   {ssr : false}
 )
-const DynamicMyContainerTest = dynamic(
-  () => import("/pages-sections/Components-Sections/MyContainerTest.jsx"),
+const DynamicMyContainerDual = dynamic(
+  () => import("/pages-sections/Components-Sections/MyContainerDual.jsx"),
   {ssr : false}
 )
-const DynamicMyContainerThree = dynamic(
-  () => import("/pages-sections/Components-Sections/MyContainerThree.jsx"),
+const DynamicMyContainerProduct = dynamic(
+  () => import("/pages-sections/Components-Sections/MyContainerProduct.jsx"),
   {ssr : false}
 )
 
 const useStyles = makeStyles(styles);
 
 export default function Components(props) {
+
   const classes = useStyles();
   const { ...rest } = props;
 
@@ -71,11 +71,13 @@ export default function Components(props) {
   }, []);
 
   const [currentIndex, setCurrentIndex] = useState(0);
+
   const componentsArray = [
     <DynamicMyContainer key="DynamicMyContainer"/>,
-    <DynamicMyContainerTest key="DynamicMyContainerTest" />,
-    <DynamicMyContainerThree key="DynamicMyContainerThree"/>,
+    <DynamicMyContainerDual key="DynamicMyContainerDual" />,
+    <DynamicMyContainerProduct key="DynamicMyContainerProduct"/>,
   ];
+
   const handleNextComponent = (index) => {
     setCurrentIndex(index);
   };
@@ -105,9 +107,11 @@ export default function Components(props) {
       <div className={classNames(classes.main, classes.mainRaised)}>
         <div className={classes.sections}>
           <div className={classes.container}>
-             {/* 큰 제목,  버튼 영역 */}
+             <br/>
             <div className={classes.flexContainer}>
-                <h3>현재 창고</h3>
+              <div className={classes.currentWarehouse}>
+                현재 창고 : 1번
+              </div>
               <div className={classes.buttonsContainer}>
                 <Button color="primary" round onClick={() => handleNextComponent(0)}>
                 <InventoryIcon className={classes.icons} />창고 관리
@@ -116,9 +120,9 @@ export default function Components(props) {
                 <ProductionQuantityLimitsIcon className={classes.icons} />재고 관리
                 </Button>
                 <Button color="success" round onClick={() => handleNextComponent(2)}>
-                <ListAltIcon className={classes.icons} />재고 관리
+                <ListAltIcon className={classes.icons} />재고 현황
                 </Button>
-                </div>
+              </div>
             </div>
             <hr />
             {/* 메인 영역 */}

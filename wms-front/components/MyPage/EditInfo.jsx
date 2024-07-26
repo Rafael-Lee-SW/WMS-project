@@ -1,6 +1,27 @@
+import { Button, Input, makeStyles } from "@material-ui/core";
 import axios from "axios";
 import { useEffect, useState } from "react"
 
+const useStyles = makeStyles((theme) => ({
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    height: '100vh',
+    textAlign: 'center', 
+    padding: "10px"
+  },
+  div: {
+    padding: "10px"
+  },
+  button: {
+    margin: "10px",
+    backgroundColor: "lightgray",
+    height: "30px"
+  }
+}))
+
+// 개인정보수정
 const EditInfo = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -8,6 +29,10 @@ const EditInfo = () => {
         email: '',
         password: '',
     });
+    const classes = useStyles();
+
+
+    // 기존 정보 받아오기
 
     // useEffect(() => {
     //     axios.get('').then(response => {
@@ -43,37 +68,40 @@ const EditInfo = () => {
     };
 
    return (
-    <div>
+    <div className={classes.container}>
       <h2>내 정보 수정</h2>
       <form onSubmit={handleSubmit}>
-        <div>
-          <label>이름:</label>
-          <input
+        <div className={classes.div}>
+          <Input
             type="text"
             name="name"
             value={userInfo.name}
             onChange={handleChange}
+            placeholder="기존 이름"
           />
         </div>
-        <div>
-          <label>이메일:</label>
-          <input
+        <div className={classes.div}>
+          <Input
             type="email"
             name="email"
             value={userInfo.email}
             onChange={handleChange}
+            placeholder="기존 이메일"
           />
         </div>
-        <div>
-          <label>전화번호:</label>
-          <input
+        <div className={classes.div}>
+          <Input
             type="text"
             name="phone"
             value={userInfo.phone}
             onChange={handleChange}
+            placeholder="기존 연락처"
           />
         </div>
-        <button type="submit">저장</button>
+        <Button 
+        type="submit"
+        className={classes.button}
+        >저장</Button>
       </form>
     </div>
   );

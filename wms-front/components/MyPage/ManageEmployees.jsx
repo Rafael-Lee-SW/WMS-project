@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
+// 직원관리
 const ManageEmployees = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

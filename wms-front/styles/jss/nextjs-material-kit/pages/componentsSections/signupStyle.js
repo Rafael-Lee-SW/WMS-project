@@ -1,7 +1,7 @@
 import { object } from "prop-types";
 import { container } from "/styles/jss/nextjs-material-kit.js";
 
-const loginStyle = {
+const signupStyle = {
   section: {
     minHeight: "110vh",
     maxHeight: "1600px",
@@ -12,6 +12,7 @@ const loginStyle = {
     margin: "0",
     border: "0",
     display: "flex",
+    flexDirection: "column",
     alignItems: "center",
     backgroundImage: "url('/img/WareHouseWallpaper.png')",
     backgroundColor: "rgba(255, 255, 255, 0.5)",
@@ -19,7 +20,10 @@ const loginStyle = {
   },
   container,
   form: {
-    margin: "0"
+    margin: "0",
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "column",
   },
   cardHeader: {
     color: "white",
@@ -79,7 +83,15 @@ const loginStyle = {
   },
   inputIconsColor: {
     color: "#495057"
+  },
+  h2: {
+    paddingTop: "20px",
+    color: "black"
+  },
+  p: {
+    paddingBottom: "20px",
+    color: "black"
   }
 };
 
-export default loginStyle;
+export default signupStyle;
