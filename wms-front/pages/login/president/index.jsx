@@ -15,7 +15,7 @@ import { Input } from '@material-ui/core';
 
 const useStyles = makeStyles(styles);
 
-// 사장 로그인
+// 사장 로그인 기능
 export default function PresidentLogin() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
