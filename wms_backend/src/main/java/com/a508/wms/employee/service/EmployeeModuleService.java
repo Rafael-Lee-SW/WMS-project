@@ -4,14 +4,16 @@ import com.a508.wms.employee.domain.Employee;
 import com.a508.wms.employee.repository.EmployeeRepository;
 import com.a508.wms.util.constant.StatusEnum;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class EmployeeModuleService {
 
-    private EmployeeRepository employeeRepository;
+    private final EmployeeRepository employeeRepository;
 
     /**
      * 전체 직원을 조회하는 메서드
