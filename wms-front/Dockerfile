@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # 의존성 설치
-RUN npm install
+RUN npm install --legacy-peer-deps
 
 # Next.js 빌드를 위해 프로젝트 소스를 복사
 COPY . .
