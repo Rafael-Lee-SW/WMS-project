@@ -79,6 +79,44 @@ public class ProductLocationService {
     }
 
     /**
+     *
+     * @param original 기존 데이터베이스의 수량
+     * @param input 사용자가 입력한 수량
+     * @return 기존 수량 - 사용자 수량
+     */
+    public int calculateProductQuantity(int original, int input) {
+        return original - input;
+    }
+
+    /**
+     * 상품이 이동 가능한지 여부를 반환
+     * @param original 기존 데이터베이스의 수량
+     * @param input 사용자가 입력한 수량
+     * @return 기존 수량 - 사용자 수량 >= 0이면 true, <0이면 false
+     */
+    public boolean isMoveProduct(int original, int input) {
+        return input > 0 && calculateProductQuantity(original, input) >= 0;
+    }
+
+    /**
+     * 특정 로케이션명과 층수가 있는 경우 이동할 Floor 객체를, 아니면 null을 반환
+     * @param name 로케이션 이름
+     * @param level 해당 로케이션에서 옮길 층수
+     * @return 있는 경우 해당 Floor 객체, 아니면 null
+     */
+    public Floor updateFloor(String name, int level) {
+        if (name != null && level >= 0) {
+//                locationName을 가지고 locationid를 조회하고 floor에서 floorlevel = level이고 locationid = floor.locationid인거 찾기
+            long locationId = locationModuleService.findByName(name).getId();
+            return floorModuleService.findByLocationIdAndFloorLevel(
+                    locationId, level);
+
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * 상품의 위치를 이동 productLocationRequestDto에서 입력받은 productLocationId를 기반으로 찾는다. 1. 바코드를 입력하면
      * findByBarcode를 호출해서 리스트를 넘겨주고, 유저가 그중 하나를 선택 2. 하나를 선택했을 때 update를 호출하고 변경할 상품의 수량을 입력. 3. 만약
      * 다른 곳에 이동하고 싶은 경우에는 locationName(oo-oo)과 floor의 floor_level을 입력받기
@@ -91,42 +129,32 @@ public class ProductLocationService {
         log.info("productLocationRequestDto: {}", productLocationRequestDto);
         ProductLocation productLocation = productLocationModuleService.findById(
             productLocationRequestDto.getId());
-//        2. if(현재 상품 로케이션의 재고 개수가 더 많은 경우)사용자가 원하는 개수만큼의 재고를 가진 데이터 추가
-        if (productLocationRequestDto.getProductQuantity() > 0
-            && productLocation.getProduct_quantity()
-            >= productLocationRequestDto.getProductQuantity()) {
-            ProductLocation.ProductLocationBuilder builder = ProductLocation.builder();
+        int original = productLocation.getProduct_quantity();
+        int input = productLocationRequestDto.getProductQuantity();
 
-            int oldProductQuantity = productLocation.getProduct_quantity()
-                - productLocationRequestDto.getProductQuantity();
-            productLocation.setProductQuantity(oldProductQuantity);
-            int newProductQuantity = productLocationRequestDto.getProductQuantity();
-//            이동을 요청한 로케이션의 보관타입이 전시인 경우 매장,아니라면 전시로 이동
-            ExportTypeEnum newExportTypeEnum = ExportTypeEnum.DISPLAY;
-            if (productLocation.getExportTypeEnum() == ExportTypeEnum.DISPLAY) {
-                newExportTypeEnum = ExportTypeEnum.STORE;
-            }
-//            사용자가 특정 로케이션에 입력하길 원하는 경우
-            if (productLocationRequestDto.getLocationName() != null
-                && productLocationRequestDto.getFloorLevel() > 0) {
-//                locationName을 가지고 locationid를 조회하고 floor에서 floorlevel = level이고 locationid = floor.locationid인거 찾기
-                long locationId = locationModuleService.findByName(
-                    productLocationRequestDto.getLocationName()).getId();
-                Floor floor = floorModuleService.findByLocationIdAndFloorLevel(
-                    locationId, productLocationRequestDto.getFloorLevel());
-                builder.floor(floor);
-            } else {
-                builder.floor(productLocation.getFloor()); // 아니라면 기존의 floor 사용
-            }
-            builder.product_quantity(newProductQuantity);
-            builder.exportTypeEnum(newExportTypeEnum);
-            builder.product(productLocation.getProduct());
+//        2. if(현재 상품 로케이션의 재고 개수가 더 많은 경우)사용자가 원하는 개수만큼의 재고를 가진 데이터 추가
+        if (isMoveProduct(original, input)) {
+
+            Floor floor = updateFloor(productLocationRequestDto.getLocationName(),
+                    productLocationRequestDto.getFloorLevel());
+
 //            기존거 업데이트
+            int quantity = calculateProductQuantity(original, input);
+            productLocation.setProductQuantity(quantity);
             productLocationModuleService.save(productLocation);
+
 //            새거 추가
-            ProductLocation updatedProductLocation = productLocationModuleService.save(
-                builder.build());
-            return ProductLocationMapper.fromProductLocation(updatedProductLocation);
+            int newQuantity = productLocationRequestDto.getProductQuantity();
+            ProductLocation newProductLocation = ProductLocation.builder()
+                    .floor((floor == null) ? productLocation.getFloor() : floor)
+                    .product(productLocation.getProduct())
+                    .product_quantity(newQuantity)
+                    .exportTypeEnum((productLocationRequestDto.getExportTypeEnum()))
+                    .build();
+
+            return ProductLocationMapper.fromProductLocation(
+                    productLocationModuleService.save(newProductLocation)
+            );
         }
 //        TODO:재고 이동에 실패할 경우 리턴 뭐 할지 생각하기
         else {
