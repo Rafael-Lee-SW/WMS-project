@@ -121,7 +121,7 @@ public class LocationService {
      */
     private void modifyExportType(FloorDto floorDto, Warehouse warehouse) {
         //warehouse가 STORE(매장)인 경우
-        if (warehouse.getFacilityType().equals(FacilityTypeEnum.STORE)) {
+        if (warehouse.getFacilityTypeEnum().equals(FacilityTypeEnum.STORE)) {
             floorDto.setExportType(ExportTypeEnum.STORE);
         }
     }

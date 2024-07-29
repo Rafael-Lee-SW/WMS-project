@@ -12,17 +12,15 @@ public class WarehouseMapper {
      * @return Warehouse
      */
     public static Warehouse fromDto(WarehouseDto warehouseDto) {
-        Warehouse warehouse = Warehouse.builder()
+       return Warehouse.builder()
                 .id(warehouseDto.getId())
                 .size(warehouseDto.getSize())
                 .name(warehouseDto.getName())
                 .rowCount(warehouseDto.getRowCount())
                 .columnCount(warehouseDto.getColumnCount())
-                .facilityType(warehouseDto.getFacilityType())
-                .statusEnum(warehouseDto.getStatus())
+                .facilityTypeEnum(warehouseDto.getFacilityTypeEnum())
+                .statusEnum(warehouseDto.getStatusEnum())
                 .build();
-
-        return warehouse;
     }
 
     /**
@@ -38,11 +36,11 @@ public class WarehouseMapper {
                 .name(warehouse.getName())
                 .rowCount(warehouse.getRowCount())
                 .columnCount(warehouse.getColumnCount())
-                .facilityType(warehouse.getFacilityType())
+                .facilityTypeEnum(warehouse.getFacilityTypeEnum())
                 .priority(warehouse.getPriority())
-                .createDate(warehouse.getCreatedDate())
-                .updateDate(warehouse.getUpdatedDate())
-                .status(warehouse.getStatusEnum())
+                .createdDate(warehouse.getCreatedDate())
+                .updatedDate(warehouse.getUpdatedDate())
+                .statusEnum(warehouse.getStatusEnum())
                 .build();
     }
 }

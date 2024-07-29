@@ -6,6 +6,7 @@ import com.a508.wms.floor.domain.Floor;
 import com.a508.wms.floor.service.FloorModuleService;
 import com.a508.wms.location.domain.Location;
 import com.a508.wms.location.service.LocationModuleService;
+import com.a508.wms.util.constant.ProductStorageTypeEnum;
 import com.a508.wms.warehouse.domain.Warehouse;
 import com.a508.wms.warehouse.dto.WarehouseDto;
 import com.a508.wms.warehouse.mapper.WarehouseMapper;
@@ -45,8 +46,9 @@ public class WarehouseService {
 
         Warehouse warehouse = createWarehouse(warehouseDto);
         warehouse = warehouseModuleService.save(warehouse);
-
+        log.info("warehouse.FT:{}", warehouse.getFacilityTypeEnum());
         Location defaultLocation = Location.builder()
+            .productStorageTypeEnum(ProductStorageTypeEnum.상온)
             .warehouse(warehouse)
             .build();
         locationModuleService.save(defaultLocation);
@@ -100,8 +102,8 @@ public class WarehouseService {
         if (warehouseDto.getPriority() != 0) {
             warehouse.setPriority(warehouseDto.getPriority());
         }
-        if (warehouseDto.getFacilityType() != null) {
-            warehouse.setFacilityType(warehouseDto.getFacilityType());
+        if (warehouseDto.getFacilityTypeEnum() != null) {
+            warehouse.setFacilityTypeEnum(warehouseDto.getFacilityTypeEnum());
         }
 
         Warehouse savedWarehouse = warehouseModuleService.save(warehouse);
@@ -139,7 +141,7 @@ public class WarehouseService {
             .rowCount(rowCnt)
             .columnCount(columnCnt)
             .priority(warehouseDto.getPriority())
-            .facilityType(warehouseDto.getFacilityType())
+            .facilityTypeEnum(warehouseDto.getFacilityTypeEnum())
             .build();
     }
 

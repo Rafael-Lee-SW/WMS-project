@@ -45,11 +45,11 @@ public class WarehouseModuleService {
     }
 
     /*
-   창고를 비활성화하는 메서드 (상태를 INACTIVE로 설정, PATCH)
+   창고를 비활성화하는 메서드 (상태를 DELETED로 설정, PATCH)
     */
     @Transactional
     public Warehouse delete(Warehouse warehouse) {
-        warehouse.setStatusEnum(StatusEnum.INACTIVE);
+        warehouse.setStatusEnum(StatusEnum.DELETED);
         return save(warehouse);
     }
 }

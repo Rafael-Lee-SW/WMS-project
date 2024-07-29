@@ -3,6 +3,7 @@ package com.a508.wms.warehouse.dto;
 
 import com.a508.wms.location.dto.LocationDto;
 import com.a508.wms.util.constant.FacilityTypeEnum;
+import com.a508.wms.util.constant.ProductStorageTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,10 +24,11 @@ public class WarehouseDto {
     private int rowCount;
     private int columnCount;
     private int priority;
-    private FacilityTypeEnum facilityType;
-    private LocalDateTime createDate;
-    private LocalDateTime updateDate;
-    private StatusEnum status;
+    private FacilityTypeEnum facilityTypeEnum;
+    private ProductStorageTypeEnum productStorageTypeEnum;
+    private LocalDateTime createdDate;
+    private LocalDateTime updatedDate;
+    private StatusEnum statusEnum;
     private List<LocationDto> locations;
 
 
