@@ -6,6 +6,13 @@ RUN apk add --no-cache --virtual .gyp \
     python3 \
     make \
     g++ \
+    && apk add --no-cache \
+    pkgconfig \
+    cairo-dev \
+    pango-dev \
+    giflib-dev \
+    libjpeg-turbo-dev \
+    freetype-dev \
     && npm config set python /usr/bin/python3
 
 # Step 3: Set the working directory
