@@ -1,5 +1,6 @@
 package com.a508.wms.productlocation.dto;
 
+import com.a508.wms.util.constant.ExportTypeEnum;
 import lombok.*;
 
 @Getter
@@ -14,5 +15,6 @@ public class ProductLocationRequestDto {
     private int productQuantity;
     private int floorLevel;
     private String locationName;
+    private ExportTypeEnum exportTypeEnum;
 
 }
