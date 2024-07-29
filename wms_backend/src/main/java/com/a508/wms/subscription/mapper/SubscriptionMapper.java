@@ -31,7 +31,7 @@ public class SubscriptionMapper {
        return SubscriptionDto.builder()
                .id(subscription.getId())
                .businessId(subscription.getBusiness().getId())
-               .subscriptionTypeId(subscription.getSubscriptionType().getId())
+               .subscriptionTypeEnum(subscription.getSubscriptionTypeEnum())
                .startDate(subscription.getStartDate())
                .endDate(subscription.getEndDate())
                .statusEnum(subscription.getStatusEnum())

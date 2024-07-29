@@ -1,10 +1,10 @@
 package com.a508.wms.subscription.domain;
 
 import com.a508.wms.business.domain.Business;
-import com.a508.wms.subscriptiontype.domain.SubscriptionType;
 import com.a508.wms.util.BaseTimeEntity;
 import com.a508.wms.util.constant.PaidTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;
+import com.a508.wms.util.constant.SubscriptionTypeEnum;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -28,9 +28,9 @@ public class Subscription extends BaseTimeEntity {
     @JoinColumn(name = "business_id", nullable = false)
     private Business business;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "subscription_type_id", nullable = false)
-    private SubscriptionType subscriptionType;
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private SubscriptionTypeEnum subscriptionTypeEnum;
 
     @CreatedDate
     @Column(updatable = false, nullable = false)
@@ -59,8 +59,8 @@ public class Subscription extends BaseTimeEntity {
         this.statusEnum = statusEnum;
     }
 
-    public void setSubscriptionType(SubscriptionType subscriptionType) {
-        this.subscriptionType = subscriptionType;
+    public void setSubscriptionTypeEnum(SubscriptionTypeEnum subscriptionTypeEnum) {
+        this.subscriptionTypeEnum = subscriptionTypeEnum;
     }
 
     public void setPaidTypeEnum(PaidTypeEnum paidTypeEnum) {

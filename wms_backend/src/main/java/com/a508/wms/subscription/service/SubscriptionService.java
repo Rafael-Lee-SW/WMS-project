@@ -6,8 +6,6 @@ import com.a508.wms.subscription.domain.Subscription;
 import com.a508.wms.subscription.dto.SubscriptionDto;
 import com.a508.wms.subscription.mapper.SubscriptionMapper;
 import com.a508.wms.subscription.repository.SubscriptionRepository;
-import com.a508.wms.subscriptiontype.domain.SubscriptionType;
-import com.a508.wms.subscriptiontype.repository.SubscriptionTypeRepository;
 import com.a508.wms.util.constant.StatusEnum;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +20,6 @@ public class SubscriptionService {
 
     private final SubscriptionRepository subscriptionRepository;
     private final BusinessRepository businessRepository;
-    private final SubscriptionTypeRepository subscriptionTypeRepository;
 
 
     /**
@@ -60,14 +57,9 @@ public class SubscriptionService {
         Business business = businessRepository.findById(subscriptionDto.getBusinessId())
             .orElseThrow(() -> new IllegalArgumentException("Invalid business Id:" + subscriptionDto.getBusinessId()));
 
-        SubscriptionType subscriptionType = subscriptionTypeRepository.findById(
-                subscriptionDto.getSubscriptionTypeId())
-            .orElseThrow(() -> new IllegalArgumentException("Invalid subscription type Id:"
-                + subscriptionDto.getSubscriptionTypeId()));
-
         Subscription subscription = SubscriptionMapper.fromDto(subscriptionDto);
         subscription.setBusiness(business);
-        subscription.setSubscriptionType(subscriptionType);
+        subscription.setSubscriptionTypeEnum(subscriptionDto.getSubscriptionTypeEnum());
 
         return SubscriptionMapper.fromSubscription(subscriptionRepository.save(subscription));
     }
@@ -84,15 +76,12 @@ public class SubscriptionService {
         Business business = businessRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Invalid business Id:" + id));
 
-        SubscriptionType subscriptionType = subscriptionTypeRepository.findById(
-                subscriptionDto.getSubscriptionTypeId())
-            .orElseThrow(() -> new IllegalArgumentException("Invalid subscription type Id:"
-                + subscriptionDto.getSubscriptionTypeId()));
         Subscription subscription = subscriptionRepository.findById(id)
                         .orElseThrow(() -> new IllegalArgumentException("Invalid Id:" + id));
         Subscription updateSubscription = Subscription.builder()
                 .business(business)
-                .subscriptionType(subscriptionType)
+                .subscriptionTypeEnum((subscriptionDto.getSubscriptionTypeEnum() == null) ? subscription.getSubscriptionTypeEnum()
+                        : subscriptionDto.getSubscriptionTypeEnum())
                 .startDate((subscriptionDto.getStartDate() == null) ? subscription.getStartDate()
                         : subscriptionDto.getStartDate())
                 .endDate((subscriptionDto.getEndDate() == null) ? subscription.getEndDate()

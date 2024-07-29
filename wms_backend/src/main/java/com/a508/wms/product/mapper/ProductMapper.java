@@ -16,9 +16,12 @@ public class ProductMapper {
      */
     public static ProductResponseDto fromProduct(Product product) {
         return ProductResponseDto.builder()
-            .comment(product.getComment())
+                .id(product.getId())
             .expirationDate(product.getExpirationDate())
             .comment(product.getComment())
+                .createdDate(product.getCreatedDate())
+                .updateDate(product.getUpdatedDate())
+                .statusEnum(product.getStatusEnum())
             .productDetail(ProductDetailMapper.fromProductDetail(product.getProductDetail()))
             .build();
     }
