@@ -1,11 +1,7 @@
 "use client";
 
 /**
- *
- *
  * 창고 엑셀화 Import
- *
- *
  */
 
 // fundamental importing about React
@@ -44,7 +40,10 @@ import "pikaday/css/pikaday.css";
 import "handsontable/dist/handsontable.full.css";
 
 // Import custom hooks and callbacks
-import { addClassesToRows, alignHeaders } from "/components/Test/hooksCallbacks.jsx";
+import {
+  addClassesToRows,
+  alignHeaders,
+} from "/components/Test/hooksCallbacks.jsx";
 
 import Handsontable from "handsontable";
 
@@ -61,11 +60,7 @@ registerPlugin(Filters);
 registerPlugin(HiddenRows);
 
 /**
- *
- *
  * 창고 시각화 Import
- *
- *
  */
 
 // Library of konva and color
@@ -125,12 +120,11 @@ const useStyles = makeStyles(styles);
 
 const Complicated = () => {
   /**
-   *
    * 창고 관련 const 들 모음
-   *
    */
   const classes = useStyles();
   const stageRef = useRef(null); // Create a reference for the stage
+  const layerRef = useRef(null); // Create a reference for the layer
 
   // Initial Setting the container array 초기 세팅
   const initialContainer = Array.from({ length: CANVAS_SIZE }, () =>
@@ -170,6 +164,12 @@ const Complicated = () => {
   const [newWallWidth, setNewWallWidth] = useState(10);
   const [wallStartPoint, setWallStartPoint] = useState(null);
   const [wallEndPoint, setWallEndPoint] = useState(null);
+
+  const [draggingAnchor, setDraggingAnchor] = useState(null);
+  const [hoveredAnchor, setHoveredAnchor] = useState(null);
+
+  // 앙커를 추가하고 관리하는 State 추가
+  const [anchors, setAnchors] = useState([]);
 
   /**
    *
@@ -365,6 +365,15 @@ const Complicated = () => {
       console.error("Error saving map data:", error);
     }
   };
+  // Add this helper function to clear existing anchors and lines
+  const clearAnchorsAndLines = () => {
+    anchorsRef.current.forEach(({ start, end, line }) => {
+      start.destroy();
+      end.destroy();
+      line.destroy();
+    });
+    anchorsRef.current = [];
+  };
 
   // Load the rectangle data from the local public/map directory
   const loadMapFromLocal = async () => {
@@ -377,8 +386,43 @@ const Complicated = () => {
       });
 
       if (response.ok) {
-        const mapData = await response.json();
-        setRectangles(mapData);
+        const { rectData, anchorData } = await response.json();
+        setRectangles(rectData); // 사각형들
+        clearAnchorsAndLines(); // Load 전 초기화
+
+        const existingAnchors = [];
+        const newAnchors = [];
+
+        const getOrCreateAnchor = (x, y) => {
+          let existingAnchor = findExistingAnchor(existingAnchors, x, y);
+          if (!existingAnchor) {
+            existingAnchor = buildAnchor(x, y);
+            existingAnchors.push(existingAnchor);
+          }
+          return existingAnchor;
+        };
+
+        anchorData.forEach(({ startX, startY, endX, endY }) => {
+          const startAnchor = getOrCreateAnchor(startX, startY);
+          const endAnchor = getOrCreateAnchor(endX, endY);
+
+          const newLine = new Konva.Line({
+            points: [startX, startY, endX, endY],
+            stroke: "black",
+            strokeWidth: 10,
+            lineCap: "round",
+          });
+
+          newAnchors.push({
+            start: startAnchor,
+            end: endAnchor,
+            line: newLine,
+          });
+        });
+
+        anchorsRef.current = newAnchors;
+        newAnchors.forEach(({ line }) => layerRef.current.add(line));
+        layerRef.current.batchDraw();
       } else {
         console.error("Error loading map data");
       }
@@ -486,6 +530,162 @@ const Complicated = () => {
   };
 
   /**
+   * 앙커를 추가하고 불러올 수 있다.
+   */
+
+  // 선을 잇는 기능을 넣기 위한 거시기
+  const [line, setLine] = useState(null);
+  const [startPos, setStartPos] = useState(null);
+
+  // 선을 그리는 함수
+  const drawLine = (start, end) => {
+    const newLine = new Konva.Line({
+      stroke: "black",
+      points: [start.x, start.y, end.x, end.y],
+      listening: false,
+    });
+    layerRef.current.add(newLine);
+    layerRef.current.batchDraw();
+  };
+
+  // --- Build Anchor Function ---
+  const buildAnchor = (x, y) => {
+    const layer = layerRef.current;
+    const newAnchor = new Konva.Circle({
+      id: `anchor_${anchors.length}`,
+      x: x,
+      y: y,
+      radius: 20,
+      stroke: "#666",
+      fill: "#ddd",
+      opacity: 0,
+      strokeWidth: 2,
+      draggable: true,
+    });
+    layer.add(newAnchor);
+    setAnchors((prevAnchors) => [...prevAnchors, newAnchor]);
+
+    newAnchor.on("mouseover", function () {
+      document.body.style.cursor = "pointer";
+      this.strokeWidth(4);
+      this.opacity(1);
+      this.moveToTop();
+    });
+    newAnchor.on("mouseout", function () {
+      document.body.style.cursor = "default";
+      this.strokeWidth(2);
+      this.opacity(0);
+      this.moveToTop();
+    });
+
+    newAnchor.on("dragmove", function () {
+      updateDottedLines();
+      highlightOverlappingAnchors(this);
+      this.moveToTop();
+    });
+
+    newAnchor.on("dragend", function () {
+      mergeAnchors(this);
+      this.moveToTop();
+    });
+
+    return newAnchor;
+  };
+
+  //선 구성
+  const updateDottedLines = () => {
+    anchorsRef.current.forEach(({ line, start, end }) => {
+      line.points([start.x(), start.y(), end.x(), end.y()]);
+    });
+    layerRef.current.batchDraw();
+  };
+
+  // 클릭 후에 다른 앙커로 갔을 때 앙커가 빛나
+  const highlightOverlappingAnchors = (draggedAnchor) => {
+    const stage = stageRef.current;
+    stage.find("Circle").forEach((anchor) => {
+      if (anchor === draggedAnchor) return;
+      if (isOverlapping(draggedAnchor, anchor)) {
+        anchor.stroke("#ff0000");
+        anchor.opacity(1);
+        anchor.moveToTop();
+      } else {
+        anchor.stroke("#666");
+        anchor.opacity(0);
+        anchor.moveToTop();
+      }
+    });
+  };
+
+  const isOverlapping = (anchor1, anchor2) => {
+    const a1 = anchor1.getClientRect();
+    const a2 = anchor2.getClientRect();
+    return !(
+      a1.x > a2.x + a2.width ||
+      a1.x + a1.width < a2.x ||
+      a1.y > a2.y + a2.height ||
+      a1.y + a1.height < a2.y
+    );
+  };
+
+  const mergeAnchors = (draggedAnchor) => {
+    const stage = stageRef.current;
+    const layer = layerRef.current;
+    let merged = false;
+
+    stage.find("Circle").forEach((anchor) => {
+      if (anchor === draggedAnchor) return;
+      if (isOverlapping(draggedAnchor, anchor)) {
+        updateAnchorReferences(draggedAnchor, anchor);
+        draggedAnchor.destroy(); // Remove the dragged anchor
+        layer.batchDraw();
+        merged = true;
+      }
+    });
+    if (!merged) {
+      draggedAnchor.stroke("#666");
+      layer.batchDraw();
+    }
+  };
+
+  const updateAnchorReferences = (draggedAnchor, anchor) => {
+    let count = 0;
+    anchorsRef.current.forEach((anchorObj) => {
+      if (anchorObj.start === draggedAnchor) anchorObj.start = anchor;
+      if (anchorObj.end === draggedAnchor) anchorObj.end = anchor;
+      count++;
+    });
+    console.log(count);
+    updateDottedLines();
+  };
+
+  //실시간 반응을 위해서 currentSetting에 대한 함수 작동을 메서드로 넘기기
+  const changeCurrentSetting = (value) => {
+    setCurrentSetting(value);
+  };
+
+  const [lineData, setLineData] = useState({
+    startX: "",
+    startY: "",
+    endX: "",
+    endY: "",
+  });
+  const anchorsRef = useRef([]);
+
+  //같은 위치를 찾기위함
+  const isSamePosition = (x1, y1, x2, y2) => {
+    return (
+      Math.round(x1) === Math.round(x2) && Math.round(y1) === Math.round(y2)
+    );
+  };
+
+  //같은 위치에 존재하는 Anchor를 찾기 위함
+  const findExistingAnchor = (anchors, x, y) => {
+    return anchors.find((anchor) =>
+      isSamePosition(anchor.x(), anchor.y(), x, y)
+    );
+  };
+  /**
    * 선택된 사각형의 데이터를 보여주는 메서드
    */
 
@@ -519,14 +719,211 @@ const Complicated = () => {
   // 엑셀기록과 함께 해당하는 상자를 누르면 데이터를 보여주는 함수
   const [rectangleData, setRectangleData] = useState([]);
 
-  useEffect(() => {
-    if (selectedRect) {
+  /**
+   *  useEffect Part for Reactive action
+   */
 
+  // 선을 적용하기 위한 UseEffect
+  useEffect(() => {
+    const stage = stageRef.current;
+    const layer = layerRef.current;
+    /**
+     * 기존에는 세 개의 원을 추가했으나, 우리는 이미 존재하는 우리 객체에 대해 적용
+     */
+
+    //Event Handler for 'mousedown' Stage 위에 올렸을 때,
+    const handleMouseDown = () => {
+      // 정확한 위치를 얻어온다.
+      if (currentSetting === "wall") {
+        const pos = stage.getPointerPosition();
+        var stageAttrs = stage.attrs; // 보정을 위한 거시기
+
+        if (!stageAttrs.x) {
+          // 드래그 하지 않음
+          pos.x = pos.x / stageAttrs.scaleX; //줌에 따른 따른 위치 스케일링
+          pos.y = pos.y / stageAttrs.scaleY;
+        } else {
+          // 드래그해서 새로운 stageAttrs의 x,y가 생김
+          pos.x = (pos.x - stageAttrs.x) / stageAttrs.scaleX; //줌에 따른 따른 위치 스케일링
+          pos.y = (pos.y - stageAttrs.y) / stageAttrs.scaleY;
+        }
+        // 무조건 10 pixel 단위로 반올림하여 시작 위치 보정
+        pos.x = Math.round(pos.x / 10) * 10;
+        pos.y = Math.round(pos.y / 10) * 10;
+
+        setStartPos(pos); // 선의 시작 위치 기록
+        const newLine = new Konva.Line({
+          stroke: "black",
+          strokeWidth: 5,
+          listening: false, // Hit detective 감지 안됨
+          points: [pos.x, pos.y, pos.x, pos.y],
+        });
+        layer.add(newLine);
+        setLine(newLine);
+      }
+    };
+
+    //Event Handler for 'mousemove' stage 위에서 움직일 때,
+    const handleMouseMove = () => {
+      if (currentSetting === "wall") {
+        if (!line) return;
+        // 정확한 위치를 얻어온다.
+        const pos = stage.getPointerPosition();
+        var stageAttrs = stage.attrs; // 보정을 위한 거시기
+        if (!stageAttrs.x) {
+          // 드래그 하지 않음
+          pos.x = pos.x / stageAttrs.scaleX; //줌에 따른 따른 위치 스케일링
+          pos.y = pos.y / stageAttrs.scaleY;
+        } else {
+          // 드래그해서 새로운 stageAttrs의 x,y가 생김
+          pos.x = (pos.x - stageAttrs.x) / stageAttrs.scaleX; //줌에 따른 따른 위치 스케일링
+          pos.y = (pos.y - stageAttrs.y) / stageAttrs.scaleY;
+        }
+
+        const points = [startPos.x, startPos.y, pos.x, pos.y];
+        //라인 그리기
+        line.points(points);
+        layer.batchDraw();
+      }
+    };
+
+    //Event Handler for 'mouseup' stage 위에서 마우스를 뗄 때,
+    const handleMouseUp = (e) => {
+      if (currentSetting === "wall") {
+        //라인이 없으면 작동 X
+        if (!line) return;
+        //타겟을 찾으면 라인 생성
+        if (e.target.hasName("target")) {
+          // 정확한 위치를 얻어온다.
+          const pos = stage.getPointerPosition();
+          var stageAttrs = stage.attrs; // 보정을 위한 거시기
+          if (!stageAttrs.x) {
+            // 드래그 하지 않음
+            pos.x = pos.x / stageAttrs.scaleX; //줌에 따른 따른 위치 스케일링
+            pos.y = pos.y / stageAttrs.scaleY;
+          } else {
+            // 드래그해서 새로운 stageAttrs의 x,y가 생김
+            pos.x = (pos.x - stageAttrs.x) / stageAttrs.scaleX; //줌에 따른 따른 위치 스케일링
+            pos.y = (pos.y - stageAttrs.y) / stageAttrs.scaleY;
+          }
+          drawLine(startPos, pos);
+          setLine(null);
+          setStartPos(null);
+          line.remove();
+        } else {
+          line.remove();
+          layer.draw();
+          //벽을 추가하기 위한 메서드
+          // 정확한 위치를 얻어온다.
+          const pos = stage.getPointerPosition();
+          var stageAttrs = stage.attrs; // 보정을 위한 거시기
+          if (!stageAttrs.x) {
+            // 드래그 하지 않음
+            pos.x = pos.x / stageAttrs.scaleX; //줌에 따른 따른 위치 스케일링
+            pos.y = pos.y / stageAttrs.scaleY;
+          } else {
+            // 드래그해서 새로운 stageAttrs의 x,y가 생김
+            pos.x = (pos.x - stageAttrs.x) / stageAttrs.scaleX; //줌에 따른 따른 위치 스케일링
+            pos.y = (pos.y - stageAttrs.y) / stageAttrs.scaleY;
+          }
+          handleAddWall(startPos, pos);
+
+          setLine(null);
+          setStartPos(null);
+        }
+      }
+    };
+
+    //벽을 추가한다.
+    const handleAddWall = (start, end) => {
+      /**
+       * wall setting 일때만 변경될 수 있도록 설정
+       */
+      console.log("벽 생성 function에서 현재 세팅은? : " + currentSetting);
+      if (currentSetting === "wall") {
+        // 벽이 입력되는 end point가 벽의 중심이다.
+        const newWall = {
+          id: rectangles.length.toString(),
+          x: end.x,
+          y: end.y,
+          width: newWallWidth,
+          height: Math.sqrt((end.x - start.x) ** 2 + (end.y - start.y) ** 2),
+          fill: newWallColor,
+          draggable: true,
+          order: rectangles.length + 1, // 순서대로 번호 인덱싱
+          name: `Wall ${rectangles.length + 1}`,
+          type: "wall",
+          rotation: Math.round(
+            Math.atan2(end.y - start.y, end.x - start.x) * (180 / Math.PI) + 90
+          ),
+        };
+        // if (!isOverlapping(newWall)) {
+        // setRectangles([...rectangles, newWall]);
+        // updateContainer(newWall, "wall", `wall${newWall.id}`);
+        // Reset wall points
+        setWallStartPoint(null);
+        setWallEndPoint(null);
+        // Reset settings to default after adding
+        setNewWallColor("brown");
+        setNewWallWidth(10);
+        // } else {
+        //   alert("Wall overlaps with another rectangle.");
+        //   // Reset wall points
+        //   setWallStartPoint(null);
+        //   setWallEndPoint(null);
+        // }
+        const newAnchorTop = buildAnchor(start.x, start.y);
+        const newAnchorBottom = buildAnchor(end.x, end.y);
+
+        const newLine = new Konva.Line({
+          points: [start.x, start.y, end.x, end.y],
+          stroke: "black",
+          strokeWidth: 10,
+          lineCap: "round",
+          // dash: [10, 10, 0, 10],
+          // opacity: 0.3,
+        });
+        const layer = layerRef.current;
+        layer.add(newLine);
+
+        anchorsRef.current.push({
+          start: newAnchorTop,
+          end: newAnchorBottom,
+          line: newLine,
+        });
+        layer.batchDraw();
+      }
+    };
+
+    /**
+     * 벽 생성 관련 마우스 컨트롤 Mouse
+     */
+    if (currentSetting === "wall") {
+      // Event Listeners 추가하기
+      stage.on("mousedown", handleMouseDown);
+      stage.on("mousemove", handleMouseMove);
+      stage.on("mouseup", handleMouseUp);
+    }
+    //레이어의 초기 상태 그리기
+    layer.draw();
+
+    /**
+     * 선택된 사각형의 물품 목록을 보여준다.
+     */
+
+    if (selectedRect) {
       fetchRectangleData(selectedRect.id).then((data) => {
         setRectangleData(data);
       });
     }
-  }, [selectedRect]);
+
+    // Clean-up the Function to remove event Listeners
+    return () => {
+      stage.off("mousedown", handleMouseDown);
+      stage.off("mousemove", handleMouseMove);
+      stage.off("mouseup", handleMouseUp);
+    };
+  }, [line, startPos, currentSetting, selectedRect]);
 
   return (
     <div style={{ marginBottom: "1%", margin: "2%" }}>
@@ -670,7 +1067,7 @@ const Complicated = () => {
                 onMouseDown={checkDeselect}
                 onTouchStart={checkDeselect}
               >
-                <Layer>
+                <Layer ref={layerRef}>
                   {generateGridLines()}
                   {rectangles.map((rect, i) => (
                     <RectangleTransformer
