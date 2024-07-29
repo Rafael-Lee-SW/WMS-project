@@ -1,8 +1,11 @@
 # 베이스 이미지로 node의 최신 LTS 버전 사용
-FROM node:20-alpine
+FROM node:18-alpine
 
 # 작업 디렉토리 설정
 WORKDIR /app
+
+# Python과 필요한 빌드 도구 설치
+RUN apk add --no-cache python3 make g++
 
 # package.json과 package-lock.json 파일을 복사
 COPY package*.json ./
