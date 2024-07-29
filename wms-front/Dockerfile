@@ -4,14 +4,14 @@ FROM node:18-alpine
 # 작업 디렉토리 설정
 WORKDIR /app
 
-# Python과 필요한 빌드 도구 설치
-RUN apk add --no-cache python3 make g++
+# Python, make, g++ 및 pkg-config, pixman 설치
+RUN apk add --no-cache python3 make g++ pkgconfig pixman
 
 # package.json과 package-lock.json 파일을 복사
 COPY package*.json ./
 
 # 의존성 설치
-RUN npm install --legacy-peer-deps
+RUN npm install --force
 
 # Next.js 빌드를 위해 프로젝트 소스를 복사
 COPY . .
