@@ -22,12 +22,12 @@ public class EmployeeController {
      * 전체 직원 혹은 특정 사업체의 전체 직원을 조회하는 메서드
      *
      * @param businessId : 특정 사업체의 전체 직원을 조회하는 경우 사업체 고유 번호 입력
-     * @return List<EmployeeDto> (전체 직원),
-     * List<EmployeeDto> (특정 사업체의 전체 직원)
+     * @return List<EmployeeDto> (전체 직원), List<EmployeeDto> (특정 사업체의 전체 직원)
      */
     @GetMapping
-    public BaseSuccessResponse<List<EmployeeDto>> getEmployees(@RequestParam(value = "businessid", required = false) long businessId) {
-        if (businessId != 0) {
+    public BaseSuccessResponse<List<EmployeeDto>> getEmployees(
+        @RequestParam(value = "businessid", required = false) Long businessId) {
+        if (businessId != null) {
             return new BaseSuccessResponse<>(employeeService.findByBusinessId(businessId));
         } else {
             return new BaseSuccessResponse<>(employeeService.findAll());
@@ -53,7 +53,8 @@ public class EmployeeController {
      * @return employeeDto : 변경된 직원의 정보
      */
     @PutMapping("/{id}")
-    public BaseSuccessResponse<?> updateEmployee(@PathVariable("id") long id, @RequestBody EmployeeDto employeeDto) {
+    public BaseSuccessResponse<?> updateEmployee(@PathVariable("id") long id,
+        @RequestBody EmployeeDto employeeDto) {
         return new BaseSuccessResponse<>(employeeService.update(id, employeeDto));
     }
 
