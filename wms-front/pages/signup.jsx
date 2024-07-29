@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/router";
 import { Input, makeStyles } from "@material-ui/core";
@@ -11,7 +11,7 @@ import Button from "/components/CustomButtons/Button.js";
 
 import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/signupStyle.js";
 
-const useStyles = makeStyles(styles);
+const useStyles = makeStyles(styles)
 
 export default function SignUp() {
     const classes = useStyles();
