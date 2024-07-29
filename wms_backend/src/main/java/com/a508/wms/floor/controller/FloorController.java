@@ -28,7 +28,7 @@ public class FloorController {
      */
     @GetMapping
     public BaseSuccessResponse<List<FloorDto>> getAllByLocationId(
-        @RequestParam(name = "locationid") Long locationId) {
+        @RequestParam(name = "locationId") Long locationId) {
         log.info("get all Floors by locationId: {}", locationId);
         return new BaseSuccessResponse<>(floorService.getAllByLocationId(locationId));
     }

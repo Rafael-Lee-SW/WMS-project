@@ -26,7 +26,7 @@ public class EmployeeController {
      */
     @GetMapping
     public BaseSuccessResponse<List<EmployeeDto>> getEmployees(
-        @RequestParam(value = "businessid", required = false) Long businessId) {
+        @RequestParam(value = "businessId", required = false) Long businessId) {
         if (businessId != null) {
             return new BaseSuccessResponse<>(employeeService.findByBusinessId(businessId));
         } else {
