@@ -103,6 +103,9 @@ const User = () => {
   const [draggingAnchor, setDraggingAnchor] = useState(null);
   const [hoveredAnchor, setHoveredAnchor] = useState(null);
 
+  // 앙커를 추가하고 관리하는 State 추가
+  const [anchors, setAnchors] = useState([]);
+
   // 사각형을 컨버스에 추가한다.
   const handleAddRectangle = (type) => {
     const newRect = {
@@ -147,6 +150,7 @@ const User = () => {
 
   // 컨버스에 있는 사각형들의 정보를 저장한다.
   const handleSave = async () => {
+    // 사각형들을 전부 기록한다.
     const rectData = rectangles.map((rect) => ({
       id: rect.id,
       x: rect.x,
@@ -161,13 +165,25 @@ const User = () => {
     console.log("Canvas data", rectData);
     console.log("container", container);
 
+    //앙커들을 전부 기록한다.
+    const anchorData = anchorsRef.current.map(({ start, end }) => ({
+      startID: start.id(),
+      startX: start.x(),
+      startY: start.y(),
+      endID: end.id(),
+      endX: end.x(),
+      endY: end.y(),
+    }));
+
+    console.log("Anchor data ", anchorData);
+
     try {
       const response = await fetch("/api/save-map", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(rectData),
+        body: JSON.stringify({ rectData, anchorData }),
       });
 
       if (response.ok) {
@@ -178,6 +194,16 @@ const User = () => {
     } catch (error) {
       console.error("Error saving map data:", error);
     }
+  };
+
+  // Add this helper function to clear existing anchors and lines
+  const clearAnchorsAndLines = () => {
+    anchorsRef.current.forEach(({ start, end, line }) => {
+      start.destroy();
+      end.destroy();
+      line.destroy();
+    });
+    anchorsRef.current = [];
   };
 
   // Load the rectangle data from the local public/map directory
@@ -191,8 +217,43 @@ const User = () => {
       });
 
       if (response.ok) {
-        const mapData = await response.json();
-        setRectangles(mapData);
+        const { rectData, anchorData } = await response.json();
+        setRectangles(rectData); // 사각형들
+        clearAnchorsAndLines(); // Load 전 초기화
+
+        const existingAnchors = [];
+        const newAnchors = [];
+
+        const getOrCreateAnchor = (x, y) => {
+          let existingAnchor = findExistingAnchor(existingAnchors, x, y);
+          if (!existingAnchor) {
+            existingAnchor = buildAnchor(x, y);
+            existingAnchors.push(existingAnchor);
+          }
+          return existingAnchor;
+        };
+
+        anchorData.forEach(({ startX, startY, endX, endY }) => {
+          const startAnchor = getOrCreateAnchor(startX, startY);
+          const endAnchor = getOrCreateAnchor(endX, endY);
+
+          const newLine = new Konva.Line({
+            points: [startX, startY, endX, endY],
+            stroke: "black",
+            strokeWidth: 10,
+            lineCap: "round",
+          });
+
+          newAnchors.push({
+            start: startAnchor,
+            end: endAnchor,
+            line: newLine,
+          });
+        });
+
+        anchorsRef.current = newAnchors;
+        newAnchors.forEach(({ line }) => layerRef.current.add(line));
+        layerRef.current.batchDraw();
       } else {
         console.error("Error loading map data");
       }
@@ -335,11 +396,116 @@ const User = () => {
     layerRef.current.batchDraw();
   };
 
-  /**
-   * 실시간 반응을 위한 UseEffect part
-   *
-   * - 특히 벽을 생성하는 것으 선을 그려서 생성하도록 변경할 예정
-   */
+  // --- Build Anchor Function ---
+  const buildAnchor = (x, y) => {
+    const layer = layerRef.current;
+    const newAnchor = new Konva.Circle({
+      id: `anchor_${anchors.length}`,
+      x: x,
+      y: y,
+      radius: 20,
+      stroke: "#666",
+      fill: "#ddd",
+      opacity: 0,
+      strokeWidth: 2,
+      draggable: true,
+    });
+    layer.add(newAnchor);
+    setAnchors((prevAnchors) => [...prevAnchors, newAnchor]);
+
+    newAnchor.on("mouseover", function () {
+      document.body.style.cursor = "pointer";
+      this.strokeWidth(4);
+      this.opacity(1);
+      this.moveToTop();
+    });
+    newAnchor.on("mouseout", function () {
+      document.body.style.cursor = "default";
+      this.strokeWidth(2);
+      this.opacity(0);
+      this.moveToTop();
+    });
+
+    newAnchor.on("dragmove", function () {
+      updateDottedLines();
+      highlightOverlappingAnchors(this);
+      this.moveToTop();
+    });
+
+    newAnchor.on("dragend", function () {
+      mergeAnchors(this);
+      this.moveToTop();
+    });
+
+    return newAnchor;
+  };
+
+  //선 구성
+  const updateDottedLines = () => {
+    anchorsRef.current.forEach(({ line, start, end }) => {
+      line.points([start.x(), start.y(), end.x(), end.y()]);
+    });
+    layerRef.current.batchDraw();
+  };
+
+  // 클릭 후에 다른 앙커로 갔을 때 앙커가 빛나
+  const highlightOverlappingAnchors = (draggedAnchor) => {
+    const stage = stageRef.current;
+    stage.find("Circle").forEach((anchor) => {
+      if (anchor === draggedAnchor) return;
+      if (isOverlapping(draggedAnchor, anchor)) {
+        anchor.stroke("#ff0000");
+        anchor.opacity(1);
+        anchor.moveToTop();
+      } else {
+        anchor.stroke("#666");
+        anchor.opacity(0);
+        anchor.moveToTop();
+      }
+    });
+  };
+
+  const isOverlapping = (anchor1, anchor2) => {
+    const a1 = anchor1.getClientRect();
+    const a2 = anchor2.getClientRect();
+    return !(
+      a1.x > a2.x + a2.width ||
+      a1.x + a1.width < a2.x ||
+      a1.y > a2.y + a2.height ||
+      a1.y + a1.height < a2.y
+    );
+  };
+
+  const mergeAnchors = (draggedAnchor) => {
+    const stage = stageRef.current;
+    const layer = layerRef.current;
+    let merged = false;
+
+    stage.find("Circle").forEach((anchor) => {
+      if (anchor === draggedAnchor) return;
+      if (isOverlapping(draggedAnchor, anchor)) {
+        updateAnchorReferences(draggedAnchor, anchor);
+        draggedAnchor.destroy(); // Remove the dragged anchor
+        layer.batchDraw();
+        merged = true;
+      }
+    });
+    if (!merged) {
+      draggedAnchor.stroke("#666");
+      layer.batchDraw();
+    }
+  };
+
+  const updateAnchorReferences = (draggedAnchor, anchor) => {
+    let count = 0;
+    anchorsRef.current.forEach((anchorObj) => {
+      if (anchorObj.start === draggedAnchor) anchorObj.start = anchor;
+      if (anchorObj.end === draggedAnchor) anchorObj.end = anchor;
+      count++;
+    });
+    console.log(count);
+    updateDottedLines();
+  };
 
   //실시간 반응을 위해서 currentSetting에 대한 함수 작동을 메서드로 넘기기
   const changeCurrentSetting = (value) => {
@@ -353,6 +519,24 @@ const User = () => {
     endY: "",
   });
   const anchorsRef = useRef([]);
+
+  //같은 위치를 찾기위함
+  const isSamePosition = (x1, y1, x2, y2) => {
+    return (
+      Math.round(x1) === Math.round(x2) && Math.round(y1) === Math.round(y2)
+    );
+  };
+
+  //같은 위치에 존재하는 Anchor를 찾기 위함
+  const findExistingAnchor = (anchors, x, y) => {
+    return anchors.find((anchor) =>
+      isSamePosition(anchor.x(), anchor.y(), x, y)
+    );
+  };
+
+  /**
+   *  useEffect Part for Reactive action
+   */
 
   // 선을 적용하기 위한 UseEffect
   useEffect(() => {
@@ -524,113 +708,6 @@ const User = () => {
         });
         layer.batchDraw();
       }
-    };
-
-    const buildAnchor = (x, y) => {
-      const layer = layerRef.current;
-
-      const anchor = new Konva.Circle({
-        x: x,
-        y: y,
-        radius: 20,
-        stroke: "#666",
-        fill: "#ddd",
-        opacity: 0,
-        strokeWidth: 2,
-        draggable: true,
-      });
-      layer.add(anchor);
-
-      anchor.on("mouseover", function () {
-        document.body.style.cursor = "pointer";
-        this.strokeWidth(4);
-        this.opacity(1);
-        this.moveToTop();
-      });
-      anchor.on("mouseout", function () {
-        document.body.style.cursor = "default";
-        this.strokeWidth(2);
-        this.opacity(0);
-        this.moveToTop();
-      });
-
-      anchor.on("dragmove", function () {
-        updateDottedLines();
-        highlightOverlappingAnchors(this);
-        this.moveToTop();
-      });
-
-      anchor.on("dragend", function () {
-        mergeAnchors(this);
-        this.moveToTop();
-      });
-
-      return anchor;
-    };
-
-    const updateDottedLines = () => {
-      anchorsRef.current.forEach(({ line, start, end }) => {
-        line.points([start.x(), start.y(), end.x(), end.y()]);
-      });
-      layerRef.current.batchDraw();
-    };
-
-    const highlightOverlappingAnchors = (draggedAnchor) => {
-      const stage = stageRef.current;
-      stage.find("Circle").forEach((anchor) => {
-        if (anchor === draggedAnchor) return;
-        if (isOverlapping(draggedAnchor, anchor)) {
-          anchor.stroke("#ff0000");
-          anchor.opacity(1);
-          anchor.moveToTop();
-        } else {
-          anchor.stroke("#666");
-          anchor.opacity(0);
-          anchor.moveToTop();
-        }
-      });
-    };
-
-    const isOverlapping = (anchor1, anchor2) => {
-      const a1 = anchor1.getClientRect();
-      const a2 = anchor2.getClientRect();
-      return !(
-        a1.x > a2.x + a2.width ||
-        a1.x + a1.width < a2.x ||
-        a1.y > a2.y + a2.height ||
-        a1.y + a1.height < a2.y
-      );
-    };
-
-    const mergeAnchors = (draggedAnchor) => {
-      const stage = stageRef.current;
-      const layer = layerRef.current;
-      let merged = false;
-
-      stage.find("Circle").forEach((anchor) => {
-        if (anchor === draggedAnchor) return;
-        if (isOverlapping(draggedAnchor, anchor)) {
-          updateAnchorReferences(draggedAnchor, anchor);
-          draggedAnchor.destroy(); // Remove the dragged anchor
-          layer.batchDraw();
-          merged = true;
-        }
-      });
-      if (!merged) {
-        draggedAnchor.stroke("#666");
-        layer.batchDraw();
-      }
-    };
-
-    const updateAnchorReferences = (draggedAnchor, anchor) => {
-      let count = 0;
-      anchorsRef.current.forEach((anchorObj) => {
-        if (anchorObj.start === draggedAnchor) anchorObj.start = anchor;
-        if (anchorObj.end === draggedAnchor) anchorObj.end = anchor;
-        count++;
-      });
-      console.log(count);
-      updateDottedLines();
     };
 
     /**
