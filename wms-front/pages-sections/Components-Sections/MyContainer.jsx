@@ -262,6 +262,55 @@ const User = () => {
     }
   };
 
+  //API 통신 테스트
+  const APIConnectionTest = async () => {
+    try {
+      const response = await fetch("https://i11a508.p.ssafy.io/api/locations", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        const apiConnection = await response.json();
+        const locations = apiConnection.result;
+
+        // Map API data to rectangles
+        const newRectangles = locations.map((location, index) => {
+          // Generate random positions within the range
+          const randomX = Math.floor(Math.random() * (950 - 50 + 1)) + 50;
+          const randomY = Math.floor(Math.random() * (950 - 50 + 1)) + 50;
+
+          // Ensure that the width and height are preserved
+          return {
+            id: location.id.toString(),
+            x: randomX,
+            y: randomY,
+            width: location.width || 50, // Default width if not provided
+            height: location.height || 50, // Default height if not provided
+            fill: "blue", // Default color
+            draggable: true,
+            order: index, // 순서대로 번호 인덱싱
+            name: location.name || `Rect ${index}`,
+            type: "location", // Default type
+            rotation: 0, // 초기 회전값
+          };
+        });
+
+        // Log the final rectangles for debugging
+        console.log("API rectangles loaded successfully");
+
+        // Update state with new rectangles
+        setRectangles(newRectangles);
+      } else {
+        console.error("Error loading rectangles data");
+      }
+    } catch (error) {
+      console.error("Error loading rectangles data:", error);
+    }
+  };
+
   // 줌-인 줌-아웃 기능
   const handleZoomIn = () => {
     setScale(scale * 1.2);
@@ -1060,6 +1109,9 @@ const User = () => {
             </Button>
             <Button justIcon round color="primary" onClick={loadMapFromLocal}>
               <UnarchiveIcon className={classes.icons} />
+            </Button>
+            <Button justIcon round color="primary" onClick={APIConnectionTest}>
+              헤이!
             </Button>
           </div>
         </div>

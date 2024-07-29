@@ -36,7 +36,10 @@ import "pikaday/css/pikaday.css";
 import "handsontable/dist/handsontable.full.css";
 
 // Import custom hooks and callbacks
-import { addClassesToRows, alignHeaders } from "/components/Test/hooksCallbacks.jsx";
+import {
+  addClassesToRows,
+  alignHeaders,
+} from "/components/Test/hooksCallbacks.jsx";
 
 import Handsontable from "handsontable";
 
@@ -115,37 +118,36 @@ const ExcelImport = () => {
     importExcel(file);
   };
 
-  
   // -- json save & load part
 
   // Save the table data as a JSON file in the local public/excel directory
   const saveJsonToLocal = async () => {
     try {
-      const response = await fetch('/api/save-json', {
-        method: 'POST',
+      const response = await fetch("/api/save-json", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(tableData),
       });
 
       if (response.ok) {
-        console.log('JSON data saved successfully');
+        console.log("JSON data saved successfully");
       } else {
-        console.error('Error saving JSON data');
+        console.error("Error saving JSON data");
       }
     } catch (error) {
-      console.error('Error saving JSON data:', error);
+      console.error("Error saving JSON data:", error);
     }
   };
 
-   // Load the JSON data file from the local public/excel directory
-   const loadJsonFromLocal = async () => {
+  // Load the JSON data file from the local public/excel directory
+  const loadJsonFromLocal = async () => {
     try {
-      const response = await fetch('/api/load-json', {
-        method: 'GET',
+      const response = await fetch("/api/load-json", {
+        method: "GET",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
@@ -153,10 +155,10 @@ const ExcelImport = () => {
         const jsonData = await response.json();
         setTableData(jsonData);
       } else {
-        console.error('Error loading JSON data');
+        console.error("Error loading JSON data");
       }
     } catch (error) {
-      console.error('Error loading JSON data:', error);
+      console.error("Error loading JSON data:", error);
     }
   };
 
@@ -194,6 +196,94 @@ const ExcelImport = () => {
         setIsChoosingColumn(false);
         columnCounter = 0; // Reset the counter
       }
+    }
+  };
+
+  //API 통신 테스트
+  const APIConnectionTest = async () => {
+    try {
+      const response = await fetch("https://i11a508.p.ssafy.io/api/products", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        const apiConnection = await response.json();
+        const products = apiConnection.result;
+
+        // Extract only the required columns
+        const formattedData = products.map((product) => ({
+          name: product.productDetail.name,
+          barcode: product.productDetail.barcode,
+          quantity: product.quantity,
+        }));
+
+        // Define the columns
+        const headers = ["name", "barcode", "quantity"];
+
+        const formattedColumns = headers.map((head) => ({
+          name: head,
+          label: head,
+        }));
+
+        // Prepare the data for Handsontable
+        const data = formattedData.map((product) => [
+          product.name,
+          product.barcode,
+          product.quantity,
+        ]);
+
+        setColumns(formattedColumns);
+        setTableData(data);
+        console.log(products);
+      } else {
+        console.error("Error loading rectangles data");
+      }
+    } catch (error) {
+      console.error("Error loading rectangles data:", error);
+    }
+  };
+
+  //API POST 통신 테스트
+  const APIPOSTConnectionTest = async () => {
+    // Example data to be sent in the POST request
+    const postData = [
+      {
+        warehouseId: 12,
+        businessId: 1,
+        productDetail: {
+          barcode: 123456789,
+          name: "Test상품",
+        },
+        product: {
+          productQuantity: 10,
+        },
+      },
+    ];
+
+    try {
+      const response = await fetch(
+        "https://i11a508.p.ssafy.io/api/products/import",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(postData),
+        }
+      );
+
+      if (response.ok) {
+        console.log("Data posted successfully");
+        const result = await response.json();
+        console.log(result);
+      } else {
+        console.error("Error posting data");
+      }
+    } catch (error) {
+      console.error("Error posting data:", error);
     }
   };
 
@@ -244,20 +334,42 @@ const ExcelImport = () => {
           </Button>
         </Grid>
         <Grid item xs={6} md={4}>
-          <Button variant="contained" color="primary" onClick={startChoosingColumns}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={startChoosingColumns}
+          >
             컬럼 색상 변경
           </Button>
           <Button variant="contained" color="primary" onClick={saveJsonToLocal}>
             JSON 저장
           </Button>
-          <Button variant="contained" color="primary" onClick={loadJsonFromLocal}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={loadJsonFromLocal}
+          >
             JSON 로드
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={APIConnectionTest}
+          >
+            API 데이터 받아오기
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={APIPOSTConnectionTest}
+          >
+            Send POST Request
           </Button>
         </Grid>
       </div>
       <div>
         <HotTable
-        height={600}
+          height={600}
           ref={hotTableRef}
           data={tableData}
           colHeaders={columns.map((col) => col.label)}
