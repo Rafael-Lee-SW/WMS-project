@@ -1,26 +1,37 @@
-# 베이스 이미지로 node의 최신 LTS 버전 사용
-FROM node:20-alpine
+# Step 1: Use the official Node.js 16 image as the base image
+FROM node:16-alpine
 
-# 작업 디렉토리 설정
+# Step 2: Install necessary packages for building native modules
+RUN apk add --no-cache --virtual .gyp \
+    python3 \
+    make \
+    g++ \
+    && apk add --no-cache \
+    pkgconfig \
+    cairo-dev \
+    pango-dev \
+    giflib-dev \
+    libjpeg-turbo-dev \
+    freetype-dev \
+    && npm config set python /usr/bin/python3
+
+# Step 3: Set the working directory
 WORKDIR /app
 
-# package.json과 package-lock.json 파일을 복사
-COPY package*.json ./
+# Step 4: Copy package.json and package-lock.json into the container
+COPY package.json package-lock.json ./
 
-# 의존성 설치
-RUN npm install
+# Step 5: Install dependencies with legacy peer dependencies option
+RUN npm install --legacy-peer-deps
 
-# Next.js 빌드를 위해 프로젝트 소스를 복사
+# Step 6: Copy the rest of the application code into the container
 COPY . .
 
-# Next.js 빌드
+# Step 7: Build the application
 RUN npm run build
 
-# Next.js 애플리케이션을 실행하기 위한 설정
-ENV NODE_ENV production
-
-# Next.js 애플리케이션 시작
-CMD ["npm", "start"]
-
-# Next.js가 사용하는 포트를 노출
+# Step 8: Expose the port the app runs on
 EXPOSE 3000
+
+# Step 9: Define the command to run the application
+CMD ["npm", "start"]

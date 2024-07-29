@@ -14,14 +14,14 @@ import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/sig
 const useStyles = makeStyles(styles)
 
 export default function SignUp() {
-    const classes = useStyles();
+  const classes = useStyles();
 
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConformPassword] = useState('');
-    const [message, setMessage] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConformPassword] = useState("");
+  const [message, setMessage] = useState("");
 
-    const router = useRouter();
+  const router = useRouter();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
