@@ -17,8 +17,8 @@ function fetchBusiness(id) {
 }
 
 // 사업자 정보 수정
-function editBusiness(id) {
-    return instance.put(`/businesses/${id}`);
+function editBusiness(id, data = {}) {
+    return instance.put(`/businesses/${id}`, data);
 }
 
 // 사업체 삭제
@@ -42,8 +42,8 @@ function fetchEmployee(id) {
 }
 
 // 특정 직원 정보 수정
-function editEmployee(id) {
-    return instance.put(`/employees/${id}`);
+function editEmployee(id, data = {}) {
+    return instance.put(`/employees/${id}`, data);
 }
 
 // 특정 직원 정보 삭제
@@ -52,8 +52,8 @@ function deleteEmployee(id) {
 }
 
 // 창고 생성
-function createWarehouses() {
-    return instance.post('/warehouses');
+function createWarehouses(data = {}) {
+    return instance.post('/warehouses', data);
 }
 
 // 특정 사업체의 모든 창고 정보 조회
@@ -62,8 +62,8 @@ function fetchBusinessWarehouses(businessId) {
 }
 
 // 창고 수정
-function editBusinessWarehouses(businessId) {
-    return instance.put(`/warehouses/${businessId}`)
+function editBusinessWarehouses(businessId, data = {}) {
+    return instance.put(`/warehouses/${businessId}`, data)
 }
 
 // 창고 삭제
@@ -82,13 +82,13 @@ function fetchBusinessSubscriptions(businessId) {
 }
 
 // 구독 등록
-function createSubscription() {
-    return instance.post('/subscriptions')
+function createSubscription(data = {}) {
+    return instance.post('/subscriptions', data)
 }
 
 // 구독 수정
-function editSubscription(id) {
-    return instance.put(`/subscriptions/${id}`)
+function editSubscription(id, data = {}) {
+    return instance.put(`/subscriptions/${id}`, data)
 }
 
 // 구독 삭제
@@ -122,13 +122,13 @@ function fetchProductLocations(id) {
 }
 
 // 상품 등록
-function createProduct() {
-    return instance.post('/products')
+function createProduct(data = {}) {
+    return instance.post('/products', data)
 }
 
 // 상품 수정
-function editProduct(id) {
-    return instance.put(`/products/${id}`)
+function editProduct(id, data = {}) {
+    return instance.put(`/products/${id}`, data)
 }
 
 // 상품 삭제
@@ -137,13 +137,13 @@ function deleteProduct(id) {
 }
 
 // 상품 입고
-function importProducts() {
-    return instance.post('/products/import')
+function importProducts(data = {}) {
+    return instance.post('/products/import', data)
 }
 
 // 상품 출고
-function exportProducts() {
-    return instance.post('/products/export')
+function exportProducts(data = {}) {
+    return instance.post('/products/export', data)
 }
 
 // 전체 상품 정보 조회
@@ -162,8 +162,8 @@ function fetchBusinessProductsDetail(businessId) {
 }
 
 // 상품 정보 등록
-function createProductDetail() {
-    return instance.post('/productDetail')
+function createProductDetail(data = {}) {
+    return instance.post('/productDetail', data)
 }
 
 // 상품 정보 삭제
@@ -187,13 +187,13 @@ function fetchLocation(locationId) {
 }
 
 // 로케이션 등록
-function createLocation() {
-    return instance.post('/locations')
+function createLocation(data = {}) {
+    return instance.post('/locations', data)
 }
 
 // 로케이션 수정
-function editLocation(locationId) {
-    return instance.put(`/locations/${locationId}`)
+function editLocation(locationId, data = {}) {
+    return instance.put(`/locations/${locationId}`, data)
 }
 
 // 로케이션 삭제
@@ -232,8 +232,8 @@ function fetchBarcodeLocation(barcode) {
 }
 
 // 상품 이동
-function moveProduct() {
-    return instance.patch('/productlocations')
+function moveProduct(data = {}) {
+    return instance.patch('/productlocations', data)
 }
  
 export { 
