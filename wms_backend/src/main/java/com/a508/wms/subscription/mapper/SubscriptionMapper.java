@@ -18,6 +18,7 @@ public class SubscriptionMapper {
                    .startDate(subscriptionDto.getStartDate())
                    .endDate(subscriptionDto.getEndDate())
                    .statusEnum(subscriptionDto.getStatusEnum())
+                   .paidTypeEnum(subscriptionDto.getPaidTypeEnum())
                    .build();
     }
     /**
@@ -34,6 +35,7 @@ public class SubscriptionMapper {
                .startDate(subscription.getStartDate())
                .endDate(subscription.getEndDate())
                .statusEnum(subscription.getStatusEnum())
+               .paidTypeEnum(subscription.getPaidTypeEnum())
                .build();
     }
 }

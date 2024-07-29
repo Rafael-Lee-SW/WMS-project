@@ -21,23 +21,22 @@ public class SubscriptionController {
      * List<SubscriptionDto> (특정 사업체의 전체 구독)
      */
     @GetMapping
-    public BaseSuccessResponse<?> getSubscriptions(@RequestParam(required = false) long businessId) {
-        if (businessId == 0) {
-            return new BaseSuccessResponse<>(subscriptionService.getSubscriptions());
+    public BaseSuccessResponse<?> getSubscriptions(@RequestParam(required = false) Long businessId) {
+        if (businessId == null) {
+            return new BaseSuccessResponse<>(subscriptionService.findAll());
         } else {
-            return new BaseSuccessResponse<>(subscriptionService.getSubscriptionByBusinessId(businessId));
+            return new BaseSuccessResponse<>(subscriptionService.findsByBusinessId(businessId));
         }
     }
     /**
      * 구독 정보를 등록하는 메서드
      *
-     * @param businessId:     사업체 고유 번호
      * @param subscriptionDto : 등록할 정보
      * @return SubscriptionDto
      */
     @PostMapping
-    public BaseSuccessResponse<?>  createSubscription(String businessId, @RequestBody SubscriptionDto subscriptionDto) {
-        return new BaseSuccessResponse<>(subscriptionService.addSubscription(Long.parseLong(businessId), subscriptionDto));
+    public BaseSuccessResponse<?>  createSubscription(@RequestBody SubscriptionDto subscriptionDto) {
+        return new BaseSuccessResponse<>(subscriptionService.save(subscriptionDto));
     }
 
     /**
@@ -48,8 +47,8 @@ public class SubscriptionController {
      * @return SubscriptionDto
      */
     @PutMapping("/{id}")
-    public BaseSuccessResponse<?>  updateSubscription(@PathVariable long id, @RequestBody SubscriptionDto subscriptionDto) {
-        return new BaseSuccessResponse<>(subscriptionService.updateSubscription(id, subscriptionDto));
+    public BaseSuccessResponse<?>  updateSubscription(@PathVariable Long id, @RequestBody SubscriptionDto subscriptionDto) {
+        return new BaseSuccessResponse<>(subscriptionService.update(id, subscriptionDto));
     }
 
     /**
@@ -58,8 +57,8 @@ public class SubscriptionController {
      * @param id : 구독 고유 번호
      */
     @PatchMapping("/{id}")
-    public BaseSuccessResponse<Void> deleteSubscription(@PathVariable long id) {
-        subscriptionService.deleteSubscription(id);
+    public BaseSuccessResponse<Void> deleteSubscription(@PathVariable Long id) {
+        subscriptionService.delete(id);
         return new BaseSuccessResponse<>(null);
     }
 }
