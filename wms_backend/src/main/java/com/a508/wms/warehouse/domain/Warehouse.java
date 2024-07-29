@@ -59,7 +59,7 @@ public class Warehouse extends BaseTimeEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private FacilityTypeEnum facilityType;
+    private FacilityTypeEnum facilityTypeEnum;
 
     @Enumerated(EnumType.STRING)
     @Builder.Default

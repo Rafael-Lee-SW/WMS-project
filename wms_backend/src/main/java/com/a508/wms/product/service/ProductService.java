@@ -16,6 +16,7 @@ import com.a508.wms.product.dto.ProductResponseDto;
 import com.a508.wms.product.mapper.ProductMapper;
 import com.a508.wms.productdetail.domain.ProductDetail;
 import com.a508.wms.productdetail.mapper.ProductDetailMapper;
+import com.a508.wms.productdetail.repository.ProductDetailRepository;
 import com.a508.wms.productdetail.service.ProductDetailModuleService;
 import com.a508.wms.productlocation.domain.ProductLocation;
 import com.a508.wms.productlocation.service.ProductLocationModuleService;
@@ -41,6 +42,7 @@ public class ProductService {
     private final ProductLocationModuleService productLocationModuleService;
     private final FloorModuleService floorModuleService;
     private final BusinessModuleService businessModuleService;
+    private final ProductDetailRepository productDetailRepository;
 
     /**
      * 서비스의 모든 상품을 반환하는 기능
