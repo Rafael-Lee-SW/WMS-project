@@ -43,3 +43,28 @@ export default BusinessList;
 
 // ----------------------------------------------
 
+// 창고 수정
+
+// import { editBusinessWarehouses } from "./api";
+
+// function editWarehouse() {
+//     useEffect(() => {
+//         const getWarehouse = async () => {
+//         try {
+//             const data = {
+//                 "businessId": 1,
+//                 "size": 100,
+//                 "name": "Warehouse 1",
+//                 "priority": 1,
+//                 "status": "ACTIVE",
+//                 "facilityType": "WAREHOUSE"
+//             }
+//             editBusinessWarehouses(1, data)
+//         } catch (error) {
+//             console.log(error)
+//         }
+//     }
+//     getWarehouse();
+// }, [])};
+
+// export default editWarehouse;
