@@ -1,22 +1,18 @@
 package com.a508.wms.location.service;
 
 import com.a508.wms.floor.domain.Floor;
+import com.a508.wms.floor.dto.FloorDto;
+import com.a508.wms.floor.mapper.FloorMapper;
+import com.a508.wms.floor.service.FloorModuleService;
 import com.a508.wms.location.domain.Location;
 import com.a508.wms.location.dto.LocationDto;
 import com.a508.wms.location.mapper.LocationMapper;
-import com.a508.wms.location.repository.LocationRepository;
-import com.a508.wms.productstoragetype.domain.ProductStorageType;
-import com.a508.wms.warehouse.domain.Warehouse;
-import com.a508.wms.floor.dto.FloorDto;
-import com.a508.wms.floor.repository.FloorRepository;
-import com.a508.wms.productstoragetype.repository.ProductStorageTypeRepository;
-import com.a508.wms.warehouse.repository.WarehouseRepository;
 import com.a508.wms.util.constant.ExportTypeEnum;
 import com.a508.wms.util.constant.FacilityTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;
-import com.a508.wms.floor.mapper.FloorMapper;
+import com.a508.wms.warehouse.domain.Warehouse;
+import com.a508.wms.warehouse.service.WarehouseModuleService;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,10 +23,9 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class LocationService {
 
-    private final LocationRepository locationRepository;
-    private final WarehouseRepository warehouseRepository;
-    private final ProductStorageTypeRepository productStorageTypeRepository;
-    private final FloorRepository floorRepository;
+    private final LocationModuleService locationModuleService;
+    private final WarehouseModuleService warehouseModuleService;
+    private final FloorModuleService floorModuleService;
 
     /**
      * 모든 로케이션 조회(Admin에서 사용)
@@ -38,12 +33,11 @@ public class LocationService {
      * @return 모든 로케이션
      */
     public List<LocationDto> findAll() {
-        List<Location> locations = locationRepository.findAll();
-        List<LocationDto> locationDtos = new ArrayList<>();
-        for (Location location : locations) {
-            locationDtos.add(LocationMapper.fromLocation(location));
-        }
-        return locationDtos;
+        List<Location> locations = locationModuleService.findAll();
+
+        return locations.stream()
+            .map(LocationMapper::fromLocation)
+            .toList();
     }
 
     /**
@@ -53,11 +47,9 @@ public class LocationService {
      * @return id값과 일치하는 Location 하나, 없으면 null 리턴
      */
     public LocationDto findById(Long id) {
-        Location location = locationRepository.findById(id).orElse(null);
-        if (location != null) {
-            return LocationMapper.fromLocation(location);
-        }
-        return null;
+        Location location = locationModuleService.findById(id);
+
+        return LocationMapper.fromLocation(location);
     }
 
     /**
@@ -67,12 +59,11 @@ public class LocationService {
      * @return 입력 warehouseId를 가지고 있는 Location List
      */
     public List<LocationDto> findByWarehouseId(Long warehouseId) {
-        List<Location> locations = locationRepository.findLocationsByWarehouseId(warehouseId);
-        List<LocationDto> locationDtos = new ArrayList<>();
-        for (Location location : locations) {
-            locationDtos.add(LocationMapper.fromLocation(location));
-        }
-        return locationDtos;
+        List<Location> locations = locationModuleService.findByWarehouseId(warehouseId);
+
+        return locations.stream()
+            .map(LocationMapper::fromLocation)
+            .toList();
     }
 
     /**
@@ -82,39 +73,39 @@ public class LocationService {
      * @param locationDto : 프론트에서 넘어오는 location 정보 모든 작업이 하나의 트랜잭션에서 일어나야하므로 @Transactional 추가
      */
     @Transactional
-    public void save(LocationDto locationDto) {
+    public LocationDto save(LocationDto locationDto) {
         log.info("Saving location: {}", locationDto);
 
-        Warehouse warehouse = warehouseRepository.findById(locationDto.getWarehouseId())
-            .orElseThrow(() -> new IllegalArgumentException("Invalid warehouse ID"));
-        ProductStorageType productStorageType = productStorageTypeRepository.findById(
-                locationDto.getProductStorageTypeId())
-            .orElseThrow(() -> new IllegalArgumentException("Invalid product storage type ID"));
+        Warehouse warehouse = warehouseModuleService.findById(locationDto.getWarehouseId());
 
-        Location location = new Location(warehouse, productStorageType, locationDto.getXPosition(),
-            locationDto.getYPosition(), locationDto.getWidth(),
-            locationDto.getHeight());
-        location.setWarehouse(warehouse);
-
-        log.info("save occured");
-        locationRepository.save(location); //우선 로케이션 저장
+        Location location = Location.builder()
+            .warehouse(warehouse)
+            .productStorageTypeEnum(locationDto.getProductStorageTypeEnum())
+            .xPosition(locationDto.getXPosition())
+            .yPosition(locationDto.getYPosition())
+            .height(locationDto.getHeight())
+            .build();
 
         List<FloorDto> floorDtos = locationDto.getFloorDtos();
 
         log.info("Floor convert");
         List<Floor> floors = floorDtos.stream()
-                .map(floorDto -> {
-                    modifyExportType(floorDto, warehouse);
-                    log.info("{}", floorDto);
-                    // Floor 객체로 변환, location정보 넣어주기
-                    return FloorMapper.fromDto(floorDto).setLocation(location);
-                })
-                        .toList();
+            .map(floorDto -> {
+                modifyExportType(floorDto, warehouse);
+                log.info("{}", floorDto);
+                // Floor 객체로 변환, location정보 넣어주기
+                return FloorMapper.fromDto(floorDto).setLocation(location);
+            })
+            .toList();
 
         log.info("floors save");
-        floorRepository.saveAll(floors);    //floor 전부 저장
+        floorModuleService.saveAll(floors);    //floor 전부 저장
         location.setFloors(floors);  //location에 층 정보 넣어주기
+
+        locationModuleService.save(location);
+        return LocationMapper.fromLocation(location);
     }
+
 
     /**
      * 창고의 타입에 맞게 floor의 타입을 수정 하는 기능
@@ -137,11 +128,12 @@ public class LocationService {
      * @param locationDto: 바꿀 로케이션 정보들
      */
     public LocationDto update(Long id, LocationDto locationDto) {
-        Location location = locationRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid location ID"));
+        Location location = locationModuleService.findById(id);
         location.updateName(locationDto.getName());
         location.updatePosition(locationDto.getXPosition(), locationDto.getYPosition());
-        return LocationMapper.fromLocation(locationRepository.save(location));
+
+        Location savedLocation = locationModuleService.save(location);
+        return LocationMapper.fromLocation(savedLocation);
     }
 
     /**
@@ -151,18 +143,17 @@ public class LocationService {
      * @param id: locationId
      */
     public void delete(Long id) {
-        Location location = locationRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid location ID"));
-        location.updateStatusEnum(StatusEnum.DELETED);
+        Location location = locationModuleService.findById(id);
 
-        List<Floor> floors = floorRepository.findAllByLocationId(
+        List<Floor> floors = floorModuleService.findAllByLocationId(
             location.getId()); //location의 층 전부 조회
-        for (Floor floor : floors) {
-            floor.updateStatusEnum(StatusEnum.DELETED);
-        }   //층들 전부 DELETED상태로 변경
 
-        floorRepository.saveAll(floors); //변경사항 저장 
-        locationRepository.save(location); //변경사항 저장
+        floors.stream().forEach(
+            floor -> floor.updateStatusEnum(StatusEnum.DELETED)
+        );
+
+        floorModuleService.saveAll(floors); //변경사항 저장
+        locationModuleService.delete(location);
     }
 
 }

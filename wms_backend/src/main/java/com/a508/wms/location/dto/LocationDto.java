@@ -1,6 +1,7 @@
 package com.a508.wms.location.dto;
 
 import com.a508.wms.floor.dto.FloorDto;
+import com.a508.wms.util.constant.ProductStorageTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,15 +17,21 @@ public class LocationDto {
 
     private Long id;
     private Long warehouseId;
-    private Long productStorageTypeId;
+    @Builder.Default
+    private ProductStorageTypeEnum productStorageTypeEnum = ProductStorageTypeEnum.상온;
     private String name;
-    private int xPosition;
-    private int yPosition;
-    private int width;
-    private int height;
+    @Builder.Default
+    private int xPosition = -1;
+    @Builder.Default
+    private int yPosition = -1;
+    @Builder.Default
+    private int width = -1;
+    @Builder.Default
+    private int height = -1;
     private List<FloorDto> floorDtos;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
-    private StatusEnum statusEnum;
+    @Builder.Default
+    private StatusEnum statusEnum = StatusEnum.ACTIVE;
 
 }

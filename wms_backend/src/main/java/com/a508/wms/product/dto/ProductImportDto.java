@@ -11,6 +11,7 @@ import lombok.ToString;
 public class ProductImportDto {
 
     private Long businessId;
+    private Long warehouseId;
     private ProductDetailRequestDto productDetail;
     private ProductRequestDto product;
 }
