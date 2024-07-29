@@ -1,9 +1,9 @@
 package com.a508.wms.floor.controller;
 
-import java.util.List;
-
 import com.a508.wms.floor.dto.FloorDto;
 import com.a508.wms.floor.service.FloorService;
+import com.a508.wms.util.BaseSuccessResponse;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,18 +22,20 @@ public class FloorController {
 
     /**
      * LocationId를 통해 해당 로케이션이 보유한 층 전부 조회
+     *
      * @param locationId:로케이션 아이디
      * @return FloorDto List
      */
     @GetMapping
-    public List<FloorDto> getAllByLocationId(@RequestParam Long locationId) {
+    public BaseSuccessResponse<List<FloorDto>> getAllByLocationId(
+        @RequestParam(name = "locationid") Long locationId) {
         log.info("get all Floors by locationId: {}", locationId);
-        return floorService.getAllByLocationId(locationId);
+        return new BaseSuccessResponse<>(floorService.getAllByLocationId(locationId));
     }
 
     @GetMapping("/{id}")
-    public FloorDto getById(@PathVariable Long id) {
+    public BaseSuccessResponse<FloorDto> getById(@PathVariable Long id) {
         log.info("get Floor by id: {}", id);
-        return floorService.findById(id);
+        return new BaseSuccessResponse<>(floorService.findById(id));
     }
 }
