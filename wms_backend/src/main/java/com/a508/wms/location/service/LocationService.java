@@ -81,10 +81,14 @@ public class LocationService {
         Location location = Location.builder()
             .warehouse(warehouse)
             .productStorageTypeEnum(locationDto.getProductStorageTypeEnum())
+            .name(locationDto.getName())
             .xPosition(locationDto.getXPosition())
             .yPosition(locationDto.getYPosition())
+            .width(locationDto.getWidth())
             .height(locationDto.getHeight())
             .build();
+
+        locationModuleService.save(location);
 
         List<FloorDto> floorDtos = locationDto.getFloorDtos();
 
@@ -99,10 +103,11 @@ public class LocationService {
             .toList();
 
         log.info("floors save");
-        floorModuleService.saveAll(floors);    //floor 전부 저장
+        floorModuleService.saveAll(floors);    //floor 전부 저장\
+
+        log.info("update location?");
         location.setFloors(floors);  //location에 층 정보 넣어주기
 
-        locationModuleService.save(location);
         return LocationMapper.fromLocation(location);
     }
 
@@ -129,7 +134,11 @@ public class LocationService {
      */
     public LocationDto update(Long id, LocationDto locationDto) {
         Location location = locationModuleService.findById(id);
-        location.updateName(locationDto.getName());
+
+        if (locationDto.getName() != null) {
+            location.updateName(locationDto.getName());
+        }
+
         location.updatePosition(locationDto.getXPosition(), locationDto.getYPosition());
 
         Location savedLocation = locationModuleService.save(location);
