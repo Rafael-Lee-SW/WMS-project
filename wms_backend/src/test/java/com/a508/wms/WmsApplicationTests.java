@@ -9,5 +9,4 @@ class WmsApplicationTests {
 	@Test
 	void contextLoads() {
 	}
-
 }

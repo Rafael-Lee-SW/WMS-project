@@ -103,7 +103,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     /**
-     * 1. "Authorization" 헤더에서 Bearer 토큰 가져오기
+     * 1. "Authorization"  Bearer 토큰 가져오기
      * 2. 헤더가 비어있지 않은지 확인
      * 3. Bearer로 시작하는지 확인
      * 4. Bearer 다음의 실제 토큰 값을 추출

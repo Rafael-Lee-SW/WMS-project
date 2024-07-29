@@ -1,5 +1,6 @@
 package com.a508.wms.business.domain;
 
+import com.a508.wms.auth.dto.request.auth.SignUpRequestDto;
 import com.a508.wms.employee.domain.Employee;
 import com.a508.wms.notification.domain.Notification;
 import com.a508.wms.productdetail.domain.ProductDetail;
@@ -55,9 +56,11 @@ public class Business extends BaseTimeEntity {
     @Column(length = 50)
     private String nickname;
 
+    @Builder.Default
     @Column(nullable = false, length = 10)
     private String socialLoginType = "일반"; // 기본값은 '일반'
 
+    @Builder.Default
     @Column(nullable = false)
     private int role = 0; // 기본값은 0 (직원)
 
@@ -75,6 +78,14 @@ public class Business extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "business")
     private List<Warehouse> warehouses = new ArrayList<>();
+
+    public Business(SignUpRequestDto dto) {
+        this.email = dto.getEmail();
+        this.password = dto.getPassword();
+        this.role = 0;
+        this.statusEnum = StatusEnum.ACTIVE;
+        this.nickname = "설정해주세용";
+        }
 
     public void setStatusEnum(StatusEnum statusEnum) {
         this.statusEnum = statusEnum;

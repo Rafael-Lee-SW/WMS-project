@@ -31,7 +31,7 @@ public class SubscriptionService {
      * @return List<SubscriptionDto>
      */
     @Transactional(readOnly = true)
-    public List<SubscriptionDto> getSubscriptions() {
+    public List<SubscriptionDto> findAll() {
         List<Subscription> subscriptions = subscriptionRepository.findAll();
         log.info("subscriptions: {}",
             subscriptions.stream().map(SubscriptionMapper::fromSubscription).toList());
@@ -44,7 +44,7 @@ public class SubscriptionService {
      * @param id : 사업체 고유 번호
      * @return SubscriptionDto List
      */
-    public List<SubscriptionDto> getSubscriptionByBusinessId(long id) {
+    public List<SubscriptionDto> findsByBusinessId(long id) {
         List<Subscription> subscriptions = subscriptionRepository.findByBusinessId(id);
         return subscriptions.stream().map(SubscriptionMapper::fromSubscription).toList();
     }
@@ -52,13 +52,13 @@ public class SubscriptionService {
     /**
      * 특정 사업체의 구독 정보를 추가하는 메서드
      *
-     * @param id : 사업체 고유 번호, subscriptionDto:추가할 구독 정보
+     * @param subscriptionDto:추가할 구독 정보
      * @return SubscriptionDto
      */
     @Transactional
-    public SubscriptionDto addSubscription(long id, SubscriptionDto subscriptionDto) {
-        Business business = businessRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid business Id:" + id));
+    public SubscriptionDto save(SubscriptionDto subscriptionDto) {
+        Business business = businessRepository.findById(subscriptionDto.getBusinessId())
+            .orElseThrow(() -> new IllegalArgumentException("Invalid business Id:" + subscriptionDto.getBusinessId()));
 
         SubscriptionType subscriptionType = subscriptionTypeRepository.findById(
                 subscriptionDto.getSubscriptionTypeId())
@@ -80,7 +80,7 @@ public class SubscriptionService {
      * @return SubscriptionDto
      */
     @Transactional
-    public SubscriptionDto updateSubscription(long id, SubscriptionDto subscriptionDto) {
+    public SubscriptionDto update(Long id, SubscriptionDto subscriptionDto) {
         Business business = businessRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Invalid business Id:" + id));
 
@@ -88,12 +88,21 @@ public class SubscriptionService {
                 subscriptionDto.getSubscriptionTypeId())
             .orElseThrow(() -> new IllegalArgumentException("Invalid subscription type Id:"
                 + subscriptionDto.getSubscriptionTypeId()));
-
-        Subscription subscription = SubscriptionMapper.fromDto(subscriptionDto);
-        subscription.setBusiness(business);
-        subscription.setSubscriptionType(subscriptionType);
-
-        return SubscriptionMapper.fromSubscription(subscriptionRepository.save(subscription));
+        Subscription subscription = subscriptionRepository.findById(id)
+                        .orElseThrow(() -> new IllegalArgumentException("Invalid Id:" + id));
+        Subscription updateSubscription = Subscription.builder()
+                .business(business)
+                .subscriptionType(subscriptionType)
+                .startDate((subscriptionDto.getStartDate() == null) ? subscription.getStartDate()
+                        : subscriptionDto.getStartDate())
+                .endDate((subscriptionDto.getEndDate() == null) ? subscription.getEndDate()
+                        : subscriptionDto.getEndDate())
+                .paidTypeEnum((subscriptionDto.getPaidTypeEnum() == null) ? subscription.getPaidTypeEnum()
+                        : subscriptionDto.getPaidTypeEnum())
+                .statusEnum((subscriptionDto.getStatusEnum() == null) ? subscription.getStatusEnum()
+                        : subscriptionDto.getStatusEnum())
+                .build();
+        return SubscriptionMapper.fromSubscription(subscriptionRepository.save(updateSubscription));
     }
 
     /**
@@ -102,7 +111,7 @@ public class SubscriptionService {
      * @param id : 구독 고유 번호
      */
     @Transactional
-    public void deleteSubscription(long id) {
+    public void delete(Long id) {
         Subscription subscription = subscriptionRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Invalid subscription Id:" + id));
         subscription.setStatusEnum(StatusEnum.DELETED);

@@ -1,9 +1,13 @@
 package com.a508.wms.auth.controller;
 
+import com.a508.wms.auth.dto.request.auth.CheckCertificationRequestDto;
 import com.a508.wms.auth.dto.request.auth.EmailCertificationRequestDto;
 import com.a508.wms.auth.dto.request.auth.IdCheckRequestDto;
+import com.a508.wms.auth.dto.request.auth.SignUpRequestDto;
+import com.a508.wms.auth.dto.response.auth.CheckCertificationResponseDto;
 import com.a508.wms.auth.dto.response.auth.EmailCertificationResponseDto;
 import com.a508.wms.auth.dto.response.auth.IdCheckResponseDto;
+import com.a508.wms.auth.dto.response.auth.SignUpResponseDto;
 import com.a508.wms.auth.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +40,7 @@ public class AuthController {
     }
 
     /**
-     * email check하는 메서드
+     * email 발송하는 메서드
      * @return
      */
     @PostMapping("/email-certification")
@@ -45,6 +49,27 @@ public class AuthController {
     ){
         ResponseEntity<? super EmailCertificationResponseDto> response =
             authService.emailCertification(requestBody);
+        return response;
+    }
+
+    /**
+     * email 검증하는 메서드
+     * @param requestBody
+     * @return
+     */
+    @PostMapping("/check-certification")
+    public ResponseEntity<? super CheckCertificationResponseDto> checkCertification(
+        @RequestBody @Valid CheckCertificationRequestDto requestBody
+    ){
+        ResponseEntity<? super CheckCertificationResponseDto> response =authService.checkCertification(requestBody);
+        return response;
+    }
+
+    @PostMapping("/sign-up")
+    public ResponseEntity<? super SignUpResponseDto> signUp(
+        @RequestBody @Valid SignUpRequestDto requestBody
+    ){
+        ResponseEntity<? super SignUpResponseDto> response =authService.signUp(requestBody);
         return response;
     }
 
