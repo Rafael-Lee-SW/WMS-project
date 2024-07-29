@@ -24,9 +24,6 @@ public class ProductDetailMapper {
             .unit(productDetail.getUnit())
             .originalPrice(productDetail.getOriginalPrice())
             .sellingPrice(productDetail.getSellingPrice())
-            .productResponseDtos(productDetail.getProducts().stream()
-                .map(ProductMapper::fromProduct)
-                .toList())
             .build();
     }
 
