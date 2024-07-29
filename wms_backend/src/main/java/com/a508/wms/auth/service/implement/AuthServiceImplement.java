@@ -169,7 +169,7 @@ public class AuthServiceImplement implements AuthService {
 
             String email = dto.getEmail();
             String certificationNumber = dto.getCertificationNumber();
-            Certification certificationEntity = certificationRepository.findByUserEmail(userEmail);
+            Certification certificationEntity = certificationRepository.findByEmail(userEmail);
             boolean isMatched = certificationEntity.getEmail().equals(email) &&
                 certificationEntity.getCertificationNumber().equals(certificationNumber);
             if(!isMatched)return SignUpResponseDto.certificateFail();

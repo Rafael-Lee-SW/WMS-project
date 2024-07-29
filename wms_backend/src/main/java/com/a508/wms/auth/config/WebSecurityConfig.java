@@ -54,11 +54,11 @@ public class WebSecurityConfig {
             // 요청 권한 설정
             .authorizeHttpRequests(request -> request
                 // "/" 및 "/api/v1/auth/**" 경로를 허가
-                .requestMatchers("/", "/api/v1/auth/**").permitAll()
+                .requestMatchers("/", "/**").permitAll()
                 // "/api/v1/admin/**" 경로에 "ADMIN" 역할 필요
-                .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                .requestMatchers("/**").hasRole("ADMIN")
                 // "/api/v1/user/**" 경로에 "USER" 역할 필요
-                .requestMatchers("/api/v1/user/**").hasRole("USER")
+                .requestMatchers("/**").hasRole("USER")
                 // 나머지 모든 요청은 인증 필요
                 .anyRequest().authenticated()
             )

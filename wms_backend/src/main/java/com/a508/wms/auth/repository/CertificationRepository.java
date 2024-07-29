@@ -10,7 +10,7 @@ public interface CertificationRepository extends JpaRepository<Certification, St
 
     Certification findByUserId(String userId);
 
-    Certification findByUserEmail(String userEmail);
+    Certification findByEmail(String email);
 
     @Transactional
     Certification deleteByEmail(String email);
