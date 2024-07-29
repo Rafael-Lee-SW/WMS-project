@@ -9,52 +9,39 @@ import CardHeader from "/components/Card/CardHeader.js";
 import CardBody from "/components/Card/CardBody.js";
 import Button from "/components/CustomButtons/Button.js";
 
-const useStyles = makeStyles(styles)
-// const useStyles = makeStyles((theme) => ({
-//     container: {
-//         display: 'flex',
-//         flexDirection: 'column',
-//         alignItems: 'center',
-//         justifyContent: 'center',
-//         height: '100vh',
-//         textAlign: 'center',
-//     },
-//     input_wrapper: {
-//         marginBottom: '16px',
-//     }
-    
-// }))
+import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/signupStyle.js";
 
-// 회원가입 폼
+const useStyles = makeStyles(styles);
+
 export default function SignUp() {
-    const classes = useStyles();
+  const classes = useStyles();
 
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConformPassword] = useState('');
-    const [message, setMessage] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConformPassword] = useState("");
+  const [message, setMessage] = useState("");
 
-    const router = useRouter();
+  const router = useRouter();
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (password !== confirmPassword) {
-            setMessage('비밀번호가 다릅니다.');
-            return;
-        }
-        try {
-            const response = await axios.post('', { email, password});
-            setMessage('회원가입이 완료되었습니다.');
-            router.push('/login');
-        } catch (error) {
-            setMessage('회원가입이 처리되지 않았습니다.' + error.response.data);
-        }
-    };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (password !== confirmPassword) {
+      setMessage("비밀번호가 다릅니다.");
+      return;
+    }
+    try {
+      const response = await axios.post("", { email, password });
+      setMessage("회원가입이 완료되었습니다.");
+      router.push("/login");
+    } catch (error) {
+      setMessage("회원가입이 처리되지 않았습니다." + error.response.data);
+    }
+  };
 
-    return (
+  return (
     <div className={classes.section} onSubmit={handleSubmit}>
-    <h2 className={classes.h2}>환영합니다!</h2>
-    <h3 className={classes.p}>회원가입 후 ADN의 서비스를 이용해보세요.</h3>
+      <h2 className={classes.h2}>환영합니다!</h2>
+      <h3 className={classes.p}>회원가입 후 ADN의 서비스를 이용해보세요.</h3>
       <div className={classes.container}>
         <GridContainer justify="center">
           <GridItem xs={12} sm={6} md={4}>
@@ -64,39 +51,33 @@ export default function SignUp() {
                   <h4>회원가입</h4>
                 </CardHeader>
                 <CardBody className={classes.cardBody}>
-                      <Input
-                        fullWidth
-                        className={classes.input}
-                        type="text"
-                        placeholder='아이디'
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                      >
-                      </Input>
-                      <Input
-                        fullWidth
-                        className={classes.input}
-                        type="password"
-                        placeholder='비밀번호'
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                      >
-                      </Input>
-                      <Input
-                        fullWidth
-                        className={classes.input}
-                        type="password"
-                        placeholder='비밀번호확인'
-                        value={confirmPassword}
-                        onChange={(e) => setConformPassword(e.target.value)}
-                      >
-                      </Input>
-                      <Button
-                        fullWidth
-                        type="submit"
-                      >
-                        회원가입
-                      </Button>
+                  <Input
+                    fullWidth
+                    className={classes.input}
+                    type="text"
+                    placeholder="아이디"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  ></Input>
+                  <Input
+                    fullWidth
+                    className={classes.input}
+                    type="password"
+                    placeholder="비밀번호"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  ></Input>
+                  <Input
+                    fullWidth
+                    className={classes.input}
+                    type="password"
+                    placeholder="비밀번호확인"
+                    value={confirmPassword}
+                    onChange={(e) => setConformPassword(e.target.value)}
+                  ></Input>
+                  <Button fullWidth type="submit">
+                    회원가입
+                  </Button>
                 </CardBody>
               </form>
             </Card>
@@ -104,27 +85,5 @@ export default function SignUp() {
         </GridContainer>
       </div>
     </div>
-        // <Container onSubmit={handleSubmit} className={classes.container}>
-        //     <div>
-        //         <div>
-        //             <h2>환영합니다!</h2>
-        //             <h3>회원가입 후 ADN의 서비스를 이용해보세요.</h3>
-        //         </div>
-        //         <div className={classes.input_wrapper}>
-        //             <h3>이메일</h3>
-        //             <input placeholder="abcd@ssafy.com" type="text" value={email} onChange={(e) => setEmail(e.target.value)} required/>
-        //         </div>
-        //         <div className={classes.input_wrapper}>
-        //             <h3>비밀번호</h3>
-        //             <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required/>
-        //         </div>
-        //         <div className={classes.input_wrapper}>
-        //             <h3>비밀번호 확인</h3>
-        //             <input type="password" value={confirmPassword} onChange={(e) => setConformPassword(e.target.value)} required/>
-        //         </div>
-        //         <button type="submit">회원가입</button>
-        //     </div>
-        //     { message && <p>{message}</p>}
-        // </Container>
-    )
+  );
 }

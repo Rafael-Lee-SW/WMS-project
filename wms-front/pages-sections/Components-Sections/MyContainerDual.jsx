@@ -44,7 +44,7 @@ import "pikaday/css/pikaday.css";
 import "handsontable/dist/handsontable.full.css";
 
 // Import custom hooks and callbacks
-import { addClassesToRows, alignHeaders } from "/pages/test/hooksCallbacks.jsx";
+import { addClassesToRows, alignHeaders } from "/components/Test/hooksCallbacks.jsx";
 
 import Handsontable from "handsontable";
 
