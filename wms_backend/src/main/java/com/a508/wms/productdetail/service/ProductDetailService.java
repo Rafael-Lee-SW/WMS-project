@@ -34,7 +34,12 @@ public class ProductDetailService {
         List<ProductDetail> result = productDetailModuleService.findAll();
 
         return result.stream()
-            .map(ProductDetailMapper::fromProductDetail)
+            .map(productDetail -> {
+                ProductDetailResponseDto productDetailResponseDto = ProductDetailMapper.fromProductDetail(
+                    productDetail);
+                productDetailResponseDto.setBusinessId(productDetail.getBusiness().getId());
+                return productDetailResponseDto;
+            })
             .toList();
     }
 
@@ -50,7 +55,12 @@ public class ProductDetailService {
         List<ProductDetail> result = productDetailModuleService.findByBusinessId(businessId);
 
         return result.stream()
-            .map(ProductDetailMapper::fromProductDetail)
+            .map(productDetail -> {
+                ProductDetailResponseDto productDetailResponseDto = ProductDetailMapper.fromProductDetail(
+                    productDetail);
+                productDetailResponseDto.setBusinessId(businessId);
+                return productDetailResponseDto;
+            })
             .toList();
     }
 

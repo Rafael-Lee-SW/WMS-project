@@ -4,7 +4,6 @@ import com.a508.wms.productdetail.dto.ProductDetailRequestDto;
 import com.a508.wms.productdetail.dto.ProductDetailResponseDto;
 import com.a508.wms.productdetail.service.ProductDetailService;
 import com.a508.wms.util.BaseSuccessResponse;
-
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
-@RequestMapping("/productDetail")
+@RequestMapping("/productDetails")
 @RequiredArgsConstructor
 public class ProductDetailController {
 
