@@ -3,45 +3,9 @@ import GridContainer from "/components/Grid/GridContainer.js";
 import { makeStyles } from '@material-ui/core/styles';
 import Divider from '@material-ui/core/Divider';
 import { Button } from '@material-ui/core';
+import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/detailStyle.js";
 
-const useStyles = makeStyles((theme) => ({
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100vh',
-    textAlign: 'center', // 텍스트 중앙 정렬
-  },
-  header: {
-    marginBottom: theme.spacing(2),
-  },
-  subheader: {
-    marginBottom: theme.spacing(2),
-  },
-  divider: {
-    width: '60%',
-    marginBottom: theme.spacing(4),
-    marginTop: theme.spacing(3),
-  },
-  button: {
-    margin: theme.spacing(1),
-    width: '300px',
-    height: '50px',
-    color: '#000',
-    borderColor: '#000',
-    backgroundColor: '#fff',
-  },
-  div: {
-    padding: "20px"
-  },
-  box: {
-    padding: "10px",
-    width: "100px",
-    height: "100px",
-  },
-}));
-
+const useStyles = makeStyles(styles)
 
 // button 의 파라미터로 멤버십 종류를 받아서 각각 다른 내용으로 랜더링
 const MembershipDetail = () => {

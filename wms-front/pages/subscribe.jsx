@@ -1,41 +1,11 @@
 import React from 'react';
 import Button from "@material-ui/core/Button";
 import GridContainer from "/components/Grid/GridContainer.js";
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles, styled } from '@material-ui/core/styles';
 import Divider from '@material-ui/core/Divider';
+import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/subStyle.js";
 
-const useStyles = makeStyles((theme) => ({
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100vh',
-    textAlign: 'center', // 텍스트 중앙 정렬
-    backgroundImage: "url('/img/subscribe.jpg')",
-    backgroundColor: "rgba(255, 255, 255, 0.8)",
-    backgroundBlendMode: "overlay",
-  },
-  header: {
-    marginBottom: theme.spacing(2),
-  },
-  subheader: {
-    marginBottom: theme.spacing(2),
-  },
-  divider: {
-    width: '60%',
-    marginBottom: theme.spacing(4),
-    marginTop: theme.spacing(3),
-  },
-  button: {
-    margin: theme.spacing(1),
-    width: '300px',
-    height: '50px',
-    color: '#000',
-    borderColor: '#000',
-    backgroundColor: '#fff',
-  },
-}));
+const useStyles = makeStyles(styles)
 
 // 멤버십 선택 페이지
 // button 의 파라미터로 멤버십 정보 전달
