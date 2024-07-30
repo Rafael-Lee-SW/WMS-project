@@ -16,6 +16,7 @@ import styles from "/styles/jss/nextjs-material-kit/pages/landingPageSections/pr
 const useStyles = makeStyles(styles);
 
 export default function ProductSection() {
+  console.log("components/Mypage/요소들은 정상입니다.")
   const classes = useStyles();
   return (
     <div className={classes.section}>
