@@ -1,11 +1,9 @@
 package com.a508.wms.warehouse.controller;
 
 import com.a508.wms.util.BaseSuccessResponse;
-
-import java.util.List;
-
 import com.a508.wms.warehouse.dto.WarehouseDto;
 import com.a508.wms.warehouse.service.WarehouseService;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -68,7 +66,7 @@ public class WarehouseController {
         @RequestBody WarehouseDto warehouseDto) {
         log.info("Updating warehouse with ID: {}", warehouseId);
         WarehouseDto updatedWarehouse = warehouseService.updateWarehouse(
-            warehouseDto.getBusinessId(), warehouseId, warehouseDto);
+            warehouseDto.getBusinessId(), warehouseDto);
         return new BaseSuccessResponse<>(updatedWarehouse);
     }
 

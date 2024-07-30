@@ -5,11 +5,18 @@ import com.a508.wms.business.service.BusinessModuleService;
 import com.a508.wms.floor.domain.Floor;
 import com.a508.wms.floor.service.FloorModuleService;
 import com.a508.wms.location.domain.Location;
+import com.a508.wms.location.dto.LocationDto;
+import com.a508.wms.location.mapper.LocationMapper;
 import com.a508.wms.location.service.LocationModuleService;
 import com.a508.wms.util.constant.ProductStorageTypeEnum;
+import com.a508.wms.warehouse.domain.Wall;
 import com.a508.wms.warehouse.domain.Warehouse;
+import com.a508.wms.warehouse.dto.WallDto;
 import com.a508.wms.warehouse.dto.WarehouseDto;
+import com.a508.wms.warehouse.mapper.WallMapper;
 import com.a508.wms.warehouse.mapper.WarehouseMapper;
+import com.a508.wms.warehouse.repository.WallRepository;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +32,9 @@ public class WarehouseService {
     private final BusinessModuleService businessModuleService;
     private final LocationModuleService locationModuleService;
     private final FloorModuleService floorModuleService;
+    private final WallRepository wallRepository;
+    private final WallModuleService wallModuleService;
+    private final WallMapper wallMapper;
 
     /*
     최초 창고를 생성하는 메서드
@@ -78,15 +88,33 @@ public class WarehouseService {
     */
     public WarehouseDto findByWarehouseId(Long id) {
         Warehouse warehouse = warehouseModuleService.findByWarehouseId(id);
-        return WarehouseMapper.fromWarehouse(warehouse);
+
+        //location 넣어주기
+        List<Location> locations = locationModuleService.findByWarehouseId(id);
+        warehouse.setLocations(locations);
+        WarehouseDto warehouseDto = WarehouseMapper.fromWarehouse(warehouse);
+        List<LocationDto> locationDtos = new ArrayList<>();
+        for (Location location : locations) {
+            locationDtos.add(LocationMapper.fromLocation(location));
+        }
+        warehouseDto.setLocations(locationDtos);
+
+        //wall 넣어주기
+        List<Wall> walls = wallModuleService.findByWarehouseId(id);
+        warehouse.setWalls(walls);
+        List<WallDto> wallDtos = new ArrayList<>();
+        for (Wall wall : walls) {
+            wallDtos.add(WallMapper.fromWall(wall));
+        }
+        warehouseDto.setWalls(wallDtos);
+        return warehouseDto;
     }
 
     /*
     창고 정보를 부분적으로 업데이트하는 메서드 (businessId 제거 필요)
      */
     @Transactional
-    public WarehouseDto updateWarehouse(Long businessId, Long warehouseId,
-        WarehouseDto warehouseDto) {
+    public WarehouseDto updateWarehouse(Long warehouseId, WarehouseDto warehouseDto) {
         Warehouse warehouse = warehouseModuleService.findById(warehouseId);
 
         if (warehouseDto.getSize() != 0) {
@@ -104,6 +132,14 @@ public class WarehouseService {
         }
         if (warehouseDto.getFacilityTypeEnum() != null) {
             warehouse.setFacilityTypeEnum(warehouseDto.getFacilityTypeEnum());
+        }
+        if (warehouseDto.getWalls() != null) {
+            List<Wall> walls = new ArrayList<>();
+            for (WallDto wall : warehouseDto.getWalls()) {
+                Wall saveWall = wallRepository.save(WallMapper.fromDto(wall));
+                walls.add(saveWall);
+            }
+            warehouse.setWalls(walls);
         }
 
         Warehouse savedWarehouse = warehouseModuleService.save(warehouse);

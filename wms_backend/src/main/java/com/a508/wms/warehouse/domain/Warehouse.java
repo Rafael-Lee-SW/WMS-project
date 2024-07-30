@@ -16,9 +16,13 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
 import java.util.List;
-
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.SQLRestriction;
 
 @Entity
@@ -40,7 +44,10 @@ public class Warehouse extends BaseTimeEntity {
     private Business business;
 
     @OneToMany(mappedBy = "warehouse")
-    private List<Location> locations;
+    private List<Location> locations = new ArrayList<>();
+
+    @OneToMany(mappedBy = "warehouse")
+    private List<Wall> walls = new ArrayList<>();
 
     @Column(nullable = false)
     private int size;
@@ -64,6 +71,10 @@ public class Warehouse extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private StatusEnum statusEnum = StatusEnum.ACTIVE;
+
+    public void updateStatus(StatusEnum statusEnum) {
+        this.statusEnum = statusEnum;
+    }
 
     // 연관관계 편의를 위한 메서드
     public void setBusiness(Business business) {
