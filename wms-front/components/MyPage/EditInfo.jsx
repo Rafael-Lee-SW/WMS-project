@@ -1,54 +1,15 @@
 import { Button, Input, makeStyles } from "@material-ui/core";
-import axios from "axios";
 import { useEffect, useState } from "react"
+import { editBusiness } from "../../pages/api";
+import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/editInfoStyle.js";
 
-const useStyles = makeStyles((theme) => ({
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    height: '100vh',
-    textAlign: 'center', 
-    padding: "10px"
-  },
-  div: {
-    padding: "10px"
-  },
-  button: {
-    margin: "10px",
-    backgroundColor: "lightgray",
-    height: "30px"
-  }
-}))
+const useStyles = makeStyles(styles)
 
 // 개인정보수정
-const EditInfo = () => {
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [userInfo, setUserInfo] = useState({
-        email: '',
-        password: '',
-    });
+export default function EditInfo({id, name, email, nickname}) {
     const classes = useStyles();
-
-
-    // 기존 정보 받아오기
-
-    // useEffect(() => {
-    //     axios.get('').then(response => {
-    //         const { email, password } = response.data;
-    //         setUserInfo({ email, password });
-    //         setLoading(false);
-    //     })
-    //     .catch(error => {
-    //         setError(error);
-    //         setLoading(false);
-    //     });
-    // }, []);
-
-    // if (loading) return <div>Loading</div>;
-    // if (error) return <div>Error: {error.message}</div>;
-
+    const [userInfo, setUserInfo] = useState({ name, email, nickname });
+    
     const handleChange = (e) => {
         const { name, value } = e.target;
         setUserInfo((prevInfo) => ({
@@ -60,12 +21,21 @@ const EditInfo = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        axios.post('', userInfo).then(response => {
-            console.log('성공')
-        }).catch(error => {
-            console.log(error)
-        });
-    };
+        useEffect(() => {
+          const changeBusiness = async () => {
+            try {
+              const data = {
+                "name" : userInfo.name,
+                "email" : userInfo.email,
+                "nickname" : userInfo.nickname
+              }
+              editBusiness(id, data)
+            } catch (error) {
+              console.log(error)
+            }
+          }
+          changeBusiness();
+      }, [])};
 
    return (
     <div className={classes.container}>
@@ -77,7 +47,6 @@ const EditInfo = () => {
             name="name"
             value={userInfo.name}
             onChange={handleChange}
-            placeholder="기존 이름"
           />
         </div>
         <div className={classes.div}>
@@ -86,16 +55,14 @@ const EditInfo = () => {
             name="email"
             value={userInfo.email}
             onChange={handleChange}
-            placeholder="기존 이메일"
           />
         </div>
         <div className={classes.div}>
           <Input
             type="text"
-            name="phone"
-            value={userInfo.phone}
+            name="nickname"
+            value={userInfo.nickname}
             onChange={handleChange}
-            placeholder="기존 연락처"
           />
         </div>
         <Button 
@@ -106,5 +73,3 @@ const EditInfo = () => {
     </div>
   );
 };
-
-export default EditInfo;

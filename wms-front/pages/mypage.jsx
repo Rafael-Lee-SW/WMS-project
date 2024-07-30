@@ -1,61 +1,69 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
+import { fetchBusiness } from './api';
 import EditInfo from '../components/MyPage/EditInfo';
-import RegisterBusiness from '../components/MyPage/ManageBusiness';
+import ManageBusiness from '../components/MyPage/ManageBusiness';
 import ManageEmployees from '../components/MyPage/ManageEmployees';
 import Info from '../components/MyPage/Info';
 import Alarm from '../components/MyPage/Alarm';
+import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/mypageStyle.js";
 
-const useStyles = makeStyles((theme) => ({
-  container: {
-    display: 'flex',
-    height: '100vh',
-  },
-  leftPanel: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    paddingLeft: theme.spacing(2),
-    flex: '2', // 왼쪽 패널의 비율을 2로 설정합니다.
-    backgroundColor: '#f0f0f0', 
-  },
-  rightPanel: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    paddingTop: '20px',
-    flex: '8', // 오른쪽 패널의 비율을 8로 설정합니다.
-    backgroundColor: '#ffffff',
-    textAlign: 'center'
-  },
-}));
+const useStyles = makeStyles(styles)
 
 // 마이페이지
 const MyPage = () => {
   const classes = useStyles();
   const [selectedComponent, setSelectedComponent] = useState('');
 
-  // axios 로 회원정보 받아오는 코드 추가
-  // 이메일, 비밀번호, 사업체명, 사업자번호 받아오기
+  const [id, setId] = useState();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [businessNumber, setBusinessNumber] = useState('');
+  const [notifications, setNotifications] = useState([]);
+  const [employees, setEmployees] = useState([]);
+  const [nickname, setNickname] = useState('');
+
+  useEffect(() => {
+    const getBusinessInfo = async () => {
+      try {
+        // 추후 아이디 받아와서 아래 1자리에 넣어야함
+        const response = await fetchBusiness(1);
+        const { id, name, email, businessNumber, notificationDtoList, employeeDtoList, nickname } = response.data.result;
+        
+        setId(id);
+        setName(name);
+        setEmail(email);
+        setBusinessNumber(businessNumber);
+        setNotifications(notificationDtoList);
+        setEmployees(employeeDtoList);
+        setNickname(nickname);
+        
+      } catch (error) {
+        console.log(error)
+      }
+    }
+    getBusinessInfo();
+}, [])
 
   // 클릭 이벤트를 통해서 랜더링할 컴포넌트 지정
+  // 본 페이지에서 필요한 모든 정보를 받아서 각 컴포넌트로 props 로 전달
   const renderComponent = () => {
     switch (selectedComponent) {
       case 'alarm':
-        return <Alarm />;
+        return <Alarm notifications={notifications}/>;
       case 'edit':
-        return <EditInfo/>;
+        return <EditInfo id={id} name={name} email={email} nickname={nickname}/>;
       case 'license':
-        return <RegisterBusiness/>;
+        return <ManageBusiness id={id} name={name} businessNumber={businessNumber}/>;
       case 'employees':
-        return <ManageEmployees/>;
+        return <ManageEmployees employees={employees}/>;
       case 'info':
-        return <Info/>
+        return <Info name={name} email={email} businessNumber={businessNumber}/>
       default:
         return (
           <div>
-            <h2>고객이름님, 반갑습니다.</h2>
-            <Info/>
+            <h2>{name}님, 반갑습니다.</h2>
+            <Info name={name} email={email} businessNumber={businessNumber} />
           </div>
         )
     }
