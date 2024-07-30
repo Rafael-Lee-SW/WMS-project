@@ -68,7 +68,7 @@ public class WarehouseController {
         @RequestBody WarehouseDto warehouseDto) {
         log.info("Updating warehouse with ID: {}", warehouseId);
         WarehouseDto updatedWarehouse = warehouseService.updateWarehouse(
-            warehouseDto.getBusinessId(), warehouseDto);
+            warehouseId, warehouseDto);
         return new BaseSuccessResponse<>(updatedWarehouse);
     }
 
