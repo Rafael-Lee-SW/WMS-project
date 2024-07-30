@@ -36,13 +36,13 @@ export default function SignUp() {
     return (
         <div className="sign-up-wrapper">
             <div className="sign-up-container">
-                <h1>임대주택 가격 서비스</h1>
+                <h1>Web 재고 관리 시스템</h1>
                 <h2>SNS 회원가입</h2>
                 <div className="sns-sign-in-buttons">
-                    <button className="sns-button">
+                    <button className="sns-button" onClick={() => signIn('kakao')}>
                         <img src="/img/kakao-sign-in.png" alt="Kakao Sign In" className="sns-sign-in-image"/>
                     </button>
-                    <button className="sns-button">
+                    <button className="sns-button" onClick={() => signIn('naver')}>
                         <img src="/img/naver-sign-in.png" alt="Naver Sign In" className="sns-sign-in-image" />
                     </button>
                 </div>
