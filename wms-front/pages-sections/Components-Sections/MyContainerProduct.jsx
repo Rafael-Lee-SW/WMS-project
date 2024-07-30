@@ -1,13 +1,18 @@
 "use client";
 
 // Import React and required hooks
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 
 // Import MUI components
 import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
 import Fab from "@mui/material/Fab";
 import Button from "@mui/material/Button";
+// 모달 페이지를 위한 Import
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
 
 // Import SheetJS xlsx for Excel operations
 import * as XLSX from "xlsx";
@@ -57,15 +62,33 @@ registerPlugin(HiddenRows);
 
 // Starting point of Excel control
 const ExcelImport = () => {
+  //API를 불러온 데이터 셋
   const [tableData, setTableData] = useState([]);
+  //모달을 위한 데이터 셋
+  const [ModalTableData, setModalTableData] = useState([]);
   const [columns, setColumns] = useState([]);
   const [isChoosingColumn, setIsChoosingColumn] = useState(false);
   const hotTableRef = useRef(null); // Reference to the Handsontable instance
   let columnCounter = 0;
 
+  const [openModal, setOpenModal] = useState(false); // State for modal open/close
+  const [columnSelectionStep, setColumnSelectionStep] = useState(0); // State for column selection steps
+  const [selectedColumns, setSelectedColumns] = useState({
+    barcode: null,
+    name: null,
+    quantity: null,
+    expiry: null,
+  });
+
   // Convert data to array of arrays and set table data
   const convertToArrayOfArrays = (data) => {
     setTableData(data);
+    return data;
+  };
+
+  // Convert data to array of arrays and set table data
+  const convertToArrayOfArraysModal = (data) => {
+    setModalTableData(data);
     return data;
   };
 
@@ -92,7 +115,8 @@ const ExcelImport = () => {
       }));
       setColumns(formattedColumns);
       fileData.splice(0, 1);
-      convertToArrayOfArrays(fileData);
+      convertToArrayOfArraysModal(fileData);
+      setOpenModal(true); // Open the modal after importing the file
     };
     reader.readAsArrayBuffer(file);
   };
@@ -165,11 +189,11 @@ const ExcelImport = () => {
   // -- json save & load part
 
   // Apply color to the specified column
-  const applyColumnColor = (columnIndex) => {
+  const applyColumnColor = (columnIndex, color) => {
     const hotInstance = hotTableRef.current.hotInstance;
 
     hotInstance.batch(() => {
-      tableData.forEach((row, rowIndex) => {
+      ModalTableData.forEach((row, rowIndex) => {
         hotInstance.setCellMeta(
           rowIndex,
           columnIndex,
@@ -180,7 +204,7 @@ const ExcelImport = () => {
     });
 
     const styleElement = document.createElement("style");
-    styleElement.textContent = `.background-color-${columnIndex} { background-color: blue !important; }`;
+    styleElement.textContent = `.background-color-${columnIndex} { background-color: ${color} !important; }`;
     document.head.append(styleElement);
 
     hotInstance.render();
@@ -188,14 +212,65 @@ const ExcelImport = () => {
 
   // Handle column click event to apply color
   const handleColumnClick = (event, coords) => {
-    if (isChoosingColumn) {
-      applyColumnColor(coords.col);
-      columnCounter++;
+    if (columnSelectionStep >= 0) {
+      const colorMap = ["blue", "green", "red", "orange"];
+      const columnKeys = ["barcode", "name", "quantity", "expiry"];
+      applyColumnColor(coords.col, colorMap[columnSelectionStep]);
+      setSelectedColumns((prevSelected) => ({
+        ...prevSelected,
+        [columnKeys[columnSelectionStep]]: coords.col,
+      }));
+      setColumnSelectionStep(columnSelectionStep + 1);
+    }
+  };
 
-      if (columnCounter >= 4) {
-        setIsChoosingColumn(false);
-        columnCounter = 0; // Reset the counter
+  // 최종적으로 선택된 칼럼에 해당하는 데이터를 보낸다.
+  const finalizeSelection = () => {
+    console.log("Finalized columns:", selectedColumns);
+    // Gather the selected data based on the user's column selections.
+    const postData = ModalTableData.map((row) => ({
+      barcode: row[selectedColumns.barcode],
+      name: row[selectedColumns.name],
+      quantity: row[selectedColumns.quantity],
+      expiry: selectedColumns.expiry !== null ? row[selectedColumns.expiry] : null,
+    }));
+
+    // Send the gathered data to the API
+    APIPOSTConnectionTest(postData);
+
+    setOpenModal(false);
+    setColumnSelectionStep(0);
+    setSelectedColumns({
+      barcode: null,
+      name: null,
+      quantity: null,
+      expiry: null,
+    });
+  };
+
+  // API POST 통신 테스트
+  const APIPOSTConnectionTest = async (postData) => {
+    try {
+      const response = await fetch(
+        "https://i11a508.p.ssafy.io/api/products/import",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(postData),
+        }
+      );
+
+      if (response.ok) {
+        console.log("Data posted successfully");
+        const result = await response.json();
+        console.log(result);
+      } else {
+        console.error("Error posting data");
       }
+    } catch (error) {
+      console.error("Error posting data:", error);
     }
   };
 
@@ -246,57 +321,24 @@ const ExcelImport = () => {
     }
   };
 
-  //API POST 통신 테스트
-  const APIPOSTConnectionTest = async () => {
-    // Example data to be sent in the POST request
-    const postData = [
-      {
-        warehouseId: 12,
-        businessId: 1,
-        productDetail: {
-          barcode: 123456789,
-          name: "Test상품",
-        },
-        product: {
-          productQuantity: 10,
-        },
-      },
-    ];
-
-    try {
-      const response = await fetch(
-        "https://i11a508.p.ssafy.io/api/products/import",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(postData),
-        }
-      );
-
-      if (response.ok) {
-        console.log("Data posted successfully");
-        const result = await response.json();
-        console.log(result);
-      } else {
-        console.error("Error posting data");
-      }
-    } catch (error) {
-      console.error("Error posting data:", error);
-    }
-  };
-
   // Start choosing columns for color change
   const startChoosingColumns = () => {
     setIsChoosingColumn(true);
     columnCounter = 0; // Reset counter when starting a new action
   };
 
+  /**
+   * UseEffect를 통해 새로고침 때마다 api로 사장님의 재고를 불러옴
+   */
+
+  useEffect(() => {
+    APIConnectionTest();
+  }, []);
+
   return (
     <div style={{ marginBottom: "1%", margin: "2%" }}>
       <div>
-        <h1>Excel 가져오기</h1>
+        <h2>재고 현황 Excel로 보고 수정하기</h2>
       </div>
       {isChoosingColumn && (
         <div style={{ color: "red", fontWeight: "bold" }}>
@@ -321,7 +363,7 @@ const ExcelImport = () => {
               aria-label="add"
               variant="extended"
             >
-              문서 업로드
+              입고 문서 업로드
             </Fab>
           </label>
         </div>
@@ -361,17 +403,95 @@ const ExcelImport = () => {
           <Button
             variant="contained"
             color="primary"
-            onClick={APIPOSTConnectionTest}
+            onClick={() => APIPOSTConnectionTest(tableData)}  // Updated to send current table data
           >
             Send POST Request
           </Button>
         </Grid>
       </div>
       <div>
+        <Dialog
+          open={openModal}
+          onClose={() => setOpenModal(false)}
+          maxWidth="lg"
+          fullWidth
+        >
+          <DialogTitle>
+            {columnSelectionStep === 0 && "바코드가 있는 열을 선택하세요."}
+            {columnSelectionStep === 1 && "상품 이름이 있는 열을 선택하세요."}
+            {columnSelectionStep === 2 && "수량이 있는 열을 선택하세요."}
+            {columnSelectionStep === 3 && "유통기한이 있는 상품들입니까?"}
+            {columnSelectionStep === 4 && "유통 기한 칼럼을 선택하세요."}
+            {columnSelectionStep === 5 &&
+              "최종적으로 선택된 데이터를 확인하세요."}
+          </DialogTitle>
+          <DialogContent>
+            {columnSelectionStep < 3 && (
+              <div>
+                <p>
+                  {columnSelectionStep === 0 &&
+                    "바코드가 있는 열을 선택하세요."}
+                  {columnSelectionStep === 1 &&
+                    "상품 이름이 있는 열을 선택하세요."}
+                  {columnSelectionStep === 2 && "수량이 있는 열을 선택하세요."}
+                </p>
+              </div>
+            )}
+            {columnSelectionStep === 3 && (
+              <div>
+                <Button
+                  onClick={() => setColumnSelectionStep(4)}
+                  color="primary"
+                >
+                  Yes
+                </Button>
+                <Button
+                  onClick={() => setColumnSelectionStep(5)}
+                  color="primary"
+                >
+                  No
+                </Button>
+              </div>
+            )}
+            <HotTable
+              height={600}
+              ref={hotTableRef}
+              data={ModalTableData}
+              colHeaders={columns.map((col) => col.label)}
+              dropdownMenu={true}
+              hiddenColumns={{
+                indicators: true,
+              }}
+              contextMenu={true}
+              multiColumnSorting={true}
+              filters={true}
+              rowHeaders={true}
+              autoWrapCol={true}
+              autoWrapRow={true}
+              afterGetColHeader={alignHeaders}
+              beforeRenderer={addClassesToRows}
+              manualRowMove={true}
+              navigableHeaders={true}
+              licenseKey="non-commercial-and-evaluation"
+              afterOnCellMouseDown={handleColumnClick}
+            />
+          </DialogContent>
+          <DialogActions>
+            {columnSelectionStep === 5 && (
+              <Button onClick={finalizeSelection} color="primary">
+                네
+              </Button>
+            )}
+            <Button onClick={() => setOpenModal(false)} color="primary">
+              닫기
+            </Button>
+          </DialogActions>
+        </Dialog>
         <HotTable
           height={600}
           ref={hotTableRef}
           data={tableData}
+          colWidths={[200, 200, 150, 200, 150, 130, 156]}
           colHeaders={columns.map((col) => col.label)}
           dropdownMenu={true}
           hiddenColumns={{
@@ -389,7 +509,7 @@ const ExcelImport = () => {
           navigableHeaders={true}
           licenseKey="non-commercial-and-evaluation"
           afterOnCellMouseDown={handleColumnClick}
-        />
+        ></HotTable>
       </div>
     </div>
   );
