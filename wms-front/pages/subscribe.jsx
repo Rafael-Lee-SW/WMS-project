@@ -1,7 +1,6 @@
 import React from 'react';
 import Button from "@material-ui/core/Button";
 import GridContainer from "/components/Grid/GridContainer.js";
-import GridItem from "@material-ui/core/Grid"; // 필요할 경우 GridItem 사용
 import { makeStyles } from '@material-ui/core/styles';
 import Divider from '@material-ui/core/Divider';
 
