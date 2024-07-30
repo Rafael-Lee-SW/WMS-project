@@ -66,19 +66,19 @@ public class ProductController {
         return new BaseSuccessResponse<>(productService.findById(id));
     }
 
-    /**
-     * 상품을 등록하는 기능
-     *
-     * @param productRequestDto: Product 데이터
-     */
-    @PostMapping
-    public BaseSuccessResponse<Void> createProduct(
-        @RequestBody ProductRequestDto productRequestDto) {
-        log.info("create product by productRequest: {}", productRequestDto);
-        productService.save(productRequestDto);
-
-        return new BaseSuccessResponse<>(null);
-    }
+//    /**
+//     * 상품을 등록하는 기능
+//     *
+//     * @param productRequestDto: Product 데이터
+//     */
+//    @PostMapping
+//    public BaseSuccessResponse<Void> createProduct(
+//        @RequestBody ProductRequestDto productRequestDto) {
+//        log.info("create product by productRequest: {}", productRequestDto);
+//        productService.save(productRequestDto);
+//
+//        return new BaseSuccessResponse<>(null);
+//    }
 
     /**
      * 상품을 수정하는 기능

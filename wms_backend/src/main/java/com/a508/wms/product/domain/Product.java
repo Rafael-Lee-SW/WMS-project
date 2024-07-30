@@ -1,7 +1,7 @@
 package com.a508.wms.product.domain;
 
+import com.a508.wms.floor.domain.Floor;
 import com.a508.wms.productdetail.domain.ProductDetail;
-import com.a508.wms.productlocation.domain.ProductLocation;
 import com.a508.wms.util.BaseTimeEntity;
 import com.a508.wms.util.constant.StatusEnum;
 import jakarta.persistence.Column;
@@ -13,10 +13,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
-import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,9 +26,11 @@ import lombok.NoArgsConstructor;
 public class Product extends BaseTimeEntity {
 
     @Builder
-    public Product(ProductDetail productDetail, int productQuantity, LocalDateTime expirationDate,
+    public Product(ProductDetail productDetail, Floor floor, int productQuantity,
+        LocalDateTime expirationDate,
         String comment) {
         this.productDetail = productDetail;
+        this.floor = floor;
         this.productQuantity = productQuantity;
         this.expirationDate = expirationDate;
         this.comment = comment;
@@ -44,8 +44,9 @@ public class Product extends BaseTimeEntity {
     @JoinColumn(name = "product_detail_id", nullable = false)
     private ProductDetail productDetail;
 
-    @OneToMany(mappedBy = "product")
-    private List<ProductLocation> productLocations;
+    @ManyToOne
+    @JoinColumn(name = "floor_id", nullable = false)
+    private Floor floor;
 
     @Column(nullable = false)
     private int productQuantity;
@@ -58,6 +59,10 @@ public class Product extends BaseTimeEntity {
 
     @Enumerated(EnumType.STRING)
     private StatusEnum statusEnum = StatusEnum.ACTIVE;
+
+    public void updateFloor(Floor floor) {
+        this.floor = floor;
+    }
 
     // 연관관계 편의 메서드
     public void setProductDetail(ProductDetail productDetail) {

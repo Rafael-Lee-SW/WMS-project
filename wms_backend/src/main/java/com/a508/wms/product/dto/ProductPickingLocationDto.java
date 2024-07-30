@@ -10,7 +10,7 @@ public interface ProductPickingLocationDto {
 
     Integer getFloorLevel();
 
-    Long getProductLocationId();
+    Long getProductId();
 
     Integer getProductQuantity();
 }
