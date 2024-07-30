@@ -5,7 +5,6 @@ import com.a508.wms.util.constant.ProductStorageTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;
 import java.time.LocalDateTime;
 import java.util.List;
-
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
@@ -21,13 +20,17 @@ public class LocationDto {
     private ProductStorageTypeEnum productStorageTypeEnum = ProductStorageTypeEnum.상온;
     private String name;
     @Builder.Default
+    private int rotation = 0;
+    @Builder.Default
     private int xPosition = -1;
     @Builder.Default
     private int yPosition = -1;
     @Builder.Default
-    private int width = -1;
+    private int xSize = -1;
     @Builder.Default
-    private int height = -1;
+    private int ySize = -1;
+    @Builder.Default
+    private int zSize = -1;
     private List<FloorDto> floorDtos;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;

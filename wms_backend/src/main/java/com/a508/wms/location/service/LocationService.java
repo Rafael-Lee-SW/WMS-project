@@ -82,10 +82,12 @@ public class LocationService {
             .warehouse(warehouse)
             .productStorageTypeEnum(locationDto.getProductStorageTypeEnum())
             .name(locationDto.getName())
+            .rotation(locationDto.getRotation())
             .xPosition(locationDto.getXPosition())
             .yPosition(locationDto.getYPosition())
-            .width(locationDto.getWidth())
-            .height(locationDto.getHeight())
+            .xSize(locationDto.getXSize())
+            .ySize(locationDto.getYSize())
+            .zSize(locationDto.getZSize())
             .build();
 
         locationModuleService.save(location);
