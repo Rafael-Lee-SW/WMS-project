@@ -1,12 +1,22 @@
 package com.a508.wms.location.domain;
 
-import com.a508.wms.util.constant.ProductStorageTypeEnum;
-import com.a508.wms.warehouse.domain.Warehouse;
 import com.a508.wms.floor.domain.Floor;
 import com.a508.wms.util.BaseTimeEntity;
+import com.a508.wms.util.constant.ProductStorageTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;
-import jakarta.persistence.*;
-
+import com.a508.wms.warehouse.domain.Warehouse;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -26,13 +36,13 @@ import org.hibernate.annotations.SQLRestriction;
 public class Location extends BaseTimeEntity {
 
     public Location(Warehouse warehouse, ProductStorageTypeEnum productStorageTypeEnum,
-                    int xPosition, int yPosition, int width, int height) {
+        int xPosition, int yPosition, int xSize, int ySize) {
         this.warehouse = warehouse;
         this.productStorageTypeEnum = productStorageTypeEnum;
         this.xPosition = xPosition;
         this.yPosition = yPosition;
-        this.width = width;
-        this.height = height;
+        this.xSize = xSize;
+        this.ySize = ySize;
     }
 
     @Id
@@ -61,11 +71,19 @@ public class Location extends BaseTimeEntity {
 
     @Column(nullable = false)
     @Builder.Default
-    private int width = -1;
+    private int rotation = 0;
 
     @Column(nullable = false)
     @Builder.Default
-    private int height = -1;
+    private int xSize = -1;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private int ySize = -1;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private int zSize = -1;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)

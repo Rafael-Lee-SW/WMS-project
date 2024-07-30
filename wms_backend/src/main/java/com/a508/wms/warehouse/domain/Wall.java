@@ -4,6 +4,8 @@ import com.a508.wms.util.BaseTimeEntity;
 import com.a508.wms.util.constant.StatusEnum;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -45,7 +47,8 @@ public class Wall extends BaseTimeEntity {
     @Column(nullable = false)
     private int endY;
 
-    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
     private StatusEnum statusEnum = StatusEnum.ACTIVE;
 
     public void updateStatus(StatusEnum statusEnum) {
