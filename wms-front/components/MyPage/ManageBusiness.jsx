@@ -1,6 +1,6 @@
 import { Button, Input, makeStyles } from "@material-ui/core";
 import { useState, useEffect } from "react";
-import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/ManageBusinessStyle.js";
+import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/manageBusinessStyle.js";
 import { deleteBusiness, editBusiness } from "../../pages/api";
 
 const useStyles = makeStyles(styles);
