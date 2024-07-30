@@ -27,6 +27,12 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
         "WHERE w.id = :warehouseID")
     List<Product> findByWarehouseId(@Param("warehouseID") Long warehouseID);
 
+    @Query("SELECT p FROM Product p " +
+        "JOIN p.floor f " +
+        "JOIN f.location l " +
+        "WHERE l.id = :locationID")
+    List<Product> findByLocationId(@Param("locationID") Long locationID);
+
 
     @Query(value = "SELECT pd.barcode, " +
         "SUM(CASE WHEN pl.export_type_enum IN ('STORE', 'DISPLAY') THEN p.product_quantity ELSE 0 END) AS possibleQuantity, "

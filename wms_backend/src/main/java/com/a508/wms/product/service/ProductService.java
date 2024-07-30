@@ -117,6 +117,22 @@ public class ProductService {
             .toList();
     }
 
+    @Transactional
+    public List<ProductResponseDto> findByLocationId(Long locationId) {
+        final List<Product> products = productModuleService.findByLocationId(locationId);
+        return products.stream()
+            .map((product) ->
+                {
+                    ProductResponseDto productResponseDto = ProductMapper.fromProduct(product);
+                    productResponseDto.setFloorLevel(product.getFloor().getFloorLevel());
+                    productResponseDto.setLocationName(product.getFloor().getLocation().getName());
+
+                    return productResponseDto;
+                }
+            )
+            .toList();
+    }
+
 //    /**
 //     * ProductDetail값을 통해 Product를 저장하는 기능
 //     *
