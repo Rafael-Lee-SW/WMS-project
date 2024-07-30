@@ -199,6 +199,59 @@ const User = () => {
     }
   };
 
+  // API를 통해 DB에 저장한다.
+  const APISaveToDB = async () => {
+    const rectData = rectangles.map((rect) => ({
+      id: rect.id,
+      name: rect.name,
+      xposition: rect.x,
+      yposition: rect.y,
+      xsize: rect.width,
+      ysize: rect.height,
+      zsize: 10,
+      rotation: rect.rotation,
+      warehouseId: 1, // Assuming all locations belong to warehouse 1
+      floorDtos: [
+        {
+          floorLevel: rect.z,
+        },
+      ],
+    }));
+
+    // 앙커 데이터를 기록합니다.
+    const anchorData = anchorsRef.current.map(({ start, end }, index) => ({
+      startX: start.x(),
+      startY: start.y(),
+      endX: end.x(),
+      endY: end.y(),
+    }));
+
+    const warehouseDto = { warehouseDto: { locations: rectData, walls: anchorData } };
+    // Log the request body
+    console.log(JSON.stringify(warehouseDto, null, 2));
+
+    try {
+      const response = await fetch(
+        "https://i11a508.p.ssafy.io/api/warehouses/1",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(warehouseDto),
+        }
+      );
+
+      if (response.ok) {
+        console.log("Map data saved successfully");
+      } else {
+        console.error("Error saving map data");
+      }
+    } catch (error) {
+      console.error("Error saving map data:", error);
+    }
+  };
+
   // Add this helper function to clear existing anchors and lines
   const clearAnchorsAndLines = () => {
     anchorsRef.current.forEach(({ start, end, line }) => {
@@ -258,7 +311,8 @@ const User = () => {
         newAnchors.forEach(({ line }) => layerRef.current.add(line));
         layerRef.current.batchDraw();
       } else {
-        console.error("Error loading map data");
+        const errorData = await response.json();
+        console.error("Error saving map data:", errorData);
       }
     } catch (error) {
       console.error("Error loading map data:", error);
@@ -268,23 +322,31 @@ const User = () => {
   //API 통신 테스트
   const APIConnectionTest = async () => {
     try {
-      const response = await fetch("https://i11a508.p.ssafy.io/api/locations", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        "https://i11a508.p.ssafy.io/api/warehouses/1",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (response.ok) {
         const apiConnection = await response.json();
-        const locations = apiConnection.result;
+        const warehouseData = apiConnection.result; // Directly accessing the warehouse object
 
+        // Log the received data for debugging
+        console.log("API response:", warehouseData);
+
+        // Check if locations exist
+        const locations = warehouseData.locations;
+        if (!locations) {
+          console.error("Locations data not found");
+          return;
+        }
         // Map API data to rectangles
         const newRectangles = locations.map((location, index) => {
-          // Generate random positions within the range
-          const randomX = Math.floor(Math.random() * (950 - 50 + 1)) + 50;
-          const randomY = Math.floor(Math.random() * (950 - 50 + 1)) + 50;
-
           // Get the floorLevel from floorDtos array if it exists
           const floorLevel =
             location.floorDtos.length > 0
@@ -294,10 +356,10 @@ const User = () => {
           // Ensure that the width and height are preserved
           return {
             id: location.id.toString(),
-            x: randomX,
-            y: randomY,
-            width: location.width || 50, // Default width if not provided
-            height: location.height || 50, // Default height if not provided
+            x: location.xposition,
+            y: location.yposition,
+            width: location.xsize || 50, // Default width if not provided
+            height: location.ysize || 50, // Default height if not provided
             z: floorLevel,
             fill: "blue", // Default color
             draggable: true,
@@ -309,9 +371,53 @@ const User = () => {
         });
 
         // Log the final rectangles for debugging
-        console.log("API rectangles loaded successfully");
+        console.log("API rectangles loaded successfully:", newRectangles);
 
-        // Update state with new rectangles
+        // Check if walls exist
+        const walls = warehouseData.walls;
+        if (!walls) {
+          console.error("Walls data not found");
+          return;
+        }
+
+        // Map API data to walls
+        clearAnchorsAndLines(); // Load 전 초기화
+
+        const existingAnchors = [];
+        const newAnchors = [];
+
+        const getOrCreateAnchor = (x, y) => {
+          let existingAnchor = findExistingAnchor(existingAnchors, x, y);
+          if (!existingAnchor) {
+            existingAnchor = buildAnchor(x, y);
+            existingAnchors.push(existingAnchor);
+          }
+          return existingAnchor;
+        };
+
+        walls.forEach(({ startX, startY, endX, endY }) => {
+          const startAnchor = getOrCreateAnchor(startX, startY);
+          const endAnchor = getOrCreateAnchor(endX, endY);
+
+          const newLine = new Konva.Line({
+            points: [startX, startY, endX, endY],
+            stroke: "brown",
+            strokeWidth: 10,
+            lineCap: "round",
+          });
+
+          newAnchors.push({
+            start: startAnchor,
+            end: endAnchor,
+            line: newLine,
+          });
+        });
+
+        anchorsRef.current = newAnchors;
+        newAnchors.forEach(({ line }) => layerRef.current.add(line));
+        layerRef.current.batchDraw();
+
+        // Update state with new rectangles and walls
         setRectangles(newRectangles);
       } else {
         console.error("Error loading rectangles data");
@@ -1152,6 +1258,9 @@ const User = () => {
             </Button>
             <Button justIcon round color="primary" onClick={APIConnectionTest}>
               헤이!
+            </Button>
+            <Button justIcon round color="primary" onClick={APISaveToDB}>
+              <SaveIcon className={classes.icons} />
             </Button>
           </div>
         </div>
