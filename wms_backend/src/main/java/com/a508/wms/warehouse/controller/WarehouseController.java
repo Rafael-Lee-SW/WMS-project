@@ -42,19 +42,21 @@ public class WarehouseController {
      */
     @GetMapping
     public BaseSuccessResponse<List<WarehouseDto>> getWarehouses(
-        @RequestParam(required = false) Long businessId,
-        @RequestParam(required = false) Long warehouseId) {
+        @RequestParam(required = false) Long businessId) {
         if (businessId != null) {
             log.info("Getting warehouses for business ID: {}", businessId);
             List<WarehouseDto> warehouses = warehouseService.findByBusinessId(businessId);
             return new BaseSuccessResponse<>(warehouses);
-        } else if (warehouseId != null) {
-            log.info("Getting warehouse by ID: {}", warehouseId);
-            WarehouseDto warehouse = warehouseService.findByWarehouseId(warehouseId);
-            return new BaseSuccessResponse<>(List.of(warehouse));
         } else {
             throw new IllegalArgumentException("Either businessId or warehouseId must be provided");
         }
+    }
+
+    @GetMapping("/{id}")
+    public BaseSuccessResponse<WarehouseDto> getWarehouse(@PathVariable Long id) {
+        log.info("Getting warehouse {}", id);
+        WarehouseDto warehouse = warehouseService.findByWarehouseId(id);
+        return new BaseSuccessResponse<>(warehouse);
     }
 
     /**
