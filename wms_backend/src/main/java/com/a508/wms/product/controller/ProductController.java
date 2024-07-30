@@ -1,10 +1,13 @@
 package com.a508.wms.product.controller;
 
 
-import com.a508.wms.product.dto.*;
+import com.a508.wms.product.dto.ProductExportRequestDto;
+import com.a508.wms.product.dto.ProductExportResponseDto;
+import com.a508.wms.product.dto.ProductImportDto;
+import com.a508.wms.product.dto.ProductRequestDto;
+import com.a508.wms.product.dto.ProductResponseDto;
 import com.a508.wms.product.service.ProductService;
 import com.a508.wms.util.BaseSuccessResponse;
-
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +41,8 @@ public class ProductController {
     public BaseSuccessResponse<List<ProductResponseDto>> getProducts(
         @RequestParam(required = false) Long businessId,
         @RequestParam(required = false) Long warehouseId,
-        @RequestParam(required = false) Long productDetailId) {
+        @RequestParam(required = false) Long productDetailId,
+        @RequestParam(required = false) Long locationId) {
         if (businessId != null) {
             log.info("findProducts businessId: {}", businessId);
             return new BaseSuccessResponse<>(productService.findByBusinessId(businessId));
@@ -48,6 +52,9 @@ public class ProductController {
         } else if (productDetailId != null) {
             log.info("findProducts productDetailId: {}", productDetailId);
             return new BaseSuccessResponse<>(productService.findByProductDetailId(productDetailId));
+        } else if (locationId != null) {
+            log.info("findProducts locationId: {}", locationId);
+            return new BaseSuccessResponse<>(productService.findByLocationId(locationId));
         } else {
             log.info("findProducts");
             return new BaseSuccessResponse<>(productService.findAll());

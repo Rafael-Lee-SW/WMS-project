@@ -18,6 +18,7 @@ public class ProductMapper {
         return ProductResponseDto.builder()
             .id(product.getId())
             .expirationDate(product.getExpirationDate())
+            .quantity(product.getProductQuantity())
             .createdDate(product.getCreatedDate())
             .updateDate(product.getUpdatedDate())
             .statusEnum(product.getStatusEnum())

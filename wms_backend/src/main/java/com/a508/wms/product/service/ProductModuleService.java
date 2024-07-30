@@ -5,7 +5,6 @@ import com.a508.wms.product.dto.ProductPickingLocationDto;
 import com.a508.wms.product.dto.ProductQuantityDto;
 import com.a508.wms.product.dto.ProductRequestDto;
 import com.a508.wms.product.repository.ProductRepository;
-import com.a508.wms.productdetail.domain.ProductDetail;
 import com.a508.wms.util.constant.StatusEnum;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -71,6 +70,10 @@ public class ProductModuleService {
      */
     public List<Product> findByWarehouseId(Long warehouseId) {
         return productRepository.findByWarehouseId(warehouseId);
+    }
+
+    public List<Product> findByLocationId(Long locationId) {
+        return productRepository.findByLocationId(locationId);
     }
 
     /**
