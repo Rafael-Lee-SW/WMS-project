@@ -39,8 +39,8 @@ public class ResponseDto {
      *
      * @return 유효성 검사 실패 응답 엔터티
      */
-    public static ResponseEntity<ResponseDto> validationFail() {
-        ResponseDto responseBody = new ResponseDto(ResponseCode.VALIDTION_FAIL, ResponseMessage.VALIDTION_FAIL);
+    public static ResponseEntity<ResponseDto> validationFail() { // 수정된 부분
+        ResponseDto responseBody = new ResponseDto(ResponseCode.VALIDATION_FAIL, ResponseMessage.VALIDATION_FAIL);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseBody);
     }
 }
