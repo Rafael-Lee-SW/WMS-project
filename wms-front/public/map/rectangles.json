@@ -1,52 +1,29 @@
 {
-  "rectData": [
-    {
-      "id": "0",
-      "x": 272,
-      "y": 191,
-      "width": 50,
-      "height": 50,
-      "fill": "blue",
-      "type": "location",
-      "name": "Rect 0",
-      "rotation": 0
-    },
-    {
-      "id": "1",
-      "x": 226,
-      "y": 330,
-      "width": 50,
-      "height": 50,
-      "fill": "blue",
-      "type": "location",
-      "name": "Rect 1",
-      "rotation": 0
-    }
-  ],
+  "rectData": [],
   "anchorData": [
     {
       "startID": "anchor_0",
-      "startX": 278,
-      "startY": 73,
-      "endID": "anchor_0",
-      "endX": 523,
-      "endY": 390
+      "startX": 190,
+      "startY": 120,
+      "endID": "anchor_2",
+      "endX": 510,
+      "endY": 100
+    },
+    {
+      "startID": "anchor_2",
+      "startX": 510,
+      "startY": 100,
+      "endID": "anchor_4",
+      "endX": 348.90277099609375,
+      "endY": 468.68055725097656
     },
     {
       "startID": "anchor_0",
-      "startX": 523,
-      "startY": 390,
-      "endID": "anchor_0",
-      "endX": 126.45834350585938,
-      "endY": 443.68055725097656
-    },
-    {
-      "startID": "anchor_0",
-      "startX": 126.45834350585938,
-      "startY": 443.68055725097656,
-      "endID": "anchor_0",
-      "endX": 278,
-      "endY": 73
+      "startX": 190,
+      "startY": 120,
+      "endID": "anchor_4",
+      "endX": 348.90277099609375,
+      "endY": 468.68055725097656
     }
   ]
 }

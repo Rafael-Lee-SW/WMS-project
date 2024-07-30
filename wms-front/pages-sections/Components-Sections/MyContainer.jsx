@@ -92,7 +92,7 @@ const User = () => {
   const [newRectHeight, setNewRectHeight] = useState(50);
   const [newRectZIndex, setNewRectZIndex] = useState(1);
   const [newRectName, setNewRectName] = useState("");
-  const [newRectType, setNewRectType] = useState(""); // new type for rectangle
+  const [newRectType, setNewRectType] = useState(""); // 적재함의 속성(냉동, 상온 등)
 
   // New State for wall settings(벽 관련 설정)
   const [newWallColor, setNewWallColor] = useState("brown");
@@ -109,24 +109,26 @@ const User = () => {
   // 사각형을 컨버스에 추가한다.
   const handleAddRectangle = (type) => {
     const newRect = {
-      id: rectangles.length.toString(),
+      id: (rectangles.length + 1).toString(),
       x: 50,
       y: 50,
+      z: newRectZIndex,
       width: newRectWidth,
       height: newRectHeight,
       fill: newRectColor,
       draggable: true,
-      order: rectangles.length, // 순서대로 번호 인덱싱
-      name: newRectName || `Rect ${rectangles.length}`,
+      order: rectangles.length + 1, // 순서대로 번호 인덱싱
+      name: newRectName || `Rect ${rectangles.length + 1}`,
       type: type, // set the type of the rectangle
       rotation: 0, // 초기 회전값
     };
     setRectangles([...rectangles, newRect]);
     updateContainer(newRect, "rectangle", `rect${newRect.id}`);
-    // Reset settings to default after adding
+    // Reset settings to default after adding // 적재함 추가 후 값 초기화
     setNewRectColor("blue");
     setNewRectWidth(50);
     setNewRectHeight(50);
+    setNewRectZIndex(1);
     setNewRectName("");
   };
 
@@ -155,6 +157,7 @@ const User = () => {
       id: rect.id,
       x: rect.x,
       y: rect.y,
+      z: rect.z,
       width: rect.width,
       height: rect.height,
       fill: rect.fill,
@@ -239,7 +242,7 @@ const User = () => {
 
           const newLine = new Konva.Line({
             points: [startX, startY, endX, endY],
-            stroke: "black",
+            stroke: "brown",
             strokeWidth: 10,
             lineCap: "round",
           });
@@ -282,6 +285,12 @@ const User = () => {
           const randomX = Math.floor(Math.random() * (950 - 50 + 1)) + 50;
           const randomY = Math.floor(Math.random() * (950 - 50 + 1)) + 50;
 
+          // Get the floorLevel from floorDtos array if it exists
+          const floorLevel =
+            location.floorDtos.length > 0
+              ? location.floorDtos[0].floorLevel
+              : 4;
+
           // Ensure that the width and height are preserved
           return {
             id: location.id.toString(),
@@ -289,6 +298,7 @@ const User = () => {
             y: randomY,
             width: location.width || 50, // Default width if not provided
             height: location.height || 50, // Default height if not provided
+            z: floorLevel,
             fill: "blue", // Default color
             draggable: true,
             order: index, // 순서대로 번호 인덱싱
@@ -457,7 +467,7 @@ const User = () => {
       fill: "#ddd",
       opacity: 0,
       strokeWidth: 2,
-      draggable: true,
+      draggable: currentSetting !== "wall", // Make draggable based on current setting
     });
     layer.add(newAnchor);
     setAnchors((prevAnchors) => [...prevAnchors, newAnchor]);
@@ -467,12 +477,14 @@ const User = () => {
       this.strokeWidth(4);
       this.opacity(1);
       this.moveToTop();
+      setHoveredAnchor(this); // hoverdAnchor를 지정한다.
     });
     newAnchor.on("mouseout", function () {
       document.body.style.cursor = "default";
       this.strokeWidth(2);
       this.opacity(0);
       this.moveToTop();
+      setHoveredAnchor(null); // hoverdAnchor를 지정한다.
     });
 
     newAnchor.on("dragmove", function () {
@@ -559,6 +571,16 @@ const User = () => {
   //실시간 반응을 위해서 currentSetting에 대한 함수 작동을 메서드로 넘기기
   const changeCurrentSetting = (value) => {
     setCurrentSetting(value);
+
+    // Toggle draggable property based on current setting
+    const newDraggable = value !== "wall";
+    anchorsRef.current.forEach(({ start, end }) => {
+      start.draggable(newDraggable);
+      end.draggable(newDraggable);
+    });
+
+    // Redraw the layer to reflect changes
+    layerRef.current.batchDraw();
   };
 
   const [lineData, setLineData] = useState({
@@ -611,9 +633,15 @@ const User = () => {
           pos.x = (pos.x - stageAttrs.x) / stageAttrs.scaleX; //줌에 따른 따른 위치 스케일링
           pos.y = (pos.y - stageAttrs.y) / stageAttrs.scaleY;
         }
-        // 무조건 10 pixel 단위로 반올림하여 시작 위치 보정
-        pos.x = Math.round(pos.x / 10) * 10;
-        pos.y = Math.round(pos.y / 10) * 10;
+
+        if (hoveredAnchor !== null) {
+          pos.x = hoveredAnchor.attrs.x;
+          pos.y = hoveredAnchor.attrs.y;
+        } else {
+          // 무조건 10 pixel 단위로 반올림하여 시작 위치 보정
+          pos.x = Math.round(pos.x / 10) * 10;
+          pos.y = Math.round(pos.y / 10) * 10;
+        }
 
         setStartPos(pos); // 선의 시작 위치 기록
         const newLine = new Konva.Line({
@@ -690,6 +718,12 @@ const User = () => {
             pos.x = (pos.x - stageAttrs.x) / stageAttrs.scaleX; //줌에 따른 따른 위치 스케일링
             pos.y = (pos.y - stageAttrs.y) / stageAttrs.scaleY;
           }
+
+          if (hoveredAnchor !== null) {
+            pos.x = hoveredAnchor.attrs.x;
+            pos.y = hoveredAnchor.attrs.y;
+          } // 아님 그냥 한다.
+
           handleAddWall(startPos, pos);
 
           setLine(null);
@@ -700,12 +734,7 @@ const User = () => {
 
     //벽을 추가한다.
     const handleAddWall = (start, end) => {
-      /**
-       * wall setting 일때만 변경될 수 있도록 설정
-       */
-      console.log("벽 생성 function에서 현재 세팅은? : " + currentSetting);
       if (currentSetting === "wall") {
-        // 벽이 입력되는 end point가 벽의 중심이다.
         const newWall = {
           id: rectangles.length.toString(),
           x: end.x,
@@ -714,38 +743,43 @@ const User = () => {
           height: Math.sqrt((end.x - start.x) ** 2 + (end.y - start.y) ** 2),
           fill: newWallColor,
           draggable: true,
-          order: rectangles.length + 1, // 순서대로 번호 인덱싱
+          order: rectangles.length + 1,
           name: `Wall ${rectangles.length + 1}`,
           type: "wall",
           rotation: Math.round(
             Math.atan2(end.y - start.y, end.x - start.x) * (180 / Math.PI) + 90
           ),
         };
-        // if (!isOverlapping(newWall)) {
-        // setRectangles([...rectangles, newWall]);
-        // updateContainer(newWall, "wall", `wall${newWall.id}`);
-        // Reset wall points
-        setWallStartPoint(null);
-        setWallEndPoint(null);
-        // Reset settings to default after adding
-        setNewWallColor("brown");
-        setNewWallWidth(10);
-        // } else {
-        //   alert("Wall overlaps with another rectangle.");
-        //   // Reset wall points
-        //   setWallStartPoint(null);
-        //   setWallEndPoint(null);
-        // }
-        const newAnchorTop = buildAnchor(start.x, start.y);
-        const newAnchorBottom = buildAnchor(end.x, end.y);
+
+        const getOrCreateAnchor = (x, y) => {
+          let existingAnchor = anchorsRef.current.find(
+            (anchor) =>
+              isSamePosition(anchor.start.x(), anchor.start.y(), x, y) ||
+              isSamePosition(anchor.end.x(), anchor.end.y(), x, y)
+          );
+          if (!existingAnchor) {
+            existingAnchor = buildAnchor(x, y);
+          } else {
+            existingAnchor = isSamePosition(
+              existingAnchor.start.x(),
+              existingAnchor.start.y(),
+              x,
+              y
+            )
+              ? existingAnchor.start
+              : existingAnchor.end;
+          }
+          return existingAnchor;
+        };
+
+        const newAnchorTop = getOrCreateAnchor(start.x, start.y);
+        const newAnchorBottom = getOrCreateAnchor(end.x, end.y);
 
         const newLine = new Konva.Line({
           points: [start.x, start.y, end.x, end.y],
-          stroke: "black",
+          stroke: "brown",
           strokeWidth: 10,
           lineCap: "round",
-          // dash: [10, 10, 0, 10],
-          // opacity: 0.3,
         });
         const layer = layerRef.current;
         layer.add(newLine);
@@ -755,6 +789,7 @@ const User = () => {
           end: newAnchorBottom,
           line: newLine,
         });
+
         layer.batchDraw();
       }
     };
@@ -775,13 +810,18 @@ const User = () => {
      * Anchor에 관한 함수를 넣는 곳
      */
 
+    // Redraw layer when setting changes
+    if (layerRef.current) {
+      layerRef.current.batchDraw();
+    }
+
     // Clean-up the Function to remove event Listeners
     return () => {
       stage.off("mousedown", handleMouseDown);
       stage.off("mousemove", handleMouseMove);
       stage.off("mouseup", handleMouseUp);
     };
-  }, [line, startPos, currentSetting]);
+  }, [line, startPos, currentSetting, hoveredAnchor]);
 
   //--- 리턴 Part ---
 
@@ -1130,7 +1170,12 @@ const User = () => {
           <h3>재고함 목록</h3>
           {rectangles.length !== 0 ? (
             <div>
-              <ul>
+              <ul
+                style={{
+                  height: "40vh",
+                  overflowY: "auto", // Add this line to make the ul scrollable
+                }}
+              >
                 {rectangles
                   .filter((rectangles) => rectangles.type === "location")
                   .map((rectangles, index) => (
@@ -1149,6 +1194,7 @@ const User = () => {
               <p>Number : {selectedRect.order}</p>
               <p>Name : {selectedRect.name}</p>
               <p>Type : {selectedRect.type}</p>
+              <p>층수 : {selectedRect.z}</p>
             </div>
           ) : (
             <p>No rectangle selected</p>
@@ -1218,6 +1264,7 @@ const RectangleTransformer = ({
         text={shapeProps.name}
         x={shapeProps.x}
         y={shapeProps.y}
+        z={shapeProps.z}
         width={shapeProps.width}
         height={shapeProps.height}
         fontSize={Math.min(shapeProps.width, shapeProps.height) / 5}

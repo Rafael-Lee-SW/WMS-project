@@ -12,6 +12,11 @@ import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
 import Fab from "@mui/material/Fab";
 import Button from "@mui/material/Button";
+// 모달 페이지를 위한 Import
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
 
 // Import SheetJS xlsx for Excel operations
 import * as XLSX from "xlsx";
@@ -177,15 +182,34 @@ const Complicated = () => {
    *
    */
 
+  // API로 불러온 현재 상품 데이터 목록
   const [tableData, setTableData] = useState([]);
+
+  //모달을 위한 데이터 셋
+  const [ModalTableData, setModalTableData] = useState([]);
   const [columns, setColumns] = useState([]);
   const [isChoosingColumn, setIsChoosingColumn] = useState(false);
   const hotTableRef = useRef(null); // Reference to the Handsontable instance
   let columnCounter = 0;
 
+  const [openModal, setOpenModal] = useState(false); // State for modal open/close
+  const [columnSelectionStep, setColumnSelectionStep] = useState(0); // State for column selection steps
+  const [selectedColumns, setSelectedColumns] = useState({
+    barcode: null,
+    name: null,
+    quantity: null,
+    expiry: null,
+  });
+
   // Convert data to array of arrays and set table data
   const convertToArrayOfArrays = (data) => {
     setTableData(data);
+    return data;
+  };
+
+  // Convert data to array of arrays and set table data
+  const convertToArrayOfArraysModal = (data) => {
+    setModalTableData(data);
     return data;
   };
 
@@ -212,7 +236,8 @@ const Complicated = () => {
       }));
       setColumns(formattedColumns);
       fileData.splice(0, 1);
-      convertToArrayOfArrays(fileData);
+      convertToArrayOfArraysModal(fileData);
+      setOpenModal(true); // Open the modal after importing the file
     };
     reader.readAsArrayBuffer(file);
   };
@@ -308,14 +333,15 @@ const Complicated = () => {
 
   // Handle column click event to apply color
   const handleColumnClick = (event, coords) => {
-    if (isChoosingColumn) {
-      applyColumnColor(coords.col);
-      columnCounter++;
-
-      if (columnCounter >= 4) {
-        setIsChoosingColumn(false);
-        columnCounter = 0; // Reset the counter
-      }
+    if (columnSelectionStep >= 0) {
+      const colorMap = ["blue", "green", "red", "orange"];
+      const columnKeys = ["barcode", "name", "quantity", "expiry"];
+      applyColumnColor(coords.col, colorMap[columnSelectionStep]);
+      setSelectedColumns((prevSelected) => ({
+        ...prevSelected,
+        [columnKeys[columnSelectionStep]]: coords.col,
+      }));
+      setColumnSelectionStep(columnSelectionStep + 1);
     }
   };
 
@@ -324,6 +350,65 @@ const Complicated = () => {
     setIsChoosingColumn(true);
     columnCounter = 0; // Reset counter when starting a new action
   };
+
+  // 최종적으로 선택된 칼럼에 해당하는 데이터를 보낸다.
+  const finalizeSelection = () => {
+    console.log("Finalized columns:", selectedColumns);
+    // Gather the selected data based on the user's column selections.
+    const postData = ModalTableData.map((row) => ({
+      barcode: row[selectedColumns.barcode],
+      name: row[selectedColumns.name],
+      quantity: row[selectedColumns.quantity],
+      expiry:
+        selectedColumns.expiry !== null ? row[selectedColumns.expiry] : null,
+    }));
+
+    // Send the gathered data to the API
+    APIPOSTConnectionTest(postData);
+
+    setOpenModal(false);
+    setColumnSelectionStep(0);
+    setSelectedColumns({
+      barcode: null,
+      name: null,
+      quantity: null,
+      expiry: null,
+    });
+  };
+
+  // API POST 통신 테스트
+  const APIPOSTConnectionTest = async (postData) => {
+    try {
+      const response = await fetch(
+        "https://i11a508.p.ssafy.io/api/products/import",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(postData),
+        }
+      );
+
+      if (response.ok) {
+        console.log("Data posted successfully");
+        const result = await response.json();
+        console.log(result);
+      } else {
+        console.error("Error posting data");
+      }
+    } catch (error) {
+      console.error("Error posting data:", error);
+    }
+  };
+
+  /**
+   * UseEffect를 통해 새로고침 때마다 api로 사장님의 재고를 불러옴
+   */
+
+  // useEffect(() => {
+  //   APIConnectionTest();
+  // }, []);
 
   /**
    *
@@ -877,7 +962,7 @@ const Complicated = () => {
 
         const newLine = new Konva.Line({
           points: [start.x, start.y, end.x, end.y],
-          stroke: "black",
+          stroke: "brown",
           strokeWidth: 10,
           lineCap: "round",
           // dash: [10, 10, 0, 10],
@@ -926,29 +1011,133 @@ const Complicated = () => {
   }, [line, startPos, currentSetting, selectedRect]);
 
   return (
-    <div style={{ marginBottom: "1%", margin: "2%" }}>
+    <div style={{ marginBottom: "1%", margin: "0%" }}>
       <div>
         {/* JSX 주석 */}
         {/** Main 영역 시작 */}
         <main style={{ display: "flex" }}>
+          <Dialog
+            open={openModal}
+            onClose={() => setOpenModal(false)}
+            maxWidth="lg"
+            fullWidth
+          >
+            <DialogTitle>
+              {columnSelectionStep === 0 && "바코드가 있는 열을 선택하세요."}
+              {columnSelectionStep === 1 && "상품 이름이 있는 열을 선택하세요."}
+              {columnSelectionStep === 2 && "수량이 있는 열을 선택하세요."}
+              {columnSelectionStep === 3 && "유통기한이 있는 상품들입니까?"}
+              {columnSelectionStep === 4 && "유통 기한 칼럼을 선택하세요."}
+              {columnSelectionStep === 5 &&
+                "최종적으로 선택된 데이터를 확인하세요."}
+            </DialogTitle>
+            <DialogContent>
+              {columnSelectionStep < 3 && (
+                <div>
+                  <p>
+                    {columnSelectionStep === 0 &&
+                      "바코드가 있는 열을 선택하세요."}
+                    {columnSelectionStep === 1 &&
+                      "상품 이름이 있는 열을 선택하세요."}
+                    {columnSelectionStep === 2 &&
+                      "수량이 있는 열을 선택하세요."}
+                  </p>
+                </div>
+              )}
+              {columnSelectionStep === 3 && (
+                <div>
+                  <Button
+                    onClick={() => setColumnSelectionStep(4)}
+                    color="primary"
+                  >
+                    Yes
+                  </Button>
+                  <Button
+                    onClick={() => setColumnSelectionStep(5)}
+                    color="primary"
+                  >
+                    No
+                  </Button>
+                </div>
+              )}
+              <HotTable
+                height={600}
+                ref={hotTableRef}
+                data={ModalTableData}
+                colHeaders={columns.map((col) => col.label)}
+                dropdownMenu={true}
+                hiddenColumns={{
+                  indicators: true,
+                }}
+                contextMenu={true}
+                multiColumnSorting={true}
+                filters={true}
+                rowHeaders={true}
+                autoWrapCol={true}
+                autoWrapRow={true}
+                afterGetColHeader={alignHeaders}
+                beforeRenderer={addClassesToRows}
+                manualRowMove={true}
+                navigableHeaders={true}
+                licenseKey="non-commercial-and-evaluation"
+                afterOnCellMouseDown={handleColumnClick}
+              />
+            </DialogContent>
+            <DialogActions>
+              {columnSelectionStep === 5 && (
+                <Button onClick={finalizeSelection} color="primary">
+                  네
+                </Button>
+              )}
+              <Button onClick={() => setOpenModal(false)} color="primary">
+                닫기
+              </Button>
+            </DialogActions>
+          </Dialog>
+
           {/* 현재 창고와 적재함들을 보여주는 Sidebar  */}
           <div
             style={{
-              marginLeft: "20px",
               padding: "10px",
               border: "1px solid black",
               borderRadius: "10px",
-              width: "15%",
+              width: "13%",
               height: "80vh",
               overflowY: "auto",
             }}
           >
             <h4>현재 창고는 1번 창고입니다.</h4>
+            <div>
+              <label htmlFor="upload-photo">
+                <input
+                  required
+                  style={{ display: "none" }}
+                  id="upload-photo"
+                  name="upload_photo"
+                  type="file"
+                  onChange={importExcel}
+                />
+                <Fab
+                  color="primary"
+                  size="small"
+                  component="span"
+                  aria-label="add"
+                  variant="extended"
+                >
+                  출고 목록 업로드하기
+                </Fab>
+              </label>
+            </div>
             <hr />
             <h4>현재 적재함 목록</h4>
             {rectangles.length !== 0 ? (
               <div>
-                <ul>
+                <ul
+                  style={{
+                    height: "100%",
+                    overflowY: "auto", // Add this line to make the ul scrollable
+                  }}
+                >
                   {rectangles
                     .filter((rectangles) => rectangles.type === "location")
                     .map((rectangles, index) => (
@@ -964,16 +1153,16 @@ const Complicated = () => {
           {/* 재고현황을 엑셀로 보여주는 bar */}
           <div
             style={{
-              marginLeft: "20px",
-              padding: "10px",
+              marginLeft: "5px",
+              padding: "8px",
               border: "2px solid black",
               borderRadius: "10px",
-              width: "30%",
+              width: "36%",
               height: "80vh",
               overflowY: "auto",
             }}
           >
-            <h3>Seleted Rectangle</h3>
+            <h3>현재 선택된 재고함</h3>
             {selectedRect ? (
               <div>
                 <b>ID : {selectedRect.id}</b>
@@ -987,12 +1176,14 @@ const Complicated = () => {
                 <b>Type : {selectedRect.type}</b>
                 <br />
                 <b>rotation : {selectedRect.rotation}</b>
+                <hr />
                 {rectangleData.length > 0 && (
                   <div>
                     <HotTable
                       height={400}
                       ref={hotTableRef}
                       data={rectangleData}
+                      colWidths={[35, 110, 140, 35, 20, 20, 20]}
                       colHeaders={columns.map((col) => col.label)}
                       dropdownMenu={true}
                       hiddenColumns={{
@@ -1001,7 +1192,7 @@ const Complicated = () => {
                       contextMenu={true}
                       multiColumnSorting={true}
                       filters={true}
-                      rowHeaders={true}
+                      // rowHeaders={true}
                       autoWrapCol={true}
                       autoWrapRow={true}
                       afterGetColHeader={alignHeaders}
@@ -1015,13 +1206,14 @@ const Complicated = () => {
                 )}
               </div>
             ) : (
-              <p>No rectangle selected</p>
+              <p>재고함이 선택되지 않았습니다.</p>
             )}
           </div>
 
           {/* Canvas and 알림창 영역 */}
           <div
             style={{
+              marginLeft: "5px",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
