@@ -1,8 +1,8 @@
-import React from 'react';
 import { useRouter } from 'next/router';
 import GridContainer from "/components/Grid/GridContainer.js";
 import { makeStyles } from '@material-ui/core/styles';
 import Divider from '@material-ui/core/Divider';
+import { Button } from '@material-ui/core';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -79,6 +79,7 @@ const MembershipDetail = () => {
             />
           ))}
         </div>
+        <Button>구독하기</Button>
     </GridContainer>
   )
 

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { fetchBusiness } from './api';
 import EditInfo from '../components/MyPage/EditInfo';
+import SubInfo from '../components/MyPage/SubInfo';
 import ManageBusiness from '../components/MyPage/ManageBusiness';
 import ManageEmployees from '../components/MyPage/ManageEmployees';
 import Info from '../components/MyPage/Info';
@@ -20,6 +21,7 @@ const MyPage = () => {
   const [email, setEmail] = useState('');
   const [businessNumber, setBusinessNumber] = useState('');
   const [notifications, setNotifications] = useState([]);
+  const [subscription, setSubscription] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [nickname, setNickname] = useState('');
 
@@ -28,13 +30,14 @@ const MyPage = () => {
       try {
         // 추후 아이디 받아와서 아래 1자리에 넣어야함
         const response = await fetchBusiness(1);
-        const { id, name, email, businessNumber, notificationDtoList, employeeDtoList, nickname } = response.data.result;
+        const { id, name, email, businessNumber, notificationDtoList, employeeDtoList, nickname, subscriptionDtoList } = response.data.result;
         
         setId(id);
         setName(name);
         setEmail(email);
         setBusinessNumber(businessNumber);
         setNotifications(notificationDtoList);
+        setSubscription(subscriptionDtoList);
         setEmployees(employeeDtoList);
         setNickname(nickname);
         
@@ -55,6 +58,8 @@ const MyPage = () => {
         return <EditInfo id={id} name={name} email={email} nickname={nickname}/>;
       case 'license':
         return <ManageBusiness id={id} name={name} businessNumber={businessNumber}/>;
+      case 'subscription':
+        return <SubInfo subscription={subscription}/>
       case 'employees':
         return <ManageEmployees employees={employees}/>;
       case 'info':
@@ -77,6 +82,7 @@ const MyPage = () => {
         <h4 onClick={() => setSelectedComponent('edit')}>내 정보 수정</h4>
         <h4 onClick={() => setSelectedComponent('license')}>사업자 등록/수정</h4>
         <h4 onClick={() => setSelectedComponent('employees')}>직원 관리</h4>
+        <h4 onClick={() => setSelectedComponent('subscription')}>구독 정보</h4>
       </div>
       <div className={classes.rightPanel}>
         {/* 오른쪽 패널의 내용 */}
