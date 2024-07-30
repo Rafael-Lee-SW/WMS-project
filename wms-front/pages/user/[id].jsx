@@ -26,18 +26,7 @@ import InventoryIcon from "@mui/icons-material/Inventory";
 import ProductionQuantityLimitsIcon from "@mui/icons-material/ProductionQuantityLimits";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 
-import SectionNavbars from "/pages-sections/Components-Sections/SectionNavbars.js";
-import SectionTabs from "/pages-sections/Components-Sections/SectionTabs.js";
-import SectionPills from "/pages-sections/Components-Sections/SectionPills.js";
-import SectionNotifications from "/pages-sections/Components-Sections/SectionNotifications.js";
-import SectionTypography from "/pages-sections/Components-Sections/SectionTypography.js";
-import SectionJavascript from "/pages-sections/Components-Sections/SectionJavascript.js";
-import SectionCarousel from "/pages-sections/Components-Sections/SectionCarousel.js";
-import SectionCompletedExamples from "/pages-sections/Components-Sections/SectionCompletedExamples.js";
-import SectionLogin from "/pages-sections/Components-Sections/SectionLogin.js";
-import SectionExamples from "/pages-sections/Components-Sections/SectionExamples.js";
-import SectionDownload from "/pages-sections/Components-Sections/SectionDownload.js";
-
+// 스타일 파일
 import styles from "/styles/jss/nextjs-material-kit/pages/users.js";
 import AOS from "aos";
 import "aos/dist/aos.css";

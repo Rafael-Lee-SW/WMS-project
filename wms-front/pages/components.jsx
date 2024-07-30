@@ -6,26 +6,13 @@ import Link from "next/link";
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
 // core components
-import Header from "/components/Header/Header.js";
-import HeaderLinks from "/components/Header/HeaderLinks.js";
+import Header from "/components/Header/HomeHeader.js";
+import HeaderLinks from "/components/Header/HomeHeaderLinks.js";
 import Footer from "/components/Footer/Footer.js";
 import GridContainer from "/components/Grid/GridContainer.js";
 import GridItem from "/components/Grid/GridItem.js";
 import Button from "/components/CustomButtons/Button.js";
 import Parallax from "/components/Parallax/Parallax.js";
-// sections for this page
-import SectionBasics from "/pages-sections/Components-Sections/SectionBasics.js";
-import SectionNavbars from "/pages-sections/Components-Sections/SectionNavbars.js";
-import SectionTabs from "/pages-sections/Components-Sections/SectionTabs.js";
-import SectionPills from "/pages-sections/Components-Sections/SectionPills.js";
-import SectionNotifications from "/pages-sections/Components-Sections/SectionNotifications.js";
-import SectionTypography from "/pages-sections/Components-Sections/SectionTypography.js";
-import SectionJavascript from "/pages-sections/Components-Sections/SectionJavascript.js";
-import SectionCarousel from "/pages-sections/Components-Sections/SectionCarousel.js";
-import SectionCompletedExamples from "/pages-sections/Components-Sections/SectionCompletedExamples.js";
-import SectionLogin from "/pages-sections/Components-Sections/SectionLogin.js";
-import SectionExamples from "/pages-sections/Components-Sections/SectionExamples.js";
-import SectionDownload from "/pages-sections/Components-Sections/SectionDownload.js";
 
 import styles from "/styles/jss/nextjs-material-kit/pages/components.js";
 import AOS from 'aos';
@@ -75,51 +62,8 @@ export default function Components(props) {
         </div>
       </Parallax>
       <div className={classNames(classes.main, classes.mainRaised)}>
-        <div data-aos="fade-up">
-          <SectionBasics />
-        </div>
-        <div data-aos="fade-up">
-          <SectionNavbars />
-        </div>
-        <div data-aos="fade-up">
-          <SectionTabs />
-        </div>
-        <div data-aos="fade-up">
-          <SectionPills />
-        </div>
-        <div data-aos="fade-up">
-          <SectionNotifications />
-        </div>
-        <div data-aos="fade-up">
-          <SectionTypography />
-        </div>
-        <div data-aos="fade-up">
-          <SectionJavascript />
-        </div>
-        <div data-aos="fade-up">
-          <SectionCarousel />
-        </div>
-        <div data-aos="fade-up">
-          <SectionCompletedExamples />
-        </div>
-        <div data-aos="fade-up">
-          <SectionLogin />
-        </div>
-        <GridItem md={12} className={classes.textCenter} data-aos="fade-up">
-          <Link href="/login">
-            <a className={classes.link}>
-              <Button color="primary" size="lg" simple>
-                View Login Page
-              </Button>
-            </a>
-          </Link>
-        </GridItem>
-        <div data-aos="fade-up">
-          <SectionExamples />
-        </div>
-        <div data-aos="fade-up">
-          <SectionDownload />
-        </div>
+
+
       </div>
       <Footer />
     </div>
