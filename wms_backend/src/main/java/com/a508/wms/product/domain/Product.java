@@ -18,10 +18,12 @@ import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Getter
 @NoArgsConstructor
+@ToString
 @Table(name = "product")
 public class Product extends BaseTimeEntity {
 

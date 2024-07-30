@@ -104,9 +104,16 @@ public class ProductService {
      */
     public List<ProductResponseDto> findByWarehouseId(Long warehouseId) {
         final List<Product> products = productModuleService.findByWarehouseId(warehouseId);
-
         return products.stream()
-            .map(ProductMapper::fromProduct)
+            .map((product) ->
+                {
+                    ProductResponseDto productResponseDto = ProductMapper.fromProduct(product);
+                    productResponseDto.setFloorLevel(product.getFloor().getFloorLevel());
+                    productResponseDto.setLocationName(product.getFloor().getLocation().getName());
+
+                    return productResponseDto;
+                }
+            )
             .toList();
     }
 
