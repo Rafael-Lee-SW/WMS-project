@@ -18,8 +18,6 @@ import com.a508.wms.productdetail.domain.ProductDetail;
 import com.a508.wms.productdetail.mapper.ProductDetailMapper;
 import com.a508.wms.productdetail.repository.ProductDetailRepository;
 import com.a508.wms.productdetail.service.ProductDetailModuleService;
-import com.a508.wms.productlocation.domain.ProductLocation;
-import com.a508.wms.productlocation.service.ProductLocationModuleService;
 import com.a508.wms.util.constant.StatusEnum;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
@@ -39,7 +37,6 @@ public class ProductService {
 
     private final ProductModuleService productModuleService;
     private final ProductDetailModuleService productDetailModuleService;
-    private final ProductLocationModuleService productLocationModuleService;
     private final FloorModuleService floorModuleService;
     private final BusinessModuleService businessModuleService;
     private final ProductDetailRepository productDetailRepository;
@@ -107,23 +104,30 @@ public class ProductService {
      */
     public List<ProductResponseDto> findByWarehouseId(Long warehouseId) {
         final List<Product> products = productModuleService.findByWarehouseId(warehouseId);
-
         return products.stream()
-            .map(ProductMapper::fromProduct)
+            .map((product) ->
+                {
+                    ProductResponseDto productResponseDto = ProductMapper.fromProduct(product);
+                    productResponseDto.setFloorLevel(product.getFloor().getFloorLevel());
+                    productResponseDto.setLocationName(product.getFloor().getLocation().getName());
+
+                    return productResponseDto;
+                }
+            )
             .toList();
     }
 
-    /**
-     * ProductDetail값을 통해 Product를 저장하는 기능
-     *
-     * @param request: Product 데이터
-     */
-    public void save(ProductRequestDto request) {
-        ProductDetail productDetail = productDetailModuleService.findById(
-            request.getProductDetailId());
-
-        productModuleService.save(request, productDetail);
-    }
+//    /**
+//     * ProductDetail값을 통해 Product를 저장하는 기능
+//     *
+//     * @param request: Product 데이터
+//     */
+//    public void save(ProductRequestDto request) {
+//        ProductDetail productDetail = productDetailModuleService.findById(
+//            request.getProductDetailId());
+//
+//        productModuleService.save(request, productDetail);
+//    }
 
     /**
      * 기존 상품 데이터를 조회하여 수정하는 기능
@@ -157,12 +161,6 @@ public class ProductService {
         product.updateStatus(StatusEnum.DELETED);
 
         productModuleService.save(product);
-
-        //차후 location도 module 분리해야함.
-        product.getProductLocations()
-            .forEach(productLocation -> productLocation.updateStatus(StatusEnum.DELETED));
-
-        productLocationModuleService.saveAll(product.getProductLocations());
     }
 
     /**
@@ -187,39 +185,19 @@ public class ProductService {
     }
 
     /**
-     * 한 상품의 입고처리를 수행함
+     * 한 상품의 입고처리를 수행함 입고로 들어온 상품이 DB에 있는지 확인한다. 상품의 동등성 판단은 상품 정보 id와 유톻기한으로 한다. 있다면 해당 상품의 총 수량을
+     * 입고량만큼 추가해준다. 없다면 새로 상품을 추가한다.
      *
      * @param request
      * @param defaultFloor: 입고 처리 된 상품이 들어가는 default 층
      */
     private void importProduct(ProductImportDto request, Floor defaultFloor) {
         log.info("Importing product");
-        Product importProduct = findOrCreateProduct(request);
 
-        //Mapping Product
-        ProductLocation productLocation = ProductLocation.builder()
-            .product(importProduct)
-            .floor(defaultFloor)
-            .product_quantity(importProduct.getProductQuantity())
-            .exportTypeEnum(defaultFloor.getExportTypeEnum())
-            .build();
-
-        productLocationModuleService.save(productLocation);
-    }
-
-    /**
-     * 입고로 들어온 상품이 DB에 있는지 확인한다. 상품의 동등성 판단은 상품 정보 id와 유톻기한으로 한다. 있다면 해당 상품의 총 수량을 입고량만큼 추가해준다. 없다면
-     * 새로 상품을 추가한다.
-     *
-     * @param request
-     * @return
-     */
-    private Product findOrCreateProduct(ProductImportDto request) {
-        log.info("find productDetail: {}", request);
         ProductDetail productDetail = findOrCreateProductDetail(request);
         Product product = findProduct(request.getProduct(), productDetail);
-
-        return productModuleService.save(product);
+        product.updateFloor(defaultFloor);
+        productModuleService.save(product);
     }
 
     /**
@@ -341,7 +319,7 @@ public class ProductService {
 
                 if (candidate.getProductQuantity() >= remains) {
                     //candidate의 값을 remain 뺀 값으로 만들기.
-                    updateProductQuantity(candidate.getProductLocationId(),
+                    updateProductQuantity(candidate.getProductId(),
                         candidate.getProductQuantity() - remains);
                     //path에 추가
                     List<ProductPickingDto> pickings = path.getOrDefault(
@@ -361,7 +339,7 @@ public class ProductService {
                 remains -= candidate.getProductQuantity();
 
                 //candidate의 값을 0으로 만들기.
-                updateProductQuantity(candidate.getProductLocationId(), 0);
+                updateProductQuantity(candidate.getProductId(), 0);
 
                 //path에 추가
                 List<ProductPickingDto> pickings = path.getOrDefault(
@@ -384,19 +362,16 @@ public class ProductService {
     /**
      * 출고되는 물품의 수량을 변경하는 로직
      *
-     * @param productLocationId
+     * @param productId
      * @param quantity
      */
 
-    private void updateProductQuantity(Long productLocationId, int quantity) {
+    private void updateProductQuantity(Long productId, int quantity) {
         log.info("quantity:{}", quantity);
-        ProductLocation productLocation = productLocationModuleService.findById(productLocationId);
-        Product product = productModuleService.findById(productLocation.getProduct().getId());
+        Product product = productModuleService.findById(productId);
 
-        productLocation.setProductQuantity(quantity);
         product.updateData(quantity, product.getExpirationDate(), product.getComment());
 
-        productLocationModuleService.save(productLocation);
         productModuleService.save(product);
     }
 

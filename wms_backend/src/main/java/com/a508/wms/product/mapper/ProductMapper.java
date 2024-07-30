@@ -1,7 +1,7 @@
 package com.a508.wms.product.mapper;
 
-import com.a508.wms.product.dto.ProductResponseDto;
 import com.a508.wms.product.domain.Product;
+import com.a508.wms.product.dto.ProductResponseDto;
 import com.a508.wms.productdetail.mapper.ProductDetailMapper;
 import org.springframework.stereotype.Component;
 
@@ -16,12 +16,11 @@ public class ProductMapper {
      */
     public static ProductResponseDto fromProduct(Product product) {
         return ProductResponseDto.builder()
-                .id(product.getId())
+            .id(product.getId())
             .expirationDate(product.getExpirationDate())
-            .comment(product.getComment())
-                .createdDate(product.getCreatedDate())
-                .updateDate(product.getUpdatedDate())
-                .statusEnum(product.getStatusEnum())
+            .createdDate(product.getCreatedDate())
+            .updateDate(product.getUpdatedDate())
+            .statusEnum(product.getStatusEnum())
             .productDetail(ProductDetailMapper.fromProductDetail(product.getProductDetail()))
             .build();
     }

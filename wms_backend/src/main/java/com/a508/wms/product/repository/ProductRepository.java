@@ -21,8 +21,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByBusinessId(@Param("businessID") Long businessID);
 
     @Query("SELECT p FROM Product p " +
-        "JOIN p.productLocations pl " +
-        "JOIN pl.floor f " +
+        "JOIN p.floor f " +
         "JOIN f.location l " +
         "JOIN l.warehouse w " +
         "WHERE w.id = :warehouseID")
@@ -36,7 +35,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
         +
         "FROM product p " +
         "JOIN product_detail pd ON p.product_detail_id = pd.id " +
-        "JOIN product_location pl ON p.id = pl.product_id " +
         "JOIN business b ON pd.business_id = b.id " +
         "WHERE pd.barcode = :barcode AND b.id = :businessId " +
         "GROUP BY pd.barcode", nativeQuery = true)
@@ -44,12 +42,11 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
         @Param("businessId") Long businessId);
 
     @Query(value =
-        "SELECT w.name AS warehouseName, l.name AS locationName, f.floor_level AS floorLevel, pl.id AS productLocationId, "
+        "SELECT w.name AS warehouseName, l.name AS locationName, f.floor_level AS floorLevel, p.id AS productId, "
             +
             "pd.name AS productName, p.product_quantity AS productQuantity " +
             "FROM product p " +
             "JOIN product_detail pd ON p.product_detail_id = pd.id " +
-            "JOIN product_location pl ON pl.product_id = p.id " +
             "JOIN floor f ON pl.floor_id = f.id " +
             "JOIN location l ON f.location_id = l.id " +
             "JOIN warehouse w ON l.warehouse_id = w.id " +

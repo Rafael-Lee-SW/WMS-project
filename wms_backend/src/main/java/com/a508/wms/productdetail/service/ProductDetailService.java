@@ -7,7 +7,6 @@ import com.a508.wms.productdetail.domain.ProductDetail;
 import com.a508.wms.productdetail.dto.ProductDetailRequestDto;
 import com.a508.wms.productdetail.dto.ProductDetailResponseDto;
 import com.a508.wms.productdetail.mapper.ProductDetailMapper;
-import com.a508.wms.productlocation.service.ProductLocationModuleService;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +21,6 @@ public class ProductDetailService {
     private final ProductDetailModuleService productDetailModuleService;
     private final BusinessModuleService businessModuleService;
     private final ProductModuleService productModuleService;
-    private final ProductLocationModuleService productLocationModuleService;
 
 
     /**
@@ -124,10 +122,6 @@ public class ProductDetailService {
 
         productDetailModuleService.delete(productDetail);
 
-        productDetail.getProducts().forEach(product -> {
-            productModuleService.delete(product);
-            product.getProductLocations().forEach(productLocationModuleService::delete
-            );
-        });
+        productDetail.getProducts().forEach(productModuleService::delete);
     }
 }

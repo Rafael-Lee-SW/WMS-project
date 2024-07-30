@@ -7,7 +7,6 @@ import com.a508.wms.util.constant.ProductStorageTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;
 import java.time.LocalDateTime;
 import java.util.List;
-
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -30,6 +29,7 @@ public class WarehouseDto {
     private LocalDateTime updatedDate;
     private StatusEnum statusEnum;
     private List<LocationDto> locations;
+    private List<WallDto> walls;
 
 
 }

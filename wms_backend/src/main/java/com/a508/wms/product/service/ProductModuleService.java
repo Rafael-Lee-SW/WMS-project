@@ -109,17 +109,17 @@ public class ProductModuleService {
             barcode, businessId);
     }
 
-    /**
-     * ProductDetail값을 통해 Product를 저장하는 기능
-     *
-     * @param request: Product 데이터
-     */
-    public Product save(ProductRequestDto request, ProductDetail productDetail) {
-        Product product = new Product(productDetail, request.getProductQuantity(),
-            request.getExpirationDate(), request.getComment());
-
-        return save(product);
-    }
+//    /**
+//     * ProductDetail값을 통해 Product를 저장하는 기능
+//     *
+//     * @param request: Product 데이터
+//     */
+//    public Product save(ProductRequestDto request, ProductDetail productDetail) {
+//        Product product = new Product(productDetail, request.getProductQuantity(),
+//            request.getExpirationDate(), request.getComment());
+//
+//        return save(product);
+//    }
 
 
     public Product save(Product product) {

@@ -1,7 +1,7 @@
 package com.a508.wms.floor.domain;
 
 import com.a508.wms.location.domain.Location;
-import com.a508.wms.productlocation.domain.ProductLocation;
+import com.a508.wms.product.domain.Product;
 import com.a508.wms.util.BaseTimeEntity;
 import com.a508.wms.util.constant.ExportTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;
@@ -58,7 +58,7 @@ public class Floor extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "floor")
     @Builder.Default
-    private List<ProductLocation> productLocations = new ArrayList<>();
+    private List<Product> Products = new ArrayList<>();
 
     public void updateStatusEnum(StatusEnum statusEnum) {
         this.statusEnum = statusEnum;
