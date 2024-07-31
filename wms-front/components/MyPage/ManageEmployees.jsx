@@ -39,11 +39,15 @@ export default function ManageEmployees({employees}) {
   return (
     <div>
       <h2>직원 관리</h2>
-        {employees.map((employee) => (
+        { employees ? (
+          employees.map((employee) => (
           <Card key={employee.id} onClick={() => handleOpen(employee)} style={{ cursor: 'pointer', marginBottom: '10px' }}>
             {employee.name}
           </Card>
-        ))}
+        ))
+      ) : (
+      <h4>직원이 없습니다.</h4>
+      )}
         <Dialog open={open} onClose={handleClose}>
           <DialogTitle>직원 상세 정보</DialogTitle>
           <DialogContent>

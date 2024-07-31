@@ -22,16 +22,20 @@ export default function SubInfo({ subscriptions }) {
   return (
     <div>
       <h2>구독 정보</h2>
-      {subscriptions.map((subscription) => (
-        <Card 
+        {subscriptions ? (
+          subscriptions.map((subscription) => (
+          <Card 
           key={subscription.id} 
           onClick={() => handleOpen(subscription)} 
           style={{ cursor: 'pointer', marginBottom: '10px', padding: '10px' }}
-        >
-          <p>구독 타입 : {subscription.subscriptionTypeEnum}</p>
-          <p>구독 날짜 : {subscription.startDate}</p>
-        </Card>
-      ))}
+          >
+            <p>구독 타입 : {subscription.subscriptionTypeEnum}</p>
+            <p>구독 날짜 : {subscription.startDate}</p>
+          </Card>
+        ))
+    ) : (
+    <h4>구독 정보가 없습니다.</h4>
+    )}
 
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>구독 상세 정보</DialogTitle>
