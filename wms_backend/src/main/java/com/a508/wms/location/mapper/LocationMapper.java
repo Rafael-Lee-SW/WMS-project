@@ -1,10 +1,9 @@
 package com.a508.wms.location.mapper;
 
-import com.a508.wms.floor.domain.Floor;
 import com.a508.wms.floor.mapper.FloorMapper;
 import com.a508.wms.location.domain.Location;
 import com.a508.wms.location.dto.LocationDto;
-import java.util.List;
+import com.a508.wms.warehouse.domain.Warehouse;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
@@ -44,7 +43,7 @@ public class LocationMapper {
      * @param locationDto
      * @return Location
      */
-    public static Location fromDto(LocationDto locationDto) {
+    public static Location fromDto(LocationDto locationDto, Warehouse warehouse) {
         Location location = Location.builder()
             .id(locationDto.getId())
             .name(locationDto.getName())
@@ -54,14 +53,9 @@ public class LocationMapper {
             .xSize(locationDto.getXSize())
             .ySize(locationDto.getYSize())
             .zSize(locationDto.getZSize())
-            .statusEnum(locationDto.getStatusEnum())
+            .warehouse(warehouse)
+            .productStorageTypeEnum(locationDto.getProductStorageTypeEnum())
             .build();
-        if (locationDto.getFloorDtos() != null) {
-            List<Floor> floors = locationDto.getFloorDtos()
-                .stream().map(FloorMapper::fromDto)
-                .toList();
-            location.setFloors(floors);
-        }
         return location;
     }
 

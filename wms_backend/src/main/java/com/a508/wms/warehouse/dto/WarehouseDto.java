@@ -3,17 +3,18 @@ package com.a508.wms.warehouse.dto;
 
 import com.a508.wms.location.dto.LocationDto;
 import com.a508.wms.util.constant.FacilityTypeEnum;
-import com.a508.wms.util.constant.ProductStorageTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
 @Builder
+@ToString
 public class WarehouseDto {
 
     private Long id;
@@ -24,7 +25,6 @@ public class WarehouseDto {
     private int columnCount;
     private int priority;
     private FacilityTypeEnum facilityTypeEnum;
-    private ProductStorageTypeEnum productStorageTypeEnum;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
     private StatusEnum statusEnum;
