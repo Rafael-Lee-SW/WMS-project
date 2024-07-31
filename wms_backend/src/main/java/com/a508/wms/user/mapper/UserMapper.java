@@ -1,7 +1,6 @@
 package com.a508.wms.user.mapper;
 
 import com.a508.wms.auth.dto.request.auth.SignUpRequestDto;
-import com.a508.wms.business.mapper.BusinessMapper;
 import com.a508.wms.user.domain.User;
 import com.a508.wms.user.dto.UserDto;
 import org.springframework.stereotype.Component;
@@ -10,8 +9,7 @@ import org.springframework.stereotype.Component;
 public class UserMapper {
 
     /**
-     * UserDto 객체를 받아서 변경할 정보는 입력하고 기존 정보는 유지하여 User 객체로 변경해주는 메서드
-     * business 제외. 직접 설정하기
+     * UserDto 객체를 받아서 변경할 정보는 입력하고 기존 정보는 유지하여 User 객체로 변경해주는 메서드 business 제외. 직접 설정하기
      *
      * @param userDto
      * @return User
@@ -52,7 +50,7 @@ public class UserMapper {
             .roleTypeEnum(user.getRoleTypeEnum())
             .loginTypeEnum(user.getLoginTypeEnum())
             .statusEnum(user.getStatusEnum())
-            .business(user.getBusiness() != null ? BusinessMapper.fromBusiness(user.getBusiness()) : null)
+//            .business(user.getBusiness() != null ? BusinessMapper.fromBusiness(user.getBusiness()) : null)
             .build();
     }
 }

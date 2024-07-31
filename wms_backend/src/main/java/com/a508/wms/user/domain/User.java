@@ -2,12 +2,23 @@ package com.a508.wms.user.domain;
 
 import com.a508.wms.business.domain.Business;
 import com.a508.wms.util.BaseTimeEntity;
-import com.a508.wms.util.constant.RoleTypeEnum;
 import com.a508.wms.util.constant.LoginTypeEnum;
+import com.a508.wms.util.constant.RoleTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;
-import jakarta.persistence.*;
-import java.sql.Timestamp;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
@@ -47,6 +58,9 @@ public class User extends BaseTimeEntity {
 
     @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
     private Business business;
+
+    @Column(nullable = true)
+    private Long businessId;
 
     // 연관 관계 편의 메서드
     public void setBusiness(Business business) {
