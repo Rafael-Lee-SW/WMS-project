@@ -5,6 +5,7 @@ import React, { useState, useRef, useEffect } from "react";
 
 // Import MUI components
 import Grid from "@mui/material/Grid";
+import Paper from "@mui/material/Paper";
 import Fab from "@mui/material/Fab";
 import Button from "@mui/material/Button";
 
@@ -48,8 +49,8 @@ import {
 
 import Handsontable from "handsontable";
 
-// Import the DataGrid component from MUI
-import { DataGrid } from "@mui/x-data-grid";
+//좋은 데이터 포멧을 위해서 불러오는 mui
+import MUIDataTable from "mui-datatables";
 
 // Register cell types and plugins
 registerCellType(CheckboxCellType);
@@ -303,26 +304,39 @@ const ExcelImport = () => {
     APIConnectionTest();
   }, []);
 
-  // Define the columns and rows for the DataGrid
-  const dataGridColumns = [
-    { field: "name", headerName: "이름", width: 130 },
-    { field: "barcode", headerName: "바코드(식별번호)", width: 180 },
-    { field: "quantity", headerName: "수량", width: 100 },
-    { field: "location", headerName: "적재함", width: 130 },
-    { field: "floorLevel", headerName: "단(층)수", width: 100 },
-  ];
-
-  const dataGridRows = tableData.map((row, index) => ({
-    id: index,
-    name: row[0],
-    barcode: row[1],
-    quantity: row[2],
-    location: row[3],
-    floorLevel: row[4],
-  }));
-
   // MUI Data Table options
-  const options = {};
+  const options = {
+    filter: true,
+    onFilterChange: (changedColumn, filterList) => {
+      console.log(changedColumn, filterList);
+    },
+    customFilterDialogFooter: (currentFilterList, applyNewFilters) => {
+      return (
+        <div style={{ marginTop: "40px" }}>
+          <Button variant="contained" onClick={applyNewFilters}>
+            Apply Filters
+          </Button>
+        </div>
+      );
+    },
+  };
+
+  const componentsProps = {
+    icons: {
+      Filter: {
+        sx: {
+          display: "block", // Change to the desired display property
+          padding: "10px", // Change to the desired padding
+        },
+      },
+    },
+    TableFilterList: {
+      sx: {
+        display: "block", // Change to the desired display property
+        padding: "10px", // Change to the desired padding
+      },
+    },
+  };
 
   return (
     <div style={{ marginBottom: "1%", margin: "2%" }}>
@@ -513,19 +527,17 @@ const ExcelImport = () => {
         </Dialog>
       </div>
       <Grid item xs={12}>
-        <div style={{ height: 400, width: "100%" }}>
-          <DataGrid
-            rows={dataGridRows}
-            columns={dataGridColumns}
-            initialState={{
-              pagination: {
-                paginationModel: { page: 0, pageSize: 5 },
-              },
-            }}
-            pageSizeOptions={[5, 10]}
-            checkboxSelection
-          />
-        </div>
+        <MUIDataTable
+          sx={{
+            display: "flex", // Change to the desired display property
+            padding: "100px", // Change to the desired padding
+          }}
+          title={"Excel 가져오기"}
+          data={tableData}
+          columns={columns}
+          options={options}
+          componentsProps={componentsProps}
+        />
       </Grid>
     </div>
   );

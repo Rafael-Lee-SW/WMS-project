@@ -73,10 +73,6 @@ const User = () => {
   const [rectangles, setRectangles] = useState([]);
   // 줌 인, 줌 아웃을 위한 Scale
   const [scale, setScale] = useState(1); // 초기 줌 값
-  // 벽 생성 시에 클릭하면 생성되는 시작점, 끝점 스팟
-  const [tempSpots, setTempSpots] = useState([]);
-  // 상자의 hover Effect를 위한 상태 추가
-  const [hoveredRectId, setHoveredRectId] = useState(null);
   // 마지막으로 클릭한 상자를 추적하는 상태 추가
   const [selectedRect, setSelectedRect] = useState(null);
   // 마지막으로 클릭한 상자를 수정하는 폼을 띄우기 위한 상태 추가
@@ -97,10 +93,8 @@ const User = () => {
   // New State for wall settings(벽 관련 설정)
   const [newWallColor, setNewWallColor] = useState("brown");
   const [newWallWidth, setNewWallWidth] = useState(10);
-  const [wallStartPoint, setWallStartPoint] = useState(null);
-  const [wallEndPoint, setWallEndPoint] = useState(null);
 
-  const [draggingAnchor, setDraggingAnchor] = useState(null);
+  // 마우스 포인터에 닿은 앙커를 기록하는 것
   const [hoveredAnchor, setHoveredAnchor] = useState(null);
 
   // 앙커를 추가하고 관리하는 State 추가
@@ -203,16 +197,19 @@ const User = () => {
   const APISaveToDB = async () => {
     const rectData = rectangles.map((rect) => ({
       id: rect.id,
+      warehouseId: 1,
       name: rect.name,
-      xposition: rect.x,
-      yposition: rect.y,
-      xsize: rect.width,
-      ysize: rect.height,
-      zsize: 10,
+      xPosition: rect.x,
+      yPosition: rect.y,
+      xSize: rect.width,
+      ySize: rect.height,
+      zSize: 10,
       rotation: rect.rotation,
+      productStorageTypeEnum: "상온",
       warehouseId: 1, // Assuming all locations belong to warehouse 1
       floorDtos: [
         {
+          id: rect.id,
           floorLevel: rect.z,
         },
       ],
@@ -220,13 +217,15 @@ const User = () => {
 
     // 앙커 데이터를 기록합니다.
     const anchorData = anchorsRef.current.map(({ start, end }, index) => ({
+      id: index,
+      warehouseId: 1,
       startX: start.x(),
       startY: start.y(),
       endX: end.x(),
       endY: end.y(),
     }));
 
-    const warehouseDto = { warehouseDto: { locations: rectData, walls: anchorData } };
+    const warehouseDto = { locations: rectData, walls: anchorData  };
     // Log the request body
     console.log(JSON.stringify(warehouseDto, null, 2));
 

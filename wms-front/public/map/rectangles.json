@@ -1,29 +1,150 @@
 {
-  "rectData": [],
+  "rectData": [
+    {
+      "id": "1",
+      "x": 98,
+      "y": 94,
+      "z": 1,
+      "width": 50,
+      "height": 50,
+      "fill": "blue",
+      "type": "location",
+      "name": "Rect 1",
+      "rotation": 0
+    },
+    {
+      "id": "2",
+      "x": 185,
+      "y": 80,
+      "z": 1,
+      "width": 50,
+      "height": 50,
+      "fill": "blue",
+      "type": "location",
+      "name": "Rect 2",
+      "rotation": 0
+    },
+    {
+      "id": "3",
+      "x": 326,
+      "y": 97,
+      "z": 1,
+      "width": 50,
+      "height": 50,
+      "fill": "blue",
+      "type": "location",
+      "name": "Rect 3",
+      "rotation": 0
+    },
+    {
+      "id": "4",
+      "x": 195,
+      "y": 284,
+      "z": 1,
+      "width": 50,
+      "height": 50,
+      "fill": "blue",
+      "type": "location",
+      "name": "Rect 4",
+      "rotation": 0
+    },
+    {
+      "id": "5",
+      "x": 289,
+      "y": 204,
+      "z": 1,
+      "width": 50,
+      "height": 50,
+      "fill": "blue",
+      "type": "location",
+      "name": "Rect 5",
+      "rotation": 0
+    },
+    {
+      "id": "6",
+      "x": 365,
+      "y": 249,
+      "z": 1,
+      "width": 50,
+      "height": 50,
+      "fill": "blue",
+      "type": "location",
+      "name": "Rect 6",
+      "rotation": 0
+    },
+    {
+      "id": "7",
+      "x": 129,
+      "y": 268,
+      "z": 1,
+      "width": 50,
+      "height": 50,
+      "fill": "blue",
+      "type": "location",
+      "name": "Rect 7",
+      "rotation": 0
+    },
+    {
+      "id": "8",
+      "x": 210,
+      "y": 202,
+      "z": 1,
+      "width": 50,
+      "height": 50,
+      "fill": "blue",
+      "type": "location",
+      "name": "Rect 8",
+      "rotation": 0
+    }
+  ],
   "anchorData": [
     {
       "startID": "anchor_0",
-      "startX": 190,
-      "startY": 120,
-      "endID": "anchor_2",
-      "endX": 510,
-      "endY": 100
+      "startX": 46,
+      "startY": 53,
+      "endID": "anchor_0",
+      "endX": 540.7916564941406,
+      "endY": 59.34721374511719
     },
     {
       "startID": "anchor_2",
-      "startX": 510,
-      "startY": 100,
-      "endID": "anchor_4",
-      "endX": 348.90277099609375,
-      "endY": 468.68055725097656
+      "startX": 540,
+      "startY": 60,
+      "endID": "anchor_2",
+      "endX": 541.7916564941406,
+      "endY": 59.34721374511719
     },
     {
-      "startID": "anchor_0",
-      "startX": 190,
-      "startY": 120,
+      "startID": "anchor_2",
+      "startX": 540,
+      "startY": 60,
       "endID": "anchor_4",
-      "endX": 348.90277099609375,
-      "endY": 468.68055725097656
+      "endX": 546.7916564941406,
+      "endY": 72.34721374511719
+    },
+    {
+      "startID": "anchor_4",
+      "startX": 546.7916564941406,
+      "startY": 72.34721374511719,
+      "endID": "anchor_5",
+      "endX": 554.7916564941406,
+      "endY": 492.3472137451172
+    },
+    {
+      "startID": "anchor_5",
+      "startX": 554.7916564941406,
+      "startY": 492.3472137451172,
+      "endID": "anchor_6",
+      "endX": 73.79165649414062,
+      "endY": 500.3472137451172
+    },
+    {
+      "startID": "anchor_6",
+      "startX": 73.79165649414062,
+      "startY": 500.3472137451172,
+      "endID": "anchor_0",
+      "endX": 46,
+      "endY": 53
     }
   ]
 }
