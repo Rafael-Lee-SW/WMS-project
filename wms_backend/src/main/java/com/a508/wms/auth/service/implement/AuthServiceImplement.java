@@ -242,5 +242,4 @@ public class AuthServiceImplement implements AuthService {
             return ResponseDto.databaseError(); // 예외 처리
         }
     }
-
 }
