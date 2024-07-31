@@ -1,7 +1,7 @@
 import React from 'react';
 import Button from "@material-ui/core/Button";
 import GridContainer from "/components/Grid/GridContainer.js";
-import makeStyles from '@material-ui/core/styles';
+import { makeStyles } from '@material-ui/core/styles';
 import Divider from '@material-ui/core/Divider';
 import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/subStyle.js";
 
