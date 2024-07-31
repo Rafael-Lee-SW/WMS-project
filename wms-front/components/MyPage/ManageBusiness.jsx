@@ -27,10 +27,10 @@ export default function ManageBusiness({ id, name, businessNumber }) {
   }, [name, businessNumber]);
 
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
+    const { name, value } = e.target;
     setBusinessInfo((prevInfo) => ({
       ...prevInfo,
-      [name]: files ? files[0] : value,
+      [name]: value 
     }));
   };
 
@@ -76,7 +76,7 @@ export default function ManageBusiness({ id, name, businessNumber }) {
         <div className={classes.div}>
           <Input
             type="text"
-            name="businessName"
+            name="name"
             value={businessInfo.name}
             onChange={handleChange}
             placeholder="사업자 이름"

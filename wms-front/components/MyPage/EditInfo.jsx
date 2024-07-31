@@ -47,6 +47,7 @@ export default function EditInfo({id, name, email, nickname}) {
             name="name"
             value={userInfo.name}
             onChange={handleChange}
+            placeholder="이름"
           />
         </div>
         <div className={classes.div}>
@@ -55,6 +56,7 @@ export default function EditInfo({id, name, email, nickname}) {
             name="email"
             value={userInfo.email}
             onChange={handleChange}
+            placeholder="이메일"
           />
         </div>
         <div className={classes.div}>
@@ -63,6 +65,7 @@ export default function EditInfo({id, name, email, nickname}) {
             name="nickname"
             value={userInfo.nickname}
             onChange={handleChange}
+            placeholder="닉네임"
           />
         </div>
         <Button 

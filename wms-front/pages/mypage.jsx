@@ -67,7 +67,6 @@ const MyPage = () => {
       default:
         return (
           <div>
-            <h2>{name}님, 반갑습니다.</h2>
             <Info name={name} email={email} businessNumber={businessNumber} />
           </div>
         )
@@ -77,16 +76,24 @@ const MyPage = () => {
     <div className={classes.container}>
       <div className={classes.leftPanel}>
         {/* 왼쪽 패널의 내용 */}
-        <h2 onClick={() => setSelectedComponent('info')}>마이페이지</h2>
-        <h4 onClick={() => setSelectedComponent('alarm')}>알람</h4>
-        <h4 onClick={() => setSelectedComponent('edit')}>내 정보 수정</h4>
-        <h4 onClick={() => setSelectedComponent('license')}>사업자 등록/수정</h4>
-        <h4 onClick={() => setSelectedComponent('employees')}>직원 관리</h4>
-        <h4 onClick={() => setSelectedComponent('subscriptions')}>구독 정보</h4>
+        <h2 className={classes.h2} onClick={() => setSelectedComponent('info')}>마이페이지</h2>
+        <div className={classes.divContainer}>
+          <h4 onClick={() => setSelectedComponent('alarm')}>알람</h4>
+          <h4 onClick={() => setSelectedComponent('edit')}>내 정보 수정</h4>
+          <h4 onClick={() => setSelectedComponent('license')}>사업자 등록/수정</h4>
+          <h4 onClick={() => setSelectedComponent('employees')}>직원 관리</h4>
+          <h4 onClick={() => setSelectedComponent('subscriptions')}>구독 정보</h4>
+        </div>
       </div>
       <div className={classes.rightPanel}>
+        <div className={classes.headerContainer}>
+          <h3 className={classes.h3}>{name}</h3>
+          <div className={classes.divHr}/>
+        </div>
         {/* 오른쪽 패널의 내용 */}
-        {renderComponent()}
+        <div className={classes.rendering}>
+          {renderComponent()}
+        </div>
       </div>
     </div>
   );
