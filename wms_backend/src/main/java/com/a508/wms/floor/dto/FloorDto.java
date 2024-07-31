@@ -16,11 +16,9 @@ public class FloorDto {
 
     private Long id;
     private Long locationId;
-    private int floorLevel; //층수
+    private int floorLevel;
     private ExportTypeEnum exportType;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
     private StatusEnum statusEnum;
-
-
 }
