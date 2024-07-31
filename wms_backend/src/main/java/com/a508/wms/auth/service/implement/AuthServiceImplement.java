@@ -5,11 +5,13 @@ import com.a508.wms.auth.domain.Certification;
 import com.a508.wms.auth.dto.request.auth.CheckCertificationRequestDto;
 import com.a508.wms.auth.dto.request.auth.EmailCertificationRequestDto;
 import com.a508.wms.auth.dto.request.auth.IdCheckRequestDto;
+import com.a508.wms.auth.dto.request.auth.SignInRequestDto;
 import com.a508.wms.auth.dto.request.auth.SignUpRequestDto;
 import com.a508.wms.auth.dto.response.ResponseDto;
 import com.a508.wms.auth.dto.response.auth.CheckCertificationResponseDto;
 import com.a508.wms.auth.dto.response.auth.EmailCertificationResponseDto;
 import com.a508.wms.auth.dto.response.auth.IdCheckResponseDto;
+import com.a508.wms.auth.dto.response.auth.SignInResponseDto;
 import com.a508.wms.auth.dto.response.auth.SignUpResponseDto;
 import com.a508.wms.auth.provider.EmailProvider;
 import com.a508.wms.auth.repository.CertificationRepository;
@@ -193,4 +195,25 @@ public class AuthServiceImplement implements AuthService {
         }
         return SignUpResponseDto.success();
     }
+
+
+
+//    @Override
+//    public ResponseEntity<? super SignInResponseDto> signIn(SignInRequestDto dto) {
+//       String token = null;
+//
+//       try {
+//           String userEmail = dto.getEmail();
+//           Business
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return ResponseDto.databaseError();
+//        }
+//        return SignInResponseDto.success(token);
+//    }
+@Override
+public ResponseEntity<? super SignInResponseDto> signIn(SignInRequestDto dto) {
+    return null;
+}
 }
