@@ -1,6 +1,7 @@
 package com.a508.wms.warehouse.controller;
 
 import com.a508.wms.util.BaseSuccessResponse;
+import com.a508.wms.warehouse.dto.WarehouseByBusinessDto;
 import com.a508.wms.warehouse.dto.WarehouseDto;
 import com.a508.wms.warehouse.service.WarehouseService;
 import java.util.List;
@@ -39,7 +40,7 @@ public class WarehouseController {
      * 비지니스 id로 창고 생성 창고 id로 창고 생성 GET 방식
      */
     @GetMapping
-    public BaseSuccessResponse<List<WarehouseDto>> findAllByIdWarehouses(
+    public BaseSuccessResponse<List<WarehouseByBusinessDto>> findAllByIdWarehouses(
         @RequestParam Long businessId) {
         log.info("Getting warehouses for business ID: {}", businessId);
         return new BaseSuccessResponse<>(warehouseService.findByBusinessId(businessId));

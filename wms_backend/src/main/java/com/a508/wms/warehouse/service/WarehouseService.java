@@ -12,6 +12,7 @@ import com.a508.wms.util.constant.ProductStorageTypeEnum;
 import com.a508.wms.warehouse.domain.Wall;
 import com.a508.wms.warehouse.domain.Warehouse;
 import com.a508.wms.warehouse.dto.WallDto;
+import com.a508.wms.warehouse.dto.WarehouseByBusinessDto;
 import com.a508.wms.warehouse.dto.WarehouseDto;
 import com.a508.wms.warehouse.mapper.WallMapper;
 import com.a508.wms.warehouse.mapper.WarehouseMapper;
@@ -58,12 +59,12 @@ public class WarehouseService {
     /*
     비지니스 id로 창고 목록을 조회하는 메서드
      */
-    public List<WarehouseDto> findByBusinessId(Long businessId) {
+    public List<WarehouseByBusinessDto> findByBusinessId(Long businessId) {
         List<Warehouse> warehouses = warehouseModuleService.findByBusinessId(
             businessId); // 창고 목록 조회
 
         return warehouses.stream()
-            .map(WarehouseMapper::fromWarehouse)
+            .map(WarehouseMapper::toWarehouseByBusinessDto)
             .toList();
     }
 
