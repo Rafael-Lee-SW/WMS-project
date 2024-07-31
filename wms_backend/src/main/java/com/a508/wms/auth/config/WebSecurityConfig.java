@@ -38,38 +38,43 @@ public class WebSecurityConfig {
     @Bean
     protected SecurityFilterChain configure(HttpSecurity httpSecurity) throws Exception {
 
+
         httpSecurity
-            // CORS 설정
             .cors(cors -> cors
                 .configurationSource(corsConfigurationSource())
             )
-            // CSRF 보호 비활성화
             .csrf(CsrfConfigurer::disable)
-            // HTTP 기본 인증 비활성화
             .httpBasic(HttpBasicConfigurer::disable)
-            // 세션 관리 설정 (상태 없는 세션 정책)
             .sessionManagement(sessionManagement -> sessionManagement
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
-            // 요청 권한 설정
             .authorizeHttpRequests(request -> request
-                // "/" 및 "/api/v1/auth/**" 경로를 허가
-                .requestMatchers("/", "/**").permitAll()
-                // "/api/v1/admin/**" 경로에 "ADMIN" 역할 필요
-                .requestMatchers("/**").hasRole("ADMIN")
-                // "/api/v1/user/**" 경로에 "USER" 역할 필요
-                .requestMatchers("/**").hasRole("USER")
-                // 나머지 모든 요청은 인증 필요
-                .anyRequest().authenticated()
+                .requestMatchers("/api/v1/auth/**").permitAll() // 자체 로그인 및 회원가입 경로
+                .requestMatchers("/api/v1/social/**").authenticated() // 소셜 로그인 경로
+                .anyRequest().permitAll()
             )
-            // 인증 실패 처리
-            .exceptionHandling(exceptionHandling -> exceptionHandling
-                .authenticationEntryPoint(new FailedAuthenticationEntryPoint()))
-            // JWT 필터를 UsernamePasswordAuthenticationFilter 앞에 추가
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return httpSecurity.build();
     }
+    /**
+     * 요청 권한 설정
+     *             .authorizeHttpRequests(request -> request
+     *                 // "/" 및 "/api/v1/auth/**" 경로를 허가
+     *                 .requestMatchers("/", "/**").permitAll()
+     *                 // "/api/v1/admin/**" 경로에 "ADMIN" 역할 필요
+     *                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+     *                 // "/api/v1/user/**" 경로에 "USER" 역할 필요
+     *                 .requestMatchers("/api/v1/user/**").hasRole("USER")
+     *                 // 나머지 모든 요청은 인증 필요
+     *                 .anyRequest().authenticated()
+     *             )
+     *             // 인증 실패 처리
+     *             .exceptionHandling(exceptionHandling -> exceptionHandling
+     *                 .authenticationEntryPoint(new FailedAuthenticationEntryPoint()))
+     *             // JWT 필터를 UsernamePasswordAuthenticationFilter 앞에 추가
+     *             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+     */
 
     /**
      * CORS 설정을 구성합니다.

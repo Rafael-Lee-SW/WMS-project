@@ -33,12 +33,11 @@ public class AuthController {
      * @param requestBody
      * @return
      */
-    @PostMapping("/id-check")
+    @PostMapping("/email-check")
     public ResponseEntity<? super IdCheckResponseDto> idCheck(
         @RequestBody @Valid IdCheckRequestDto requestBody
     ) {
-        ResponseEntity<? super IdCheckResponseDto> response = authService.idCheck(requestBody);
-        return response;
+        return authService.idCheck(requestBody);
     }
 
     /**
