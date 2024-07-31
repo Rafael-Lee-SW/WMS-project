@@ -1,11 +1,8 @@
 package com.a508.wms.product.controller;
 
 
-import com.a508.wms.product.dto.ProductExportRequestDto;
-import com.a508.wms.product.dto.ProductExportResponseDto;
-import com.a508.wms.product.dto.ProductImportDto;
-import com.a508.wms.product.dto.ProductRequestDto;
-import com.a508.wms.product.dto.ProductResponseDto;
+import com.a508.wms.product.dto.*;
+import com.a508.wms.product.service.ImportModuleService;
 import com.a508.wms.product.service.ProductService;
 import com.a508.wms.util.BaseSuccessResponse;
 import java.util.List;
@@ -28,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProductController {
 
     private final ProductService productService;
+    private final ImportModuleService importModuleService;
 
     /**
      * (서비스 전체/사업자 별/창고 별/상품 정보별)로의 상품들을 반환하는 기능
@@ -117,22 +115,35 @@ public class ProductController {
     }
 
 
+//    /**
+//     * 물품들의 입고처리를 수행하는 기능
+//     *
+//     * @param importProducts: 입고되는 상품의 정보(엑셀의 한 row)
+//     * @return
+//     */
+//    @PostMapping("/import")
+//    public BaseSuccessResponse<Void> importProducts(
+//        @RequestBody List<ProductImportDto> importProducts
+//    ) {
+//        log.info("import products: {}", importProducts);
+//        importModuleService.parseJsonToProductImportDtos()
+//        productService.importProducts(importProducts);
+//        return new BaseSuccessResponse<>(null);
+//    }
     /**
-     * 물품들의 입고처리를 수행하는 기능
+     * 물품들의 입고처리를 수행하는 기능(리팩토링중)
      *
-     * @param importProducts: 입고되는 상품의 정보(엑셀의 한 row)
+     * @param productImportRequestDto: 입고되는 상품의 정보(엑셀의 한 row)
      * @return
      */
     @PostMapping("/import")
     public BaseSuccessResponse<Void> importProducts(
-        @RequestBody List<ProductImportDto> importProducts
-    ) {
-        log.info("import products: {}", importProducts);
-
-        productService.importProducts(importProducts);
+            @RequestBody ProductImportRequestDto productImportRequestDto
+            ) {
+        log.info("import products: {}", productImportRequestDto);
+        productService.importProducts(productImportRequestDto);
         return new BaseSuccessResponse<>(null);
     }
-
     /**
      * 물품들의 출고 처리를 하는 로직
      *

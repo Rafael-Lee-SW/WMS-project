@@ -14,5 +14,5 @@ public class ProductPickingDto {
     private String locationName;
     private int floorLevel;
     private String productName;
-    private int amount;
+    private int quantity;
 }
