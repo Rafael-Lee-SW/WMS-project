@@ -4,22 +4,20 @@ import com.a508.wms.business.domain.Business;
 import com.a508.wms.business.service.BusinessModuleService;
 import com.a508.wms.floor.domain.Floor;
 import com.a508.wms.floor.service.FloorModuleService;
+import com.a508.wms.notification.repository.NotificationRepository;
+import com.a508.wms.notification.service.NotificationService;
 import com.a508.wms.product.domain.Product;
-import com.a508.wms.product.dto.ProductExportRequestDto;
-import com.a508.wms.product.dto.ProductExportResponseDto;
-import com.a508.wms.product.dto.ProductImportDto;
-import com.a508.wms.product.dto.ProductPickingDto;
-import com.a508.wms.product.dto.ProductPickingLocationDto;
-import com.a508.wms.product.dto.ProductQuantityDto;
-import com.a508.wms.product.dto.ProductRequestDto;
-import com.a508.wms.product.dto.ProductResponseDto;
+import com.a508.wms.product.dto.*;
 import com.a508.wms.product.mapper.ProductMapper;
 import com.a508.wms.productdetail.domain.ProductDetail;
+import com.a508.wms.productdetail.dto.ProductDetailRequestDto;
 import com.a508.wms.productdetail.mapper.ProductDetailMapper;
 import com.a508.wms.productdetail.repository.ProductDetailRepository;
 import com.a508.wms.productdetail.service.ProductDetailModuleService;
 import com.a508.wms.util.constant.StatusEnum;
 import jakarta.transaction.Transactional;
+
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -40,7 +38,9 @@ public class ProductService {
     private final FloorModuleService floorModuleService;
     private final BusinessModuleService businessModuleService;
     private final ProductDetailRepository productDetailRepository;
-
+    private final NotificationService notificationService;
+    private final NotificationRepository notificationRepository;
+    private final ImportModuleService importModuleService;
     /**
      * 서비스의 모든 상품을 반환하는 기능
      *
@@ -180,30 +180,35 @@ public class ProductService {
     }
 
     /**
-     * 상품들의 입고처리를 수행함.
+     * 상품들의 입고처리를 수행
      *
-     * @param requests
+     * @param productImportRequestDto : dto
      */
     @Transactional
-    public void importProducts(List<ProductImportDto> requests) {
+    public void importProducts(ProductImportRequestDto productImportRequestDto) {
         log.info("Importing products");
-        Long warehouseId = requests.get(0).getWarehouseId();
+        Long warehouseId = productImportRequestDto.getWarehouseId();
 
+        log.info("warehouseId : {}",warehouseId);
         //입력된 창고에 정의된 default floor
         Floor defaultFloor = floorModuleService.findByWarehouseIdAndLevel(warehouseId, -1);
 
         log.info("default floor Id: {}", defaultFloor.getId());
 
-        for (ProductImportDto request : requests) {
-            importProduct(request, defaultFloor);
-            log.info("finish save product");
+
+        for (ProductImportRequestDto.ProductData data : productImportRequestDto.getData()) {
+            ProductDetailRequestDto productDetailRequestDto = buildProductDetailRequestDto(data);
+            ProductRequestDto productRequestDto = buildProductRequestDto(data);
+            ProductImportDto productImportDto = buildProductImportDto(productImportRequestDto, productDetailRequestDto, productRequestDto);
+
+            importProduct(productImportDto, defaultFloor);
+            log.info("Finished saving product");
         }
     }
-
     /**
      * 한 상품의 입고처리를 수행함 입고로 들어온 상품이 DB에 있는지 확인한다. 상품의 동등성 판단은 상품 정보 id와 유톻기한으로 한다. 있다면 해당 상품의 총 수량을
      * 입고량만큼 추가해준다. 없다면 새로 상품을 추가한다.
-     *
+     * 추가: 입고 정보를 입고 테이블에 추가한다.
      * @param request
      * @param defaultFloor: 입고 처리 된 상품이 들어가는 default 층
      */
@@ -214,6 +219,7 @@ public class ProductService {
         Product product = findProduct(request.getProduct(), productDetail);
         product.updateFloor(defaultFloor);
         productModuleService.save(product);
+        importModuleService.save(request,product.getProductDetail().getBusiness());
     }
 
     /**
@@ -232,7 +238,7 @@ public class ProductService {
         }
 
         log.info("not found product detail");
-
+        log.info("request : {}", request);
         request.getProductDetail().setBusinessId(request.getBusinessId());
 
         //없으면 ProductDetail을 새로 만들어야함.
@@ -302,9 +308,9 @@ public class ProductService {
                     .path(path)
                     .build();
             }).toList();
-
+        
         log.info("result: {}", result);
-
+//        notificationService.save(NotificationRequestDto.builder().date().build());
         return result;
     }
 
@@ -345,7 +351,7 @@ public class ProductService {
                         .locationName(candidate.getLocationName())
                         .floorLevel(candidate.getFloorLevel())
                         .productName(candidate.getProductName())
-                        .amount(candidate.getProductQuantity() - remains)
+                        .quantity(candidate.getProductQuantity() - remains)
                         .build());
 
                     path.put(candidate.getWarehouseName(), pickings);
@@ -365,7 +371,7 @@ public class ProductService {
                     .locationName(candidate.getLocationName())
                     .floorLevel(candidate.getFloorLevel())
                     .productName(candidate.getProductName())
-                    .amount(0)
+                    .quantity(0)
                     .build());
 
                 path.put(candidate.getWarehouseName(), pickings);
@@ -460,5 +466,48 @@ public class ProductService {
         }
 
         return 2; //처리 불가.
+    }
+
+    /**
+     * data를 ProductDetailRequestDto로 변환하는 메서드
+     * @param data
+     * @return
+     */
+    private ProductDetailRequestDto buildProductDetailRequestDto(ProductImportRequestDto.ProductData data) {
+        return ProductDetailRequestDto.builder()
+                .barcode(data.getBarcode())
+                .name(data.getName())
+                .productStorageTypeEnum(data.getProductStorageTypeEnum())
+                .build();
+    }
+
+    /**
+     * data를 ProductRequestDto로 변환하는 메서드
+     * @param data
+     * @return
+     */
+    private ProductRequestDto buildProductRequestDto(ProductImportRequestDto.ProductData data) {
+        return ProductRequestDto.builder()
+                .productQuantity(data.getQuantity())
+                .expirationDate(data.getExpirationDate() != null ? LocalDateTime.parse(data.getExpirationDate()) : null)
+                .build();
+    }
+
+    /**
+     * dto를 합쳐서 ProductImportDto로 변환하는 메서드
+     * @param productImportRequestDto
+     * @param productDetailRequestDto
+     * @param productRequestDto
+     * @return
+     */
+    private ProductImportDto buildProductImportDto(ProductImportRequestDto productImportRequestDto,
+                                                   ProductDetailRequestDto productDetailRequestDto,
+                                                   ProductRequestDto productRequestDto) {
+        return ProductImportDto.builder()
+                .businessId(productImportRequestDto.getBusinessId())
+                .warehouseId(productImportRequestDto.getWarehouseId())
+                .productDetail(productDetailRequestDto)
+                .product(productRequestDto)
+                .build();
     }
 }

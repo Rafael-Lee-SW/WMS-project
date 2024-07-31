@@ -15,7 +15,6 @@ import com.a508.wms.warehouse.dto.WallDto;
 import com.a508.wms.warehouse.dto.WarehouseDto;
 import com.a508.wms.warehouse.mapper.WallMapper;
 import com.a508.wms.warehouse.mapper.WarehouseMapper;
-import com.a508.wms.warehouse.repository.WallRepository;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -32,9 +31,7 @@ public class WarehouseService {
     private final BusinessModuleService businessModuleService;
     private final LocationModuleService locationModuleService;
     private final FloorModuleService floorModuleService;
-    private final WallRepository wallRepository;
     private final WallModuleService wallModuleService;
-    private final WallMapper wallMapper;
 
     /*
     최초 창고를 생성하는 메서드
@@ -115,6 +112,7 @@ public class WarehouseService {
      */
     @Transactional
     public WarehouseDto updateWarehouse(Long warehouseId, WarehouseDto warehouseDto) {
+        log.info("warehouseID:{},warehouseDto:{}", warehouseId, warehouseDto);
         Warehouse warehouse = warehouseModuleService.findById(warehouseId);
 
         if (warehouseDto.getSize() != 0) {
@@ -135,16 +133,37 @@ public class WarehouseService {
         }
         if (warehouseDto.getWalls() != null) {
             List<Wall> walls = new ArrayList<>();
-            for (WallDto wall : warehouseDto.getWalls()) {
-                Wall saveWall = wallRepository.save(WallMapper.fromDto(wall));
+            for (WallDto wallDto : warehouseDto.getWalls()) {
+                log.info("wall:{}", wallDto);
+                Wall saveWall = wallModuleService.save(WallMapper.fromDto(wallDto, warehouse));
                 walls.add(saveWall);
             }
             warehouse.setWalls(walls);
         }
 
-        Warehouse savedWarehouse = warehouseModuleService.save(warehouse);
+        if (warehouseDto.getLocations() != null) {
+            List<Location> locations = new ArrayList<>();
+            for (LocationDto locationDto : warehouseDto.getLocations()) {
+                log.info("locationDto:{}", locationDto);
+                Location saveLocation = locationModuleService.save(
+                    LocationMapper.fromDto(locationDto, warehouse));
+                locations.add(saveLocation);
+            }
+            warehouse.setLocations(locations);
+        }
 
-        return WarehouseMapper.fromWarehouse(savedWarehouse);
+        Warehouse savedWarehouse = warehouseModuleService.save(warehouse);
+        WarehouseDto savedWarehouseDto = WarehouseMapper.fromWarehouse(savedWarehouse);
+
+        savedWarehouseDto.setLocations(savedWarehouse.getLocations().stream()
+            .map(LocationMapper::fromLocation)
+            .toList());
+
+        savedWarehouseDto.setWalls(savedWarehouse.getWalls().stream()
+            .map(WallMapper::fromWall)
+            .toList());
+
+        return savedWarehouseDto;
     }
 
     /*

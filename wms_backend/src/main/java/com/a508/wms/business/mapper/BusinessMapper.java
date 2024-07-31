@@ -6,7 +6,7 @@ import com.a508.wms.employee.domain.Employee;
 import com.a508.wms.employee.dto.EmployeeDto;
 import com.a508.wms.employee.mapper.EmployeeMapper;
 import com.a508.wms.notification.domain.Notification;
-import com.a508.wms.notification.dto.NotificationDto;
+import com.a508.wms.notification.dto.NotificationResponseDto;
 import com.a508.wms.subscription.domain.Subscription;
 import com.a508.wms.subscription.dto.SubscriptionDto;
 import com.a508.wms.notification.mapper.NotificationMapper;
@@ -43,12 +43,12 @@ public class BusinessMapper {
             business.setEmployees(employees);
         }
 //        TODO: 여기에 Product 변환 메서드 작성
-        if (businessDto.getNotificationDtoList() != null) {
-            List<Notification> notifications = businessDto.getNotificationDtoList()
-                    .stream().map(NotificationMapper::fromDto)
-                    .toList();
-            business.setNotifications(notifications);
-        }
+//        if (businessDto.getNotificationDtoList() != null) {
+//            List<Notification> notifications = businessDto.getNotificationDtoList()
+//                    .stream().map(NotificationMapper::fromDto)
+//                    .toList();
+//            business.setNotifications(notifications);
+//        }
         if (businessDto.getSubscriptionDtoList() != null) {
             List<Subscription> subscriptions = businessDto.getSubscriptionDtoList()
                     .stream().map(SubscriptionMapper::fromDto)
@@ -86,12 +86,12 @@ public class BusinessMapper {
             businessDto.setEmployeeDtoList(employees);
         }
 //        TODO: 여기에 Product 변환 메서드 작성
-        if (business.getNotifications() != null) {
-            List<NotificationDto> notifications = business.getNotifications()
-                    .stream().map(NotificationMapper::fromNotification)
-                    .toList();
-            businessDto.setNotificationDtoList(notifications);
-        }
+//        if (business.getNotifications() != null) {
+//            List<NotificationDto> notifications = business.getNotifications()
+//                    .stream().map(NotificationMapper::fromNotification)
+//                    .toList();
+//            businessDto.setNotificationDtoList(notifications);
+//        }
         if (business.getSubscriptions() != null) {
             List<SubscriptionDto> subscriptions = business.getSubscriptions()
                     .stream().map(SubscriptionMapper::fromSubscription)
