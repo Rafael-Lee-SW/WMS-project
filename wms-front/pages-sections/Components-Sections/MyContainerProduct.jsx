@@ -234,7 +234,7 @@ const ExcelImport = () => {
       quantity: row[selectedColumns.quantity],
       expiry: selectedColumns.expiry !== null ? row[selectedColumns.expiry] : null,
     }));
-
+    console.log(postData)
     // Send the gathered data to the API
     APIPOSTConnectionTest(postData);
 
@@ -277,7 +277,7 @@ const ExcelImport = () => {
   //API 통신 테스트
   const APIConnectionTest = async () => {
     try {
-      const response = await fetch("https://i11a508.p.ssafy.io/api/products", {
+      const response = await fetch("https://i11a508.p.ssafy.io/api/products?bussinessId=1", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -293,10 +293,12 @@ const ExcelImport = () => {
           name: product.productDetail.name,
           barcode: product.productDetail.barcode,
           quantity: product.quantity,
+          location: product.locationName,
+          floorLevel : product.floorLevel,
         }));
 
         // Define the columns
-        const headers = ["name", "barcode", "quantity"];
+        const headers = ["이름", "바코드(식별번호)", "수량", "적재함", "단(층)수" ];
 
         const formattedColumns = headers.map((head) => ({
           name: head,
@@ -308,6 +310,8 @@ const ExcelImport = () => {
           product.name,
           product.barcode,
           product.quantity,
+          product.location,
+          product.floorLevel,
         ]);
 
         setColumns(formattedColumns);
@@ -491,7 +495,7 @@ const ExcelImport = () => {
           height={600}
           ref={hotTableRef}
           data={tableData}
-          colWidths={[200, 200, 150, 200, 150, 130, 156]}
+          colWidths={[`120vw`, `130vw`, `50`, `100`, `100`, 130, 156]}
           colHeaders={columns.map((col) => col.label)}
           dropdownMenu={true}
           hiddenColumns={{
