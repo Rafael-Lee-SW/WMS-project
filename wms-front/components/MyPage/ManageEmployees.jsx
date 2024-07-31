@@ -1,20 +1,23 @@
-import axios from 'axios';
+import { useEffect } from 'react';
+import { deleteEmployee } from '../../pages/api';
 
 // 직원관리
 export default function ManageEmployees({employees}) {
 
   const handleDelete = (employeeId) => {
-    // 직원 삭제 로직 추가
-    axios.delete(`/api/delete-employee/${employeeId}`)
-      .then(() => {
-        console.log('직원이 성공적으로 삭제되었습니다.');
-        // 필요 시, 직원 목록 갱신 로직 추가
-      })
-      .catch((error) => {
-        // 오류 처리
-        console.error('직원 삭제에 실패했습니다.', error);
-      });
-  };
+    useEffect(() => {
+      const removeEmployee = async () => {
+        // 직원 삭제 요청
+        try {
+          deleteEmployee(employeeId);
+          console.log("직원 삭제가 완료되었습니다.");
+        } catch (error) {
+          console.log(error);
+        }
+      }
+      removeEmployee();
+  }, [])};
+
   return (
     <div>
       <h2>직원 관리</h2>
