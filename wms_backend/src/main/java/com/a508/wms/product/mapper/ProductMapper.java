@@ -1,5 +1,6 @@
 package com.a508.wms.product.mapper;
 
+import com.a508.wms.product.domain.Import;
 import com.a508.wms.product.domain.Product;
 import com.a508.wms.product.dto.ProductResponseDto;
 import com.a508.wms.productdetail.mapper.ProductDetailMapper;
@@ -25,4 +26,5 @@ public class ProductMapper {
             .productDetail(ProductDetailMapper.fromProductDetail(product.getProductDetail()))
             .build();
     }
+
 }

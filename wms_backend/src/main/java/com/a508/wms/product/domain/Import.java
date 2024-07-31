@@ -1,4 +1,4 @@
-package com.a508.wms.notification.domain;
+package com.a508.wms.product.domain;
 
 import com.a508.wms.business.domain.Business;
 import com.a508.wms.util.BaseTimeEntity;
@@ -8,14 +8,13 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Entity
+@Table(name = "import")
 @Getter
-@Table(name = "notification")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Notification extends BaseTimeEntity {
-
+@Entity
+public class Import extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -25,18 +24,25 @@ public class Notification extends BaseTimeEntity {
     private Business business;
 
     @Column(nullable = false)
-    private boolean readOrNot;
+    private Long warehouseId;
 
     @Column(nullable = false)
+    private Long barcode;
+
+    @Column
+    private LocalDateTime expirationDate;
+
+    @Column(nullable = false)
+    private String name;
+
+    @Column(nullable = false)
+    private int productQuantity;
+
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private StatusEnum statusEnum = StatusEnum.ACTIVE;
 
-    @Column(nullable = false)
-    private LocalDateTime date;
-    //연관관계 편의 매서드
-    public void setBusiness(Business business) {
+    public void updateBusiness(Business business) {
         this.business = business;
-        business.getNotifications().add(this);
     }
 }

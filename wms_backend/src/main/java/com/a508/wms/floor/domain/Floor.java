@@ -17,13 +17,13 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.SQLRestriction;
 
 @Entity
@@ -33,6 +33,7 @@ import org.hibernate.annotations.SQLRestriction;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "floor")
+@ToString
 public class Floor extends BaseTimeEntity {
 
     @Id
@@ -43,13 +44,11 @@ public class Floor extends BaseTimeEntity {
     @JoinColumn(name = "location_id", nullable = false)
     private Location location;
 
-    @Builder.Default
     @Column(nullable = false)
-    private int floorLevel = -1;
+    private int floorLevel;
 
-    @Builder.Default
     @Column(nullable = false)
-    private ExportTypeEnum exportTypeEnum = ExportTypeEnum.IMPORT;
+    private ExportTypeEnum exportTypeEnum;
 
     @Builder.Default
     @Column(nullable = false)
@@ -62,6 +61,11 @@ public class Floor extends BaseTimeEntity {
 
     public void updateStatusEnum(StatusEnum statusEnum) {
         this.statusEnum = statusEnum;
+    }
+
+    //삭제 처리
+    public void delete() {
+        this.statusEnum = StatusEnum.DELETED;
     }
 
     //연관관계 편의 메서드

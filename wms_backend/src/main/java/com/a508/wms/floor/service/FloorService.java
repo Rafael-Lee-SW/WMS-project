@@ -21,7 +21,7 @@ public class FloorService {
      * @param locationId: 로케이션 iD
      * @return FloorDto List
      */
-    public List<FloorDto> getAllByLocationId(Long locationId) {
+    public List<FloorDto> findAllByLocationId(Long locationId) {
         List<Floor> floors = floorModuleService.findAllByLocationId(locationId);
 
         return floors.stream()

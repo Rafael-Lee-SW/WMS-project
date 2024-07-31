@@ -23,18 +23,24 @@ public class FloorController {
     /**
      * LocationId를 통해 해당 로케이션이 보유한 층 전부 조회
      *
-     * @param locationId:로케이션 아이디
+     * @param locationId:location 아이디
      * @return FloorDto List
      */
     @GetMapping
-    public BaseSuccessResponse<List<FloorDto>> getAllByLocationId(
+    public BaseSuccessResponse<List<FloorDto>> findAllByLocationId(
         @RequestParam(name = "locationId") Long locationId) {
         log.info("get all Floors by locationId: {}", locationId);
-        return new BaseSuccessResponse<>(floorService.getAllByLocationId(locationId));
+        return new BaseSuccessResponse<>(floorService.findAllByLocationId(locationId));
     }
 
+    /**
+     * floor의 Id를 통해 해당 floor를 조회
+     *
+     * @param id:floor 아이디
+     * @return FloorDto
+     */
     @GetMapping("/{id}")
-    public BaseSuccessResponse<FloorDto> getById(@PathVariable Long id) {
+    public BaseSuccessResponse<FloorDto> findById(@PathVariable Long id) {
         log.info("get Floor by id: {}", id);
         return new BaseSuccessResponse<>(floorService.findById(id));
     }

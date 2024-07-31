@@ -6,7 +6,6 @@ import com.a508.wms.user.domain.User;
 import com.a508.wms.user.dto.UserDto;
 import com.a508.wms.user.mapper.UserMapper;
 import com.a508.wms.notification.domain.Notification;
-import com.a508.wms.notification.dto.NotificationDto;
 import com.a508.wms.subscription.domain.Subscription;
 import com.a508.wms.subscription.dto.SubscriptionDto;
 import com.a508.wms.notification.mapper.NotificationMapper;
@@ -35,33 +34,29 @@ public class BusinessMapper {
             .businessNumber(businessDto.getBusinessNumber())
             .statusEnum(businessDto.getStatusEnum())
             .build();
-
-        if (businessDto.getUser() != null) {
-            User user = UserMapper.fromDto(businessDto.getUser());
+        if (businessDto.getUserDto() != null) {
+            User user = UserMapper.fromDto( businessDto.getUserDto());
             business.setUser(user);
         }
-
-        if (businessDto.getNotificationDtoList() != null) {
-            List<Notification> notifications = businessDto.getNotificationDtoList()
-                .stream().map(NotificationMapper::fromDto)
-                .collect(Collectors.toList());
-            business.setNotifications(notifications);
-        }
-
+//        TODO: 여기에 Product 변환 메서드 작성
+//        if (businessDto.getNotificationDtoList() != null) {
+//            List<Notification> notifications = businessDto.getNotificationDtoList()
+//                    .stream().map(NotificationMapper::fromDto)
+//                    .toList();
+//            business.setNotifications(notifications);
+//        }
         if (businessDto.getSubscriptionDtoList() != null) {
             List<Subscription> subscriptions = businessDto.getSubscriptionDtoList()
                 .stream().map(SubscriptionMapper::fromDto)
-                .collect(Collectors.toList());
+                .toList();
             business.setSubscriptions(subscriptions);
         }
-
         if (businessDto.getWarehouseDtoList() != null) {
             List<Warehouse> warehouses = businessDto.getWarehouseDtoList()
                 .stream().map(WarehouseMapper::fromDto)
-                .collect(Collectors.toList());
+                .toList();
             business.setWarehouses(warehouses);
         }
-
         return business;
     }
 
@@ -75,35 +70,33 @@ public class BusinessMapper {
             .id(business.getId())
             .name(business.getName())
             .businessNumber(business.getBusinessNumber())
+            .createdDate(business.getCreatedDate())
+            .updatedDate(business.getUpdatedDate())
             .statusEnum(business.getStatusEnum())
             .build();
-
         if (business.getUser() != null) {
             UserDto userDto = UserMapper.fromUser(business.getUser());
-            businessDto.setUser(userDto);
+            businessDto.setUserDto(userDto);
         }
-
-        if (business.getNotifications() != null) {
-            List<NotificationDto> notifications = business.getNotifications()
-                .stream().map(NotificationMapper::fromNotification)
-                .collect(Collectors.toList());
-            businessDto.setNotificationDtoList(notifications);
-        }
-
+//        TODO: 여기에 Product 변환 메서드 작성
+//        if (business.getNotifications() != null) {
+//            List<NotificationDto> notifications = business.getNotifications()
+//                    .stream().map(NotificationMapper::fromNotification)
+//                    .toList();
+//            businessDto.setNotificationDtoList(notifications);
+//        }
         if (business.getSubscriptions() != null) {
             List<SubscriptionDto> subscriptions = business.getSubscriptions()
                 .stream().map(SubscriptionMapper::fromSubscription)
-                .collect(Collectors.toList());
+                .toList();
             businessDto.setSubscriptionDtoList(subscriptions);
         }
-
         if (business.getWarehouses() != null) {
             List<WarehouseDto> warehouses = business.getWarehouses()
                 .stream().map(WarehouseMapper::fromWarehouse)
-                .collect(Collectors.toList());
+                .toList();
             businessDto.setWarehouseDtoList(warehouses);
         }
-
         return businessDto;
     }
 }
