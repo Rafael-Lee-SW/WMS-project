@@ -5,9 +5,9 @@ import React, { useState, useRef, useEffect } from "react";
 
 // Import MUI components
 import Grid from "@mui/material/Grid";
+import Paper from "@mui/material/Paper";
 import Fab from "@mui/material/Fab";
 import Button from "@mui/material/Button";
-
 // 모달 페이지를 위한 Import
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -48,8 +48,8 @@ import {
 
 import Handsontable from "handsontable";
 
-// Import the DataGrid component from MUI
-import { DataGrid } from "@mui/x-data-grid";
+//좋은 데이터 포멧을 위해서 불러오는 mui
+import MUIDataTable from "mui-datatables";
 
 // Register cell types and plugins
 registerCellType(CheckboxCellType);
@@ -62,6 +62,8 @@ registerPlugin(CopyPaste);
 registerPlugin(DropdownMenu);
 registerPlugin(Filters);
 registerPlugin(HiddenRows);
+
+//스타일 불러오기
 
 // Starting point of Excel control
 const ExcelImport = () => {
@@ -83,7 +85,11 @@ const ExcelImport = () => {
     expiry: null,
   });
 
-  const [openEditModal, setOpenEditModal] = useState(false); // State for modal open/close
+  // Convert data to array of arrays and set table data
+  const convertToArrayOfArrays = (data) => {
+    setTableData(data);
+    return data;
+  };
 
   // Convert data to array of arrays and set table data
   const convertToArrayOfArraysModal = (data) => {
@@ -131,6 +137,62 @@ const ExcelImport = () => {
     XLSX.writeFile(workbook, "ADN_project엑셀테스트.xlsx");
   };
 
+  // Load local Excel file
+  const loadLocalExcel = async () => {
+    const response = await fetch("/excel/Uniqlo.xlsx");
+    const data = await response.arrayBuffer();
+    const file = new File([data], "Uniqlo.xlsx", {
+      type: "application/vnd.ms-excel",
+    });
+    importExcel(file);
+  };
+
+  // -- json save & load part
+
+  // Save the table data as a JSON file in the local public/excel directory
+  const saveJsonToLocal = async () => {
+    try {
+      const response = await fetch("/api/save-json", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(tableData),
+      });
+
+      if (response.ok) {
+        console.log("JSON data saved successfully");
+      } else {
+        console.error("Error saving JSON data");
+      }
+    } catch (error) {
+      console.error("Error saving JSON data:", error);
+    }
+  };
+
+  // Load the JSON data file from the local public/excel directory
+  const loadJsonFromLocal = async () => {
+    try {
+      const response = await fetch("/api/load-json", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        const jsonData = await response.json();
+        setTableData(jsonData);
+      } else {
+        console.error("Error loading JSON data");
+      }
+    } catch (error) {
+      console.error("Error loading JSON data:", error);
+    }
+  };
+
+  // -- json save & load part
+
   // Apply color to the specified column
   const applyColumnColor = (columnIndex, color) => {
     const hotInstance = hotTableRef.current.hotInstance;
@@ -177,7 +239,6 @@ const ExcelImport = () => {
       quantity: row[selectedColumns.quantity],
       expiration_date:
         selectedColumns.expiry !== null ? row[selectedColumns.expiry] : null,
-      productStorageTypeEnum: "상온",
     }));
     console.log("일단 데이터를 만든다.");
     console.log(postData);
@@ -303,26 +364,6 @@ const ExcelImport = () => {
     APIConnectionTest();
   }, []);
 
-  // Define the columns and rows for the DataGrid
-  const dataGridColumns = [
-    { field: "name", headerName: "이름", width: 130 },
-    { field: "barcode", headerName: "바코드(식별번호)", width: 180 },
-    { field: "quantity", headerName: "수량", width: 100 },
-    { field: "location", headerName: "적재함", width: 130 },
-    { field: "floorLevel", headerName: "단(층)수", width: 100 },
-  ];
-
-  const dataGridRows = tableData.map((row, index) => ({
-    id: index,
-    name: row[0],
-    barcode: row[1],
-    quantity: row[2],
-    location: row[3],
-    floorLevel: row[4],
-  }));
-
-  // MUI Data Table options
-  const options = {};
 
   return (
     <div style={{ marginBottom: "1%", margin: "2%" }}>
@@ -360,6 +401,9 @@ const ExcelImport = () => {
           <Button variant="contained" color="secondary" onClick={downloadExcel}>
             Excel 다운로드
           </Button>
+          <Button variant="contained" color="primary" onClick={loadLocalExcel}>
+            로컬 엑셀 파일 불러오기
+          </Button>
         </Grid>
         <Grid item xs={6} md={4}>
           <Button
@@ -369,7 +413,16 @@ const ExcelImport = () => {
           >
             컬럼 색상 변경
           </Button>
-
+          <Button variant="contained" color="primary" onClick={saveJsonToLocal}>
+            JSON 저장
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={loadJsonFromLocal}
+          >
+            JSON 로드
+          </Button>
           <Button
             variant="contained"
             color="primary"
@@ -383,13 +436,6 @@ const ExcelImport = () => {
             onClick={() => APIPOSTConnectionTest(tableData)} // Updated to send current table data
           >
             Send POST Request
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => setOpenEditModal(true)}
-          >
-            엑셀에서 수정하기
           </Button>
         </Grid>
       </div>
@@ -458,6 +504,7 @@ const ExcelImport = () => {
               navigableHeaders={true}
               licenseKey="non-commercial-and-evaluation"
               afterOnCellMouseDown={handleColumnClick}
+
             />
           </DialogContent>
           <DialogActions>
@@ -471,61 +518,33 @@ const ExcelImport = () => {
             </Button>
           </DialogActions>
         </Dialog>
-
-        <Dialog
-          open={openEditModal}
-          onClose={() => setOpenEditModal(false)}
-          maxWidth="lg"
-          fullWidth
-        >
-          <DialogTitle>데이터를 수정하고 저장하세요.</DialogTitle>
-          <DialogContent>
-            <HotTable
-              height={600}
-              ref={hotTableRef}
-              data={tableData}
-              colWidths={[`120vw`, `130vw`, `50`, `100`, `100`, 130, 156]}
-              colHeaders={columns.map((col) => col.label)}
-              dropdownMenu={true}
-              hiddenColumns={{
-                indicators: true,
-              }}
-              contextMenu={true}
-              multiColumnSorting={true}
-              filters={true}
-              rowHeaders={true}
-              autoWrapCol={true}
-              autoWrapRow={true}
-              afterGetColHeader={alignHeaders}
-              beforeRenderer={addClassesToRows}
-              manualRowMove={true}
-              navigableHeaders={true}
-              licenseKey="non-commercial-and-evaluation"
-              afterOnCellMouseDown={handleColumnClick}
-            ></HotTable>
-          </DialogContent>
-          <DialogActions>
-            <Button color="primary">저장하기</Button>
-            <Button onClick={() => setOpenEditModal(false)} color="primary">
-              닫기
-            </Button>
-          </DialogActions>
-        </Dialog>
+        <HotTable
+          height={600}
+          ref={hotTableRef}
+          data={tableData}
+          colWidths={[`120vw`, `130vw`, `50`, `100`, `100`, 130, 156]}
+          colHeaders={columns.map((col) => col.label)}
+          dropdownMenu={true}
+          hiddenColumns={{
+            indicators: true,
+          }}
+          contextMenu={true}
+          multiColumnSorting={true}
+          filters={true}
+          rowHeaders={true}
+          autoWrapCol={true}
+          autoWrapRow={true}
+          afterGetColHeader={alignHeaders}
+          beforeRenderer={addClassesToRows}
+          manualRowMove={true}
+          navigableHeaders={true}
+          licenseKey="non-commercial-and-evaluation"
+          afterOnCellMouseDown={handleColumnClick}
+        ></HotTable>
       </div>
+
       <Grid item xs={12}>
-        <div style={{ height: 400, width: "100%" }}>
-          <DataGrid
-            rows={dataGridRows}
-            columns={dataGridColumns}
-            initialState={{
-              pagination: {
-                paginationModel: { page: 0, pageSize: 5 },
-              },
-            }}
-            pageSizeOptions={[5, 10]}
-            checkboxSelection
-          />
-        </div>
+        <MUIDataTable title={"Excel 가져오기"} data={tableData} columns={columns}/>
       </Grid>
     </div>
   );

@@ -1175,7 +1175,7 @@ const Complicated = () => {
                 <br />
                 <b>Type : {selectedRect.type}</b>
                 <br />
-                <b>rotation : {selectedRect.rotation}</b>
+                <b>층수 : {selectedRect.z}</b>
                 <hr />
                 {rectangleData.length > 0 && (
                   <div>
@@ -1312,6 +1312,7 @@ const Complicated = () => {
             <div
               style={{
                 border: "2px solid black",
+                padding: "5px",
                 borderRadius: 20,
                 width: "100%",
                 height: "17vh",
