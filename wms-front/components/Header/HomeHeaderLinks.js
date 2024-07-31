@@ -30,7 +30,6 @@ export default function HeaderLinks(props) {
           <Button
           href="/login"
           color="transparent"
-          target="_blank"
           className={classes.navLink}>
           <Icon className={classes.icons}>unarchive</Icon>로그인
         </Button>
@@ -39,16 +38,15 @@ export default function HeaderLinks(props) {
         <Button
           href="/signup"
           color="transparent"
-          target="_blank"
+          // target="_blank" // 이를 통해 새로운 페이지로 띄워버릴 수 있다.
           className={classes.navLink}>
           <Icon className={classes.icons}>unarchive</Icon>회원가입
         </Button>
       </ListItem>
       <ListItem className={classes.listItem}>
         <Button
-          href="https://www.creative-tim.com/product/nextjs-material-kit?ref=njsmk-navbar"
+          href="/components"
           color="transparent"
-          target="_blank"
           className={classes.navLink}>
           <CloudDownload className={classes.icons} />사용방법
         </Button>

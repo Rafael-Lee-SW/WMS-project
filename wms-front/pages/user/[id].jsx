@@ -7,7 +7,7 @@ import Link from "next/link";
 import { makeStyles } from "@material-ui/core/styles";
 // core components
 import Header from "/components/Header/UserHeader.jsx";
-import HeaderLinks from "/components/Header/HeaderLinks.js";
+import HeaderLinks from "/components/Header/HomeHeaderLinks.js";
 import Footer from "/components/Footer/Footer.js";
 import GridContainer from "/components/Grid/GridContainer.js";
 import GridItem from "/components/Grid/GridItem.js";
