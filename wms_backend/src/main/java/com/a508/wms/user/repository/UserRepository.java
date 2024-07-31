@@ -1,0 +1,28 @@
+package com.a508.wms.user.repository;
+
+import com.a508.wms.user.domain.User;
+import com.a508.wms.util.constant.RoleTypeEnum;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.List;
+
+public interface UserRepository extends JpaRepository<User, Long> {
+
+    boolean existsByEmail(String email);
+
+    //businessId에 맞는 role이 직원인 모든 직원을 반환
+    @Query("SELECT u FROM User u WHERE u.business.id = :businessId AND u.roleTypeEnum = :roleTypeEnum")
+    List<User> findEmployeesByBusinessId(@Param("businessId") long businessId);
+
+    // role이 직원인 모든 사용자를 반환
+    @Query("SELECT u FROM User u WHERE u.roleTypeEnum = :roleTypeEnum")
+    List<User> findAllEmployees(@Param("roleTypeEnum") RoleTypeEnum roleTypeEnum);
+
+    // businessId에 맞는 모든 사용자를 반환
+    @Query("SELECT u FROM User u WHERE u.business.id = :businessId")
+    List<User> findByBusinessId(@Param("businessId") long businessId);
+
+    User findUserByEmail(String email);
+}

@@ -1,8 +1,8 @@
 package com.a508.wms.auth.filter;
 
 import com.a508.wms.auth.provider.JwtProvider;
-import com.a508.wms.business.domain.Business;
-import com.a508.wms.business.repository.BusinessRepository;
+import com.a508.wms.user.domain.User;
+import com.a508.wms.user.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,7 +28,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtProvider jwtProvider;
-    private final BusinessRepository businessRepository;
+    private final UserRepository userRepository;
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     /**
@@ -61,26 +61,35 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
 
-            // 5. 유저 ID로 Business 엔티티 조회
-            Business business = businessRepository.findById(Long.parseLong(userId)).orElse(null);
-            logger.info("Business: {}", business);
+            // 5. 유저 ID로 User 엔티티 조회
+            User user = userRepository.findById(Long.parseLong(userId)).orElse(null);
+            logger.info("User: {}", user);
 
-            // 6. Business 엔티티가 없을 경우 다음 필터로 진행
-            if (business == null) {
-                logger.info("Business entity not found, proceeding to next filter.");
+            // 6. User 엔티티가 없을 경우 다음 필터로 진행
+            if (user == null) {
+                logger.info("User entity not found, proceeding to next filter.");
                 filterChain.doFilter(request, response);
                 return;
             }
 
-            // 7. Business 엔티티에서 role 가져오기
-            int role = business.getRole();
+            // 7. User 엔티티에서 role 가져오기
+            String role = user.getRoleTypeEnum().name();
             List<GrantedAuthority> authorities = new ArrayList<>();
 
             // 역할에 따라 권한 부여
-            if (role == 1) {
-                authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
-            } else {
-                authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+            switch (role) {
+                case "ADMIN":
+                    authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+                    break;
+                case "EMPLOYEE":
+                    authorities.add(new SimpleGrantedAuthority("ROLE_EMPLOYEE"));
+                    break;
+                case "BUSINESS":
+                    authorities.add(new SimpleGrantedAuthority("ROLE_BUSINESS"));
+                    break;
+                default:
+                    authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+                    break;
             }
 
             // 8. 빈 SecurityContext 생성

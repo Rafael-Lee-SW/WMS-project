@@ -2,9 +2,9 @@ package com.a508.wms.business.mapper;
 
 import com.a508.wms.business.domain.Business;
 import com.a508.wms.business.dto.BusinessDto;
-import com.a508.wms.employee.domain.Employee;
-import com.a508.wms.employee.dto.EmployeeDto;
-import com.a508.wms.employee.mapper.EmployeeMapper;
+import com.a508.wms.user.domain.User;
+import com.a508.wms.user.dto.UserDto;
+import com.a508.wms.user.mapper.UserMapper;
 import com.a508.wms.notification.domain.Notification;
 import com.a508.wms.notification.dto.NotificationDto;
 import com.a508.wms.subscription.domain.Subscription;
@@ -17,6 +17,7 @@ import com.a508.wms.warehouse.mapper.WarehouseMapper;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class BusinessMapper {
@@ -29,38 +30,38 @@ public class BusinessMapper {
      */
     public static Business fromDto(BusinessDto businessDto) {
         Business business = Business.builder()
-                .id(businessDto.getId())
-                .name(businessDto.getName())
-                .email(businessDto.getEmail())
-                .password(businessDto.getPassword())
-                .businessNumber(businessDto.getBusinessNumber())
-                .statusEnum(businessDto.getStatusEnum())
-                .build();
-        if (businessDto.getEmployeeDtoList() != null) {
-            List<Employee> employees = businessDto.getEmployeeDtoList()
-                    .stream().map(EmployeeMapper::fromDto)
-                    .toList();
-            business.setEmployees(employees);
+            .id(businessDto.getId())
+            .name(businessDto.getName())
+            .businessNumber(businessDto.getBusinessNumber())
+            .statusEnum(businessDto.getStatusEnum())
+            .build();
+
+        if (businessDto.getUser() != null) {
+            User user = UserMapper.fromDto(businessDto.getUser());
+            business.setUser(user);
         }
-//        TODO: 여기에 Product 변환 메서드 작성
+
         if (businessDto.getNotificationDtoList() != null) {
             List<Notification> notifications = businessDto.getNotificationDtoList()
-                    .stream().map(NotificationMapper::fromDto)
-                    .toList();
+                .stream().map(NotificationMapper::fromDto)
+                .collect(Collectors.toList());
             business.setNotifications(notifications);
         }
+
         if (businessDto.getSubscriptionDtoList() != null) {
             List<Subscription> subscriptions = businessDto.getSubscriptionDtoList()
-                    .stream().map(SubscriptionMapper::fromDto)
-                    .toList();
+                .stream().map(SubscriptionMapper::fromDto)
+                .collect(Collectors.toList());
             business.setSubscriptions(subscriptions);
         }
+
         if (businessDto.getWarehouseDtoList() != null) {
             List<Warehouse> warehouses = businessDto.getWarehouseDtoList()
-                    .stream().map(WarehouseMapper::fromDto)
-                    .toList();
+                .stream().map(WarehouseMapper::fromDto)
+                .collect(Collectors.toList());
             business.setWarehouses(warehouses);
         }
+
         return business;
     }
 
@@ -71,39 +72,38 @@ public class BusinessMapper {
      */
     public static BusinessDto fromBusiness(Business business) {
         BusinessDto businessDto = BusinessDto.builder()
-                .id(business.getId())
-                .email(business.getEmail())
-                .name(business.getName())
-                .businessNumber(business.getBusinessNumber())
-                .createdDate(business.getCreatedDate())
-                .updatedDate(business.getUpdatedDate())
-                .statusEnum(business.getStatusEnum())
-                .build();
-        if (business.getEmployees() != null) {
-            List<EmployeeDto> employees = business.getEmployees()
-                    .stream().map(EmployeeMapper::fromEmployee)
-                    .toList();
-            businessDto.setEmployeeDtoList(employees);
+            .id(business.getId())
+            .name(business.getName())
+            .businessNumber(business.getBusinessNumber())
+            .statusEnum(business.getStatusEnum())
+            .build();
+
+        if (business.getUser() != null) {
+            UserDto userDto = UserMapper.fromUser(business.getUser());
+            businessDto.setUser(userDto);
         }
-//        TODO: 여기에 Product 변환 메서드 작성
+
         if (business.getNotifications() != null) {
             List<NotificationDto> notifications = business.getNotifications()
-                    .stream().map(NotificationMapper::fromNotification)
-                    .toList();
+                .stream().map(NotificationMapper::fromNotification)
+                .collect(Collectors.toList());
             businessDto.setNotificationDtoList(notifications);
         }
+
         if (business.getSubscriptions() != null) {
             List<SubscriptionDto> subscriptions = business.getSubscriptions()
-                    .stream().map(SubscriptionMapper::fromSubscription)
-                    .toList();
+                .stream().map(SubscriptionMapper::fromSubscription)
+                .collect(Collectors.toList());
             businessDto.setSubscriptionDtoList(subscriptions);
         }
+
         if (business.getWarehouses() != null) {
             List<WarehouseDto> warehouses = business.getWarehouses()
-                    .stream().map(WarehouseMapper::fromWarehouse)
-                    .toList();
+                .stream().map(WarehouseMapper::fromWarehouse)
+                .collect(Collectors.toList());
             businessDto.setWarehouseDtoList(warehouses);
         }
+
         return businessDto;
     }
 }

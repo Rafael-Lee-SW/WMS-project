@@ -49,6 +49,7 @@ public class BusinessModuleService {
     /**
      * 사업체의 정보를 삭제하는 메서드 실제로 지우지 않고, 상태를 DELETED로 변경하여 삭제된 것 처럼 처리
      */
+
     public Business delete(Business business) {
         business.setStatusEnum(StatusEnum.DELETED);
         return save(business);

@@ -1,7 +1,7 @@
-package com.a508.wms.employee.service;
+package com.a508.wms.user.service;
 
-import com.a508.wms.employee.domain.Employee;
-import com.a508.wms.employee.repository.EmployeeRepository;
+import com.a508.wms.user.domain.User;
+import com.a508.wms.user.repository.UserRepository;
 import com.a508.wms.util.constant.StatusEnum;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -11,17 +11,17 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class EmployeeModuleService {
+public class UserModuleService {
 
-    private final EmployeeRepository employeeRepository;
+    private final UserRepository userRepository;
 
     /**
      * 전체 직원을 조회하는 메서드
      *
      * @return List<EmployeeDto> (전체 직원)
      */
-    public List<Employee> findAll() {
-        return employeeRepository.findAll();
+    public List<User> findAllEmployee() {
+        return userRepository.findAll();
     }
 
     /**
@@ -30,8 +30,8 @@ public class EmployeeModuleService {
      * @param id : 직원의 고유 번호
      * @return employeeDto
      */
-    public Employee findById(long id) {
-        return employeeRepository.findById(id)
+    public User findById(long id) {
+        return userRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Invalid Employee ID: " + id));
     }
 
@@ -41,23 +41,23 @@ public class EmployeeModuleService {
      * @param businessId
      * @return List<EmployeeDto> (특정 사업체의 전체 직원)
      */
-    public List<Employee> findByBusinessId(long businessId) {
-        return employeeRepository.findByBusinessId(businessId);
+    public List<User> findByBusinessId(long businessId) {
+        return userRepository.findEmployeesByBusinessId(businessId);
     }
 
-    public Employee save(Employee employee) {
-        return employeeRepository.save(employee);
+    public User save(User user) {
+        return userRepository.save(user);
     }
 
 
     /**
      * 직원 1명을 삭제하는 메서드. 실제로 데이터를 지우지 않고 상태를 DELETED로 변경해 삭제된것 처럼 처리.
      *
-     * @param employee : 삭제하려는 직원 정보
+     * @param user : 삭제하려는 직원 정보
      * @return employeeDto : 변경된 직원의 정보
      */
-    public Employee delete(Employee employee) {
-        employee.setStatusEnum(StatusEnum.DELETED);
-        return save(employee);
+    public User delete(User user) {
+        user.setStatusEnum(StatusEnum.DELETED);
+        return save(user);
     }
 }
