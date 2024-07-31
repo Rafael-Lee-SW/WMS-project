@@ -133,7 +133,7 @@ public class ProductController {
     /**
      * 물품들의 입고처리를 수행하는 기능(리팩토링중)
      *
-     * @param importProducts: 입고되는 상품의 정보(엑셀의 한 row)
+     * @param productImportRequestDto: 입고되는 상품의 정보(엑셀의 한 row)
      * @return
      */
     @PostMapping("/import")
