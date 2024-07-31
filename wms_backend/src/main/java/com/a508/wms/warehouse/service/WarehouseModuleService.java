@@ -1,5 +1,7 @@
 package com.a508.wms.warehouse.service;
 
+import com.a508.wms.business.domain.Business;
+import com.a508.wms.business.repository.BusinessRepository;
 import com.a508.wms.util.constant.StatusEnum;
 import com.a508.wms.warehouse.domain.Warehouse;
 import com.a508.wms.warehouse.repository.WarehouseRepository;
@@ -15,10 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class WarehouseModuleService {
 
     private final WarehouseRepository warehouseRepository;
+    private final BusinessRepository businessRepository;
 
-    /*
-    최초 창고를 생성하는 메서드
-     */
 
     public Warehouse findById(Long warehouseId) {
         return warehouseRepository.findById(warehouseId)
@@ -32,16 +32,15 @@ public class WarehouseModuleService {
         return warehouseRepository.findByBusinessId(businessId); // 창고 목록 조회
     }
 
-    /*
-   창고 id로 창고를 조회하는 메서드
-    */
-    public Warehouse findByWarehouseId(Long warehouseId) {
-        return warehouseRepository.findById(warehouseId)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid warehouse ID"));
-    }
 
     public Warehouse save(Warehouse warehouse) {
         return warehouseRepository.save(warehouse);
+    }
+
+    public Warehouse save(Warehouse warehouse, Long businessId) {
+        Business business = businessRepository.getReferenceById(businessId);
+        //
+        return null;
     }
 
     /*

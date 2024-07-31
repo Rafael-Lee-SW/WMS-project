@@ -37,20 +37,7 @@ public class WarehouseService {
     최초 창고를 생성하는 메서드
      */
     @Transactional
-    public WarehouseDto save(WarehouseDto warehouseDto) {
-////        default floor 설정(값을 안 넣으면 default)하고 List로 변환
-//        List<FloorDto> floorDtos = List.of(FloorDto.builder().build());
-////        Default location 생성(기본값으로 들어감)
-////        이 때 locationDto에 floorDto 값을 넣어주면 floor도 함께 생성됨
-//        LocationDto locationDto = LocationDto.builder()
-//            .floorDtos(floorDtos).build();
-//        locationModuleService.save(locationDto);
-//        log.info("locationDto: {}", locationDto);
-//        //warehouse 엔티티를 생성하고 DTO에서 필드를 설정
-//        Warehouse warehouse = createWarehouse(warehouseDto);
-////        warehouse에 저장 후 반환
-//        return WarehouseMapper.fromWarehouse(warehouseModuleService.save(warehouse));
-
+    public WarehouseDto create(WarehouseDto warehouseDto) {
         Warehouse warehouse = createWarehouse(warehouseDto);
         warehouse = warehouseModuleService.save(warehouse);
         log.info("warehouse.FT:{}", warehouse.getFacilityTypeEnum());
@@ -83,27 +70,29 @@ public class WarehouseService {
     /*
    창고 id로 창고를 조회하는 메서드
     */
-    public WarehouseDto findByWarehouseId(Long id) {
-        Warehouse warehouse = warehouseModuleService.findByWarehouseId(id);
+    @Transactional
+    public WarehouseDto findById(Long id) {
+        Warehouse warehouse = warehouseModuleService.findById(id);
+        WarehouseDto warehouseDto = WarehouseMapper.fromWarehouse(warehouse);
 
         //location 넣어주기
         List<Location> locations = locationModuleService.findByWarehouseId(id);
         warehouse.setLocations(locations);
-        WarehouseDto warehouseDto = WarehouseMapper.fromWarehouse(warehouse);
-        List<LocationDto> locationDtos = new ArrayList<>();
-        for (Location location : locations) {
-            locationDtos.add(LocationMapper.fromLocation(location));
-        }
+
+        List<LocationDto> locationDtos = locations.stream()
+            .map(LocationMapper::fromLocation)
+            .toList();
         warehouseDto.setLocations(locationDtos);
 
         //wall 넣어주기
         List<Wall> walls = wallModuleService.findByWarehouseId(id);
         warehouse.setWalls(walls);
-        List<WallDto> wallDtos = new ArrayList<>();
-        for (Wall wall : walls) {
-            wallDtos.add(WallMapper.fromWall(wall));
-        }
+
+        List<WallDto> wallDtos = walls.stream()
+            .map(WallMapper::fromWall)
+            .toList();
         warehouseDto.setWalls(wallDtos);
+
         return warehouseDto;
     }
 
@@ -170,7 +159,7 @@ public class WarehouseService {
    창고를 비활성화하는 메서드 (상태를 INACTIVE로 설정, PATCH)
     */
     @Transactional
-    public void deleteWarehouse(Long warehouseId) {
+    public void delete(Long warehouseId) {
         Warehouse warehouse = warehouseModuleService.findById(warehouseId);
         warehouseModuleService.delete(warehouse);
     }
@@ -182,6 +171,7 @@ public class WarehouseService {
 
     private Warehouse createWarehouse(WarehouseDto warehouseDto) {
 
+        //return warehouseModuleService.save(new Warehouse(), warehouseDto.getBusinessId());
         // 사업체 ID로 사업체를 조회
         Business business = businessModuleService.findById(warehouseDto.getBusinessId());
 
