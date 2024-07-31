@@ -12,5 +12,5 @@ public interface ProductPickingLocationDto {
 
     Long getProductId();
 
-    Integer getProductQuantity();
+    Integer getQuantity();
 }

@@ -2,16 +2,15 @@ package com.a508.wms.product.service;
 
 import com.a508.wms.business.domain.Business;
 import com.a508.wms.product.domain.Import;
+import com.a508.wms.product.dto.ProductData;
 import com.a508.wms.product.dto.ProductImportDto;
-import com.a508.wms.product.dto.ProductRequestDto;
+import com.a508.wms.product.dto.ProductImportResponseDto;
 import com.a508.wms.product.mapper.ImportMapper;
 import com.a508.wms.product.repository.ImportRepository;
-import com.a508.wms.productdetail.dto.ProductDetailRequestDto;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,8 +21,9 @@ public class ImportModuleService {
 
     /**
      * 입고 dto와 business를 받아서 저장
+     *
      * @param productImportDto : 입고 정보가 있는 dto
-     * @param business : 사업체의 정보가 담긴 객체
+     * @param business         : 사업체의 정보가 담긴 객체
      */
     public void save(ProductImportDto productImportDto, Business business) {
         Import importEntity = ImportMapper.fromDto(productImportDto);
@@ -31,41 +31,46 @@ public class ImportModuleService {
         importRepository.save(importEntity);
     }
 
-    /**
-     * parse from json to dto
-     * @param jsonData
-     * @return
-     * @throws Exception
-     */
-    public List<ProductImportDto> parseJsonToProductImportDtos(String jsonData) throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
-        List<ProductImportDto> productImportDtos = new ArrayList<>();
-        JsonNode rootNode = objectMapper.readTree(jsonData);
-
-        Long businessId = rootNode.get("businessId").asLong();
-        Long warehouseId = rootNode.get("warehouseId").asLong();
-        JsonNode dataArray = rootNode.get("data");
-
-        for (JsonNode dataNode : dataArray) {
-            ProductDetailRequestDto productDetailRequestDto = ProductDetailRequestDto.builder()
-                    .barcode(dataNode.get("barcode").asLong())
-                    .name(dataNode.get("name").asText())
+    public ProductImportResponseDto findAllByBusinessIdAndDate(Long businessId, LocalDate date) {
+//        1. repository에서 method 호출하기
+        List<Import> importList = importRepository.findAllByBusinessIdAndDate(businessId, date);
+//        2. {date, List<PIRD>}형태로 묶기
+        List<ProductData> dataList = new ArrayList<>();
+        for (Import imp : importList) {
+            ProductData productData = ProductData.builder()
+                    .name(imp.getName())
+                    .quantity(imp.getQuantity())
+                    .barcode(imp.getBarcode())
+                    .expirationDate(imp.getExpirationDate())
+                    .productStorageTypeEnum(imp.getProductStorageTypeEnum())
                     .build();
-
-            ProductRequestDto productRequestDto = ProductRequestDto.builder()
-                    .productQuantity(dataNode.get("quantity").asInt())
-                    .build();
-
-            ProductImportDto productImportDto = ProductImportDto.builder()
-                    .businessId(businessId)
-                    .warehouseId(warehouseId)
-                    .productDetail(productDetailRequestDto)
-                    .product(productRequestDto)
-                    .build();
-
-            productImportDtos.add(productImportDto);
+            dataList.add(productData);
         }
-
-        return productImportDtos;
+        return ProductImportResponseDto.builder()
+                .date(date.atStartOfDay())
+                .data(dataList)
+                .build();
     }
+
+    public ProductImportResponseDto findAllByBusinessId(Long businessId) {
+//        1. repository에서 method 호출하기
+        List<Import> importList = importRepository.findAllByBusinessId(businessId);
+//        2. {date, List<PIRD>}형태로 묶기
+        List<ProductData> dataList = new ArrayList<>();
+        for (Import imp : importList) {
+            ProductData productData = ProductData.builder()
+                    .name(imp.getName())
+                    .quantity(imp.getQuantity())
+                    .barcode(imp.getBarcode())
+                    .expirationDate(imp.getExpirationDate())
+                    .productStorageTypeEnum(imp.getProductStorageTypeEnum())
+                    .date(imp.getDate().toLocalDate())
+                    .build();
+            dataList.add(productData);
+        }
+        return ProductImportResponseDto.builder()
+                .data(dataList)
+                .build();
+    }
+
 }

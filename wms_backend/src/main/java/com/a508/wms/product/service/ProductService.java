@@ -16,17 +16,12 @@ import com.a508.wms.productdetail.repository.ProductDetailRepository;
 import com.a508.wms.productdetail.service.ProductDetailModuleService;
 import com.a508.wms.util.constant.StatusEnum;
 import jakarta.transaction.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -41,6 +36,7 @@ public class ProductService {
     private final NotificationService notificationService;
     private final NotificationRepository notificationRepository;
     private final ImportModuleService importModuleService;
+
     /**
      * 서비스의 모든 상품을 반환하는 기능
      *
@@ -50,8 +46,8 @@ public class ProductService {
         final List<Product> products = productModuleService.findAll();
 
         return products.stream()
-            .map(ProductMapper::fromProduct)
-            .toList();
+                .map(ProductMapper::fromProduct)
+                .toList();
     }
 
 
@@ -77,8 +73,8 @@ public class ProductService {
         final List<Product> products = productModuleService.findByProductDetailId(productDetailId);
 
         return products.stream()
-            .map(ProductMapper::fromProduct)
-            .toList();
+                .map(ProductMapper::fromProduct)
+                .toList();
     }
 
     /**
@@ -92,8 +88,8 @@ public class ProductService {
         final List<Product> products = productModuleService.findByBusinessId(businessId);
 
         return products.stream()
-            .map(ProductMapper::fromProduct)
-            .toList();
+                .map(ProductMapper::fromProduct)
+                .toList();
     }
 
     /**
@@ -105,32 +101,32 @@ public class ProductService {
     public List<ProductResponseDto> findByWarehouseId(Long warehouseId) {
         final List<Product> products = productModuleService.findByWarehouseId(warehouseId);
         return products.stream()
-            .map((product) ->
-                {
-                    ProductResponseDto productResponseDto = ProductMapper.fromProduct(product);
-                    productResponseDto.setFloorLevel(product.getFloor().getFloorLevel());
-                    productResponseDto.setLocationName(product.getFloor().getLocation().getName());
+                .map((product) ->
+                        {
+                            ProductResponseDto productResponseDto = ProductMapper.fromProduct(product);
+                            productResponseDto.setFloorLevel(product.getFloor().getFloorLevel());
+                            productResponseDto.setLocationName(product.getFloor().getLocation().getName());
 
-                    return productResponseDto;
-                }
-            )
-            .toList();
+                            return productResponseDto;
+                        }
+                )
+                .toList();
     }
 
     @Transactional
     public List<ProductResponseDto> findByLocationId(Long locationId) {
         final List<Product> products = productModuleService.findByLocationId(locationId);
         return products.stream()
-            .map((product) ->
-                {
-                    ProductResponseDto productResponseDto = ProductMapper.fromProduct(product);
-                    productResponseDto.setFloorLevel(product.getFloor().getFloorLevel());
-                    productResponseDto.setLocationName(product.getFloor().getLocation().getName());
+                .map((product) ->
+                        {
+                            ProductResponseDto productResponseDto = ProductMapper.fromProduct(product);
+                            productResponseDto.setFloorLevel(product.getFloor().getFloorLevel());
+                            productResponseDto.setLocationName(product.getFloor().getLocation().getName());
 
-                    return productResponseDto;
-                }
-            )
-            .toList();
+                            return productResponseDto;
+                        }
+                )
+                .toList();
     }
 
 //    /**
@@ -155,11 +151,11 @@ public class ProductService {
         Product product = productModuleService.findById(id);
 
         product.updateData(
-            (request.getProductQuantity() == -1) ? product.getProductQuantity()
-                : request.getProductQuantity(),
-            (request.getExpirationDate() == null) ? product.getExpirationDate()
-                : request.getExpirationDate(),
-            (request.getComment() == null) ? product.getComment() : request.getComment()
+                (request.getQuantity() == -1) ? product.getQuantity()
+                        : request.getQuantity(),
+                (request.getExpirationDate() == null) ? product.getExpirationDate()
+                        : request.getExpirationDate(),
+                (request.getComment() == null) ? product.getComment() : request.getComment()
         );
 
         productModuleService.save(product);
@@ -189,14 +185,14 @@ public class ProductService {
         log.info("Importing products");
         Long warehouseId = productImportRequestDto.getWarehouseId();
 
-        log.info("warehouseId : {}",warehouseId);
+        log.info("warehouseId : {}", warehouseId);
         //입력된 창고에 정의된 default floor
         Floor defaultFloor = floorModuleService.findByWarehouseIdAndLevel(warehouseId, -1);
 
         log.info("default floor Id: {}", defaultFloor.getId());
 
 
-        for (ProductImportRequestDto.ProductData data : productImportRequestDto.getData()) {
+        for (ProductData data : productImportRequestDto.getData()) {
             ProductDetailRequestDto productDetailRequestDto = buildProductDetailRequestDto(data);
             ProductRequestDto productRequestDto = buildProductRequestDto(data);
             ProductImportDto productImportDto = buildProductImportDto(productImportRequestDto, productDetailRequestDto, productRequestDto);
@@ -205,10 +201,12 @@ public class ProductService {
             log.info("Finished saving product");
         }
     }
+
     /**
      * 한 상품의 입고처리를 수행함 입고로 들어온 상품이 DB에 있는지 확인한다. 상품의 동등성 판단은 상품 정보 id와 유톻기한으로 한다. 있다면 해당 상품의 총 수량을
      * 입고량만큼 추가해준다. 없다면 새로 상품을 추가한다.
      * 추가: 입고 정보를 입고 테이블에 추가한다.
+     *
      * @param request
      * @param defaultFloor: 입고 처리 된 상품이 들어가는 default 층
      */
@@ -219,7 +217,7 @@ public class ProductService {
         Product product = findProduct(request.getProduct(), productDetail);
         product.updateFloor(defaultFloor);
         productModuleService.save(product);
-        importModuleService.save(request,product.getProductDetail().getBusiness());
+        importModuleService.save(request, product.getProductDetail().getBusiness());
     }
 
     /**
@@ -230,7 +228,7 @@ public class ProductService {
      */
     private ProductDetail findOrCreateProductDetail(ProductImportDto request) {
         Optional<ProductDetail> optionalProductDetail = productDetailModuleService.findByBusinessIdAndBarcode(
-            request.getBusinessId(), request.getProductDetail().getBarcode());
+                request.getBusinessId(), request.getProductDetail().getBarcode());
 
         if (optionalProductDetail.isPresent()) {
             log.info("Found product detail: {}", optionalProductDetail.get());
@@ -261,24 +259,24 @@ public class ProductService {
         log.info("find productDetail: {}", request);
 
         Optional<Product> optionalProduct = productModuleService.findByIdAndExpirationDate(
-            productDetail.getId(), request.getExpirationDate());
+                productDetail.getId(), request.getExpirationDate());
 
         if (optionalProduct.isPresent()) {
             Product product = optionalProduct.get();
 
             product.updateData(
-                product.getProductQuantity() + request.getProductQuantity(),
-                product.getExpirationDate(), product.getComment());
+                    product.getQuantity() + request.getQuantity(),
+                    product.getExpirationDate(), product.getComment());
 
             return product;
         }
 
         return Product.builder()
-            .productDetail(productDetail)
-            .productQuantity(request.getProductQuantity())
-            .expirationDate(request.getExpirationDate())
-            .comment(request.getComment())
-            .build();
+                .productDetail(productDetail)
+                .quantity(request.getQuantity())
+                .expirationDate(request.getExpirationDate())
+                .comment(request.getComment())
+                .build();
     }
 
     /**
@@ -296,19 +294,19 @@ public class ProductService {
 
         //송장번호별로 데이터를 묶음.
         Map<Long, List<ProductExportRequestDto>> exports = requests.stream()
-            .collect(Collectors.groupingBy((ProductExportRequestDto::getTrackingNumber)));
+                .collect(Collectors.groupingBy((ProductExportRequestDto::getTrackingNumber)));
 
         log.info("exports Size: {}", exports.size());
         //송장별로 처리
         List<ProductExportResponseDto> result = exports.entrySet().stream()
-            .map(entry -> {
-                Map<String, List<ProductPickingDto>> path = calculatePath(entry.getValue());
-                return ProductExportResponseDto.builder()
-                    .trackingNumber(entry.getKey())
-                    .path(path)
-                    .build();
-            }).toList();
-        
+                .map(entry -> {
+                    Map<String, List<ProductPickingDto>> path = calculatePath(entry.getValue());
+                    return ProductExportResponseDto.builder()
+                            .trackingNumber(entry.getKey())
+                            .path(path)
+                            .build();
+                }).toList();
+
         log.info("result: {}", result);
 //        notificationService.save(NotificationRequestDto.builder().date().build());
         return result;
@@ -321,12 +319,12 @@ public class ProductService {
      * @return
      */
     private Map<String, List<ProductPickingDto>> calculatePath(
-        List<ProductExportRequestDto> invoice) {
+            List<ProductExportRequestDto> invoice) {
         Map<String, List<ProductPickingDto>> path = new HashMap<>();
         for (ProductExportRequestDto exportProduct : invoice) {
             //목적 상품에 해당하는 모든 로케이션 data
             List<ProductPickingLocationDto> candidates = productModuleService.findPickingLocation(
-                exportProduct.getBarcode(), exportProduct.getBusinessId());
+                    exportProduct.getBarcode(), exportProduct.getBusinessId());
 
             //남은양
             int remains = exportProduct.getQuantity();
@@ -335,44 +333,44 @@ public class ProductService {
             log.info("remains:{}", remains);
 
             for (ProductPickingLocationDto candidate : candidates) {
-                if (candidate.getProductQuantity() == 0) {
+                if (candidate.getQuantity() == 0) {
                     continue;
                 }
 
-                if (candidate.getProductQuantity() >= remains) {
+                if (candidate.getQuantity() >= remains) {
                     //candidate의 값을 remain 뺀 값으로 만들기.
                     updateProductQuantity(candidate.getProductId(),
-                        candidate.getProductQuantity() - remains);
+                            candidate.getQuantity() - remains);
                     //path에 추가
                     List<ProductPickingDto> pickings = path.getOrDefault(
-                        candidate.getWarehouseName(), new ArrayList<>());
+                            candidate.getWarehouseName(), new ArrayList<>());
 
                     pickings.add(ProductPickingDto.builder()
-                        .locationName(candidate.getLocationName())
-                        .floorLevel(candidate.getFloorLevel())
-                        .productName(candidate.getProductName())
-                        .quantity(candidate.getProductQuantity() - remains)
-                        .build());
+                            .locationName(candidate.getLocationName())
+                            .floorLevel(candidate.getFloorLevel())
+                            .productName(candidate.getProductName())
+                            .quantity(candidate.getQuantity() - remains)
+                            .build());
 
                     path.put(candidate.getWarehouseName(), pickings);
                     break;
                 }
 
-                remains -= candidate.getProductQuantity();
+                remains -= candidate.getQuantity();
 
                 //candidate의 값을 0으로 만들기.
                 updateProductQuantity(candidate.getProductId(), 0);
 
                 //path에 추가
                 List<ProductPickingDto> pickings = path.getOrDefault(
-                    candidate.getWarehouseName(), new ArrayList<>());
+                        candidate.getWarehouseName(), new ArrayList<>());
 
                 pickings.add(ProductPickingDto.builder()
-                    .locationName(candidate.getLocationName())
-                    .floorLevel(candidate.getFloorLevel())
-                    .productName(candidate.getProductName())
-                    .quantity(0)
-                    .build());
+                        .locationName(candidate.getLocationName())
+                        .floorLevel(candidate.getFloorLevel())
+                        .productName(candidate.getProductName())
+                        .quantity(0)
+                        .build());
 
                 path.put(candidate.getWarehouseName(), pickings);
             }
@@ -406,13 +404,13 @@ public class ProductService {
         Long businessId = requests.get(0).getBusinessId();
         //각 물품별 총합
         Map<Long, Integer> productTotalCount = requests.stream().collect(
-            Collectors.groupingBy((ProductExportRequestDto::getBarcode),
-                Collectors.summingInt(ProductExportRequestDto::getQuantity)));
+                Collectors.groupingBy((ProductExportRequestDto::getBarcode),
+                        Collectors.summingInt(ProductExportRequestDto::getQuantity)));
 
         //물품별 총 재고에 따른 타입 분류 (나중에 Integer를 Enum으로 바꿔도 좋을듯)
         Map<Long, Integer> productQuantityResult = productTotalCount.entrySet().stream()
-            .collect(Collectors.toMap(Map.Entry::getKey,
-                entry -> calculateProductQuantity(entry.getKey(), entry.getValue(), businessId)));
+                .collect(Collectors.toMap(Map.Entry::getKey,
+                        entry -> calculateProductQuantity(entry.getKey(), entry.getValue(), businessId)));
 
         //불가능 하나라도 있으면 에러 반환
         if (containsImpossibleExportProduct(productQuantityResult)) {
@@ -423,12 +421,12 @@ public class ProductService {
         List<Long> movingProductBarcodes = new ArrayList<>();
 
         productQuantityResult.entrySet().stream()
-            .filter(entry -> entry.getValue() == 1)
-            .forEach(entry -> movingProductBarcodes.add(entry.getKey()));
+                .filter(entry -> entry.getValue() == 1)
+                .forEach(entry -> movingProductBarcodes.add(entry.getKey()));
 
         if (!movingProductBarcodes.isEmpty()) {
             throw new IllegalArgumentException(
-                "해당 물품들의 이동이 필요합니다." + movingProductBarcodes);
+                    "해당 물품들의 이동이 필요합니다." + movingProductBarcodes);
         }
     }
 
@@ -440,7 +438,7 @@ public class ProductService {
      */
     private boolean containsImpossibleExportProduct(Map<Long, Integer> productQuantityResult) {
         return productQuantityResult.entrySet().stream()
-            .anyMatch(entry -> entry.getValue() == 2);
+                .anyMatch(entry -> entry.getValue() == 2);
     }
 
     /**
@@ -454,14 +452,14 @@ public class ProductService {
     private Integer calculateProductQuantity(Long barcode, Integer quantity, Long businessId) {
         //매장+전시의 총합과 보관의 총합이 들어있는 게산 결과 반환.
         ProductQuantityDto productQuantityDto = productModuleService.findProductQuantityByBarcodeAndBusinessId(
-            barcode, businessId);
+                barcode, businessId);
 
         if (productQuantityDto.getPossibleQuantity() >= quantity) {
             return 0; //추가 명령 처리 x
         }
 
         if (productQuantityDto.getPossibleQuantity() +
-            productQuantityDto.getMovableQuantity() >= quantity) {
+                productQuantityDto.getMovableQuantity() >= quantity) {
             return 1; //보충 처리
         }
 
@@ -470,10 +468,11 @@ public class ProductService {
 
     /**
      * data를 ProductDetailRequestDto로 변환하는 메서드
+     *
      * @param data
      * @return
      */
-    private ProductDetailRequestDto buildProductDetailRequestDto(ProductImportRequestDto.ProductData data) {
+    private ProductDetailRequestDto buildProductDetailRequestDto(ProductData data) {
         return ProductDetailRequestDto.builder()
                 .barcode(data.getBarcode())
                 .name(data.getName())
@@ -483,18 +482,20 @@ public class ProductService {
 
     /**
      * data를 ProductRequestDto로 변환하는 메서드
+     *
      * @param data
      * @return
      */
-    private ProductRequestDto buildProductRequestDto(ProductImportRequestDto.ProductData data) {
+    private ProductRequestDto buildProductRequestDto(ProductData data) {
         return ProductRequestDto.builder()
-                .productQuantity(data.getQuantity())
-                .expirationDate(data.getExpirationDate() != null ? LocalDateTime.parse(data.getExpirationDate()) : null)
+                .quantity(data.getQuantity())
+                .expirationDate(data.getExpirationDate() != null ? data.getExpirationDate() : null)
                 .build();
     }
 
     /**
      * dto를 합쳐서 ProductImportDto로 변환하는 메서드
+     *
      * @param productImportRequestDto
      * @param productDetailRequestDto
      * @param productRequestDto
