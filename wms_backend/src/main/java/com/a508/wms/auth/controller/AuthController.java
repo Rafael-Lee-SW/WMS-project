@@ -3,10 +3,12 @@ package com.a508.wms.auth.controller;
 import com.a508.wms.auth.dto.request.auth.CheckCertificationRequestDto;
 import com.a508.wms.auth.dto.request.auth.EmailCertificationRequestDto;
 import com.a508.wms.auth.dto.request.auth.IdCheckRequestDto;
+import com.a508.wms.auth.dto.request.auth.SignInRequestDto;
 import com.a508.wms.auth.dto.request.auth.SignUpRequestDto;
 import com.a508.wms.auth.dto.response.auth.CheckCertificationResponseDto;
 import com.a508.wms.auth.dto.response.auth.EmailCertificationResponseDto;
 import com.a508.wms.auth.dto.response.auth.IdCheckResponseDto;
+import com.a508.wms.auth.dto.response.auth.SignInResponseDto;
 import com.a508.wms.auth.dto.response.auth.SignUpResponseDto;
 import com.a508.wms.auth.service.AuthService;
 import jakarta.validation.Valid;
@@ -73,6 +75,11 @@ public class AuthController {
         return response;
     }
 
-
-
+    @PostMapping("/sign-in")
+    public ResponseEntity<? super SignInResponseDto> signIn(
+        @RequestBody @Valid SignInRequestDto requestBody
+    ) {
+        ResponseEntity<? super SignInResponseDto> response =authService.signIn(requestBody);
+        return response;
+    }
 }
