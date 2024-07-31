@@ -7,7 +7,7 @@ import Link from "next/link";
 import { makeStyles } from "@material-ui/core/styles";
 // core components
 import Header from "/components/Header/UserHeader.jsx";
-import HeaderLinks from "/components/Header/HomeHeaderLinks.js";
+import HeaderLinks from "/components/Header/UserHeaderLinks.js";
 import Footer from "/components/Footer/Footer.js";
 import GridContainer from "/components/Grid/GridContainer.js";
 import GridItem from "/components/Grid/GridItem.js";
@@ -92,40 +92,42 @@ export default function Components(props) {
         </div>
       </Parallax>
 
-      <div className={classes.sections}>
-        <div className={classes.container}>
-          <br />
-          <div className={classes.flexContainer}>
-            <div className={classes.currentWarehouse}>현재 창고 : 1번</div>
-            <div className={classes.buttonsContainer}>
-              <Button
-                color="primary"
-                round
-                onClick={() => handleNextComponent(0)}
-              >
-                <InventoryIcon className={classes.icons} />
-                창고 관리
-              </Button>
-              <Button color="info" round onClick={() => handleNextComponent(1)}>
-                <ProductionQuantityLimitsIcon className={classes.icons} />
-                재고 관리
-              </Button>
-              <Button
-                color="success"
-                round
-                onClick={() => handleNextComponent(2)}
-              >
-                <ListAltIcon className={classes.icons} />
-                재고 현황
-              </Button>
+      <div className={classNames(classes.main, classes.mainRaised)}>
+
+        <div className={classes.sections}>
+          <div className={classes.container}>
+            <br />
+            <div className={classes.flexContainer}>
+              <div className={classes.currentWarehouse}>현재 창고 : 1번</div>
+              <div className={classes.buttonsContainer}>
+                <Button
+                  color="primary"
+                  round
+                  onClick={() => handleNextComponent(0)}
+                >
+                  <InventoryIcon className={classes.icons} />
+                  창고 관리
+                </Button>
+                <Button color="info" round onClick={() => handleNextComponent(1)}>
+                  <ProductionQuantityLimitsIcon className={classes.icons} />
+                  재고 관리
+                </Button>
+                <Button
+                  color="success"
+                  round
+                  onClick={() => handleNextComponent(2)}
+                >
+                  <ListAltIcon className={classes.icons} />
+                  재고 현황
+                </Button>
+              </div>
             </div>
+            <hr />
+            {/* 메인 영역 */}
+            {componentsArray[currentIndex]}
           </div>
-          <hr />
-          {/* 메인 영역 */}
-          {componentsArray[currentIndex]}
         </div>
       </div>
-      <DynamicMyContainerProduct />
       <Footer />
     </div>
   );
