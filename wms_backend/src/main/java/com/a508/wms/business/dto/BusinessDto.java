@@ -1,24 +1,24 @@
 package com.a508.wms.business.dto;
 
-import com.a508.wms.employee.dto.EmployeeDto;
 import com.a508.wms.notification.dto.NotificationRequestDto;
 import com.a508.wms.notification.dto.NotificationResponseDto;
 import com.a508.wms.productdetail.dto.ProductDetailRequestDto;
 import com.a508.wms.productdetail.dto.ProductDetailResponseDto;
-import com.a508.wms.subscription.dto.SubscriptionDto;
+import com.a508.wms.user.dto.UserDto;
 import com.a508.wms.util.constant.StatusEnum;
+import com.a508.wms.subscription.dto.SubscriptionDto;
 import com.a508.wms.warehouse.dto.WarehouseDto;
+import java.time.LocalDateTime;
 import lombok.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
-@Getter
 @Setter
+@Getter
 @ToString
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class BusinessDto {
 
     private long id;
@@ -32,13 +32,11 @@ public class BusinessDto {
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
     private StatusEnum statusEnum;
-    private List<EmployeeDto> employeeDtoList;
+    private UserDto userDto;
     private List<ProductDetailRequestDto> productDetailRequestDtoList;
     private List<ProductDetailResponseDto> productDetailResponseDtoList;
     private List<NotificationRequestDto> notificationRequestDtoList;
     private List<NotificationResponseDto> notificationResponseDtoList;
     private List<SubscriptionDto> subscriptionDtoList;
     private List<WarehouseDto> warehouseDtoList;
-
-
 }

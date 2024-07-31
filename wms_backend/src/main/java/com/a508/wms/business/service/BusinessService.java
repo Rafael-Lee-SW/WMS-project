@@ -17,18 +17,16 @@ import org.springframework.stereotype.Service;
 public class BusinessService {
 
     private final BusinessModuleService businessModuleService;
-
     /**
      * 테스트용 사업체 생성 메서드로, 나중에는 사용되지 않을 예정
      *
      * @param businessDto : 사업체의 정보가 담긴 Dto
-     * @return
+     * @return BusinessDto
      */
     public BusinessDto create(BusinessDto businessDto) {
-        Business.BusinessBuilder builder = Business.builder()
-            .email(businessDto.getEmail())
-            .password(businessDto.getPassword());
-//        사업자명 입력하는 경우
+        Business.BusinessBuilder builder = Business.builder();
+
+        // 사업자명 입력하는 경우
         if (businessDto.getName() != null) {
             builder.name(businessDto.getName());
         }
@@ -52,7 +50,6 @@ public class BusinessService {
      */
     public BusinessDto findById(long id) {
         Business business = businessModuleService.findById(id);
-
         return fromBusiness(business);
     }
 
@@ -63,12 +60,10 @@ public class BusinessService {
      */
     public List<BusinessDto> findAll() {
         List<Business> businesses = businessModuleService.findAll();
-
         return businesses.stream()
             .map(BusinessMapper::fromBusiness)
             .toList();
     }
-
 
     /**
      * 사업체의 정보를 수정하는 메서드 현재 수정 가능한 부분은 사업체에 관한 개인 정보들(사업체 번호, 이름,이메일 등..)
@@ -78,12 +73,12 @@ public class BusinessService {
      */
     public BusinessDto update(BusinessDto businessDto) {
         try {
-//          1. 수정할 필드 값 변경하기
+            // 수정할 필드 값 변경하기
             Business updatedBusiness = fromDto(businessDto);
             updatedBusiness = businessModuleService.save(updatedBusiness);
 
-//          2. 변경 후 return
-            return BusinessMapper.fromBusiness(updatedBusiness);
+            // 변경 후 return
+            return fromBusiness(updatedBusiness);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -98,7 +93,6 @@ public class BusinessService {
     public BusinessDto delete(long businessId) {
         Business existingBusiness = businessModuleService.findById(businessId);
         Business deletedBusiness = businessModuleService.delete(existingBusiness);
-
         return fromBusiness(deletedBusiness);
     }
 }

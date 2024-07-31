@@ -14,4 +14,11 @@ public class SignInRequestDto {
 
     @NotBlank
     private String password;
+
+    @NotBlank
+    private String name;
+
+    @NotBlank
+    private String nickName;
+
 }

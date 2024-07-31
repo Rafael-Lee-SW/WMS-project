@@ -14,11 +14,13 @@ import com.a508.wms.auth.dto.response.auth.IdCheckResponseDto;
 import com.a508.wms.auth.dto.response.auth.SignInResponseDto;
 import com.a508.wms.auth.dto.response.auth.SignUpResponseDto;
 import com.a508.wms.auth.provider.EmailProvider;
+import com.a508.wms.auth.provider.JwtProvider;
 import com.a508.wms.auth.repository.CertificationRepository;
 import com.a508.wms.auth.service.AuthService;
-import com.a508.wms.business.domain.Business;
 import com.a508.wms.business.repository.BusinessRepository;
-import lombok.Builder;
+import com.a508.wms.user.domain.User;
+import com.a508.wms.user.mapper.UserMapper;
+import com.a508.wms.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -31,11 +33,12 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuthServiceImplement implements AuthService {
 
-
+    private final JwtProvider jwtProvider;
     private final BusinessRepository businessRepository;
     private final EmailProvider emailProvider;
     private final CertificationRepository certificationRepository;
-    private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(); //password Encorder 인터페이스
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(); //password Encorder 인터페이스
 
     /**
      * 사용자 이메일 중복 여부를 확인합니다.
@@ -48,11 +51,11 @@ public class AuthServiceImplement implements AuthService {
         log.info("idCheck method called with dto: {}", dto);
         try {
             // 사용자 이메일을 가져옴
-            String email = dto.getId();
+            String email = dto.getEmail();
             log.info("Checking email for duplication: {}", email);
 
             // 사용자 이메일 중복 여부 확인
-            boolean isExistEmail = businessRepository.existsByEmail(email);
+            boolean isExistEmail = userRepository.existsByEmail(email);
             if (isExistEmail) { // 중복이면
                 log.info("Email already exists: {}", email);
                 return IdCheckResponseDto.duplicateId();
@@ -63,7 +66,7 @@ public class AuthServiceImplement implements AuthService {
             return ResponseDto.databaseError();
         }
         // 중복이 아닌 경우 성공 응답 반환
-        log.info("Email is available: {}", dto.getId());
+        log.info("Email is available: {}", dto.getEmail());
         return IdCheckResponseDto.success();
     }
 
@@ -83,8 +86,8 @@ public class AuthServiceImplement implements AuthService {
             log.info("Processing email certification for userId: {} and email: {}", userId, email);
 
             // 사용자 ID 중복 여부 확인
-            boolean isExistId = businessRepository.existsByEmail(email);
-            if (isExistId) {
+            boolean isExistEmail = userRepository.existsByEmail(email);
+            if (isExistEmail) {
                 log.info("Email already exists: {}", email);
                 return EmailCertificationResponseDto.duplicatedId();
             }
@@ -166,8 +169,8 @@ public class AuthServiceImplement implements AuthService {
     public ResponseEntity<? super SignUpResponseDto> signUp(SignUpRequestDto dto) {
         try{
             String userEmail = dto.getEmail();
-            boolean isExistId = businessRepository.existsByEmail(userEmail);
-            if (isExistId) return SignUpResponseDto.duplicateId(); //나중에 수정필요
+            boolean isExistEmail = userRepository.existsByEmail(userEmail);
+            if (isExistEmail) return SignUpResponseDto.duplicateId(); //나중에 수정필요
 
             String email = dto.getEmail();
             String certificationNumber = dto.getCertificationNumber();
@@ -181,14 +184,15 @@ public class AuthServiceImplement implements AuthService {
             String encodedPassword = passwordEncoder.encode(password);
             dto.setPassword(encodedPassword);
 
-            Business business = new Business(dto);
-            businessRepository.save(business);
-            // 데이터베이스에 Business 엔티티 저장
 
+            // DTO를 User 엔티티로 변환
+            User user = UserMapper.fromSignUpRequestDto(dto); // UserMapper를 통해 DTO를 User로 변환
+
+            // User 엔티티 저장
+            userRepository.save(user);
+
+            // 인증 정보 삭제
             certificationRepository.delete(certificationEntity);
-
-
-            businessRepository.save(business);
         }catch(Exception e){
             e.printStackTrace();
             return ResponseDto.databaseError();
@@ -197,23 +201,46 @@ public class AuthServiceImplement implements AuthService {
     }
 
 
+    /**
+     * 1.email 뽑아오기
+     * 2.비밀번호 == encoding된 비밀번호
+     * 3. 매치되면 jwtToken 생성
+     * 4. 토큰담아서 response
+     * @param dto
+     * @return
+     */
+    /**
+     * 로그인 메서드
+     *
+     * @param dto : 로그인 요청 정보가 담긴 DTO
+     * @return 로그인 결과가 담긴 응답 DTO
+     */
+    @Override
+    public ResponseEntity<? super SignInResponseDto> signIn(SignInRequestDto dto) {
+        try {
+            String userEmail = dto.getEmail();
+            User user = userRepository.findUserByEmail(userEmail);
+            if (user == null) {
+                return SignInResponseDto.signInFail(); // 사용자 없음 처리
+            }
 
-//    @Override
-//    public ResponseEntity<? super SignInResponseDto> signIn(SignInRequestDto dto) {
-//       String token = null;
-//
-//       try {
-//           String userEmail = dto.getEmail();
-//           Business
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return ResponseDto.databaseError();
-//        }
-//        return SignInResponseDto.success(token);
-//    }
-@Override
-public ResponseEntity<? super SignInResponseDto> signIn(SignInRequestDto dto) {
-    return null;
-}
+            String password = dto.getPassword();
+            String encodedPassword = user.getPassword();
+            boolean isMatched = passwordEncoder.matches(password, encodedPassword);
+            if (!isMatched) {
+                return SignInResponseDto.signInFail(); // 비밀번호 불일치 처리
+            }
+
+            // JWT 토큰 생성
+            String token = jwtProvider.create(userEmail);
+
+            // 성공적인 로그인 응답 반환
+            return SignInResponseDto.success(token);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseDto.databaseError(); // 예외 처리
+        }
+    }
+
 }

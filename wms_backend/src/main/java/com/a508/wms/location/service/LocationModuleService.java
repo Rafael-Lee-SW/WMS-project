@@ -82,7 +82,8 @@ public class LocationModuleService {
         }   //층들 전부 DELETED상태로 변경
 
         floorRepository.saveAll(floors); //변경사항 저장 
-        locationRepository.save(location); //변경사항 저장
+        locationRepository.save(location);
+        //변경사항 저장
     }
 
 }
