@@ -46,15 +46,14 @@ import {
   alignHeaders,
 } from "/components/Test/hooksCallbacks.jsx";
 
-import Handsontable from "handsontable";
-
 // Import the DataGrid component from MUI
 import { DataGrid } from "@mui/x-data-grid";
+
+import MUIDataTable from "mui-datatables";
 
 // Register cell types and plugins
 registerCellType(CheckboxCellType);
 registerCellType(NumericCellType);
-
 registerPlugin(AutoColumnSize);
 registerPlugin(Autofill);
 registerPlugin(ContextMenu);
@@ -63,35 +62,33 @@ registerPlugin(DropdownMenu);
 registerPlugin(Filters);
 registerPlugin(HiddenRows);
 
-// Starting point of Excel control
-const ExcelImport = () => {
-  //API를 불러온 데이터 셋
+// 재고를 엑셀 형식으로 보면서 관리하는 Component
+const MyContainerProduct = () => {
+  //API를 통해 창고의 데이터를 가져오기 위한
   const [tableData, setTableData] = useState([]);
-  //모달을 위한 데이터 셋
+  //입고 데이터를 받기 위한
   const [ModalTableData, setModalTableData] = useState([]);
   const [columns, setColumns] = useState([]);
   const [isChoosingColumn, setIsChoosingColumn] = useState(false);
-  const hotTableRef = useRef(null); // Reference to the Handsontable instance
-  let columnCounter = 0;
-
-  const [openModal, setOpenModal] = useState(false); // State for modal open/close
-  const [columnSelectionStep, setColumnSelectionStep] = useState(0); // State for column selection steps
+  const hotTableRef = useRef(null); // HandsonTable 객체 참조
+  const [openModal, setOpenModal] = useState(false); // 입고 모달 열기/닫기 상태
+  const [columnSelectionStep, setColumnSelectionStep] = useState(0); // 데이터 선택
   const [selectedColumns, setSelectedColumns] = useState({
     barcode: null,
     name: null,
     quantity: null,
-    expiry: null,
-  });
+    expiration_date: null,
+  }); // 입고를 위한 데이터가 있는 칼럼들
+  // HandsonTable 엑셀 형식에서 수정하기 위한 Modal 상태
+  const [openEditModal, setOpenEditModal] = useState(false); // 수정용 모달 열기/닫기
 
-  const [openEditModal, setOpenEditModal] = useState(false); // State for modal open/close
-
-  // Convert data to array of arrays and set table data
+  // 처음 엑셀로 데이터를 받았을 때 이를 변환하는 메서드 Convert data to array of arrays and set table data
   const convertToArrayOfArraysModal = (data) => {
     setModalTableData(data);
     return data;
   };
 
-  // Import Excel file and process it
+  // 엑셀을 통해 입고(import)했을 때의 모든 절차를 밟는 메서드
   const importExcel = (input) => {
     let file;
     if (input.target && input.target.files) {
@@ -120,7 +117,7 @@ const ExcelImport = () => {
     reader.readAsArrayBuffer(file);
   };
 
-  // Download the table data as an Excel file
+  // 데이터를 엑셀로 다운로드 받는 메서드
   const downloadExcel = () => {
     const worksheet = XLSX.utils.aoa_to_sheet([
       columns.map((col) => col.label),
@@ -131,7 +128,7 @@ const ExcelImport = () => {
     XLSX.writeFile(workbook, "ADN_project엑셀테스트.xlsx");
   };
 
-  // Apply color to the specified column
+  // 열의 색상을 바꾸는 메서드
   const applyColumnColor = (columnIndex, color) => {
     const hotInstance = hotTableRef.current.hotInstance;
 
@@ -153,7 +150,7 @@ const ExcelImport = () => {
     hotInstance.render();
   };
 
-  // Handle column click event to apply color
+  // 열을 클릭하면 해당하는 열의 색상을 바꾸는 메서드
   const handleColumnClick = (event, coords) => {
     if (columnSelectionStep >= 0) {
       const colorMap = ["blue", "green", "red", "orange"];
@@ -167,23 +164,24 @@ const ExcelImport = () => {
     }
   };
 
-  // 최종적으로 선택된 칼럼에 해당하는 데이터를 보낸다.
+  // 입고 시에, 최종적으로 선택된 칼럼을 DB에 보내는 메서드
   const finalizeSelection = () => {
-    console.log("Finalized columns:", selectedColumns);
-    // Gather the selected data based on the user's column selections.
+    // 선택된 열의 데이터를 postData에 담는 과정
     const postData = ModalTableData.map((row) => ({
       barcode: row[selectedColumns.barcode],
       name: row[selectedColumns.name],
       quantity: row[selectedColumns.quantity],
-      expiration_date:
-        selectedColumns.expiry !== null ? row[selectedColumns.expiry] : null,
+      expirationDate: null,
+      // selectedColumns.expiry !== null ? row[selectedColumns.expiry] : null,
       productStorageTypeEnum: "상온",
     }));
     console.log("일단 데이터를 만든다.");
     console.log(postData);
-    // Send the gathered data to the API
-    APIPOSTConnectionTest(postData);
 
+    // 생성된 데이터를 DB에 전송한다.
+    importAPI(postData);
+
+    // 입고 시 발생하는 설정 변경 초기화
     setOpenModal(false);
     setColumnSelectionStep(0);
     setSelectedColumns({
@@ -195,14 +193,13 @@ const ExcelImport = () => {
   };
 
   // API POST 통신 테스트
-  const APIPOSTConnectionTest = async (postData) => {
+  const importAPI = async (postData) => {
     try {
-      // Add warehouseId and businessId to postData
-      // Create a new object with warehouseId and businessId first
+      // postData에 businessId와 warehouseId를 추가한다.
       const newPostData = {
-        warehouseId: 1,
+        warehouseId: 2,
         businessId: 1,
-        ...postData,
+        data: postData,
       };
 
       const response = await fetch(
@@ -230,7 +227,7 @@ const ExcelImport = () => {
   };
 
   //API 통신 테스트
-  const APIConnectionTest = async () => {
+  const productGetAPI = async () => {
     try {
       const response = await fetch(
         "https://i11a508.p.ssafy.io/api/products?bussinessId=1",
@@ -289,7 +286,7 @@ const ExcelImport = () => {
     }
   };
 
-  // Start choosing columns for color change
+  // 열을 선택했을 때 이를 기록한다.
   const startChoosingColumns = () => {
     setIsChoosingColumn(true);
     columnCounter = 0; // Reset counter when starting a new action
@@ -298,12 +295,11 @@ const ExcelImport = () => {
   /**
    * UseEffect를 통해 새로고침 때마다 api로 사장님의 재고를 불러옴
    */
-
   useEffect(() => {
-    APIConnectionTest();
-  }, []);
+    productGetAPI();
+  }, [openModal]);
 
-  // Define the columns and rows for the DataGrid
+  // DataGrid의 열과 행을 지정한다.
   const dataGridColumns = [
     { field: "name", headerName: "이름", width: 130 },
     { field: "barcode", headerName: "바코드(식별번호)", width: 180 },
@@ -311,7 +307,6 @@ const ExcelImport = () => {
     { field: "location", headerName: "적재함", width: 130 },
     { field: "floorLevel", headerName: "단(층)수", width: 100 },
   ];
-
   const dataGridRows = tableData.map((row, index) => ({
     id: index,
     name: row[0],
@@ -321,66 +316,46 @@ const ExcelImport = () => {
     floorLevel: row[4],
   }));
 
-  // MUI Data Table options
-  const options = {};
-
   return (
     <div style={{ marginBottom: "1%", margin: "2%" }}>
-      <div>
-        <h2>재고 현황 Excel로 보고 수정하기</h2>
-      </div>
       {isChoosingColumn && (
         <div style={{ color: "red", fontWeight: "bold" }}>
           Choose the column that you want
         </div>
       )}
       <div>
-        <div>
-          <label htmlFor="upload-photo">
-            <input
-              required
-              style={{ display: "none" }}
-              id="upload-photo"
-              name="upload_photo"
-              type="file"
-              onChange={importExcel}
-            />
-            <Fab
-              color="primary"
-              size="small"
-              component="span"
-              aria-label="add"
-              variant="extended"
-            >
-              입고 문서 업로드
-            </Fab>
-          </label>
-        </div>
         <Grid item xs={6} md={4}>
+          <div>
+            <label htmlFor="upload-photo">
+              <input
+                required
+                style={{ display: "none" }}
+                id="upload-photo"
+                name="upload_photo"
+                type="file"
+                onChange={importExcel}
+              />
+              <Fab
+                color="primary"
+                size="small"
+                component="span"
+                aria-label="add"
+                variant="extended"
+              >
+                입고 문서 업로드
+              </Fab>
+            </label>
+          </div>
           <Button variant="contained" color="secondary" onClick={downloadExcel}>
             Excel 다운로드
           </Button>
-        </Grid>
-        <Grid item xs={6} md={4}>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={startChoosingColumns}
-          >
-            컬럼 색상 변경
-          </Button>
-
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={APIConnectionTest}
-          >
+          <Button variant="contained" color="primary" onClick={productGetAPI}>
             API 데이터 받아오기
           </Button>
           <Button
             variant="contained"
             color="primary"
-            onClick={() => APIPOSTConnectionTest(tableData)} // Updated to send current table data
+            onClick={() => importAPI(tableData)} // Updated to send current table data
           >
             Send POST Request
           </Button>
@@ -513,6 +488,9 @@ const ExcelImport = () => {
         </Dialog>
       </div>
       <Grid item xs={12}>
+        <MUIDataTable title={"상품 목록"} data={tableData} columns={columns} />
+      </Grid>
+      {/* <Grid item xs={12}>
         <div style={{ height: 400, width: "100%" }}>
           <DataGrid
             rows={dataGridRows}
@@ -526,9 +504,9 @@ const ExcelImport = () => {
             checkboxSelection
           />
         </div>
-      </Grid>
+      </Grid> */}
     </div>
   );
 };
 
-export default ExcelImport;
+export default MyContainerProduct;

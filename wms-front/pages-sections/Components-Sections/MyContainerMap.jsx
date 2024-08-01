@@ -11,39 +11,17 @@ import {
   Transformer,
 } from "react-konva";
 import { SketchPicker } from "react-color";
-// plugin that creates slider
-import Slider from "nouislider";
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
-import InputAdornment from "@material-ui/core/InputAdornment";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-import Checkbox from "@material-ui/core/Checkbox";
-import Radio from "@material-ui/core/Radio";
-import Switch from "@material-ui/core/Switch";
 // @material-ui/icons
-import Favorite from "@material-ui/icons/Favorite";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import SaveIcon from "@mui/icons-material/Save";
 import UnarchiveIcon from "@mui/icons-material/Unarchive";
-import InventoryIcon from "@mui/icons-material/Inventory";
-import ProductionQuantityLimitsIcon from "@mui/icons-material/ProductionQuantityLimits";
-import ListAltIcon from "@mui/icons-material/ListAlt";
-import People from "@material-ui/icons/People";
-import Check from "@material-ui/icons/Check";
-import FiberManualRecord from "@material-ui/icons/FiberManualRecord";
 // core components
-import GridContainer from "/components/Grid/GridContainer.js";
-import GridItem from "/components/Grid/GridItem.js";
 import Button from "/components/CustomButtons/Button.js";
-import CustomInput from "/components/CustomInput/CustomInput.js";
-import CustomLinearProgress from "/components/CustomLinearProgress/CustomLinearProgress.js";
-import Paginations from "/components/Pagination/Pagination.js";
-import Badge from "/components/Badge/Badge.js";
 
 import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/MyContainerStyle.jsx";
-import { Canvas } from "canvas";
-import { LocalConvenienceStoreOutlined, Opacity } from "@mui/icons-material";
 
 // 상수 설정(그리드, 컨버스 등)
 const GRID_SIZE = 100; // 100cm = 1m
@@ -55,6 +33,7 @@ const useStyles = makeStyles(styles);
 
 // ----- 본격적인 창고 설정 반환 -------
 
+// 창고 관리 Component
 const User = () => {
   const classes = useStyles();
   const stageRef = useRef(null); // Create a reference for the stage
@@ -70,7 +49,22 @@ const User = () => {
   // Container for saving the info.
   const [container, setContainer] = useState(initialContainer);
   // 사각형을 추가하고 관리하는 State 추가
-  const [rectangles, setRectangles] = useState([]);
+  const [rectangles, setRectangles] = useState([
+    {
+      id: "0",
+      x: 0,
+      y: 0,
+      z: 0,
+      width: 0,
+      height: 0,
+      fill: "blue",
+      draggable: false,
+      order: 0, // 순서대로 번호 인덱싱
+      name: "임시",
+      type: "임시", // set the type of the rectangle
+      rotation: 0, // 초기 회전값
+    },
+  ]);
   // 줌 인, 줌 아웃을 위한 Scale
   const [scale, setScale] = useState(1); // 초기 줌 값
   // 마지막으로 클릭한 상자를 추적하는 상태 추가
@@ -98,12 +92,29 @@ const User = () => {
   const [hoveredAnchor, setHoveredAnchor] = useState(null);
 
   // 앙커를 추가하고 관리하는 State 추가
-  const [anchors, setAnchors] = useState([]);
+  const [anchors, setAnchors] = useState([
+    {
+      id: "0",
+      x: 0,
+      y: 0,
+      radius: 0,
+      stroke: "#666",
+      fill: "#ddd",
+      opacity: 1,
+      strokeWidth: 2,
+      draggable: false,
+    },
+  ]);
 
-  // 사각형을 컨버스에 추가한다.
+  // 메뉴를 위한
+  const menuRef = useRef(null);
+  const currentShapeRef = useRef(null);
+
+  // 로케이션을 추가하는 메서드
   const handleAddRectangle = (type) => {
     const newRect = {
-      id: (rectangles.length + 1).toString(),
+      id: null,
+      // id: (parseInt(rectangles[rectangles.length - 1].id) + 1).toString(),s
       x: 50,
       y: 50,
       z: newRectZIndex,
@@ -112,7 +123,9 @@ const User = () => {
       fill: newRectColor,
       draggable: true,
       order: rectangles.length + 1, // 순서대로 번호 인덱싱
-      name: newRectName || `Rect ${rectangles.length + 1}`,
+      name:
+        newRectName ||
+        `적재함 ${parseInt(rectangles[rectangles.length - 1].id) + 1}`,
       type: type, // set the type of the rectangle
       rotation: 0, // 초기 회전값
     };
@@ -122,10 +135,10 @@ const User = () => {
     setNewRectColor("blue");
     setNewRectWidth(50);
     setNewRectHeight(50);
-    setNewRectZIndex(1);
+    // setNewRectZIndex(1); //초기화 하지 아니함
     setNewRectName("");
   };
-
+  //
   // Container Update Function (창고 배열 저장)
   const updateContainer = (rect, type, code) => {
     const newContainer = container.map((row, x) =>
@@ -196,42 +209,47 @@ const User = () => {
   // API를 통해 DB에 저장한다.
   const APISaveToDB = async () => {
     const rectData = rectangles.map((rect) => ({
-      id: rect.id,
-      warehouseId: 1,
+      id: parseInt(rect.id),
+      // warehouseId: 1,
       name: rect.name,
-      xPosition: rect.x,
-      yPosition: rect.y,
-      xSize: rect.width,
-      ySize: rect.height,
-      zSize: 10,
+      fill: 0,
+      xposition: rect.x,
+      yposition: rect.y,
+      xsize: rect.width,
+      ysize: rect.height,
+      zsize: rect.z,
       rotation: rect.rotation,
-      productStorageTypeEnum: "상온",
-      warehouseId: 1, // Assuming all locations belong to warehouse 1
-      floorDtos: [
-        {
-          id: rect.id,
-          floorLevel: rect.z,
-        },
-      ],
+      storageType: "상온",
+      // productStorageTypeEnum: "상온",
+      // floorDtos: [
+      //   {
+      //     id: rect.id,
+      //     floorLevel: rect.z,
+      //   },
+      // ],
     }));
+
+    console.log(rectData);
+
+    console.log(anchorsRef.current);
 
     // 앙커 데이터를 기록합니다.
     const anchorData = anchorsRef.current.map(({ start, end }, index) => ({
-      id: index,
-      warehouseId: 1,
+      // id: `${start.attrs.id}:${end.attrs.id}`,
+      id: index + 1,
       startX: start.x(),
       startY: start.y(),
       endX: end.x(),
       endY: end.y(),
     }));
 
-    const warehouseDto = { locations: rectData, walls: anchorData  };
+    const warehouseDto = { locations: rectData, walls: anchorData };
     // Log the request body
     console.log(JSON.stringify(warehouseDto, null, 2));
 
     try {
       const response = await fetch(
-        "https://i11a508.p.ssafy.io/api/warehouses/1",
+        "https://i11a508.p.ssafy.io/api/warehouses/2/locatons-and-walls",
         {
           method: "PUT",
           headers: {
@@ -279,18 +297,18 @@ const User = () => {
         const existingAnchors = [];
         const newAnchors = [];
 
-        const getOrCreateAnchor = (x, y) => {
+        const getOrCreateAnchor = (id, x, y) => {
           let existingAnchor = findExistingAnchor(existingAnchors, x, y);
           if (!existingAnchor) {
-            existingAnchor = buildAnchor(x, y);
+            existingAnchor = buildAnchor(id, x, y);
             existingAnchors.push(existingAnchor);
           }
           return existingAnchor;
         };
 
-        anchorData.forEach(({ startX, startY, endX, endY }) => {
-          const startAnchor = getOrCreateAnchor(startX, startY);
-          const endAnchor = getOrCreateAnchor(endX, endY);
+        anchorData.forEach(({ startID, startX, startY, endID, endX, endY }) => {
+          const startAnchor = getOrCreateAnchor(startID, startX, startY);
+          const endAnchor = getOrCreateAnchor(endID, endX, endY);
 
           const newLine = new Konva.Line({
             points: [startX, startY, endX, endY],
@@ -318,11 +336,11 @@ const User = () => {
     }
   };
 
-  //API 통신 테스트
+  //API 창고에서 데이터를 불러오기
   const APIConnectionTest = async () => {
     try {
       const response = await fetch(
-        "https://i11a508.p.ssafy.io/api/warehouses/1",
+        "https://i11a508.p.ssafy.io/api/warehouses/2",
         {
           method: "GET",
           headers: {
@@ -347,10 +365,6 @@ const User = () => {
         // Map API data to rectangles
         const newRectangles = locations.map((location, index) => {
           // Get the floorLevel from floorDtos array if it exists
-          const floorLevel =
-            location.floorDtos.length > 0
-              ? location.floorDtos[0].floorLevel
-              : 4;
 
           // Ensure that the width and height are preserved
           return {
@@ -359,11 +373,11 @@ const User = () => {
             y: location.yposition,
             width: location.xsize || 50, // Default width if not provided
             height: location.ysize || 50, // Default height if not provided
-            z: floorLevel,
+            z: 5,
             fill: "blue", // Default color
             draggable: true,
             order: index, // 순서대로 번호 인덱싱
-            name: location.name || `Rect ${index}`,
+            name: location.name || `적재함 ${index}`,
             type: "location", // Default type
             rotation: 0, // 초기 회전값
           };
@@ -385,18 +399,18 @@ const User = () => {
         const existingAnchors = [];
         const newAnchors = [];
 
-        const getOrCreateAnchor = (x, y) => {
+        const getOrCreateAnchor = (id, x, y) => {
           let existingAnchor = findExistingAnchor(existingAnchors, x, y);
           if (!existingAnchor) {
-            existingAnchor = buildAnchor(x, y);
+            existingAnchor = buildAnchor(id, x, y);
             existingAnchors.push(existingAnchor);
           }
           return existingAnchor;
         };
 
-        walls.forEach(({ startX, startY, endX, endY }) => {
-          const startAnchor = getOrCreateAnchor(startX, startY);
-          const endAnchor = getOrCreateAnchor(endX, endY);
+        walls.forEach(({ startID, startX, startY, endID, endX, endY }) => {
+          const startAnchor = getOrCreateAnchor(startID, startX, startY);
+          const endAnchor = getOrCreateAnchor(endID, endX, endY);
 
           const newLine = new Konva.Line({
             points: [startX, startY, endX, endY],
@@ -561,12 +575,12 @@ const User = () => {
   };
 
   // --- Build Anchor Function ---
-  const buildAnchor = (x, y) => {
+  const buildAnchor = (id, x, y) => {
     const layer = layerRef.current;
     const newAnchor = new Konva.Circle({
-      id: `anchor_${anchors.length}`,
-      x: x,
-      y: y,
+      id: id,
+      x: Math.round(x),
+      y: Math.round(y),
       radius: 20,
       stroke: "#666",
       fill: "#ddd",
@@ -710,6 +724,52 @@ const User = () => {
     );
   };
 
+  // 삭제를 하기 위한 메서드
+  const handleDelete = () => {
+    if (currentShapeRef.current) {
+      const shapeId = currentShapeRef.current.attrs.id;
+
+      // Remove the shape from rectangles array
+      setRectangles((prevRectangles) =>
+        prevRectangles.filter((rect) => rect.id !== shapeId)
+      );
+
+      // Remove the shape from anchors array if it is an anchor
+      const updatedAnchors = anchorsRef.current.filter((anchorObj) => {
+        if (
+          anchorObj.start.id() === shapeId ||
+          anchorObj.end.id() === shapeId
+        ) {
+          // Destroy the related line
+          anchorObj.line.destroy();
+          // Destroy the related anchor (start or end) if it matches the shapeId
+          if (anchorObj.start.id() === shapeId) {
+            anchorObj.start.destroy();
+          }
+          if (anchorObj.end.id() === shapeId) {
+            anchorObj.end.destroy();
+          }
+          return false;
+        }
+        return true;
+      });
+      anchorsRef.current = updatedAnchors;
+
+      // Remove the shape from Konva stage
+      currentShapeRef.current.destroy();
+      layerRef.current.batchDraw();
+    }
+  };
+
+  // 우클릭 이후에 버튼에서 바뀌는 스타일
+  const handleMouseEnter = (e) => {
+    e.target.style.backgroundColor = "lightgray";
+  };
+
+  const handleMouseLeave = (e) => {
+    e.target.style.backgroundColor = "white";
+  };
+
   /**
    *  useEffect Part for Reactive action
    */
@@ -837,7 +897,8 @@ const User = () => {
       }
     };
 
-    //벽을 추가한다.
+    // 벽을 추가한다.
+    // 벽을 추가한다.
     const handleAddWall = (start, end) => {
       if (currentSetting === "wall") {
         const newWall = {
@@ -863,7 +924,15 @@ const User = () => {
               isSamePosition(anchor.end.x(), anchor.end.y(), x, y)
           );
           if (!existingAnchor) {
-            existingAnchor = buildAnchor(x, y);
+            const newId = anchorsRef.current.length
+              ? Math.max(
+                  ...anchorsRef.current.flatMap(({ start, end }) => [
+                    parseInt(start.id(), 10),
+                    parseInt(end.id(), 10),
+                  ])
+                ) + 1
+              : 1;
+            existingAnchor = buildAnchor(newId, x, y);
           } else {
             existingAnchor = isSamePosition(
               existingAnchor.start.x(),
@@ -898,6 +967,32 @@ const User = () => {
         layer.batchDraw();
       }
     };
+
+    // 우클릭 시에 메뉴가 나오도록 조정
+    const menuNode = menuRef.current;
+    document
+      .getElementById("delete-button")
+      .addEventListener("click", handleDelete);
+    //스테이지 적용
+    stage.on("contextmenu", function (e) {
+      e.evt.preventDefault();
+      if (e.target === stage) {
+        return;
+      }
+
+      currentShapeRef.current = e.target;
+      menuNode.style.display = "initial";
+      const containerRect = stage.container().getBoundingClientRect();
+
+      menuNode.style.top =
+        containerRect.top + stage.getPointerPosition().y - 50 + "px";
+      menuNode.style.left =
+        containerRect.left + stage.getPointerPosition().x - 5 + "px";
+    });
+
+    window.addEventListener("click", () => {
+      menuNode.style.display = "none";
+    });
 
     /**
      * 벽 생성 관련 마우스 컨트롤 Mouse
@@ -1308,6 +1403,49 @@ const User = () => {
             <p>No rectangle selected</p>
           )}
         </div>
+        <div
+          id="menu"
+          ref={menuRef}
+          style={{
+            display: "none",
+            position: "absolute",
+            width: "60px",
+            backgroundColor: "white",
+            boxShadow: "0 0 5px grey",
+            borderRadius: "3px",
+          }}
+        >
+          <div>
+            <button
+              id="pulse-button"
+              style={{
+                width: "100%",
+                backgroundColor: "white",
+                border: "none",
+                margin: 0,
+                padding: "10px",
+              }}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            >
+              Pulse
+            </button>
+            <button
+              id="delete-button"
+              style={{
+                width: "100%",
+                backgroundColor: "white",
+                border: "none",
+                margin: 0,
+                padding: "10px",
+              }}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            >
+              Delete
+            </button>
+          </div>
+        </div>
       </main>
     </div>
   );
@@ -1362,8 +1500,8 @@ const RectangleTransformer = ({
             ...shapeProps,
             x: Math.round(node.x()), // 변형 후에 반올림한 위치로 이동
             y: Math.round(node.y()),
-            width: Math.max(5, node.width() * scaleX), // 최소 너비 보장
-            height: Math.max(5, node.height() * scaleY), // 최소 높이 보장
+            width: Math.round(Math.max(5, node.width() * scaleX)), // 최소 너비 보장
+            height: Math.round(Math.max(5, node.height() * scaleY)), // 최소 높이 보장
             rotation: Math.round(node.rotation()), // 반올림한 각도
           });
         }}

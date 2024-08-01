@@ -176,6 +176,9 @@ const Complicated = () => {
   // 앙커를 추가하고 관리하는 State 추가
   const [anchors, setAnchors] = useState([]);
 
+  // 선택된 층을 알려주는 Method
+  const [selectedFloor, setSelectedFloor] = useState(1);
+
   /**
    *
    * 창고 관련 Const 끝
@@ -1165,17 +1168,91 @@ const Complicated = () => {
             <h3>현재 선택된 재고함</h3>
             {selectedRect ? (
               <div>
-                <b>ID : {selectedRect.id}</b>
-                <br />
-                <b>
-                  X : {selectedRect.x} | Y : {selectedRect.y}
-                </b>
-                <br />
-                <b>Name : {selectedRect.name}</b>
-                <br />
-                <b>Type : {selectedRect.type}</b>
-                <br />
-                <b>층수 : {selectedRect.z}</b>
+                <div
+                  id="상자 정보"
+                  style={{
+                    display: "flex",
+                  }}
+                >
+                  <div
+                    id="상자 숫자 정보"
+                    style={{
+                      width: "45%",
+                    }}
+                  >
+                    <b>ID : {selectedRect.id}</b>
+                    <br />
+                    <b>
+                      X : {selectedRect.x} | Y : {selectedRect.y}
+                    </b>
+                    <br />
+                    <b>Name : {selectedRect.name}</b>
+                    <br />
+                    <b>Type : {selectedRect.type}</b>
+                    <br />
+                    <b>층수 : {selectedRect.z}</b>
+                  </div>
+                  <div
+                    id="상자의 z Index를 시각화"
+                    style={{
+                      marginLeft: "10px",
+                      height: "130px",
+                      width: "65%",
+                      overflowY: "auto",
+                      border: "2px solid black",
+                      borderRadius: "5px",
+                      padding: "5px",
+                      display: "flex",
+                      flexDirection: "column-reverse",
+                    }}
+                  >
+                    {Array.from({ length: selectedRect.z }).map((_, index) => (
+                      <button
+                        key={index+1}
+                        style={{
+                          display: "block",
+                          width: "90%",
+                          height: "30px",
+                          backgroundColor:
+                            selectedFloor === index+1
+                              ? "blue"
+                              : "white",
+                          marginBottom: "5px",
+                          borderRadius: "5px",
+                          border: "1px solid black",
+                          textAlign: "center",
+                          lineHeight: "30px",
+                          marginLeft: "auto",
+                          marginRight: "auto",
+                          cursor: "pointer",
+                        }}
+                        onClick={() =>
+                          setSelectedFloor(
+                            selectedFloor === index+1
+                              ? null
+                              : index+1
+                          )
+                        }
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor =
+                            selectedFloor === index+1
+                              ? "blue"
+                              : "lightgray";
+                          e.target.style.border = "2px solid red";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor =
+                            selectedFloor === index+1
+                              ? "blue"
+                              : "white";
+                          e.target.style.border = "1px solid black";
+                        }}
+                      >
+                        {index+1} 층
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <hr />
                 {rectangleData.length > 0 && (
                   <div>
@@ -1274,6 +1351,7 @@ const Complicated = () => {
                       onSelect={() => {
                         setSelectedRectTransform(rect.id);
                         setSelectedRect(rect);
+                        setSelectedFloor(1);
                       }}
                       onChange={(newAttrs) => {
                         const rects = rectangles.slice();
