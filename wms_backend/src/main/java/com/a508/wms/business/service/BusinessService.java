@@ -46,7 +46,7 @@ public class BusinessService {
         Business business = builder.build();
         try {
             Business saveBusiness = businessModuleService.save(business);
-            user.updateBusinessIdId(saveBusiness.getId());
+            user.updateBusinessId(saveBusiness.getId());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -105,9 +105,10 @@ public class BusinessService {
             Business deletedBusiness = businessModuleService.delete(existingBusiness);
             User user = existingBusiness.getUser();
             user.updateRoleTypeEnum(RoleTypeEnum.GENERAL);
+
             List<User> employees = userModuleService.findByBusinessId(deletedBusiness.getId());
             for (User employee : employees) {
-                employee.updateBusinessIdId(null);
+                employee.updateBusinessId(null);
             }
             return toBusinessResponseDto(deletedBusiness);
         } catch (Exception e) {

@@ -15,7 +15,7 @@ public class LocationRequestDto {
     private Long warehouseId;
     private String name;
     @Builder.Default
-    private ProductStorageTypeEnum productStorageTypeEnum = ProductStorageTypeEnum.상온;
+    private ProductStorageTypeEnum storageType = ProductStorageTypeEnum.상온;
     @Builder.Default
     private int rotation = 0;
     @Builder.Default

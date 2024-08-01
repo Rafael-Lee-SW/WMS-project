@@ -26,7 +26,7 @@ public class LocationMapper {
             .ySize(request.getYSize())
             .zSize(request.getZSize())
             .warehouse(warehouse)
-            .productStorageTypeEnum(request.getProductStorageTypeEnum())
+            .productStorageTypeEnum(request.getStorageType())
             .build();
     }
 
