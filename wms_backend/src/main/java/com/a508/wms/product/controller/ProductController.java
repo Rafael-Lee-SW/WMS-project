@@ -66,20 +66,6 @@ public class ProductController {
         return new BaseSuccessResponse<>(productService.findById(id));
     }
 
-//    /**
-//     * 상품을 등록하는 기능
-//     *
-//     * @param productRequestDto: Product 데이터
-//     */
-//    @PostMapping
-//    public BaseSuccessResponse<Void> createProduct(
-//        @RequestBody ProductRequestDto productRequestDto) {
-//        log.info("create product by productRequest: {}", productRequestDto);
-//        productService.save(productRequestDto);
-//
-//        return new BaseSuccessResponse<>(null);
-//    }
-
     /**
      * 상품을 수정하는 기능
      *
@@ -148,15 +134,15 @@ public class ProductController {
     /**
      * 물품들의 출고 처리를 하는 로직
      *
-     * @param exportProducts : 출고되는 상품의 정보(엑셀의 한 row)
+     * @param exportProduct : 출고되는 상품의 정보(엑셀의 한 row)
      * @return
      */
 
     @PostMapping("/export")
     public BaseSuccessResponse<List<ProductExportResponseDto>> exportProducts(
-            @RequestBody List<ProductExportRequestDto> exportProducts
+            @RequestBody ProductExportRequestDto exportProduct
     ) {
-        log.info("export products: {}", exportProducts);
-        return new BaseSuccessResponse<>(productService.exportProducts(exportProducts));
+        log.info("export products: {}", exportProduct);
+        return new BaseSuccessResponse<>(productService.exportProducts(exportProduct));
     }
 }

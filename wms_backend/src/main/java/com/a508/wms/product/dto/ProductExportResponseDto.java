@@ -1,12 +1,12 @@
 package com.a508.wms.product.dto;
 
-import java.util.List;
-import java.util.Map;
-
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+
+import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -14,6 +14,7 @@ import lombok.ToString;
 @ToString
 public class ProductExportResponseDto {
 
-    private Long trackingNumber;
-    private Map<String, List<ProductPickingDto>> path;
+    //    private List<ProductExportData> path;
+//    private String warehouseName;
+    private Map<String, List<ProductExportData>> path;
 }
