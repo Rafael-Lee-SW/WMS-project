@@ -3,6 +3,7 @@ package com.a508.wms.location.mapper;
 import com.a508.wms.floor.mapper.FloorMapper;
 import com.a508.wms.location.domain.Location;
 import com.a508.wms.location.dto.LocationDto;
+import com.a508.wms.location.dto.LocationResponseDto;
 import com.a508.wms.warehouse.domain.Warehouse;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
@@ -57,6 +58,36 @@ public class LocationMapper {
             .productStorageTypeEnum(locationDto.getProductStorageTypeEnum())
             .build();
         return location;
+    }
+
+    public static Location fromLocationResponseDto(LocationResponseDto locationResponseDto,
+        Warehouse warehouse) {
+        return Location.builder()
+            .id(locationResponseDto.getId())
+            .name(locationResponseDto.getName())
+            .rotation(locationResponseDto.getRotation())
+            .xPosition(locationResponseDto.getXPosition())
+            .yPosition(locationResponseDto.getYPosition())
+            .xSize(locationResponseDto.getXSize())
+            .ySize(locationResponseDto.getYSize())
+            .zSize(locationResponseDto.getZSize())
+            .warehouse(warehouse)
+            .productStorageTypeEnum(locationResponseDto.getStorageType())
+            .build();
+    }
+
+    public static LocationResponseDto toLocationResponseDto(Location location) {
+        return LocationResponseDto.builder()
+            .id(location.getId())
+            .xPosition(location.getXPosition())
+            .yPosition(location.getYPosition())
+            .xSize(location.getXSize())
+            .ySize(location.getYSize())
+            .zSize(location.getZSize())
+            .name(location.getName())
+            .storageType(location.getProductStorageTypeEnum())
+            .rotation(location.getRotation())
+            .build();
     }
 
 }
