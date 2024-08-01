@@ -1,8 +1,12 @@
 package com.a508.wms.warehouse.mapper;
 
+import com.a508.wms.location.dto.LocationResponseDto;
 import com.a508.wms.warehouse.domain.Warehouse;
+import com.a508.wms.warehouse.dto.WallDto;
 import com.a508.wms.warehouse.dto.WarehouseByBusinessDto;
+import com.a508.wms.warehouse.dto.WarehouseDetailResponseDto;
 import com.a508.wms.warehouse.dto.WarehouseDto;
+import java.util.List;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -74,6 +78,20 @@ public class WarehouseMapper {
             .createdDate(warehouse.getCreatedDate())
             .updatedDate(warehouse.getUpdatedDate())
             .statusEnum(warehouse.getStatusEnum())
+            .build();
+    }
+
+    public static WarehouseDetailResponseDto toWarehouseDetailResponseDto(Warehouse warehouse,
+        List<LocationResponseDto> locations, List<WallDto> walls) {
+        return WarehouseDetailResponseDto.builder()
+            .id(warehouse.getId())
+            .size(warehouse.getSize())
+            .name(warehouse.getName())
+            .rowCount(warehouse.getRowCount())
+            .columnCount(warehouse.getColumnCount())
+            .facilityTypeEnum(warehouse.getFacilityTypeEnum())
+            .locations(locations)
+            .walls(walls)
             .build();
     }
 }

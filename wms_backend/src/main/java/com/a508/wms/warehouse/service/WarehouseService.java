@@ -6,6 +6,7 @@ import com.a508.wms.floor.domain.Floor;
 import com.a508.wms.floor.service.FloorModuleService;
 import com.a508.wms.location.domain.Location;
 import com.a508.wms.location.dto.LocationDto;
+import com.a508.wms.location.dto.LocationResponseDto;
 import com.a508.wms.location.mapper.LocationMapper;
 import com.a508.wms.location.service.LocationModuleService;
 import com.a508.wms.util.constant.ProductStorageTypeEnum;
@@ -13,6 +14,7 @@ import com.a508.wms.warehouse.domain.Wall;
 import com.a508.wms.warehouse.domain.Warehouse;
 import com.a508.wms.warehouse.dto.WallDto;
 import com.a508.wms.warehouse.dto.WarehouseByBusinessDto;
+import com.a508.wms.warehouse.dto.WarehouseDetailResponseDto;
 import com.a508.wms.warehouse.dto.WarehouseDto;
 import com.a508.wms.warehouse.mapper.WallMapper;
 import com.a508.wms.warehouse.mapper.WarehouseMapper;
@@ -72,29 +74,20 @@ public class WarehouseService {
    창고 id로 창고를 조회하는 메서드
     */
     @Transactional
-    public WarehouseDto findById(Long id) {
+    public WarehouseDetailResponseDto findById(Long id) {
         Warehouse warehouse = warehouseModuleService.findById(id);
-        WarehouseDto warehouseDto = WarehouseMapper.fromWarehouse(warehouse);
 
-        //location 넣어주기
-        List<Location> locations = locationModuleService.findByWarehouseId(id);
-        warehouse.setLocations(locations);
-
-        List<LocationDto> locationDtos = locations.stream()
-            .map(LocationMapper::fromLocation)
+        List<LocationResponseDto> locations = locationModuleService.findByWarehouseId(id)
+            .stream()
+            .map(LocationMapper::toLocationResponseDto)
             .toList();
-        warehouseDto.setLocations(locationDtos);
 
-        //wall 넣어주기
-        List<Wall> walls = wallModuleService.findByWarehouseId(id);
-        warehouse.setWalls(walls);
-
-        List<WallDto> wallDtos = walls.stream()
+        List<WallDto> walls = wallModuleService.findByWarehouseId(id)
+            .stream()
             .map(WallMapper::fromWall)
             .toList();
-        warehouseDto.setWalls(wallDtos);
 
-        return warehouseDto;
+        return WarehouseMapper.toWarehouseDetailResponseDto(warehouse, locations, walls);
     }
 
     /*

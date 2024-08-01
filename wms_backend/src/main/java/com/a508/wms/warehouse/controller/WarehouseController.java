@@ -2,6 +2,7 @@ package com.a508.wms.warehouse.controller;
 
 import com.a508.wms.util.BaseSuccessResponse;
 import com.a508.wms.warehouse.dto.WarehouseByBusinessDto;
+import com.a508.wms.warehouse.dto.WarehouseDetailResponseDto;
 import com.a508.wms.warehouse.dto.WarehouseDto;
 import com.a508.wms.warehouse.service.WarehouseService;
 import java.util.List;
@@ -47,7 +48,7 @@ public class WarehouseController {
     }
 
     @GetMapping("/{id}")
-    public BaseSuccessResponse<WarehouseDto> findById(@PathVariable Long id) {
+    public BaseSuccessResponse<WarehouseDetailResponseDto> findById(@PathVariable Long id) {
         log.info("Getting warehouse {}", id);
         return new BaseSuccessResponse<>(warehouseService.findById(id));
     }
