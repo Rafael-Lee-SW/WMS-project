@@ -54,17 +54,17 @@ public class WarehouseController {
         return new BaseSuccessResponse<>(warehouseService.findById(id));
     }
 
-    /**
-     * 창고 id로 창고 정보 수정 PUT 방식
-     */
-    @PutMapping("/{warehouseId}")
-    public BaseSuccessResponse<WarehouseDto> update(
-        @PathVariable Long warehouseId,
-        @RequestBody WarehouseDto warehouseDto) {
-        log.info("Updating warehouse with ID: {}", warehouseId);
-        return new BaseSuccessResponse<>(warehouseService.updateWarehouse(
-            warehouseId, warehouseDto));
-    }
+//    /**
+//     * 창고 id로 창고 정보 수정 PUT 방식
+//     */
+//    @PutMapping("/{warehouseId}")
+//    public BaseSuccessResponse<WarehouseDto> update(
+//        @PathVariable Long warehouseId,
+//        @RequestBody WarehouseDto warehouseDto) {
+//        log.info("Updating warehouse with ID: {}", warehouseId);
+//        return new BaseSuccessResponse<>(warehouseService.updateWarehouse(
+//            warehouseId, warehouseDto));
+//    }
 
     /*
    창고 id의 상태를 비활성화 (status를 0으로 변경) PATCH 방식
@@ -75,7 +75,7 @@ public class WarehouseController {
         warehouseService.delete(warehouseId);
         return new BaseSuccessResponse<>(null);
     }
-    
+
     @PutMapping("/{warehouseId}/locatons-and-walls")
     public BaseSuccessResponse<WarehouseDetailResponseDto> updateLocationsAndWalls(
         @PathVariable Long warehouseId, @RequestBody LocationsAndWallsRequestDto request

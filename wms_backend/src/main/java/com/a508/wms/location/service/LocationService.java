@@ -1,11 +1,12 @@
 package com.a508.wms.location.service;
 
 import com.a508.wms.floor.domain.Floor;
-import com.a508.wms.floor.dto.FloorResponseDto;
+import com.a508.wms.floor.dto.FloorRequestDto;
 import com.a508.wms.floor.mapper.FloorMapper;
 import com.a508.wms.floor.service.FloorModuleService;
 import com.a508.wms.location.domain.Location;
-import com.a508.wms.location.dto.LocationDto;
+import com.a508.wms.location.dto.LocationRequestDto;
+import com.a508.wms.location.dto.LocationResponseDto;
 import com.a508.wms.location.mapper.LocationMapper;
 import com.a508.wms.util.constant.ExportTypeEnum;
 import com.a508.wms.util.constant.FacilityTypeEnum;
@@ -28,28 +29,15 @@ public class LocationService {
     private final FloorModuleService floorModuleService;
 
     /**
-     * 모든 로케이션 조회(Admin에서 사용)
-     *
-     * @return 모든 로케이션
-     */
-    public List<LocationDto> findAll() {
-        List<Location> locations = locationModuleService.findAll();
-
-        return locations.stream()
-            .map(LocationMapper::fromLocation)
-            .toList();
-    }
-
-    /**
      * 특정 로케이션 조회
      *
      * @param id: location id
      * @return id값과 일치하는 Location 하나, 없으면 null 리턴
      */
-    public LocationDto findById(Long id) {
+    public LocationResponseDto findById(Long id) {
+        log.info("[Service] find Location by id: {}", id);
         Location location = locationModuleService.findById(id);
-
-        return LocationMapper.fromLocation(location);
+        return LocationMapper.toLocationResponseDto(location);
     }
 
     /**
@@ -58,11 +46,12 @@ public class LocationService {
      * @param warehouseId: warehouse id
      * @return 입력 warehouseId를 가지고 있는 Location List
      */
-    public List<LocationDto> findByWarehouseId(Long warehouseId) {
-        List<Location> locations = locationModuleService.findByWarehouseId(warehouseId);
+    public List<LocationResponseDto> findAllByWarehouseId(Long warehouseId) {
+        log.info("[Service] findAllLocation by warehouseId: {}", warehouseId);
+        List<Location> locations = locationModuleService.findAllByWarehouseId(warehouseId);
 
         return locations.stream()
-            .map(LocationMapper::fromLocation)
+            .map(LocationMapper::toLocationResponseDto)
             .toList();
     }
 
@@ -70,81 +59,67 @@ public class LocationService {
      * location 정보 받아와서 DB에 저장하는 메서드 1.locationDto내부의 창고,저장타입 id를 통해 저장소에 조회해서 location에 담은 후 저장
      * 2.floorDto들을 floor객체로 바꿔주고 내부에 location정보 담아줌 3.floor객체들을 전부 저장하고 location에도 floor 객체정보 담아줌
      *
-     * @param locationDto : 프론트에서 넘어오는 location 정보 모든 작업이 하나의 트랜잭션에서 일어나야하므로 @Transactional 추가
+     * @param request : 프론트에서 넘어오는 location 정보 모든 작업이 하나의 트랜잭션에서 일어나야하므로 @Transactional 추가
      */
     @Transactional
-    public LocationDto save(LocationDto locationDto) {
-        log.info("Saving location: {}", locationDto);
+    public LocationResponseDto save(LocationRequestDto request) {
+        log.info("[Service] save Location");
 
-        Warehouse warehouse = warehouseModuleService.findById(locationDto.getWarehouseId());
-
-        Location location = Location.builder()
-            .warehouse(warehouse)
-            .productStorageTypeEnum(locationDto.getProductStorageTypeEnum())
-            .name(locationDto.getName())
-            .rotation(locationDto.getRotation())
-            .xPosition(locationDto.getXPosition())
-            .yPosition(locationDto.getYPosition())
-            .xSize(locationDto.getXSize())
-            .ySize(locationDto.getYSize())
-            .zSize(locationDto.getZSize())
-            .build();
+        Warehouse warehouse = warehouseModuleService.findById(request.getWarehouseId());
+        Location location = LocationMapper.fromLocationRequestDto(request, warehouse);
 
         locationModuleService.save(location);
 
-        List<FloorResponseDto> FloorResponseDtos = locationDto.getFloorResponseDtos();
+        List<FloorRequestDto> floorRequests = request.getFloorRequests();
 
-        log.info("Floor convert");
-        List<Floor> floors = FloorResponseDtos.stream()
+        List<Floor> floors = floorRequests.stream()
             .map(floorDto -> {
                 modifyExportType(floorDto, warehouse);
-                log.info("{}", floorDto);
                 // Floor 객체로 변환, location정보 넣어주기
-                return FloorMapper.fromFloorResponseDto(floorDto).setLocation(location);
+                return FloorMapper.fromFloorRequestDto(floorDto).setLocation(location);
             })
             .toList();
 
-        log.info("floors save");
         floorModuleService.saveAll(floors);    //floor 전부 저장\
 
-        log.info("update location?");
         location.setFloors(floors);  //location에 층 정보 넣어주기
 
-        return LocationMapper.fromLocation(location);
+        return LocationMapper.toLocationResponseDto(location);
     }
 
 
     /**
      * 창고의 타입에 맞게 floor의 타입을 수정 하는 기능
      *
-     * @param floorResponseDto
-     * @param warehouse        : 해당 floor에 해당하는 Warehouse, 타입 확인을 위함.
+     * @param floorRequestDto
+     * @param warehouse       : 해당 floor에 해당하는 Warehouse, 타입 확인을 위함.
      * @return Floor : 타입이 반영된 Floor 객체
      */
-    private void modifyExportType(FloorResponseDto floorResponseDto, Warehouse warehouse) {
+    private void modifyExportType(FloorRequestDto floorRequestDto, Warehouse warehouse) {
         //warehouse가 STORE(매장)인 경우
         if (warehouse.getFacilityTypeEnum().equals(FacilityTypeEnum.STORE)) {
-            floorResponseDto.setExportType(ExportTypeEnum.STORE);
+            floorRequestDto.setExportTypeEnum(ExportTypeEnum.STORE);
         }
     }
-
 
     /**
      * location 정보 수정 수정 가능한 정보는 이름과 좌표값들
      *
-     * @param locationDto: 바꿀 로케이션 정보들
+     * @param request: 바꿀 로케이션 정보들
      */
-    public LocationDto update(Long id, LocationDto locationDto) {
+    @Transactional
+    public LocationResponseDto update(Long id, LocationRequestDto request) {
+        log.info("[Service] update Location by id: {}", id);
         Location location = locationModuleService.findById(id);
 
-        if (locationDto.getName() != null) {
-            location.updateName(locationDto.getName());
+        if (request.getName() != null) {
+            location.updateName(request.getName());
         }
 
-        location.updatePosition(locationDto.getXPosition(), locationDto.getYPosition());
+        location.updatePosition(request.getXPosition(), request.getYPosition());
 
         Location savedLocation = locationModuleService.save(location);
-        return LocationMapper.fromLocation(savedLocation);
+        return LocationMapper.toLocationResponseDto(savedLocation);
     }
 
     /**
@@ -153,7 +128,9 @@ public class LocationService {
      *
      * @param id: locationId
      */
+    @Transactional
     public void delete(Long id) {
+        log.info("[Service] delete Location by id: {}", id);
         Location location = locationModuleService.findById(id);
 
         List<Floor> floors = floorModuleService.findAllByLocationId(

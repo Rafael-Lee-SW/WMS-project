@@ -5,12 +5,10 @@ import com.a508.wms.business.service.BusinessModuleService;
 import com.a508.wms.floor.domain.Floor;
 import com.a508.wms.floor.service.FloorModuleService;
 import com.a508.wms.location.domain.Location;
-import com.a508.wms.location.dto.LocationDto;
 import com.a508.wms.location.dto.LocationResponseDto;
 import com.a508.wms.location.mapper.LocationMapper;
 import com.a508.wms.location.service.LocationModuleService;
 import com.a508.wms.util.constant.ProductStorageTypeEnum;
-import com.a508.wms.warehouse.domain.Wall;
 import com.a508.wms.warehouse.domain.Warehouse;
 import com.a508.wms.warehouse.dto.LocationsAndWallsRequestDto;
 import com.a508.wms.warehouse.dto.WallDto;
@@ -19,7 +17,6 @@ import com.a508.wms.warehouse.dto.WarehouseDetailResponseDto;
 import com.a508.wms.warehouse.dto.WarehouseDto;
 import com.a508.wms.warehouse.mapper.WallMapper;
 import com.a508.wms.warehouse.mapper.WarehouseMapper;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -78,7 +75,7 @@ public class WarehouseService {
     public WarehouseDetailResponseDto findById(Long id) {
         Warehouse warehouse = warehouseModuleService.findById(id);
 
-        List<LocationResponseDto> locations = locationModuleService.findByWarehouseId(id)
+        List<LocationResponseDto> locations = locationModuleService.findAllByWarehouseId(id)
             .stream()
             .map(LocationMapper::toLocationResponseDto)
             .toList();
@@ -94,61 +91,61 @@ public class WarehouseService {
     /*
     창고 정보를 부분적으로 업데이트하는 메서드 (businessId 제거 필요)
      */
-    @Transactional
-    public WarehouseDto updateWarehouse(Long warehouseId, WarehouseDto warehouseDto) {
-        log.info("warehouseID:{},warehouseDto:{}", warehouseId, warehouseDto);
-        Warehouse warehouse = warehouseModuleService.findById(warehouseId);
-
-        if (warehouseDto.getSize() != 0) {
-            warehouse.setSize(warehouseDto.getSize());
-            int rowCnt = calculateRowCount(warehouseDto.getSize());
-            int columnCnt = calculateRowCount(warehouseDto.getSize());
-            warehouse.setRowCount(rowCnt);
-            warehouse.setColumnCount(columnCnt);
-        }
-        if (warehouseDto.getName() != null) {
-            warehouse.setName(warehouseDto.getName());
-        }
-        if (warehouseDto.getPriority() != 0) {
-            warehouse.setPriority(warehouseDto.getPriority());
-        }
-        if (warehouseDto.getFacilityTypeEnum() != null) {
-            warehouse.setFacilityTypeEnum(warehouseDto.getFacilityTypeEnum());
-        }
-        if (warehouseDto.getWalls() != null) {
-            List<Wall> walls = new ArrayList<>();
-            for (WallDto wallDto : warehouseDto.getWalls()) {
-                log.info("wall:{}", wallDto);
-                Wall saveWall = wallModuleService.save(WallMapper.fromDto(wallDto, warehouse));
-                walls.add(saveWall);
-            }
-            warehouse.setWalls(walls);
-        }
-
-        if (warehouseDto.getLocations() != null) {
-            List<Location> locations = new ArrayList<>();
-            for (LocationDto locationDto : warehouseDto.getLocations()) {
-                log.info("locationDto:{}", locationDto);
-                Location saveLocation = locationModuleService.save(
-                    LocationMapper.fromDto(locationDto, warehouse));
-                locations.add(saveLocation);
-            }
-            warehouse.setLocations(locations);
-        }
-
-        Warehouse savedWarehouse = warehouseModuleService.save(warehouse);
-        WarehouseDto savedWarehouseDto = WarehouseMapper.fromWarehouse(savedWarehouse);
-
-        savedWarehouseDto.setLocations(savedWarehouse.getLocations().stream()
-            .map(LocationMapper::fromLocation)
-            .toList());
-
-        savedWarehouseDto.setWalls(savedWarehouse.getWalls().stream()
-            .map(WallMapper::fromWall)
-            .toList());
-
-        return savedWarehouseDto;
-    }
+//    @Transactional
+//    public WarehouseDto updateWarehouse(Long warehouseId, WarehouseDto warehouseDto) {
+//        log.info("warehouseID:{},warehouseDto:{}", warehouseId, warehouseDto);
+//        Warehouse warehouse = warehouseModuleService.findById(warehouseId);
+//
+//        if (warehouseDto.getSize() != 0) {
+//            warehouse.setSize(warehouseDto.getSize());
+//            int rowCnt = calculateRowCount(warehouseDto.getSize());
+//            int columnCnt = calculateRowCount(warehouseDto.getSize());
+//            warehouse.setRowCount(rowCnt);
+//            warehouse.setColumnCount(columnCnt);
+//        }
+//        if (warehouseDto.getName() != null) {
+//            warehouse.setName(warehouseDto.getName());
+//        }
+//        if (warehouseDto.getPriority() != 0) {
+//            warehouse.setPriority(warehouseDto.getPriority());
+//        }
+//        if (warehouseDto.getFacilityTypeEnum() != null) {
+//            warehouse.setFacilityTypeEnum(warehouseDto.getFacilityTypeEnum());
+//        }
+//        if (warehouseDto.getWalls() != null) {
+//            List<Wall> walls = new ArrayList<>();
+//            for (WallDto wallDto : warehouseDto.getWalls()) {
+//                log.info("wall:{}", wallDto);
+//                Wall saveWall = wallModuleService.save(WallMapper.fromDto(wallDto, warehouse));
+//                walls.add(saveWall);
+//            }
+//            warehouse.setWalls(walls);
+//        }
+//
+//        if (warehouseDto.getLocations() != null) {
+//            List<LocationResponseDto> locations = new ArrayList<>();
+//            for (LocationRequestDto locationDto : warehouseDto.getLocations()) {
+//                log.info("locationDto:{}", locationDto);
+//                Location saveLocation = locationModuleService.save(
+//                    LocationMapper.fromLocationRequestDto(locationDto, warehouse));
+//                locations.add(saveLocation);
+//            }
+//            warehouse.setLocations(locations);
+//        }
+//
+//        Warehouse savedWarehouse = warehouseModuleService.save(warehouse);
+//        WarehouseDto savedWarehouseDto = WarehouseMapper.fromWarehouse(savedWarehouse);
+//
+//        savedWarehouseDto.setLocations(savedWarehouse.getLocations().stream()
+//            .map(LocationMapper::fromLocation)
+//            .toList());
+//
+//        savedWarehouseDto.setWalls(savedWarehouse.getWalls().stream()
+//            .map(WallMapper::fromWall)
+//            .toList());
+//
+//        return savedWarehouseDto;
+//    }
 
     @Transactional
     public WarehouseDetailResponseDto updateLocationsAndWalls(
@@ -156,7 +153,7 @@ public class WarehouseService {
         Warehouse warehouse = warehouseModuleService.findById(warehouseId);
 
         List<LocationResponseDto> locations = request.getLocations().stream()
-            .map(location -> LocationMapper.fromLocationResponseDto(location, warehouse))
+            .map(location -> LocationMapper.fromLocationRequestDto(location, warehouse))
             .map(locationModuleService::save)
             .map(LocationMapper::toLocationResponseDto)
             .toList();

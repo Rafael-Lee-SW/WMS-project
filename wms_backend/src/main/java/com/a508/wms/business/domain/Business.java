@@ -25,12 +25,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
 @Table(name = "business")
 @NoArgsConstructor
 @Builder
+@SQLRestriction("status_enum = 'Active'")
 @AllArgsConstructor
 public class Business extends BaseTimeEntity {
 

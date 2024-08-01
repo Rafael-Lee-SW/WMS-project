@@ -1,9 +1,7 @@
 package com.a508.wms.location.dto;
 
-import com.a508.wms.floor.dto.FloorResponseDto;
+import com.a508.wms.floor.dto.FloorRequestDto;
 import com.a508.wms.util.constant.ProductStorageTypeEnum;
-import com.a508.wms.util.constant.StatusEnum;
-import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,13 +10,12 @@ import lombok.ToString;
 @Getter
 @Builder
 @ToString
-public class LocationDto {
+public class LocationRequestDto {
 
-    private Long id;
     private Long warehouseId;
+    private String name;
     @Builder.Default
     private ProductStorageTypeEnum productStorageTypeEnum = ProductStorageTypeEnum.상온;
-    private String name;
     @Builder.Default
     private int rotation = 0;
     @Builder.Default
@@ -31,10 +28,5 @@ public class LocationDto {
     private int ySize = -1;
     @Builder.Default
     private int zSize = -1;
-    private List<FloorResponseDto> FloorResponseDtos;
-    private LocalDateTime createdDate;
-    private LocalDateTime updatedDate;
-    @Builder.Default
-    private StatusEnum statusEnum = StatusEnum.ACTIVE;
-
+    private List<FloorRequestDto> floorRequests;
 }
