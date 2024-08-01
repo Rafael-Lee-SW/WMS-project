@@ -34,11 +34,11 @@ import { Preview } from "@mui/icons-material";
 
 // 다이나믹 import 테스트
 const DynamicMyContainer = dynamic(
-  () => import("/pages-sections/Components-Sections/MyContainer.jsx"),
+  () => import("/pages-sections/Components-Sections/MyContainerMap.jsx"),
   { ssr: false }
 );
 const DynamicMyContainerDual = dynamic(
-  () => import("/pages-sections/Components-Sections/MyContainerDual.jsx"),
+  () => import("/pages-sections/Components-Sections/MyContainerNavigation.jsx"),
   { ssr: false }
 );
 const DynamicMyContainerProduct = dynamic(
@@ -93,7 +93,6 @@ export default function Components(props) {
       </Parallax>
 
       <div className={classNames(classes.main, classes.mainRaised)}>
-
         <div className={classes.sections}>
           <div className={classes.container}>
             <br />
@@ -105,11 +104,13 @@ export default function Components(props) {
                   round
                   onClick={() => handleNextComponent(0)}
                 >
-                  <InventoryIcon className={classes.icons} />
                   창고 관리
                 </Button>
-                <Button color="info" round onClick={() => handleNextComponent(1)}>
-                  <ProductionQuantityLimitsIcon className={classes.icons} />
+                <Button
+                  color="info"
+                  round
+                  onClick={() => handleNextComponent(1)}
+                >
                   재고 관리
                 </Button>
                 <Button
@@ -117,7 +118,6 @@ export default function Components(props) {
                   round
                   onClick={() => handleNextComponent(2)}
                 >
-                  <ListAltIcon className={classes.icons} />
                   재고 현황
                 </Button>
               </div>
