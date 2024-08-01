@@ -1,30 +1,41 @@
 import { Button, Input, makeStyles } from "@material-ui/core";
 import { useState, useEffect } from "react";
 import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/manageBusinessStyle.js";
-import { deleteBusiness, editBusiness } from "../../pages/api";
+import { createBusiness, deleteBusiness, editBusiness } from "../../pages/api";
+import { useRouter } from "next/router";
 
 const useStyles = makeStyles(styles);
 
-// 사업자 관리
-export default function ManageBusiness({ id, name, businessNumber }) {
+// 사업자 관리 Component
+export default function ManageBusiness({ id, userId, name, businessNumber, statusEnum, onUpdateBusiness }) {
   const classes = useStyles();
+  const router = useRouter();
 
-  // name 에 값이 있으면 그 값을 사용, 없으면 빈 값 사용
-  const [businessInfo, setBusinessInfo] = useState({
+  const initialBusinessInfo = statusEnum !== 'DELETE' ? {
     name: name || '',
     businessNumber: businessNumber || '',
-  });
+  } : {
+    name: '',
+    businessNumber: '',
+  };
 
-  // businessNumber 가 존재하는 지를 boolean 값으로 변환
-  const [isRegistered, setIsRegistered] = useState(!!businessNumber);
+  const [businessInfo, setBusinessInfo] = useState(initialBusinessInfo);
+  const [isRegistered, setIsRegistered] = useState(statusEnum !== 'DELETED' && !!businessNumber);
 
   useEffect(() => {
-    setBusinessInfo({
-      name: name || '',
-      businessNumber: businessNumber || '',
-    });
-    setIsRegistered(!!businessNumber);
-  }, [name, businessNumber]);
+    if (statusEnum !== 'DELETED') {
+      setBusinessInfo({
+        name: name || '',
+        businessNumber: businessNumber || '',
+      });
+    } else {
+      setBusinessInfo({
+        name: '',
+        businessNumber: ''
+      });
+    }
+    setIsRegistered(statusEnum !== 'DELETED' && !!businessNumber);
+  }, [name, businessNumber, statusEnum]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -34,40 +45,33 @@ export default function ManageBusiness({ id, name, businessNumber }) {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const formData = new FormData();
-    formData.append('name', businessInfo.name);
-    formData.append('businessNumber', businessInfo.businessNumber);
-
-    useEffect(() => {
-      const changeBusiness = async () => {
-        try {
-          const data = {
-            "name" : businessInfo.name,
-            "businessNumber" : businessInfo.businessNumber
-          }
-          editBusiness(id, data)
-        } catch (error) {
-          console.log(error)
-        }
+    try {
+      const data = {
+        name: businessInfo.name,
+        businessNumber: businessInfo.businessNumber
+      };
+      if (isRegistered) {
+        await editBusiness(id, data);
+      } else {
+        await createBusiness(userId, data);
       }
-      changeBusiness();
-  }, [])};
+      onUpdateBusiness(isRegistered ? '수정' : '등록');
+    } catch (error) {
+      router.push('/404');
+    }
+  };
 
-  const handleDelete = () => {
-    useEffect(() => {
-      const removeBusiness = async () => {
-        try {
-          deleteBusiness(id)
-          setBusinessInfo({ name: '', businessNumber: ''});
-          setIsRegistered(false);
-        } catch (error) {
-          console.log(error)
-        }
-      }
-      removeBusiness();
-  }, [])};
+  const handleDelete = async () => {
+    try {
+      await deleteBusiness(id);
+      setBusinessInfo({ name: '', businessNumber: '' });
+      setIsRegistered(false);
+    } catch (error) {
+      router.push('/404');
+    }
+  };
 
   return (
     <div className={classes.container}>
@@ -77,18 +81,20 @@ export default function ManageBusiness({ id, name, businessNumber }) {
           <Input
             type="text"
             name="name"
-            value={businessInfo.name}
+            value={businessInfo.name || ''}
             onChange={handleChange}
             placeholder="사업자 이름"
+            required
           />
         </div>
         <div className={classes.div}>
           <Input
             type="text"
             name="businessNumber"
-            value={businessInfo.businessNumber}
+            value={businessInfo.businessNumber || ''}
             onChange={handleChange}
             placeholder="사업자 번호"
+            required
           />
         </div>
         <Button 
@@ -106,4 +112,3 @@ export default function ManageBusiness({ id, name, businessNumber }) {
     </div>
   );
 };
-

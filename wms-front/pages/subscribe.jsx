@@ -7,9 +7,8 @@ import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/sub
 
 const useStyles = makeStyles(styles)
 
-// 멤버십 선택 페이지
-// button 의 파라미터로 멤버십 정보 전달
-const Subscribe = () => {
+// 멤버십 선택 Component
+export default function Subscribe () {
   const classes = useStyles();
 
   return (
@@ -24,4 +23,3 @@ const Subscribe = () => {
   );
 }
 
-export default Subscribe;

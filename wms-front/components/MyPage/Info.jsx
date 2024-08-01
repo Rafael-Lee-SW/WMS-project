@@ -4,19 +4,23 @@ import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/inf
 const useStyles = makeStyles(styles)
 
 // 회원정보랜더링
-export default function Info({name, email, businessNumber}) {
+export default function Info({name, email, nickname, statusEnum, businessNumber}) {
     
     const classes = useStyles();
+    const initialUserInfo = statusEnum !== 'DELETED' ? { name, email, nickname, businessNumber } : { name: '', email: '', nickname: '', businessNumber: '' };
 
     return (
         <div>
-            <h2>기본 정보</h2>
-            <div className={classes.container}>
-                <h4><strong>이메일: {email}</strong></h4>
-                <h4><strong>사업자 명: {name}</strong></h4>
-                <h4><strong>사업자 번호: {businessNumber}</strong></h4>
-                {/* <h4><strong>구독시작일: {userInfo.startDate}</strong></h4> */}
-            </div>
+      <h2>기본 정보</h2>
+      {statusEnum === 'DELETED' ? (
+        <h4><strong>이메일: {initialUserInfo.email}</strong></h4>
+      ) : (
+        <div className={classes.container}>
+          <h4><strong>이메일: {initialUserInfo.email}</strong></h4>
+          <h4><strong>사업자 명: {initialUserInfo.name}</strong></h4>
+          <h4><strong>사업자 번호: {initialUserInfo.businessNumber}</strong></h4>
         </div>
+      )}
+    </div>
     )
 }

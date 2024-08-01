@@ -5,6 +5,10 @@ import axios from 'axios';
 const instance = axios.create({
     baseURL: 'https://i11a508.p.ssafy.io/api/',
 });
+// 사업체 등록
+function createBusiness(id, data = {}) {
+    return instance.post(`/businesses?userId=${id}`, data)
+} 
 
 // 모든 사업체 조회
 function fetchBusinesses() {
@@ -238,6 +242,7 @@ function moveProduct(data = {}) {
  
 export { 
     instance, 
+    createBusiness,
     fetchBusinesses, 
     fetchBusiness, 
     editBusiness,

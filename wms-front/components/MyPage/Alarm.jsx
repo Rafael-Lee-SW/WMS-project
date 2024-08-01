@@ -5,7 +5,7 @@ import style from '/styles/jss/nextjs-material-kit/effect/modalStyle.js'
 
 const useStyles = makeStyles(style)
 
-// 알람 리스트 페이지
+// 알람 리스트 Component
 export default function Alarm({ notifications }) {
     const classes = useStyles();
     const [open, setOpen] = useState(false);

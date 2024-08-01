@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@material-ui/core';
+import { Dialog, DialogTitle, DialogContent, DialogActions } from '@material-ui/core';
 import { deleteEmployee } from '../../pages/api';
 import { Card } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core';
 import style from '/styles/jss/nextjs-material-kit/effect/modalStyle.js'
+import { useRouter } from 'next/router';
 
 const useStyles = makeStyles(style)
 
-// 직원관리
-export default function ManageEmployees({employees}) {
+// 직원 관리 Component
+export default function ManageEmployees({employees, onUpdateEmployees}) {
   const classes = useStyles();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [currentEmployee, setCurrentEmployee] = useState(null);
   
@@ -22,20 +24,15 @@ export default function ManageEmployees({employees}) {
     setOpen(false);
   };
 
-  const handleDelete = (employeeId) => {
-    useEffect(() => {
-      const removeEmployee = async () => {
-        // 직원 삭제 요청
-        try {
-          deleteEmployee(employeeId);
-          console.log("직원 삭제가 완료되었습니다.");
-        } catch (error) {
-          console.log(error);
-        }
+  const handleDelete = async (employeeId) => {
+      try {
+        deleteEmployee(employeeId);
+        onUpdateEmployees();
+      } catch (error) {
+        router.push('/404');
       }
-      removeEmployee();
-  }, [])};
-
+    };
+      
   return (
     <div>
       <h2>직원 관리</h2>

@@ -8,7 +8,7 @@ import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/det
 const useStyles = makeStyles(styles)
 
 // button 의 파라미터로 멤버십 종류를 받아서 각각 다른 내용으로 랜더링
-const MembershipDetail = () => {
+export default function SubDetail () {
   const router = useRouter();
   const classes = useStyles();
   const { plan } = router.query;
@@ -49,6 +49,5 @@ const MembershipDetail = () => {
 
 };
 
-export default MembershipDetail;
 
 
