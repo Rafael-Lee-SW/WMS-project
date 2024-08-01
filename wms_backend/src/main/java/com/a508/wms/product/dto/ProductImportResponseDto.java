@@ -13,7 +13,7 @@ import lombok.ToString;
 @Data
 public class ProductImportResponseDto {
 
-    private List<ProductImportData> data;
+    private List<ProductImportRequestData> data;
     private LocalDateTime date;
     private long id;
 }

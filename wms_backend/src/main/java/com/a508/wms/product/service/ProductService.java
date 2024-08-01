@@ -10,8 +10,8 @@ import com.a508.wms.product.domain.Product;
 import com.a508.wms.product.dto.ProductExportData;
 import com.a508.wms.product.dto.ProductExportRequestDto;
 import com.a508.wms.product.dto.ProductExportResponseDto;
-import com.a508.wms.product.dto.ProductImportData;
 import com.a508.wms.product.dto.ProductImportDto;
+import com.a508.wms.product.dto.ProductImportRequestData;
 import com.a508.wms.product.dto.ProductImportRequestDto;
 import com.a508.wms.product.dto.ProductMainResponseDto;
 import com.a508.wms.product.dto.ProductPickingLocationDto;
@@ -138,18 +138,6 @@ public class ProductService {
             .toList();
     }
 
-//    /**
-//     * ProductDetail값을 통해 Product를 저장하는 기능
-//     *
-//     * @param request: Product 데이터
-//     */
-//    public void save(ProductRequestDto request) {
-//        ProductDetail productDetail = productDetailModuleService.findById(
-//            request.getProductDetailId());
-//
-//        productModuleService.save(request, productDetail);
-//    }
-
     /**
      * 기존 상품 데이터를 조회하여 수정하는 기능
      *
@@ -196,19 +184,15 @@ public class ProductService {
 
         log.info("warehouseId : {}", warehouseId);
         //입력된 창고에 정의된 default floor
-        Floor defaultFloor = floorModuleService.findByWarehouseIdAndLevel(warehouseId, -1);
+        Floor defaultFloor = floorModuleService.findDefaultFloorByWarehouse(warehouseId);
 
         log.info("default floor Id: {}", defaultFloor.getId());
 
-        for (ProductImportData data : productImportRequestDto.getData()) {
-            ProductDetailRequestDto productDetailRequestDto = buildProductDetailRequestDto(data);
-            ProductRequestDto productRequestDto = buildProductRequestDto(data);
-            ProductImportDto productImportDto = buildProductImportDto(productImportRequestDto,
-                productDetailRequestDto, productRequestDto);
-
-            importProduct(productImportDto, defaultFloor);
-            log.info("Finished saving product");
-        }
+        productImportRequestDto.getData()
+            .forEach(data -> {
+                importProduct(data, productImportRequestDto.getBusinessId(),
+                    defaultFloor);
+            });
     }
 
     /**
@@ -218,14 +202,15 @@ public class ProductService {
      * @param request
      * @param defaultFloor: 입고 처리 된 상품이 들어가는 default 층
      */
-    private void importProduct(ProductImportDto request, Floor defaultFloor) {
+    private void importProduct(ProductImportRequestData request, Long businessId,
+        Floor defaultFloor) {
         log.info("Importing product");
 
-        ProductDetail productDetail = findOrCreateProductDetail(request);
-        Product product = findProduct(request.getProduct(), productDetail);
-        product.updateFloor(defaultFloor);
+        ProductDetail productDetail = findOrCreateProductDetail(request, businessId);
+        Product product = ProductMapper.fromProductImportData(request, productDetail, defaultFloor);
+
         productModuleService.save(product);
-        importModuleService.save(request, product.getProductDetail().getBusiness());
+        importModuleService.save(request, product);
     }
 
     /**
@@ -234,9 +219,10 @@ public class ProductService {
      * @param request
      * @return
      */
-    private ProductDetail findOrCreateProductDetail(ProductImportDto request) {
+    private ProductDetail findOrCreateProductDetail(ProductImportRequestData request,
+        Long businessId) {
         Optional<ProductDetail> optionalProductDetail = productDetailModuleService.findByBusinessIdAndBarcode(
-            request.getBusinessId(), request.getProductDetail().getBarcode());
+            businessId, request.getBarcode());
 
         if (optionalProductDetail.isPresent()) {
             log.info("Found product detail: {}", optionalProductDetail.get());
@@ -245,46 +231,12 @@ public class ProductService {
 
         log.info("not found product detail");
         log.info("request : {}", request);
-        request.getProductDetail().setBusinessId(request.getBusinessId());
 
         //없으면 ProductDetail을 새로 만들어야함.
-        Business business = businessModuleService.findById(request.getBusinessId());
-        ProductDetail productDetail = ProductDetailMapper.fromDto(request.getProductDetail());
+        Business business = businessModuleService.findById(businessId);
+        ProductDetail productDetail = ProductDetailMapper.fromProductImportData(request, business);
 
-        productDetail.setBusiness(business);
         return productDetailModuleService.save(productDetail);
-    }
-
-    /**
-     * 해당 상품이 있는지 확인하고 없다면 새로 만들어서 반환해주는 기능.
-     *
-     * @param request       : 입력된 상품 data
-     * @param productDetail : 상품 정보
-     * @return
-     */
-
-    private Product findProduct(ProductRequestDto request, ProductDetail productDetail) {
-        log.info("find productDetail: {}", request);
-
-        Optional<Product> optionalProduct = productModuleService.findByIdAndExpirationDate(
-            productDetail.getId(), request.getExpirationDate());
-
-        if (optionalProduct.isPresent()) {
-            Product product = optionalProduct.get();
-
-            product.updateData(
-                product.getQuantity() + request.getQuantity(),
-                product.getExpirationDate(), product.getComment());
-
-            return product;
-        }
-
-        return Product.builder()
-            .productDetail(productDetail)
-            .quantity(request.getQuantity())
-            .expirationDate(request.getExpirationDate())
-            .comment(request.getComment())
-            .build();
     }
 
     /**
@@ -478,7 +430,7 @@ public class ProductService {
      * @param data
      * @return
      */
-    private ProductDetailRequestDto buildProductDetailRequestDto(ProductImportData data) {
+    private ProductDetailRequestDto buildProductDetailRequestDto(ProductImportRequestData data) {
         return ProductDetailRequestDto.builder()
             .barcode(data.getBarcode())
             .name(data.getName())
@@ -492,10 +444,10 @@ public class ProductService {
      * @param data
      * @return
      */
-    private ProductRequestDto buildProductRequestDto(ProductImportData data) {
+    private ProductRequestDto buildProductRequestDto(ProductImportRequestData data) {
         return ProductRequestDto.builder()
             .quantity(data.getQuantity())
-            .expirationDate(data.getExpirationDate() != null ? data.getExpirationDate() : null)
+            .expirationDate(data.getExpiry() != null ? data.getExpiry() : null)
             .build();
     }
 

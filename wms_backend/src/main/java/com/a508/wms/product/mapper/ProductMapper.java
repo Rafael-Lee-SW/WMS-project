@@ -1,6 +1,8 @@
 package com.a508.wms.product.mapper;
 
+import com.a508.wms.floor.domain.Floor;
 import com.a508.wms.product.domain.Product;
+import com.a508.wms.product.dto.ProductImportRequestData;
 import com.a508.wms.product.dto.ProductMainResponseDto;
 import com.a508.wms.product.dto.ProductResponseDto;
 import com.a508.wms.productdetail.domain.ProductDetail;
@@ -49,4 +51,14 @@ public class ProductMapper {
             .build();
     }
 
+    public static Product fromProductImportData(ProductImportRequestData productImportRequestData,
+        ProductDetail productDetail,
+        Floor floor) {
+        return Product.builder()
+            .productDetail(productDetail)
+            .floor(floor)
+            .quantity(productImportRequestData.getQuantity())
+            .expirationDate(productImportRequestData.getExpiry())
+            .build();
+    }
 }

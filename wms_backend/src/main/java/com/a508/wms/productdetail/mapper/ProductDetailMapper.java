@@ -1,5 +1,7 @@
 package com.a508.wms.productdetail.mapper;
 
+import com.a508.wms.business.domain.Business;
+import com.a508.wms.product.dto.ProductImportRequestData;
 import com.a508.wms.productdetail.domain.ProductDetail;
 import com.a508.wms.productdetail.dto.ProductDetailRequestDto;
 import com.a508.wms.productdetail.dto.ProductDetailResponseDto;
@@ -45,6 +47,17 @@ public class ProductDetailMapper {
             .unit(productDetailRequestDto.getUnit())
             .originalPrice(productDetailRequestDto.getOriginalPrice())
             .sellingPrice(productDetailRequestDto.getSellingPrice())
+            .build();
+    }
+
+    public static ProductDetail fromProductImportData(
+        ProductImportRequestData productImportRequestData,
+        Business business) {
+        return ProductDetail.builder()
+            .business(business)
+            .productStorageTypeEnum(productImportRequestData.getProductStorageTypeEnum())
+            .barcode(productImportRequestData.getBarcode())
+            .name(productImportRequestData.getName())
             .build();
     }
 }

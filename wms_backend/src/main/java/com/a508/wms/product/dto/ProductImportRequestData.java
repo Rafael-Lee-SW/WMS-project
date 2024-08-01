@@ -12,10 +12,10 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @ToString
 @RequiredArgsConstructor
-public class ProductImportData {
+public class ProductImportRequestData {
 
     private Long barcode;
-    private LocalDateTime expirationDate;
+    private LocalDateTime expiry;
     private String name;
     private int quantity;
     private ProductStorageTypeEnum productStorageTypeEnum;
