@@ -1,6 +1,6 @@
 package com.a508.wms.location.dto;
 
-import com.a508.wms.floor.dto.FloorDto;
+import com.a508.wms.floor.dto.FloorResponseDto;
 import com.a508.wms.util.constant.ProductStorageTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;
 import java.time.LocalDateTime;
@@ -31,7 +31,7 @@ public class LocationDto {
     private int ySize = -1;
     @Builder.Default
     private int zSize = -1;
-    private List<FloorDto> floorDtos;
+    private List<FloorResponseDto> FloorResponseDtos;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
     @Builder.Default
