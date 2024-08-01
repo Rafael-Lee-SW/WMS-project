@@ -1,21 +1,16 @@
 package com.a508.wms.notification.service;
 
 import com.a508.wms.business.domain.Business;
-import com.a508.wms.business.mapper.BusinessMapper;
 import com.a508.wms.business.repository.BusinessRepository;
 import com.a508.wms.notification.domain.Notification;
 import com.a508.wms.notification.dto.NotificationRequestDto;
-import com.a508.wms.notification.dto.NotificationResponseDto;
 import com.a508.wms.notification.repository.NotificationRepository;
-import com.a508.wms.product.dto.ProductExportResponseDto;
-import com.a508.wms.product.dto.ProductPickingDto;
 import com.a508.wms.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -24,6 +19,7 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final BusinessRepository businessRepository;
     private final ProductRepository productRepository;
+
     public void save(NotificationRequestDto notificationRequestDto) {
 //         알림 테이블에 저장할 정보: businessId, date, readOrNot(default true))
 
@@ -41,9 +37,11 @@ public class NotificationService {
         notificationRepository.save(notification);
 
     }
+
     public List<Notification> findAll() {
         return notificationRepository.findAll();
     }
+
     public Notification findById(long id) {
         return notificationRepository.findById(id).orElse(null);
     }
