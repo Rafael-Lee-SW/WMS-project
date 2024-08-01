@@ -2,6 +2,7 @@ package com.a508.wms.user.service;
 
 import com.a508.wms.user.domain.User;
 import com.a508.wms.user.repository.UserRepository;
+import com.a508.wms.util.constant.RoleTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,7 @@ public class UserModuleService {
      * @param id : 직원의 고유 번호
      * @return employeeDto
      */
-    public User findById(long id) {
+    public User findById(Long id) {
         return userRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Invalid Employee ID: " + id));
     }
@@ -41,8 +42,8 @@ public class UserModuleService {
      * @param businessId
      * @return List<EmployeeDto> (특정 사업체의 전체 직원)
      */
-    public List<User> findByBusinessId(long businessId) {
-        return userRepository.findEmployeesByBusinessId(businessId);
+    public List<User> findByBusinessId(Long businessId) {
+        return userRepository.findEmployeesByBusinessId(businessId, RoleTypeEnum.EMPLOYEE);
     }
 
     public User save(User user) {
