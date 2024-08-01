@@ -1,7 +1,7 @@
 package com.a508.wms.warehouse.dto;
 
 
-import com.a508.wms.location.dto.LocationDto;
+import com.a508.wms.location.dto.LocationResponseDto;
 import com.a508.wms.util.constant.FacilityTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;
 import java.time.LocalDateTime;
@@ -28,7 +28,7 @@ public class WarehouseDto {
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
     private StatusEnum statusEnum;
-    private List<LocationDto> locations;
+    private List<LocationResponseDto> locations;
     private List<WallDto> walls;
 
 

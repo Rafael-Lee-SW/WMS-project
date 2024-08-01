@@ -1,6 +1,7 @@
 package com.a508.wms.floor.mapper;
 
 import com.a508.wms.floor.domain.Floor;
+import com.a508.wms.floor.dto.FloorRequestDto;
 import com.a508.wms.floor.dto.FloorResponseDto;
 import org.springframework.stereotype.Component;
 
@@ -36,6 +37,13 @@ public class FloorMapper {
             .createdDate(floor.getCreatedDate())
             .updatedDate(floor.getUpdatedDate())
             .statusEnum(floor.getStatusEnum())
+            .build();
+    }
+
+    public static Floor fromFloorRequestDto(FloorRequestDto floorRequestDto) {
+        return Floor.builder()
+            .floorLevel(floorRequestDto.getFloorLevel())
+            .exportTypeEnum(floorRequestDto.getExportTypeEnum())
             .build();
     }
 

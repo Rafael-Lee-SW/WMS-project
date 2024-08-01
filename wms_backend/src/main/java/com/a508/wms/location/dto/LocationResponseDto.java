@@ -1,6 +1,8 @@
 package com.a508.wms.location.dto;
 
+import com.a508.wms.floor.dto.FloorResponseDto;
 import com.a508.wms.util.constant.ProductStorageTypeEnum;
+import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,4 +24,5 @@ public class LocationResponseDto {
     private String name;
     private ProductStorageTypeEnum storageType;
     private int rotation;
+    private List<FloorResponseDto> floorResponses;
 }
