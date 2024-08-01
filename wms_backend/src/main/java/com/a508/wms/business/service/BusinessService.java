@@ -1,12 +1,14 @@
 package com.a508.wms.business.service;
 
-import static com.a508.wms.business.mapper.BusinessMapper.fromBusiness;
-import static com.a508.wms.business.mapper.BusinessMapper.fromDto;
+import static com.a508.wms.business.mapper.BusinessMapper.toBusinessResponseDto;
 
 import com.a508.wms.business.domain.Business;
-import com.a508.wms.business.dto.BusinessDto;
-import com.a508.wms.business.mapper.BusinessMapper;
-import java.util.List;
+import com.a508.wms.business.dto.BusinessRequestDto;
+import com.a508.wms.business.dto.BusinessResponseDto;
+import com.a508.wms.user.domain.User;
+import com.a508.wms.user.service.UserModuleService;
+import com.a508.wms.util.constant.RoleTypeEnum;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,26 +19,33 @@ import org.springframework.stereotype.Service;
 public class BusinessService {
 
     private final BusinessModuleService businessModuleService;
+    private final UserModuleService userModuleService;
+
     /**
-     * 테스트용 사업체 생성 메서드로, 나중에는 사용되지 않을 예정
+     * 사업체 생성 메서드
      *
-     * @param businessDto : 사업체의 정보가 담긴 Dto
-     * @return BusinessDto
+     * @param request
+     * @return
      */
-    public BusinessDto create(BusinessDto businessDto) {
+    @Transactional
+    public void create(Long userId, BusinessRequestDto request) {
+        log.info("[Service] create Business by userId: {}", userId);
         Business.BusinessBuilder builder = Business.builder();
 
-        // 사업자명 입력하는 경우
-        if (businessDto.getName() != null) {
-            builder.name(businessDto.getName());
+        User user = userModuleService.findById(userId);
+        user.updateRoleTypeEnum(RoleTypeEnum.BUSINESS); //Business 등록하면서 유저 역할 변경
+        builder.user(user);
+
+        if (request.getName() != null) {
+            builder.name(request.getName());
         }
-        if (businessDto.getBusinessNumber() != null) {
-            builder.businessNumber(businessDto.getBusinessNumber());
+        if (request.getBusinessNumber() != null) {
+            builder.businessNumber(request.getBusinessNumber());
         }
         Business business = builder.build();
         try {
-            Business savedBusiness = businessModuleService.save(business);
-            return fromBusiness(savedBusiness);
+            Business saveBusiness = businessModuleService.save(business);
+            user.updateBusinessIdId(saveBusiness.getId());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -48,37 +57,33 @@ public class BusinessService {
      * @param id : 사업체 고유 번호
      * @return BusinessDto
      */
-    public BusinessDto findById(long id) {
-        Business business = businessModuleService.findById(id);
-        return fromBusiness(business);
+    public BusinessResponseDto findById(long id) {
+        log.info("[Service] find Business by id: {}", id);
+        try {
+            Business business = businessModuleService.findById(id);
+            return toBusinessResponseDto(business);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
-     * 모든 사업체의 정보를 조회하는 메서드
+     * 사업체의 정보를 수정하는 메서드 수정 가능한 부분은 사업체에 관한 개인 정보들(이름, 사업체번호)
      *
-     * @return List<BusinessDto>
-     */
-    public List<BusinessDto> findAll() {
-        List<Business> businesses = businessModuleService.findAll();
-        return businesses.stream()
-            .map(BusinessMapper::fromBusiness)
-            .toList();
-    }
-
-    /**
-     * 사업체의 정보를 수정하는 메서드 현재 수정 가능한 부분은 사업체에 관한 개인 정보들(사업체 번호, 이름,이메일 등..)
-     *
-     * @param businessDto : 사업체 정보가 담긴 Dto
+     * @param request : 사업체 정보가 담긴 Dto
      * @return BusinessDto
      */
-    public BusinessDto update(BusinessDto businessDto) {
+    @Transactional
+    public BusinessResponseDto update(Long id, BusinessRequestDto request) {
+        log.info("[Service] update Business by id: {}", id);
         try {
             // 수정할 필드 값 변경하기
-            Business updatedBusiness = fromDto(businessDto);
+            Business updatedBusiness = businessModuleService.findById(id);
+            updatedBusiness.updateName(request.getName());
+            updatedBusiness.updateBusinessNumber(request.getBusinessNumber());
             updatedBusiness = businessModuleService.save(updatedBusiness);
-
             // 변경 후 return
-            return fromBusiness(updatedBusiness);
+            return toBusinessResponseDto(updatedBusiness);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -87,12 +92,20 @@ public class BusinessService {
     /**
      * 사업체의 정보를 삭제하는 메서드 실제로 지우지 않고, 상태를 DELETED로 변경하여 삭제된 것 처럼 처리
      *
-     * @param businessId : 사업체 고유 번호
+     * @param id : 사업체 고유 번호
      * @return BusinessDto
      */
-    public BusinessDto delete(long businessId) {
-        Business existingBusiness = businessModuleService.findById(businessId);
-        Business deletedBusiness = businessModuleService.delete(existingBusiness);
-        return fromBusiness(deletedBusiness);
+    @Transactional
+    public BusinessResponseDto delete(Long id) {
+        try {
+            log.info("[Service] delete Business by id: {}", id);
+            Business existingBusiness = businessModuleService.findById(id);
+            Business deletedBusiness = businessModuleService.delete(existingBusiness);
+            User user = existingBusiness.getUser();
+            user.updateRoleTypeEnum(RoleTypeEnum.GENERAL);
+            return toBusinessResponseDto(deletedBusiness);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -70,8 +70,15 @@ public class User extends BaseTimeEntity {
         }
     }
 
+    public void updateRoleTypeEnum(RoleTypeEnum roleTypeEnum) {
+        this.roleTypeEnum = roleTypeEnum;
+    }
+
     public void setStatusEnum(StatusEnum statusEnum) {
         this.statusEnum = statusEnum;
     }
 
+    public void updateBusinessIdId(Long businessId) {
+        this.businessId = businessId;
+    }
 }
