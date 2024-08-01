@@ -60,6 +60,22 @@ public class LocationMapper {
         return location;
     }
 
+    public static Location fromLocationResponseDto(LocationResponseDto locationResponseDto,
+        Warehouse warehouse) {
+        return Location.builder()
+            .id(locationResponseDto.getId())
+            .name(locationResponseDto.getName())
+            .rotation(locationResponseDto.getRotation())
+            .xPosition(locationResponseDto.getXPosition())
+            .yPosition(locationResponseDto.getYPosition())
+            .xSize(locationResponseDto.getXSize())
+            .ySize(locationResponseDto.getYSize())
+            .zSize(locationResponseDto.getZSize())
+            .warehouse(warehouse)
+            .productStorageTypeEnum(locationResponseDto.getStorageType())
+            .build();
+    }
+
     public static LocationResponseDto toLocationResponseDto(Location location) {
         return LocationResponseDto.builder()
             .id(location.getId())

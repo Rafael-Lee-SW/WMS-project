@@ -12,6 +12,7 @@ import com.a508.wms.location.service.LocationModuleService;
 import com.a508.wms.util.constant.ProductStorageTypeEnum;
 import com.a508.wms.warehouse.domain.Wall;
 import com.a508.wms.warehouse.domain.Warehouse;
+import com.a508.wms.warehouse.dto.LocationsAndWallsRequestDto;
 import com.a508.wms.warehouse.dto.WallDto;
 import com.a508.wms.warehouse.dto.WarehouseByBusinessDto;
 import com.a508.wms.warehouse.dto.WarehouseDetailResponseDto;
@@ -147,6 +148,26 @@ public class WarehouseService {
             .toList());
 
         return savedWarehouseDto;
+    }
+
+    @Transactional
+    public WarehouseDetailResponseDto updateLocationsAndWalls(
+        Long warehouseId, LocationsAndWallsRequestDto request) {
+        Warehouse warehouse = warehouseModuleService.findById(warehouseId);
+
+        List<LocationResponseDto> locations = request.getLocations().stream()
+            .map(location -> LocationMapper.fromLocationResponseDto(location, warehouse))
+            .map(locationModuleService::save)
+            .map(LocationMapper::toLocationResponseDto)
+            .toList();
+
+        List<WallDto> walls = request.getWalls().stream()
+            .map(wall -> WallMapper.fromDto(wall, warehouse))
+            .map(wallModuleService::save)
+            .map(WallMapper::fromWall)
+            .toList();
+
+        return WarehouseMapper.toWarehouseDetailResponseDto(warehouse, locations, walls);
     }
 
     /*

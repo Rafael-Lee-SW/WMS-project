@@ -38,7 +38,6 @@ public class WebSecurityConfig {
     @Bean
     protected SecurityFilterChain configure(HttpSecurity httpSecurity) throws Exception {
 
-
         httpSecurity
             .cors(cors -> cors
                 .configurationSource(corsConfigurationSource())
@@ -50,6 +49,7 @@ public class WebSecurityConfig {
             )
             .authorizeHttpRequests(request -> request
                 .requestMatchers("/api/v1/auth/**").permitAll() // 자체 로그인 및 회원가입 경로
+                .requestMatchers("/**").permitAll()
                 .requestMatchers("/api/v1/social/**").authenticated() // 소셜 로그인 경로
                 .anyRequest().permitAll()
             )
