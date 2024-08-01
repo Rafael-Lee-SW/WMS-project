@@ -9,6 +9,7 @@ import com.a508.wms.user.domain.User;
 import com.a508.wms.user.service.UserModuleService;
 import com.a508.wms.util.constant.RoleTypeEnum;
 import jakarta.transaction.Transactional;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -90,7 +91,8 @@ public class BusinessService {
     }
 
     /**
-     * 사업체의 정보를 삭제하는 메서드 실제로 지우지 않고, 상태를 DELETED로 변경하여 삭제된 것 처럼 처리
+     * 사업체의 정보를 삭제하는 메서드 실제로 지우지 않고, 상태를 DELETED로 변경하여 삭제된 것 처럼 처리 d delete시 유저의 Role과 함께 직원들의 관계도
+     * 끊어줘야한다.
      *
      * @param id : 사업체 고유 번호
      * @return BusinessDto
@@ -103,6 +105,10 @@ public class BusinessService {
             Business deletedBusiness = businessModuleService.delete(existingBusiness);
             User user = existingBusiness.getUser();
             user.updateRoleTypeEnum(RoleTypeEnum.GENERAL);
+            List<User> employees = userModuleService.findByBusinessId(deletedBusiness.getId());
+            for (User employee : employees) {
+                employee.updateBusinessIdId(null);
+            }
             return toBusinessResponseDto(deletedBusiness);
         } catch (Exception e) {
             throw new RuntimeException(e);
