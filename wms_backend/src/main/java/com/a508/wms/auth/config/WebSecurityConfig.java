@@ -1,6 +1,8 @@
 package com.a508.wms.auth.config;
 
 import com.a508.wms.auth.filter.JwtAuthenticationFilter;
+import com.a508.wms.auth.handler.ValidationExceptionHandler;
+import com.a508.wms.user.service.UserService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -14,6 +16,7 @@ import org.springframework.security.config.annotation.web.configurers.CsrfConfig
 import org.springframework.security.config.annotation.web.configurers.HttpBasicConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -27,6 +30,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class WebSecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final DefaultOAuth2UserService oAuth2UserService;
 
     /**
      * 보안 필터 체인을 구성합니다.
@@ -36,7 +40,8 @@ public class WebSecurityConfig {
      * @throws Exception 예외
      */
     @Bean
-    protected SecurityFilterChain configure(HttpSecurity httpSecurity) throws Exception {
+    protected SecurityFilterChain configure(HttpSecurity httpSecurity,
+        ValidationExceptionHandler validationExceptionHandler, UserService userService) throws Exception {
 
 
         httpSecurity
@@ -49,9 +54,16 @@ public class WebSecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             .authorizeHttpRequests(request -> request
-                .requestMatchers("/api/v1/auth/**").permitAll() // 자체 로그인 및 회원가입 경로
+                .requestMatchers("/api/v1/auth/**", "/oauth2/**").permitAll() // 자체 로그인 및 회원가입 경로
                 .requestMatchers("/api/v1/social/**").authenticated() // 소셜 로그인 경로
                 .anyRequest().permitAll()
+            )
+            .oauth2Login(oauth2 -> oauth2
+                .redirectionEndpoint(endpoint -> endpoint.baseUri("/oauth2/callback/*"))
+                .userInfoEndpoint(endPoint -> endPoint.userService(oAuth2UserService))
+            )
+            .exceptionHandling(exceptionHandling -> exceptionHandling
+                .authenticationEntryPoint(new FailedAuthenticationEntryPoint())
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

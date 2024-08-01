@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public interface CertificationRepository extends JpaRepository<Certification, String> {
 
-    Certification findByUserId(String userId);
+
 
     Certification findByEmail(String email);
 

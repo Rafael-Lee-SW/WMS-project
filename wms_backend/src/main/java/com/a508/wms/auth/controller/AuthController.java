@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.annotation.RequestScope;
 
 @RestController
-@RequestMapping("/api/v1/auth")
+@RequestMapping("/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -68,7 +68,7 @@ public class AuthController {
 
     @PostMapping("/sign-up")
     public ResponseEntity<? super SignUpResponseDto> signUp(
-        @RequestBody @Valid SignUpRequestDto requestBody
+        @RequestBody  SignUpRequestDto requestBody
     ){
         ResponseEntity<? super SignUpResponseDto> response =authService.signUp(requestBody);
         return response;

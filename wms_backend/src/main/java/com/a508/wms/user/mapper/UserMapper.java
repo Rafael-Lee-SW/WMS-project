@@ -3,6 +3,9 @@ package com.a508.wms.user.mapper;
 import com.a508.wms.auth.dto.request.auth.SignUpRequestDto;
 import com.a508.wms.user.domain.User;
 import com.a508.wms.user.dto.UserDto;
+import com.a508.wms.util.constant.LoginTypeEnum;
+import com.a508.wms.util.constant.RoleTypeEnum;
+import com.a508.wms.util.constant.StatusEnum;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -27,10 +30,16 @@ public class UserMapper {
             .build();
     }
 
-    public static User fromSignUpRequestDto(SignUpRequestDto userDto) {
+    public static User fromSignUpRequestDto(SignUpRequestDto dto) {
         return User.builder()
-            .email(userDto.getEmail())
-            .password(userDto.getPassword())
+            .email(dto.getEmail())
+            .password(dto.getPassword())
+            .name(dto.getName())
+            .nickname(dto.getNickName())
+            .roleTypeEnum(RoleTypeEnum.GENERAL) // 기본값 설정
+            .loginTypeEnum(LoginTypeEnum.GENERAL) // 기본값 설정
+            .statusEnum(StatusEnum.ACTIVE) // 기본값 설정
+            .businessId(null) // businessId는 null로 설정
             .build();
     }
 
