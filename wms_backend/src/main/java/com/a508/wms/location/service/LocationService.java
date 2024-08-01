@@ -1,7 +1,7 @@
 package com.a508.wms.location.service;
 
 import com.a508.wms.floor.domain.Floor;
-import com.a508.wms.floor.dto.FloorDto;
+import com.a508.wms.floor.dto.FloorResponseDto;
 import com.a508.wms.floor.mapper.FloorMapper;
 import com.a508.wms.floor.service.FloorModuleService;
 import com.a508.wms.location.domain.Location;
@@ -92,15 +92,15 @@ public class LocationService {
 
         locationModuleService.save(location);
 
-        List<FloorDto> floorDtos = locationDto.getFloorDtos();
+        List<FloorResponseDto> FloorResponseDtos = locationDto.getFloorResponseDtos();
 
         log.info("Floor convert");
-        List<Floor> floors = floorDtos.stream()
+        List<Floor> floors = FloorResponseDtos.stream()
             .map(floorDto -> {
                 modifyExportType(floorDto, warehouse);
                 log.info("{}", floorDto);
                 // Floor 객체로 변환, location정보 넣어주기
-                return FloorMapper.fromDto(floorDto).setLocation(location);
+                return FloorMapper.fromFloorResponseDto(floorDto).setLocation(location);
             })
             .toList();
 
@@ -117,14 +117,14 @@ public class LocationService {
     /**
      * 창고의 타입에 맞게 floor의 타입을 수정 하는 기능
      *
-     * @param floorDto
-     * @param warehouse : 해당 floor에 해당하는 Warehouse, 타입 확인을 위함.
+     * @param floorResponseDto
+     * @param warehouse        : 해당 floor에 해당하는 Warehouse, 타입 확인을 위함.
      * @return Floor : 타입이 반영된 Floor 객체
      */
-    private void modifyExportType(FloorDto floorDto, Warehouse warehouse) {
+    private void modifyExportType(FloorResponseDto floorResponseDto, Warehouse warehouse) {
         //warehouse가 STORE(매장)인 경우
         if (warehouse.getFacilityTypeEnum().equals(FacilityTypeEnum.STORE)) {
-            floorDto.setExportType(ExportTypeEnum.STORE);
+            floorResponseDto.setExportType(ExportTypeEnum.STORE);
         }
     }
 

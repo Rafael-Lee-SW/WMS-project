@@ -1,6 +1,6 @@
 package com.a508.wms.floor.controller;
 
-import com.a508.wms.floor.dto.FloorDto;
+import com.a508.wms.floor.dto.FloorResponseDto;
 import com.a508.wms.floor.service.FloorService;
 import com.a508.wms.util.BaseSuccessResponse;
 import java.util.List;
@@ -27,9 +27,9 @@ public class FloorController {
      * @return FloorDto List
      */
     @GetMapping
-    public BaseSuccessResponse<List<FloorDto>> findAllByLocationId(
+    public BaseSuccessResponse<List<FloorResponseDto>> findAllByLocationId(
         @RequestParam(name = "locationId") Long locationId) {
-        log.info("get all Floors by locationId: {}", locationId);
+        log.info("[Controller] find all Floors by locationId: {}", locationId);
         return new BaseSuccessResponse<>(floorService.findAllByLocationId(locationId));
     }
 
@@ -40,8 +40,8 @@ public class FloorController {
      * @return FloorDto
      */
     @GetMapping("/{id}")
-    public BaseSuccessResponse<FloorDto> findById(@PathVariable Long id) {
-        log.info("get Floor by id: {}", id);
+    public BaseSuccessResponse<FloorResponseDto> findById(@PathVariable Long id) {
+        log.info("[Controller] find Floor by id: {}", id);
         return new BaseSuccessResponse<>(floorService.findById(id));
     }
 }
