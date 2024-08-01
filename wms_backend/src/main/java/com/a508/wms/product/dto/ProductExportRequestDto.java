@@ -16,7 +16,7 @@ public class ProductExportRequestDto {
 
     private Long businessId;
     private Long warehouseId;
-    private List<ProductExportData> data;
+    private List<ExportResponseDto> data;
 
 
 }

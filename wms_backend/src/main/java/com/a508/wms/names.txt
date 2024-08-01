@@ -1,7 +1,0 @@
-controller
-dto
-domain
-service
-repository
-exception
-mapper

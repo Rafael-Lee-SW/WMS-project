@@ -1,11 +1,13 @@
 package com.a508.wms.notification.dto;
 
-import com.a508.wms.util.constant.StatusEnum;
+import com.a508.wms.product.dto.ExportResponseDto;
+import com.a508.wms.product.dto.ImportResponseDto;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 // id, businessId, date
 // locationName, floor_level, productname, quantity = productpicking
@@ -13,11 +15,9 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class NotificationResponseDto {
-    private long id;
-    private long businessId;
-    private boolean readOrNot;
-    private LocalDateTime createdDate;
-    private LocalDateTime updatedDate;
-    private StatusEnum statusEnum;
+    @Builder.Default
+    List<ImportResponseDto> importResponseDtos = new ArrayList<>();
+    @Builder.Default
+    List<ExportResponseDto> exportResponseDtos = new ArrayList<>();
 
 }

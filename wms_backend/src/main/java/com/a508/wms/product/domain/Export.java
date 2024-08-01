@@ -2,6 +2,7 @@ package com.a508.wms.product.domain;
 
 import com.a508.wms.business.domain.Business;
 import com.a508.wms.util.BaseTimeEntity;
+import com.a508.wms.util.constant.ProductStorageTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -50,9 +51,21 @@ public class Export extends BaseTimeEntity {
 
     @Column
     private LocalDateTime expirationDate;
+    @Column
+    private LocalDateTime date;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ProductStorageTypeEnum productStorageType;
+
+    @Column
+    private String warehouseName;
 
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private StatusEnum statusEnum = StatusEnum.ACTIVE;
 
+    public void updateBusiness(Business business) {
+        this.business = business;
+    }
 }
