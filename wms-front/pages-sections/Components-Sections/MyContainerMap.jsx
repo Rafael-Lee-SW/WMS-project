@@ -31,13 +31,14 @@ const CANVAS_SIZE = 1000; // 100 = 1000cm = 10m
 
 const useStyles = makeStyles(styles);
 
-// ----- 본격적인 창고 설정 반환 -------
+/**
+ * 창고 관리 Component
+ */
 
-// 창고 관리 Component
-const User = () => {
-  const classes = useStyles();
-  const stageRef = useRef(null); // Create a reference for the stage
-  const layerRef = useRef(null); // Create a reference for the layer
+const MyContainerMap = () => {
+  const classes = useStyles(); // 스타일 불러오기
+  const stageRef = useRef(null); // reference for the stage
+  const layerRef = useRef(null); // reference for the layer
 
   // Initial Setting the container array 초기 세팅
   const initialContainer = Array.from({ length: CANVAS_SIZE }, () =>
@@ -46,10 +47,14 @@ const User = () => {
       code: "air",
     }))
   );
-  // Container for saving the info.
+  // 창고 전체 배열을 저장하기 위한 Container State
   const [container, setContainer] = useState(initialContainer);
+
+  // 줌 인, 줌 아웃을 위한 Scale
+  const [scale, setScale] = useState(1); // 초기 줌 값
+
   // 사각형을 추가하고 관리하는 State 추가
-  const [rectangles, setRectangles] = useState([
+  const [locations, setLocations] = useState([
     {
       id: "0",
       x: 0,
@@ -61,28 +66,28 @@ const User = () => {
       draggable: false,
       order: 0, // 순서대로 번호 인덱싱
       name: "임시",
-      type: "임시", // set the type of the rectangle
+      type: "임시", // 저장 타입
       rotation: 0, // 초기 회전값
     },
   ]);
-  // 줌 인, 줌 아웃을 위한 Scale
-  const [scale, setScale] = useState(1); // 초기 줌 값
+
   // 마지막으로 클릭한 상자를 추적하는 상태 추가
-  const [selectedRect, setSelectedRect] = useState(null);
+  const [selectedLocation, setSelectedLocation] = useState(null);
   // 마지막으로 클릭한 상자를 수정하는 폼을 띄우기 위한 상태 추가
-  const [selectedRectTransform, setSelectedRectTransform] = useState(null);
+  const [selectedLocationTransform, setSelectedLocationTransform] =
+    useState(null);
 
-  // Tracking the current setting mode
-  const [currentSetting, setCurrentSetting] = useState("location"); // Track current setting mode
-  const [showColorPicker, setShowColorPicker] = useState(false); // Control visibility of the color picker
+  // 현재 벽 생성 / 일반 커서 를 선택하기 위한 State
+  const [currentSetting, setCurrentSetting] = useState("location"); // 초기 모드는 location
+  const [showColorPicker, setShowColorPicker] = useState(false); // ColorPicker를 보기 위한 State
 
-  // New State for rectangle settings - Default exits, and changable now.
-  const [newRectColor, setNewRectColor] = useState("blue");
-  const [newRectWidth, setNewRectWidth] = useState(50);
-  const [newRectHeight, setNewRectHeight] = useState(50);
-  const [newRectZIndex, setNewRectZIndex] = useState(1);
-  const [newRectName, setNewRectName] = useState("");
-  const [newRectType, setNewRectType] = useState(""); // 적재함의 속성(냉동, 상온 등)
+  // 새롭게 생성되는 적재함(location)의 속성 설정을 위한 State
+  const [newLocationColor, setNewLocationColor] = useState("blue");
+  const [newLocationWidth, setNewLocationWidth] = useState(50);
+  const [newLocationHeight, setNewLocationHeight] = useState(50);
+  const [newLocationZIndex, setNewLocationZIndex] = useState(1);
+  const [newLocationName, setNewLocationName] = useState("");
+  const [newLocationType, setNewLocationType] = useState(""); // 적재함의 속성(냉동, 상온 등) 추후 반영 예정
 
   // New State for wall settings(벽 관련 설정)
   const [newWallColor, setNewWallColor] = useState("brown");
@@ -111,43 +116,43 @@ const User = () => {
   const currentShapeRef = useRef(null);
 
   // 로케이션을 추가하는 메서드
-  const handleAddRectangle = (type) => {
-    const newRect = {
+  const handleAddLocation = (type) => {
+    const newLocation = {
       id: null,
-      // id: (parseInt(rectangles[rectangles.length - 1].id) + 1).toString(),s
+      // id: (parseInt(locations[locations.length - 1].id) + 1).toString(),s
       x: 50,
       y: 50,
-      z: newRectZIndex,
-      width: newRectWidth,
-      height: newRectHeight,
-      fill: newRectColor,
+      z: newLocationZIndex,
+      width: newLocationWidth,
+      height: newLocationHeight,
+      fill: newLocationColor,
       draggable: true,
-      order: rectangles.length + 1, // 순서대로 번호 인덱싱
+      order: locations.length + 1, // 순서대로 번호 인덱싱
       name:
-        newRectName ||
-        `적재함 ${parseInt(rectangles[rectangles.length - 1].id) + 1}`,
-      type: type, // set the type of the rectangle
+        newLocationName ||
+        `적재함 ${parseInt(locations[locations.length - 1].id) + 1}`,
+      type: type, // set the type of the Location
       rotation: 0, // 초기 회전값
     };
-    setRectangles([...rectangles, newRect]);
-    updateContainer(newRect, "rectangle", `rect${newRect.id}`);
+    setLocations([...locations, newLocation]);
+    updateContainer(newLocation, "location", `location${newLocation.id}`);
     // Reset settings to default after adding // 적재함 추가 후 값 초기화
-    setNewRectColor("blue");
-    setNewRectWidth(50);
-    setNewRectHeight(50);
-    // setNewRectZIndex(1); //초기화 하지 아니함
-    setNewRectName("");
+    setNewLocationColor("blue");
+    setNewLocationWidth(50);
+    setNewLocationHeight(50);
+    // setNewLocationZIndex(1); //초기화 하지 아니함
+    setNewLocationName("");
   };
   //
   // Container Update Function (창고 배열 저장)
-  const updateContainer = (rect, type, code) => {
+  const updateContainer = (location, type, code) => {
     const newContainer = container.map((row, x) =>
       row.map((cell, y) => {
         if (
-          x >= rect.x &&
-          x < rect.x + rect.width &&
-          y >= rect.y &&
-          y < rect.y + rect.height
+          x >= location.x &&
+          x < location.x + location.width &&
+          y >= location.y &&
+          y < location.y + location.height
         ) {
           return { type, code };
         }
@@ -160,23 +165,23 @@ const User = () => {
   // 컨버스에 있는 사각형들의 정보를 저장한다.
   const handleSave = async () => {
     // 사각형들을 전부 기록한다.
-    const rectData = rectangles.map((rect) => ({
-      id: rect.id,
-      x: rect.x,
-      y: rect.y,
-      z: rect.z,
-      width: rect.width,
-      height: rect.height,
-      fill: rect.fill,
-      type: rect.type,
-      name: rect.name,
-      rotation: rect.rotation,
+    const locationData = locations.map((location) => ({
+      id: location.id,
+      x: location.x,
+      y: location.y,
+      z: location.z,
+      width: location.width,
+      height: location.height,
+      fill: location.fill,
+      type: location.type,
+      name: location.name,
+      rotation: location.rotation,
     }));
-    console.log("Canvas data", rectData);
-    console.log("container", container);
+    // console.log("Canvas data", locationData);
+    // console.log("container", container);
 
     //앙커들을 전부 기록한다.
-    const anchorData = anchorsRef.current.map(({ start, end }) => ({
+    const wallData = anchorsRef.current.map(({ start, end }) => ({
       startID: start.id(),
       startX: start.x(),
       startY: start.y(),
@@ -184,8 +189,7 @@ const User = () => {
       endX: end.x(),
       endY: end.y(),
     }));
-
-    console.log("Anchor data ", anchorData);
+    // console.log("Anchor data ", anchorData);
 
     try {
       const response = await fetch("/api/save-map", {
@@ -193,7 +197,7 @@ const User = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ rectData, anchorData }),
+        body: JSON.stringify({ locationData, wallData }),
       });
 
       if (response.ok) {
@@ -208,33 +212,25 @@ const User = () => {
 
   // API를 통해 DB에 저장한다.
   const APISaveToDB = async () => {
-    const rectData = rectangles.map((rect) => ({
-      id: parseInt(rect.id),
-      // warehouseId: 1,
-      name: rect.name,
+    const locationData = locations.map((location) => ({
+      id: parseInt(location.id),
+      name: location.name,
       fill: 0,
-      xposition: rect.x,
-      yposition: rect.y,
-      xsize: rect.width,
-      ysize: rect.height,
-      zsize: rect.z,
-      rotation: rect.rotation,
+      xposition: location.x,
+      yposition: location.y,
+      xsize: location.width,
+      ysize: location.height,
+      zsize: location.z,
+      rotation: location.rotation,
       storageType: "상온",
-      // productStorageTypeEnum: "상온",
-      // floorDtos: [
-      //   {
-      //     id: rect.id,
-      //     floorLevel: rect.z,
-      //   },
-      // ],
     }));
 
-    console.log(rectData);
+    console.log(locationData);
 
     console.log(anchorsRef.current);
 
-    // 앙커 데이터를 기록합니다.
-    const anchorData = anchorsRef.current.map(({ start, end }, index) => ({
+    // 벽 데이터를 기록합니다.
+    const wallData = anchorsRef.current.map(({ start, end }, index) => ({
       // id: `${start.attrs.id}:${end.attrs.id}`,
       id: index + 1,
       startX: start.x(),
@@ -243,9 +239,9 @@ const User = () => {
       endY: end.y(),
     }));
 
-    const warehouseDto = { locations: rectData, walls: anchorData };
+    const warehouseData = { locations: locationData, walls: wallData };
     // Log the request body
-    console.log(JSON.stringify(warehouseDto, null, 2));
+    console.log(JSON.stringify(warehouseData, null, 2));
 
     try {
       const response = await fetch(
@@ -255,7 +251,7 @@ const User = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(warehouseDto),
+          body: JSON.stringify(warehouseData),
         }
       );
 
@@ -269,7 +265,7 @@ const User = () => {
     }
   };
 
-  // Add this helper function to clear existing anchors and lines
+  // 캔버스 내의 모든 벽의 속성(앙커와 선)을 모두 제거하는 메서드
   const clearAnchorsAndLines = () => {
     anchorsRef.current.forEach(({ start, end, line }) => {
       start.destroy();
@@ -279,7 +275,7 @@ const User = () => {
     anchorsRef.current = [];
   };
 
-  // Load the rectangle data from the local public/map directory
+  // local public/map directory 에서 location 정보를 받아오는 메서드
   const loadMapFromLocal = async () => {
     try {
       const response = await fetch("/api/load-map", {
@@ -290,13 +286,14 @@ const User = () => {
       });
 
       if (response.ok) {
-        const { rectData, anchorData } = await response.json();
-        setRectangles(rectData); // 사각형들
+        const { locationData, wallData } = await response.json();
+        setLocations(locationData); // 사각형들
         clearAnchorsAndLines(); // Load 전 초기화
 
         const existingAnchors = [];
         const newAnchors = [];
 
+        // 벽 속성 중 기준점(anchor)을 생성하거나 기존의 anchor를 가져오는 메서드
         const getOrCreateAnchor = (id, x, y) => {
           let existingAnchor = findExistingAnchor(existingAnchors, x, y);
           if (!existingAnchor) {
@@ -306,7 +303,7 @@ const User = () => {
           return existingAnchor;
         };
 
-        anchorData.forEach(({ startID, startX, startY, endID, endX, endY }) => {
+        wallData.forEach(({ startID, startX, startY, endID, endX, endY }) => {
           const startAnchor = getOrCreateAnchor(startID, startX, startY);
           const endAnchor = getOrCreateAnchor(endID, endX, endY);
 
@@ -336,7 +333,7 @@ const User = () => {
     }
   };
 
-  //API 창고에서 데이터를 불러오기
+  // API를 통해 해당하는 창고(번호)의 모든 location(적재함)과 wall(벽)을 가져오는 메서드
   const APIConnectionTest = async () => {
     try {
       const response = await fetch(
@@ -351,7 +348,7 @@ const User = () => {
 
       if (response.ok) {
         const apiConnection = await response.json();
-        const warehouseData = apiConnection.result; // Directly accessing the warehouse object
+        const warehouseData = apiConnection.result; // 데이터 추출
 
         // Log the received data for debugging
         console.log("API response:", warehouseData);
@@ -362,8 +359,8 @@ const User = () => {
           console.error("Locations data not found");
           return;
         }
-        // Map API data to rectangles
-        const newRectangles = locations.map((location, index) => {
+        // Map API data to locations
+        const newLocations = locations.map((location, index) => {
           // Get the floorLevel from floorDtos array if it exists
 
           // Ensure that the width and height are preserved
@@ -384,7 +381,7 @@ const User = () => {
         });
 
         // Log the final rectangles for debugging
-        console.log("API rectangles loaded successfully:", newRectangles);
+        console.log("API rectangles loaded successfully:", newLocations);
 
         // Check if walls exist
         const walls = warehouseData.walls;
@@ -431,7 +428,7 @@ const User = () => {
         layerRef.current.batchDraw();
 
         // Update state with new rectangles and walls
-        setRectangles(newRectangles);
+        setLocations(newLocations);
       } else {
         console.error("Error loading rectangles data");
       }
@@ -542,11 +539,11 @@ const User = () => {
   const checkDeselect = (e) => {
     const clickedOnEmpty = e.target === e.target.getStage();
     if (clickedOnEmpty) {
-      setSelectedRectTransform(null);
+      setSelectedLocationTransform(null);
     }
   };
 
-  // 커서를 위한 let cursor 정의
+  // 커서(cursor)를 정의하기 위한 변수
   let customCursor;
   if (currentSetting === "wall") {
     customCursor = "crosshair";
@@ -557,9 +554,10 @@ const User = () => {
   }
 
   /**
-   * 도형과 도형을 선으로 잇는 기능을 위한 거시기
+   * 벽 생성 파트
    */
-  // 선을 잇는 기능을 넣기 위한 거시기
+
+  // 선을 잇는 기능을 넣기 위한 State
   const [line, setLine] = useState(null);
   const [startPos, setStartPos] = useState(null);
 
@@ -574,7 +572,7 @@ const User = () => {
     layerRef.current.batchDraw();
   };
 
-  // --- Build Anchor Function ---
+  // --- 벽의 기준점을 생성하는 메서드 ---
   const buildAnchor = (id, x, y) => {
     const layer = layerRef.current;
     const newAnchor = new Konva.Circle({
@@ -730,7 +728,7 @@ const User = () => {
       const shapeId = currentShapeRef.current.attrs.id;
 
       // Remove the shape from rectangles array
-      setRectangles((prevRectangles) =>
+      setLocations((prevRectangles) =>
         prevRectangles.filter((rect) => rect.id !== shapeId)
       );
 
@@ -902,15 +900,15 @@ const User = () => {
     const handleAddWall = (start, end) => {
       if (currentSetting === "wall") {
         const newWall = {
-          id: rectangles.length.toString(),
+          id: locations.length.toString(),
           x: end.x,
           y: end.y,
           width: newWallWidth,
           height: Math.sqrt((end.x - start.x) ** 2 + (end.y - start.y) ** 2),
           fill: newWallColor,
           draggable: true,
-          order: rectangles.length + 1,
-          name: `Wall ${rectangles.length + 1}`,
+          order: locations.length + 1,
+          name: `Wall ${locations.length + 1}`,
           type: "wall",
           rotation: Math.round(
             Math.atan2(end.y - start.y, end.x - start.x) * (180 / Math.PI) + 90
@@ -1091,7 +1089,7 @@ const User = () => {
                     style={{
                       width: "3vh",
                       height: "3vh",
-                      background: newRectColor,
+                      background: newLocationColor,
                       border: "1px solid #000",
                       cursor: "pointer",
                     }}
@@ -1108,8 +1106,8 @@ const User = () => {
                       styles={{
                         width: "1000px",
                       }}
-                      color={newRectColor}
-                      onChangeComplete={(color) => setNewRectColor(color.hex)}
+                      color={newLocationColor}
+                      onChangeComplete={(color) => setNewLocationColor(color.hex)}
                     />
                   )}
                 </label>
@@ -1134,10 +1132,10 @@ const User = () => {
                       type="range"
                       min="1"
                       max="10"
-                      value={newRectZIndex}
-                      onChange={(e) => setNewRectZIndex(Number(e.target.value))}
+                      value={newLocationZIndex}
+                      onChange={(e) => setNewLocationZIndex(Number(e.target.value))}
                     />
-                    {newRectZIndex}
+                    {newLocationZIndex}
                   </label>
                 </div>
                 <label>
@@ -1146,14 +1144,14 @@ const User = () => {
                     type="range"
                     min="10"
                     max="500"
-                    value={newRectWidth}
+                    value={newLocationWidth}
                     onChange={(e) =>
-                      setNewRectWidth(
+                      setNewLocationWidth(
                         Math.round(Number(e.target.value) / 10) * 10
                       )
                     }
                   />
-                  {newRectWidth}
+                  {newLocationWidth}
                 </label>
               </div>
               <div>
@@ -1163,14 +1161,14 @@ const User = () => {
                     type="range"
                     min="10"
                     max="500"
-                    value={newRectHeight}
+                    value={newLocationHeight}
                     onChange={(e) =>
-                      setNewRectHeight(
+                      setNewLocationHeight(
                         Math.round(Number(e.target.value) / 10) * 10
                       )
                     }
                   />
-                  {newRectHeight}
+                  {newLocationHeight}
                 </label>
               </div>
               <hr />
@@ -1186,8 +1184,8 @@ const User = () => {
                   Name :
                   <input
                     type="text"
-                    value={newRectName}
-                    onChange={(e) => setNewRectName(e.target.value)}
+                    value={newLocationName}
+                    onChange={(e) => setNewLocationName(e.target.value)}
                     style={{
                       marginLeft: "3px",
                       width: "14vh",
@@ -1200,8 +1198,8 @@ const User = () => {
                   속성 :
                   <input
                     type="text"
-                    value={newRectName}
-                    onChange={(e) => setNewRectName(e.target.value)}
+                    value={newLocationName}
+                    onChange={(e) => setNewLocationName(e.target.value)}
                     style={{
                       marginLeft: "3px",
                       width: "15vh",
@@ -1210,7 +1208,7 @@ const User = () => {
                 </label>
               </div>
               <Button
-                onClick={() => handleAddRectangle(currentSetting)}
+                onClick={() => handleAddLocation(currentSetting)}
                 style={{
                   width: "100%",
                   marginTop: "50%",
@@ -1304,7 +1302,7 @@ const User = () => {
               <Layer ref={layerRef}>
                 {generateGridLines()}
 
-                {rectangles.map((rect, i) => (
+                {locations.map((rect, i) => (
                   <RectangleTransformer
                     key={rect.id} // 각 사각형에 고유 키 설정
                     x={rect.x} // 텍스트를 띄우기 위한 위치 정보
@@ -1313,16 +1311,15 @@ const User = () => {
                     height={rect.height}
                     fill={rect.fill}
                     shapeProps={rect} // 모양 속성 전달
-                    isSelected={rect.id === selectedRectTransform} // 사각형이 선택되었는지 확인
+                    isSelected={rect.id === selectedLocationTransform} // 사각형이 선택되었는지 확인
                     onSelect={() => {
-                      setSelectedRectTransform(rect.id);
-                      setSelectedRect(rect); // 클릭 시 사각형 선택
-                      // console.log(selectedRect.id)
+                      setSelectedLocationTransform(rect.id); // 클릭시 변환 시작
+                      setSelectedLocation(rect); // 클릭 시 사각형 선택
                     }}
                     onChange={(newAttrs) => {
-                      const rects = rectangles.slice();
+                      const rects = locations.slice();
                       rects[i] = newAttrs;
-                      setRectangles(rects); // 사각형 속성 업데이트
+                      setLocations(rects); // 사각형 속성 업데이트
                     }}
                   />
                 ))}
@@ -1350,11 +1347,11 @@ const User = () => {
             <Button justIcon round color="primary" onClick={loadMapFromLocal}>
               <UnarchiveIcon className={classes.icons} />
             </Button>
-            <Button justIcon round color="primary" onClick={APIConnectionTest}>
-              헤이!
+            <Button color="primary" onClick={APIConnectionTest}>
+              API 불러오기
             </Button>
-            <Button justIcon round color="primary" onClick={APISaveToDB}>
-              <SaveIcon className={classes.icons} />
+            <Button color="primary" onClick={APISaveToDB}>
+              API 저장하기
             </Button>
           </div>
         </div>
@@ -1371,7 +1368,7 @@ const User = () => {
           }}
         >
           <h3>재고함 목록</h3>
-          {rectangles.length !== 0 ? (
+          {locations.length !== 0 ? (
             <div>
               <ul
                 style={{
@@ -1379,10 +1376,10 @@ const User = () => {
                   overflowY: "auto", // Add this line to make the ul scrollable
                 }}
               >
-                {rectangles
-                  .filter((rectangles) => rectangles.type === "location")
-                  .map((rectangles, index) => (
-                    <li key={index}>{rectangles.id}번</li>
+                {locations
+                  .filter((locations) => locations.type === "location")
+                  .map((locations, index) => (
+                    <li key={index}>{locations.id}번</li>
                   ))}
               </ul>
             </div>
@@ -1391,13 +1388,13 @@ const User = () => {
           )}
           <hr />
           <h3>선택된 재고함</h3>
-          {selectedRect ? (
+          {selectedLocation ? (
             <div>
-              <p>ID : {selectedRect.id}</p>
-              <p>Number : {selectedRect.order}</p>
-              <p>Name : {selectedRect.name}</p>
-              <p>Type : {selectedRect.type}</p>
-              <p>층수 : {selectedRect.z}</p>
+              <p>ID : {selectedLocation.id}</p>
+              <p>Number : {selectedLocation.order}</p>
+              <p>Name : {selectedLocation.name}</p>
+              <p>Type : {selectedLocation.type}</p>
+              <p>층수 : {selectedLocation.z}</p>
             </div>
           ) : (
             <p>No rectangle selected</p>
@@ -1538,4 +1535,4 @@ const RectangleTransformer = ({
   );
 };
 
-export default User;
+export default MyContainerMap;
