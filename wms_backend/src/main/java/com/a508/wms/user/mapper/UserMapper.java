@@ -1,8 +1,9 @@
 package com.a508.wms.user.mapper;
 
 import com.a508.wms.auth.dto.request.auth.SignUpRequestDto;
+import com.a508.wms.business.mapper.BusinessMapper;
 import com.a508.wms.user.domain.User;
-import com.a508.wms.user.dto.UserDto;
+import com.a508.wms.user.dto.UserResponseDto;
 import com.a508.wms.util.constant.LoginTypeEnum;
 import com.a508.wms.util.constant.RoleTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;
@@ -11,25 +12,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class UserMapper {
-
-    /**
-     * UserDto 객체를 받아서 변경할 정보는 입력하고 기존 정보는 유지하여 User 객체로 변경해주는 메서드 business 제외. 직접 설정하기
-     *
-     * @param userDto
-     * @return User
-     */
-    public static User fromDto(UserDto userDto) {
-        return User.builder()
-            .id(userDto.getId())
-            .email(userDto.getEmail())
-            .password(userDto.getPassword())
-            .name(userDto.getName())
-            .nickname(userDto.getNickname())
-            .roleTypeEnum(userDto.getRoleTypeEnum())
-            .loginTypeEnum(userDto.getLoginTypeEnum())
-            .statusEnum(userDto.getStatusEnum())
-            .build();
-    }
 
     public static User fromSignUpRequestDto(SignUpRequestDto dto) {
         return User.builder()
@@ -50,17 +32,17 @@ public class UserMapper {
      * @param user
      * @return UserDto
      */
-    public static UserDto fromUser(User user) {
-        return UserDto.builder()
+    public static UserResponseDto toUserResponseDto(User user) {
+        return UserResponseDto.builder()
             .id(user.getId())
             .email(user.getEmail())
-            .password(user.getPassword())
             .name(user.getName())
             .nickname(user.getNickname())
             .roleTypeEnum(user.getRoleTypeEnum())
             .loginTypeEnum(user.getLoginTypeEnum())
             .statusEnum(user.getStatusEnum())
-//            .business(user.getBusiness() != null ? BusinessMapper.fromBusiness(user.getBusiness()) : null)
+            .business(user.getBusiness() != null ? BusinessMapper.toBusinessResponseDto(
+                user.getBusiness()) : null)
             .build();
     }
 
@@ -72,7 +54,8 @@ public class UserMapper {
      * @param attributes
      * @return User 객체
      */
-    public static User fromOAuthAttributes(String email, String oauthClientName, Map<String, Object> attributes) {
+    public static User fromOAuthAttributes(String email, String oauthClientName,
+        Map<String, Object> attributes) {
         String name = null;
         String nickname = null;
 
@@ -91,7 +74,8 @@ public class UserMapper {
             .name(name)
             .nickname(nickname)
             .roleTypeEnum(RoleTypeEnum.GENERAL) // 기본 역할 설정
-            .loginTypeEnum(LoginTypeEnum.valueOf(oauthClientName.toUpperCase())) // OAuth 공급자로 로그인 타입 설정
+            .loginTypeEnum(
+                LoginTypeEnum.valueOf(oauthClientName.toUpperCase())) // OAuth 공급자로 로그인 타입 설정
             .statusEnum(StatusEnum.ACTIVE) // 기본 상태 설정
             .businessId(null)
             .build();

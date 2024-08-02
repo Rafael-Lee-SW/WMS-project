@@ -26,6 +26,10 @@ public class BusinessModuleService {
             .orElseThrow(() -> new IllegalArgumentException("Invalid businessId: " + businessId));
     }
 
+    public Business findByUserId(Long userId) {
+        return businessRepository.findByUserId(userId);
+    }
+
     /**
      * 모든 사업체의 정보를 조회하는 메서드
      *

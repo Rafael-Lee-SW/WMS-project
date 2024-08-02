@@ -17,11 +17,10 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class UserDto {
+public class UserResponseDto {
 
     private Long id;
     private String email;
-    private String password;
     private String name;
     private String nickname;
     private RoleTypeEnum roleTypeEnum;
