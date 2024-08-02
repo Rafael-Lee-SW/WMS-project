@@ -21,8 +21,8 @@ const useStyles = makeStyles((theme) => ({
     cursor: 'pointer',
     width: '80px',
     height: '80px',
-    marginBottom: theme.spacing(4), // 로고 아래에 여백 추가
-    border: '2px solid black', // 로고 테두리 검은색 실선
+    marginBottom: theme.spacing(4),
+    border: '2px solid black',
   },
   snsButtons: {
     display: 'flex',
@@ -96,6 +96,14 @@ export default function Login() {
     }
   };
 
+  const signInWithProvider = (provider) => {
+    const urls = {
+      kakao: 'https://i11a508.p.ssafy.io/oauth2/callback/kakao',
+      naver: 'https://i11a508.p.ssafy.io/oauth2/callback/naver',
+    };
+    window.location.href = urls[provider];
+  };
+
   return (
     <GridContainer className={classes.container}>
       <Typography variant="h2" className={classes.title}>
@@ -120,10 +128,10 @@ export default function Login() {
               <div className={classes.divider} />
             </div>
             <div className={classes.snsButtons}>
-              <button className="sns-button" onClick={() => signIn('kakao')}>
+              <button className="sns-button" onClick={() => signInWithProvider('kakao')}>
                 <img src="/img/kakao-sign-in.png" alt="Kakao Sign In" />
               </button>
-              <button className="sns-button" onClick={() => signIn('naver')}>
+              <button className="sns-button" onClick={() => signInWithProvider('naver')}>
                 <img src="/img/naver-sign-in.png" alt="Naver Sign In" />
               </button>
             </div>
