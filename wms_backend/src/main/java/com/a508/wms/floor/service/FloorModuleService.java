@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 public class FloorModuleService {
 
     private final FloorRepository floorRepository;
+    private final int defaultFloorLevel = -1;
 
     /**
      * location이 가지고 있는 층 전부 조회
@@ -44,6 +45,10 @@ public class FloorModuleService {
      */
     public Floor findByWarehouseIdAndLevel(Long warehouseId, int floorLevel) {
         return floorRepository.findByWarehouseId(warehouseId, floorLevel);
+    }
+
+    public Floor findDefaultFloorByWarehouse(Long warehouseId) {
+        return findByWarehouseIdAndLevel(warehouseId, defaultFloorLevel);
     }
 
     /**
