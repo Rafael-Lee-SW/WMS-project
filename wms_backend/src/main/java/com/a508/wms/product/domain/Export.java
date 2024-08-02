@@ -67,5 +67,6 @@ public class Export extends BaseTimeEntity {
 
     public void updateBusiness(Business business) {
         this.business = business;
+        business.getExports().add(this);
     }
 }

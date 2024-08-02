@@ -84,7 +84,7 @@ public class ImportModuleService {
                     .barcode(imp.getBarcode())
                     .expirationDate(imp.getExpirationDate())
                     .productStorageType(imp.getProductStorageType())
-                    .date(imp.getDate().toLocalDate().atStartOfDay())
+                    .date(imp.getDate())
                     .build();
             dataList.add(importResponseDto);
         }

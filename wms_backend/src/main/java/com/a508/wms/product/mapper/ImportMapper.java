@@ -14,6 +14,7 @@ public class ImportMapper {
                 .expirationDate(productImportDto.getProduct().getExpirationDate())
                 .name(productImportDto.getProductDetail().getName())
                 .quantity(productImportDto.getProduct().getQuantity())
+                .productStorageType(productImportDto.getProductDetail().getProductStorageType())
                 .build();
     }
 
