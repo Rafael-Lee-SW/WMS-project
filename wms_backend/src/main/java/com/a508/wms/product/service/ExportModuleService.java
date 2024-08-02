@@ -5,24 +5,21 @@ import com.a508.wms.product.domain.Export;
 import com.a508.wms.product.dto.ExportResponseDto;
 import com.a508.wms.product.mapper.ExportMapper;
 import com.a508.wms.product.repository.ExportRepository;
-import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ExportModuleService {
-    private static final Logger log = LoggerFactory.getLogger(ExportModuleService.class);
+
     private final ExportRepository exportRepository;
 
     public void save(ExportResponseDto exportResponseDto, Business business) {
-        log.info("exportResponseDto:{}", exportResponseDto);
-        Export export = ExportMapper.fromDto(exportResponseDto);
-
+        Export export = ExportMapper.fromExportResponseDto(exportResponseDto);
         export.updateBusiness(business);
 
         exportRepository.save(export);
@@ -32,7 +29,7 @@ public class ExportModuleService {
         List<ExportResponseDto> exportResponseDtos = new ArrayList<>();
         List<Export> exports = exportRepository.findAllByBusinessId(businessId);
         for (Export export : exports) {
-            exportResponseDtos.add(ExportMapper.toDto(export));
+            exportResponseDtos.add(ExportMapper.toExportResponseDto(export));
         }
         return exportResponseDtos;
     }

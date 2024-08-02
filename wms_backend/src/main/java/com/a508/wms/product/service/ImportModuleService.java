@@ -1,11 +1,9 @@
 package com.a508.wms.product.service;
 
-import com.a508.wms.business.domain.Business;
 import com.a508.wms.product.domain.Import;
 import com.a508.wms.product.domain.Product;
 import com.a508.wms.product.dto.ImportResponseDto;
 import com.a508.wms.product.dto.ProductData;
-import com.a508.wms.product.dto.ProductImportDto;
 import com.a508.wms.product.dto.ProductImportResponseDto;
 import com.a508.wms.product.mapper.ImportMapper;
 import com.a508.wms.product.repository.ImportRepository;
@@ -13,8 +11,10 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ImportModuleService {
@@ -22,18 +22,11 @@ public class ImportModuleService {
     private final ImportRepository importRepository;
 
     /**
-     * 입고 dto와 business를 받아서 저장
+     * 입고 내역을 저장하는 기능
      *
-     * @param productImportDto : 입고 정보가 있는 dto
-     * @param business         : 사업체의 정보가 담긴 객체
+     * @param request
+     * @param product
      */
-    public void save(ProductImportDto productImportDto, Business business) {
-        Import importEntity = ImportMapper.fromDto(productImportDto);
-        importEntity.updateBusiness(business);
-        importRepository.save(importEntity);
-    }
-
-
     public void save(ProductData request, Product product) {
         Import importEntity = ImportMapper.fromProduct(product, request.getExpirationDate());
         importRepository.save(importEntity);
@@ -41,9 +34,7 @@ public class ImportModuleService {
 
 
     public ProductImportResponseDto findAllByBusinessIdAndDate(Long businessId, LocalDate date) {
-//        1. repository에서 method 호출하기
         List<Import> importList = importRepository.findAllByBusinessIdAndDate(businessId, date);
-//        2. {date, List<PIRD>}형태로 묶기
         List<ImportResponseDto> dataList = new ArrayList<>();
         for (Import imp : importList) {
             ImportResponseDto importResponseDto = ImportResponseDto.builder()
@@ -60,31 +51,16 @@ public class ImportModuleService {
             .data(dataList)
             .build();
     }
-    /* public ProductImportResponseDto findAllByBusinessId(Long businessId) {
- //        1. repository에서 method 호출하기
-         List<Import> importList = importRepository.findAllByBusinessId(businessId);
- //        2. {date, List<PIRD>}형태로 묶기
-         List<ImportResponseDto> dataList = new ArrayList<>();
-         for (Import imp : importList) {
-             ImportResponseDto importResponseDto = ImportResponseDto.builder()
-                     .name(imp.getName())
-                     .quantity(imp.getQuantity())
-                     .barcode(imp.getBarcode())
-                     .expirationDate(imp.getExpirationDate())
-                     .productStorageType(imp.getProductStorageType())
-                     .date(imp.getDate().toLocalDate().atStartOfDay())
-                     .build();
-             dataList.add(importResponseDto);
-         }
-         return ProductImportResponseDto.builder()
-                 .data(dataList)
-                 .build();
-     }*/
+
+    /**
+     * 특정 사업체의 입고내역을 조회하는 기능
+     *
+     * @param businessId 사업체 id
+     * @return
+     */
 
     public List<ImportResponseDto> findAllByBusinessId(Long businessId) {
-//        1. repository에서 method 호출하기
         List<Import> importList = importRepository.findAllByBusinessId(businessId);
-//        2. {date, List<PIRD>}형태로 묶기
         List<ImportResponseDto> dataList = new ArrayList<>();
         for (Import imp : importList) {
             ImportResponseDto importResponseDto = ImportResponseDto.builder()

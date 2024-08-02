@@ -14,6 +14,4 @@ public class ProductImportDto {
     private Long warehouseId;
     private ProductDetailRequestDto productDetail;
     private ProductRequestDto product;
-//    front에서 보내줄 데이터: businessId, warehouseId, {barcode, expiration_date, name, quantity}
-//    그대로 저장하면 될듯?
 }

@@ -1,15 +1,14 @@
 package com.a508.wms.product.dto;
 
 import com.a508.wms.util.constant.ProductStorageTypeEnum;
+import java.time.LocalDateTime;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
-import lombok.experimental.SuperBuilder;
-
-import java.time.LocalDateTime;
 
 @Getter
-@SuperBuilder
+@Builder
 @ToString
 @RequiredArgsConstructor
 public class ProductData {

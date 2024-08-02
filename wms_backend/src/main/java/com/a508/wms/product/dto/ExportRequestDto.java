@@ -14,7 +14,7 @@ import lombok.ToString;
 public class ExportRequestDto {
 
     private Long businessId;
-    private Long trackingNumber; //송장번호
+    private Long trackingNumber;
     private Long barcode;
     private int quantity;
     private LocalDateTime date;
