@@ -167,7 +167,8 @@ public class ProductController {
     public BaseSuccessResponse<NotificationResponseDto> findAllNotifications(@RequestParam Long businessId) {
         if (businessId != null) {
             log.info("findAllByBusinessId: {}", businessId);
-            return new BaseSuccessResponse<>(NotificationResponseDto.builder().importResponseDtos(importModuleService.findAllByBusinessId(businessId))
+            return new BaseSuccessResponse<>(NotificationResponseDto.builder()
+                    .importResponseDtos(importModuleService.findAllByBusinessId(businessId))
                     .exportResponseDtos(exportModuleService.findAllByBusinessId(businessId)).build());
         }
         return null;

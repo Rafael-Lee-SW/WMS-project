@@ -213,21 +213,20 @@ public class ProductService {
      * 추가: 입고 정보를 입고 테이블에 추가한다.
      *
      * @param request
-     * @param defaultFloor: 입고 처리 된 상품이 들어가는 default 층
-     */
-    private void importProduct(ProductImportDto request, Floor defaultFloor) {
-        log.info("Importing product");
-
-        ProductDetail productDetail = findOrCreateProductDetail(request);
-        Product product = findProduct(request.getProduct(), productDetail);
-        product.updateFloor(defaultFloor);
-        productModuleService.save(product);
-        importModuleService.save(request, product.getProductDetail().getBusiness());
-    }
-
-    /**
-     * 저장하려는 상품정보가 현재 DB에 있는지 확인하고 없으면 추가하는 기능
-     *
+     * @param defaultFloor: 입고 처리 된 상품이 들어가는 de+
+     *                      <p>
+     *                      tImportDto request, Floor defaultFloor) {
+     *                      log.info("Importing product");
+     *                      <p>
+     *                      ProductDetail productDetail = findOrCreateProductDetail(request);
+     *                      Product product = findProduct(request.getProduct(), productDetail);
+     *                      product.updateFloor(defaultFloor);
+     *                      productModuleService.save(product);
+     *                      importModuleService.save(request, product.getProductDetail().getBusiness());
+     *                      }
+     *                      <p>
+     *                      /**
+     *                      저장하려는 상품정보가 현재 DB에 있는지 확인하고 없으면 추가하는 기능
      * @param request
      * @return
      */
