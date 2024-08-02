@@ -1,5 +1,7 @@
 package com.a508.wms.product.dto;
 
+import com.a508.wms.util.constant.ProductStorageTypeEnum;
+
 public interface ProductPickingLocationDto {
 
     String getWarehouseName();
@@ -13,4 +15,8 @@ public interface ProductPickingLocationDto {
     Long getProductId();
 
     Integer getQuantity();
+
+    Long getWarehouseId();
+
+    ProductStorageTypeEnum getProductStorageType();
 }

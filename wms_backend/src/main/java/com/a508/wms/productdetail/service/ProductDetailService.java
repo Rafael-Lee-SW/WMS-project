@@ -8,10 +8,11 @@ import com.a508.wms.productdetail.dto.ProductDetailRequestDto;
 import com.a508.wms.productdetail.dto.ProductDetailResponseDto;
 import com.a508.wms.productdetail.mapper.ProductDetailMapper;
 import jakarta.transaction.Transactional;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Slf4j
 @Service
@@ -32,13 +33,13 @@ public class ProductDetailService {
         List<ProductDetail> result = productDetailModuleService.findAll();
 
         return result.stream()
-            .map(productDetail -> {
-                ProductDetailResponseDto productDetailResponseDto = ProductDetailMapper.fromProductDetail(
-                    productDetail);
-                productDetailResponseDto.setBusinessId(productDetail.getBusiness().getId());
-                return productDetailResponseDto;
-            })
-            .toList();
+                .map(productDetail -> {
+                    ProductDetailResponseDto productDetailResponseDto = ProductDetailMapper.fromProductDetail(
+                            productDetail);
+                    productDetailResponseDto.setBusinessId(productDetail.getBusiness().getId());
+                    return productDetailResponseDto;
+                })
+                .toList();
     }
 
 
@@ -53,13 +54,13 @@ public class ProductDetailService {
         List<ProductDetail> result = productDetailModuleService.findByBusinessId(businessId);
 
         return result.stream()
-            .map(productDetail -> {
-                ProductDetailResponseDto productDetailResponseDto = ProductDetailMapper.fromProductDetail(
-                    productDetail);
-                productDetailResponseDto.setBusinessId(businessId);
-                return productDetailResponseDto;
-            })
-            .toList();
+                .map(productDetail -> {
+                    ProductDetailResponseDto productDetailResponseDto = ProductDetailMapper.fromProductDetail(
+                            productDetail);
+                    productDetailResponseDto.setBusinessId(businessId);
+                    return productDetailResponseDto;
+                })
+                .toList();
     }
 
     /**
@@ -72,9 +73,9 @@ public class ProductDetailService {
         Business business = businessModuleService.findById(request.getBusinessId());
 
         ProductDetail productDetail = new ProductDetail(
-            business, request.getProductStorageTypeEnum(), request.getBarcode(),
-            request.getName(), request.getSize(), request.getUnit(),
-            request.getOriginalPrice(), request.getSellingPrice()
+                business, request.getProductStorageType(), request.getBarcode(),
+                request.getName(), request.getSize(), request.getUnit(),
+                request.getOriginalPrice(), request.getSellingPrice()
         );
 
         ProductDetail savedProductDetail = productDetailModuleService.save(productDetail);
@@ -97,15 +98,15 @@ public class ProductDetailService {
         log.info("product detail target: {}", productDetail);
 
         productDetail.updateData(
-            request.getProductStorageTypeEnum(),
-            request.getBarcode(),
-            request.getName(),
-            (request.getSize() == null) ? productDetail.getSize() : request.getSize(),
-            (request.getUnit() == null) ? productDetail.getUnit() : request.getUnit(),
-            (request.getOriginalPrice() == 0) ? productDetail.getOriginalPrice()
-                : request.getOriginalPrice(),
-            (request.getSellingPrice() == 0) ? productDetail.getSellingPrice()
-                : request.getSellingPrice());
+                request.getProductStorageType(),
+                request.getBarcode(),
+                request.getName(),
+                (request.getSize() == null) ? productDetail.getSize() : request.getSize(),
+                (request.getUnit() == null) ? productDetail.getUnit() : request.getUnit(),
+                (request.getOriginalPrice() == 0) ? productDetail.getOriginalPrice()
+                        : request.getOriginalPrice(),
+                (request.getSellingPrice() == 0) ? productDetail.getSellingPrice()
+                        : request.getSellingPrice());
 
         productDetailModuleService.save(productDetail);
     }

@@ -43,4 +43,14 @@ public class ResponseDto {
         ResponseDto responseBody = new ResponseDto(ResponseCode.VALIDATION_FAIL, ResponseMessage.VALIDATION_FAIL);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseBody);
     }
+
+    /**
+     * 중복된 이메일 오류 응답을 생성합니다.
+     *
+     * @return 중복된 이메일 오류 응답 엔터티
+     */
+    public static ResponseEntity<ResponseDto> duplicateEmailError() {
+        ResponseDto responseBody = new ResponseDto(ResponseCode.DUPLICATE, ResponseMessage.DUPLICATE);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(responseBody); // HTTP 상태 코드 409 사용
+    }
 }

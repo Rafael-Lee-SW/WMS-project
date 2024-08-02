@@ -2,11 +2,12 @@ package com.a508.wms.productdetail.dto;
 
 import com.a508.wms.util.constant.ProductStorageTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;
-import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+
+import java.time.LocalDateTime;
 
 @Getter
 @Builder
@@ -16,7 +17,7 @@ public class ProductDetailResponseDto {
 
     private Long id;
     private Long businessId;
-    private ProductStorageTypeEnum productStorageTypeEnum;
+    private ProductStorageTypeEnum productStorageType;
     private Long barcode;
     private String name;
     private Long size;

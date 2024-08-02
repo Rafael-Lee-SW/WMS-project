@@ -4,14 +4,15 @@ import com.a508.wms.business.domain.Business;
 import com.a508.wms.business.service.BusinessModuleService;
 import com.a508.wms.floor.domain.Floor;
 import com.a508.wms.floor.service.FloorModuleService;
+import com.a508.wms.notification.dto.NotificationResponseDto;
 import com.a508.wms.notification.repository.NotificationRepository;
 import com.a508.wms.notification.service.NotificationService;
 import com.a508.wms.product.domain.Product;
-import com.a508.wms.product.dto.ProductExportData;
+import com.a508.wms.product.dto.ExportResponseDto;
+import com.a508.wms.product.dto.ProductData;
 import com.a508.wms.product.dto.ProductExportRequestDto;
 import com.a508.wms.product.dto.ProductExportResponseDto;
 import com.a508.wms.product.dto.ProductImportDto;
-import com.a508.wms.product.dto.ProductImportRequestData;
 import com.a508.wms.product.dto.ProductImportRequestDto;
 import com.a508.wms.product.dto.ProductMainResponseDto;
 import com.a508.wms.product.dto.ProductPickingLocationDto;
@@ -138,6 +139,18 @@ public class ProductService {
             .toList();
     }
 
+//    /**
+//     * ProductDetail값을 통해 Product를 저장하는 기능
+//     *
+//     * @param request: Product 데이터
+//     */
+//    public void save(ProductRequestDto request) {
+//        ProductDetail productDetail = productDetailModuleService.findById(
+//            request.getProductDetailId());
+//
+//        productModuleService.save(request, productDetail);
+//    }
+
     /**
      * 기존 상품 데이터를 조회하여 수정하는 기능
      *
@@ -251,22 +264,34 @@ public class ProductService {
         productQuantityCheck(request);
 
         //경로 처리 및 수량 반영
-        List<ProductExportData> data = request.getData();
+        List<ExportResponseDto> datas = request.getData();
         //송장번호별로 데이터를 묶음.
-        Map<String, List<ProductExportData>> exports = data.stream()
-            .collect(Collectors.groupingBy(ProductExportData::getTrackingNumber));
+        Map<String, List<ExportResponseDto>> exports = datas.stream()
+            .collect(Collectors.groupingBy(ExportResponseDto::getTrackingNumber));
 
         //송장별로 처리
         List<ProductExportResponseDto> result = exports.entrySet().stream()
             .map(entry -> {
-                //송장별 창고별 path
-                Map<String, List<ProductExportData>> path = calculatePath(entry.getValue(),
+                Map<String, List<ExportResponseDto>> path = calculatePath(entry.getValue(),
                     request.getBusinessId());
                 return ProductExportResponseDto.builder()
                     .path(path)
                     .build();
             }).toList();
+        Business business = businessModuleService.findById(request.getBusinessId());
+        for (ProductExportResponseDto responseDto : result) {
+            Map<String, List<ExportResponseDto>> path = responseDto.getPath();
 
+            // path의 각 entry에 대해 순회
+            for (Map.Entry<String, List<ExportResponseDto>> entry : path.entrySet()) {
+                List<ExportResponseDto> dataLists = entry.getValue();
+
+                // 각 ExportResponseDto를 순회하면서 저장
+                for (ExportResponseDto exportResponseDto : dataLists) {
+                    exportModuleService.save(exportResponseDto, business);
+                }
+            }
+        }
         return result;
     }
 
@@ -276,16 +301,16 @@ public class ProductService {
      * @param invoice : 한 송장의 출고 상품 내역 정보
      * @return
      */
-    private Map<String, List<ProductExportData>> calculatePath(
-        List<ProductExportData> invoice, long businessId) {
-        Map<String, List<ProductExportData>> path = new HashMap<>();
-        for (ProductExportData productExportData : invoice) {
+    private Map<String, List<ExportResponseDto>> calculatePath(
+        List<ExportResponseDto> invoice, long businessId) {
+        Map<String, List<ExportResponseDto>> path = new HashMap<>();
+        for (ExportResponseDto ExportResponseDto : invoice) {
             //목적 상품에 해당하는 모든 로케이션 data
             List<ProductPickingLocationDto> candidates = productRepository.findPickingLocation(
-                productExportData.getBarcode(), businessId);
+                ExportResponseDto.getBarcode(), businessId);
 
             //남은양
-            int remains = productExportData.getQuantity();
+            int remains = ExportResponseDto.getQuantity();
 
             for (ProductPickingLocationDto candidate : candidates) {
                 if (candidate.getQuantity() == 0) {
@@ -297,19 +322,23 @@ public class ProductService {
                     updateProductQuantity(candidate.getProductId(),
                         candidate.getQuantity() - remains);
                     //path에 추가
-                    List<ProductExportData> pickings = path.getOrDefault(
+                    List<ExportResponseDto> pickings = path.getOrDefault(
                         candidate.getWarehouseName(), new ArrayList<>());
 
-                    pickings.add(ProductExportData.builder()
-                        .trackingNumber(productExportData.getTrackingNumber())
-                        .barcode(productExportData.getBarcode())
+                    pickings.add(com.a508.wms.product.dto.ExportResponseDto.builder()
+                        .trackingNumber(ExportResponseDto.getTrackingNumber())
+                        .barcode(ExportResponseDto.getBarcode())
                         .locationName(candidate.getLocationName())
                         .floorLevel(candidate.getFloorLevel())
                         .productName(candidate.getProductName())
                         .quantity(candidate.getQuantity() - remains)
                         .date(LocalDate.now())
+                        .productStorageType(candidate.getProductStorageType())
+                        .warehouseName(candidate.getWarehouseName())
+                        .warehouseId(candidate.getWarehouseId())
                         .build());
                     path.put(candidate.getWarehouseName(), pickings);
+                    log.info(" path : {} ", path.get(candidate.getWarehouseName()));
                     break;
                 }
 
@@ -319,16 +348,21 @@ public class ProductService {
                 updateProductQuantity(candidate.getProductId(), 0);
 
                 //path에 추가
-                List<ProductExportData> pickings = path.getOrDefault(
+                List<ExportResponseDto> pickings = path.getOrDefault(
                     candidate.getWarehouseName(), new ArrayList<>());
 
-                pickings.add(ProductExportData.builder()
+                pickings.add(com.a508.wms.product.dto.ExportResponseDto.builder()
                     .locationName(candidate.getLocationName())
                     .floorLevel(candidate.getFloorLevel())
                     .productName(candidate.getProductName())
                     .quantity(0)
+                    .date(LocalDate.now())
+                    .productStorageType(candidate.getProductStorageType())
+                    .warehouseName(candidate.getWarehouseName())
+                    .warehouseId(candidate.getWarehouseId())
                     .build());
                 path.put(candidate.getWarehouseName(), pickings);
+                log.info(" path : {} ", path.get(candidate.getWarehouseName()));
             }
         }
 
@@ -358,12 +392,11 @@ public class ProductService {
      */
     private void productQuantityCheck(ProductExportRequestDto request) {
         Long businessId = request.getBusinessId();
-        List<ProductExportData> data = request.getData();
-
+        List<ExportResponseDto> datas = request.getData();
         //각 물품별 총합
-        Map<Long, Integer> productTotalCount = data.stream().collect(
-            Collectors.groupingBy((ProductExportData::getBarcode),
-                Collectors.summingInt(ProductExportData::getQuantity)));
+        Map<Long, Integer> productTotalCount = datas.stream().collect(
+            Collectors.groupingBy((ExportResponseDto::getBarcode),
+                Collectors.summingInt(ExportResponseDto::getQuantity)));
 
         //물품별 총 재고에 따른 타입 분류 (나중에 Integer를 Enum으로 바꿔도 좋을듯)
         Map<Long, Integer> productQuantityResult = productTotalCount.entrySet().stream()
@@ -430,11 +463,11 @@ public class ProductService {
      * @param data
      * @return
      */
-    private ProductDetailRequestDto buildProductDetailRequestDto(ProductImportRequestData data) {
+    private ProductDetailRequestDto buildProductDetailRequestDto(ProductData data) {
         return ProductDetailRequestDto.builder()
             .barcode(data.getBarcode())
             .name(data.getName())
-            .productStorageTypeEnum(data.getProductStorageTypeEnum())
+            .productStorageType(data.getProductStorageType())
             .build();
     }
 
@@ -444,10 +477,10 @@ public class ProductService {
      * @param data
      * @return
      */
-    private ProductRequestDto buildProductRequestDto(ProductImportRequestData data) {
+    private ProductRequestDto buildProductRequestDto(ProductData data) {
         return ProductRequestDto.builder()
             .quantity(data.getQuantity())
-            .expirationDate(data.getExpiry() != null ? data.getExpiry() : null)
+            .expirationDate(data.getExpirationDate() != null ? data.getExpirationDate() : null)
             .build();
     }
 
@@ -467,6 +500,13 @@ public class ProductService {
             .warehouseId(productImportRequestDto.getWarehouseId())
             .productDetail(productDetailRequestDto)
             .product(productRequestDto)
+            .build();
+    }
+
+    private NotificationResponseDto findAllnotificationsByBusinessId(long businessId) {
+        return NotificationResponseDto.builder()
+            .exportResponseDtos(exportModuleService.findAllByBusinessId(businessId))
+            .importResponseDtos(importModuleService.findAllByBusinessId(businessId))
             .build();
     }
 }

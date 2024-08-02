@@ -10,18 +10,15 @@ import com.a508.wms.location.mapper.LocationMapper;
 import com.a508.wms.location.service.LocationModuleService;
 import com.a508.wms.util.constant.ProductStorageTypeEnum;
 import com.a508.wms.warehouse.domain.Warehouse;
-import com.a508.wms.warehouse.dto.LocationsAndWallsRequestDto;
-import com.a508.wms.warehouse.dto.WallDto;
-import com.a508.wms.warehouse.dto.WarehouseByBusinessDto;
-import com.a508.wms.warehouse.dto.WarehouseDetailResponseDto;
-import com.a508.wms.warehouse.dto.WarehouseDto;
+import com.a508.wms.warehouse.dto.*;
 import com.a508.wms.warehouse.mapper.WallMapper;
 import com.a508.wms.warehouse.mapper.WarehouseMapper;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Slf4j
 @Service
@@ -43,14 +40,14 @@ public class WarehouseService {
         warehouse = warehouseModuleService.save(warehouse);
         log.info("warehouse.FT:{}", warehouse.getFacilityTypeEnum());
         Location defaultLocation = Location.builder()
-            .productStorageTypeEnum(ProductStorageTypeEnum.상온)
-            .warehouse(warehouse)
-            .build();
+                .productStorageType(ProductStorageTypeEnum.상온)
+                .warehouse(warehouse)
+                .build();
         locationModuleService.save(defaultLocation);
 
         Floor defaultFloor = Floor.builder()
-            .location(defaultLocation)
-            .build();
+                .location(defaultLocation)
+                .build();
         floorModuleService.save(defaultFloor);
 
         return WarehouseMapper.fromWarehouse(warehouse);
@@ -61,11 +58,11 @@ public class WarehouseService {
      */
     public List<WarehouseByBusinessDto> findByBusinessId(Long businessId) {
         List<Warehouse> warehouses = warehouseModuleService.findByBusinessId(
-            businessId); // 창고 목록 조회
+                businessId); // 창고 목록 조회
 
         return warehouses.stream()
-            .map(WarehouseMapper::toWarehouseByBusinessDto)
-            .toList();
+                .map(WarehouseMapper::toWarehouseByBusinessDto)
+                .toList();
     }
 
     /*
@@ -76,14 +73,14 @@ public class WarehouseService {
         Warehouse warehouse = warehouseModuleService.findById(id);
 
         List<LocationResponseDto> locations = locationModuleService.findAllByWarehouseId(id)
-            .stream()
-            .map(LocationMapper::toLocationResponseDto)
-            .toList();
+                .stream()
+                .map(LocationMapper::toLocationResponseDto)
+                .toList();
 
         List<WallDto> walls = wallModuleService.findByWarehouseId(id)
-            .stream()
-            .map(WallMapper::fromWall)
-            .toList();
+                .stream()
+                .map(WallMapper::fromWall)
+                .toList();
 
         return WarehouseMapper.toWarehouseDetailResponseDto(warehouse, locations, walls);
     }
@@ -149,20 +146,20 @@ public class WarehouseService {
 
     @Transactional
     public WarehouseDetailResponseDto updateLocationsAndWalls(
-        Long warehouseId, LocationsAndWallsRequestDto request) {
+            Long warehouseId, LocationsAndWallsRequestDto request) {
         Warehouse warehouse = warehouseModuleService.findById(warehouseId);
 
         List<LocationResponseDto> locations = request.getLocations().stream()
-            .map(location -> LocationMapper.fromLocationRequestDto(location, warehouse))
-            .map(locationModuleService::save)
-            .map(LocationMapper::toLocationResponseDto)
-            .toList();
+                .map(location -> LocationMapper.fromLocationRequestDto(location, warehouse))
+                .map(locationModuleService::save)
+                .map(LocationMapper::toLocationResponseDto)
+                .toList();
 
         List<WallDto> walls = request.getWalls().stream()
-            .map(wall -> WallMapper.fromDto(wall, warehouse))
-            .map(wallModuleService::save)
-            .map(WallMapper::fromWall)
-            .toList();
+                .map(wall -> WallMapper.fromDto(wall, warehouse))
+                .map(wallModuleService::save)
+                .map(WallMapper::fromWall)
+                .toList();
 
         return WarehouseMapper.toWarehouseDetailResponseDto(warehouse, locations, walls);
     }
@@ -192,14 +189,14 @@ public class WarehouseService {
         //수직 배치수 수평 배치수 계산
         int columnCnt = calculateRowCount(warehouseDto.getSize());
         return Warehouse.builder()
-            .business(business)
-            .size(warehouseDto.getSize())
-            .name(warehouseDto.getName())
-            .rowCount(rowCnt)
-            .columnCount(columnCnt)
-            .priority(warehouseDto.getPriority())
-            .facilityTypeEnum(warehouseDto.getFacilityTypeEnum())
-            .build();
+                .business(business)
+                .size(warehouseDto.getSize())
+                .name(warehouseDto.getName())
+                .rowCount(rowCnt)
+                .columnCount(columnCnt)
+                .priority(warehouseDto.getPriority())
+                .facilityTypeEnum(warehouseDto.getFacilityTypeEnum())
+                .build();
     }
 
 }

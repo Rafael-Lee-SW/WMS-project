@@ -1,31 +1,22 @@
 package com.a508.wms.business.domain;
 
 import com.a508.wms.notification.domain.Notification;
+import com.a508.wms.product.domain.Export;
 import com.a508.wms.productdetail.domain.ProductDetail;
 import com.a508.wms.subscription.domain.Subscription;
 import com.a508.wms.user.domain.User;
 import com.a508.wms.util.BaseTimeEntity;
 import com.a508.wms.util.constant.StatusEnum;
 import com.a508.wms.warehouse.domain.Warehouse;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
-import java.util.ArrayList;
-import java.util.List;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLRestriction;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -66,6 +57,9 @@ public class Business extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "business")
     private List<Warehouse> warehouses = new ArrayList<>();
+
+    @OneToMany(mappedBy = "business")
+    private List<Export> exports = new ArrayList<>();
 
     // 연관 관계 편의 메서드
     public void setUser(User user) {

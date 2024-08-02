@@ -19,5 +19,4 @@ public class NotificationResponseDto {
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
     private StatusEnum statusEnum;
-
 }

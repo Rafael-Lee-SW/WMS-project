@@ -7,13 +7,15 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.ToString;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 @Getter
 @Builder
 @ToString
 @Data
 public class ProductImportResponseDto {
-
-    private List<ProductImportRequestData> data;
+    private List<ImportResponseDto> data;
     private LocalDateTime date;
     private long id;
 }

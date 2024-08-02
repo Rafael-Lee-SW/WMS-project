@@ -18,18 +18,18 @@ public class ProductDetailMapper {
      */
     public static ProductDetailResponseDto fromProductDetail(ProductDetail productDetail) {
         return ProductDetailResponseDto.builder()
-            .id(productDetail.getId())
-            .barcode(productDetail.getBarcode())
-            .name(productDetail.getName())
-            .size(productDetail.getSize())
-            .unit(productDetail.getUnit())
-            .productStorageTypeEnum(productDetail.getProductStorageTypeEnum())
-            .originalPrice(productDetail.getOriginalPrice())
-            .sellingPrice(productDetail.getSellingPrice())
-            .createdDate(productDetail.getCreatedDate())
-            .updateDate(productDetail.getUpdatedDate())
-            .statusEnum(productDetail.getStatusEnum())
-            .build();
+                .id(productDetail.getId())
+                .barcode(productDetail.getBarcode())
+                .name(productDetail.getName())
+                .size(productDetail.getSize())
+                .unit(productDetail.getUnit())
+                .productStorageType(productDetail.getProductStorageType())
+                .originalPrice(productDetail.getOriginalPrice())
+                .sellingPrice(productDetail.getSellingPrice())
+                .createdDate(productDetail.getCreatedDate())
+                .updateDate(productDetail.getUpdatedDate())
+                .statusEnum(productDetail.getStatusEnum())
+                .build();
     }
 
     /**
@@ -40,14 +40,14 @@ public class ProductDetailMapper {
      */
     public static ProductDetail fromDto(ProductDetailRequestDto productDetailRequestDto) {
         return ProductDetail.builder()
-            .productStorageTypeEnum(productDetailRequestDto.getProductStorageTypeEnum())
-            .barcode(productDetailRequestDto.getBarcode())
-            .name(productDetailRequestDto.getName())
-            .size(productDetailRequestDto.getSize())
-            .unit(productDetailRequestDto.getUnit())
-            .originalPrice(productDetailRequestDto.getOriginalPrice())
-            .sellingPrice(productDetailRequestDto.getSellingPrice())
-            .build();
+                .productStorageType(productDetailRequestDto.getProductStorageType())
+                .barcode(productDetailRequestDto.getBarcode())
+                .name(productDetailRequestDto.getName())
+                .size(productDetailRequestDto.getSize())
+                .unit(productDetailRequestDto.getUnit())
+                .originalPrice(productDetailRequestDto.getOriginalPrice())
+                .sellingPrice(productDetailRequestDto.getSellingPrice())
+                .build();
     }
 
     public static ProductDetail fromProductImportData(

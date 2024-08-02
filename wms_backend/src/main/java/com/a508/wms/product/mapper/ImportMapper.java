@@ -11,12 +11,13 @@ public class ImportMapper {
 
     public static Import fromDto(ProductImportDto productImportDto) {
         return Import.builder()
-            .warehouseId(productImportDto.getWarehouseId())
-            .barcode(productImportDto.getProductDetail().getBarcode())
-            .expirationDate(productImportDto.getProduct().getExpirationDate())
-            .name(productImportDto.getProductDetail().getName())
-            .quantity(productImportDto.getProduct().getQuantity())
-            .build();
+                .warehouseId(productImportDto.getWarehouseId())
+                .barcode(productImportDto.getProductDetail().getBarcode())
+                .expirationDate(productImportDto.getProduct().getExpirationDate())
+                .name(productImportDto.getProductDetail().getName())
+                .quantity(productImportDto.getProduct().getQuantity())
+                .productStorageType(productImportDto.getProductDetail().getProductStorageType())
+                .build();
     }
 
     public static Import fromProduct(Product product, LocalDate date) {
@@ -30,4 +31,5 @@ public class ImportMapper {
             .quantity(product.getQuantity())
             .build();
     }
+
 }

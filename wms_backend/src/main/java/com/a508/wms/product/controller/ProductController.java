@@ -1,10 +1,12 @@
 package com.a508.wms.product.controller;
 
 
+import com.a508.wms.notification.dto.NotificationResponseDto;
+import com.a508.wms.product.dto.ExportResponseDto;
+import com.a508.wms.product.dto.ImportResponseDto;
 import com.a508.wms.product.dto.ProductExportRequestDto;
 import com.a508.wms.product.dto.ProductExportResponseDto;
 import com.a508.wms.product.dto.ProductImportRequestDto;
-import com.a508.wms.product.dto.ProductImportResponseDto;
 import com.a508.wms.product.dto.ProductMainResponseDto;
 import com.a508.wms.product.dto.ProductRequestDto;
 import com.a508.wms.product.service.ImportModuleService;
@@ -33,6 +35,7 @@ public class ProductController {
 
     private final ProductService productService;
     private final ImportModuleService importModuleService;
+    private final ExportModuleService exportModuleService;
 
     /**
      * (서비스 전체/사업자 별/창고 별/상품 정보별)로의 상품들을 반환하는 기능
@@ -110,7 +113,7 @@ public class ProductController {
      * @return
      */
     @GetMapping("/import")
-    public BaseSuccessResponse<ProductImportResponseDto> getImports(
+    public BaseSuccessResponse<List<ImportResponseDto>> getImports(
         @RequestParam(value = "date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
         @RequestParam Long businessId
     ) {
@@ -118,8 +121,8 @@ public class ProductController {
             log.info("findImports businessId: {}", businessId);
             if (date != null) {
                 log.info("findImports date: {}", date);
-                return new BaseSuccessResponse<>(
-                    importModuleService.findAllByBusinessIdAndDate(businessId, date));
+//                return new BaseSuccessResponse<>(importModuleService.findAllByBusinessIdAndDate(businessId, date));
+                return null;
             } else {
                 return new BaseSuccessResponse<>(
                     importModuleService.findAllByBusinessId(businessId));
@@ -157,5 +160,31 @@ public class ProductController {
     ) {
         log.info("export products: {}", exportProduct);
         return new BaseSuccessResponse<>(productService.exportProducts(exportProduct));
+    }
+
+    @GetMapping("/export")
+    public BaseSuccessResponse<List<ExportResponseDto>> findAllByBusinessId(
+        @RequestParam Long businessId,
+        @RequestParam(required = false) Long key) {
+        if (businessId != null) {
+            if (key != null) {
+                log.info("findAllByBusinessId: {}", key);
+            }
+            log.info("findAllByBusinessId: {}", businessId);
+            return new BaseSuccessResponse<>(exportModuleService.findAllByBusinessId(businessId));
+        }
+        return null;
+    }
+
+    @GetMapping("/notification")
+    public BaseSuccessResponse<NotificationResponseDto> findAllNotifications(
+        @RequestParam Long businessId) {
+        if (businessId != null) {
+            log.info("findAllByBusinessId: {}", businessId);
+            return new BaseSuccessResponse<>(NotificationResponseDto.builder()
+                .importResponseDtos(importModuleService.findAllByBusinessId(businessId))
+                .exportResponseDtos(exportModuleService.findAllByBusinessId(businessId)).build());
+        }
+        return null;
     }
 }

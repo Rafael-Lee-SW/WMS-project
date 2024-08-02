@@ -38,7 +38,7 @@ public class Import extends BaseTimeEntity {
 
     @Column
     private LocalDateTime date;
-    
+
     @Column(nullable = false)
     private String name;
 
@@ -50,7 +50,7 @@ public class Import extends BaseTimeEntity {
     private StatusEnum statusEnum = StatusEnum.ACTIVE;
 
     @Enumerated(EnumType.STRING)
-    private ProductStorageTypeEnum productStorageTypeEnum;
+    private ProductStorageTypeEnum productStorageType;
 
     public void updateBusiness(Business business) {
         this.business = business;

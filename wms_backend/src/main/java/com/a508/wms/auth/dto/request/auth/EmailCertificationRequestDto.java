@@ -11,9 +11,6 @@ import lombok.Setter;
 @NoArgsConstructor
 public class EmailCertificationRequestDto {
 
-    @NotBlank
-    private String id;
-
     @Email
     @NotBlank
     private String email;
