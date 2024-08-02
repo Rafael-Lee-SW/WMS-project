@@ -1,142 +1,189 @@
-{
-  "rectData": [
-    {
-      "id": "0",
-      "x": 0,
-      "y": 0,
-      "z": 0,
-      "width": 0,
-      "height": 0,
-      "fill": "blue",
-      "type": "임시",
-      "name": "임시",
-      "rotation": 0
-    },
-    {
-      "id": "1",
-      "x": 114,
-      "y": 172,
-      "z": 9,
-      "width": 50,
-      "height": 50,
-      "fill": "blue",
-      "type": "location",
-      "name": "적재함 1",
-      "rotation": 0
-    },
-    {
-      "id": "2",
-      "x": 136,
-      "y": 115,
-      "z": 9,
-      "width": 50,
-      "height": 50,
-      "fill": "#f5a623",
-      "type": "location",
-      "name": "적재함 2",
-      "rotation": 0
-    },
-    {
-      "id": "3",
-      "x": 196,
-      "y": 118,
-      "z": 9,
-      "width": 50,
-      "height": 50,
-      "fill": "#f8e71c",
-      "type": "location",
-      "name": "적재함 3",
-      "rotation": 0
-    },
-    {
-      "id": "4",
-      "x": 251,
-      "y": 117,
-      "z": 9,
-      "width": 50,
-      "height": 50,
-      "fill": "#8b572a",
-      "type": "location",
-      "name": "적재함 4",
-      "rotation": 0
-    },
-    {
-      "id": "5",
-      "x": 307,
-      "y": 117,
-      "z": 5,
-      "width": 50,
-      "height": 50,
-      "fill": "#7ed321",
-      "type": "location",
-      "name": "적재함 5",
-      "rotation": 0
-    },
-    {
-      "id": "6",
-      "x": 366,
-      "y": 115,
-      "z": 2,
-      "width": 50,
-      "height": 50,
-      "fill": "#417505",
-      "type": "location",
-      "name": "적재함 6",
-      "rotation": 0
-    },
-    {
-      "id": "7",
-      "x": 429,
-      "y": 115,
-      "z": 1,
-      "width": 50,
-      "height": 50,
-      "fill": "blue",
-      "type": "location",
-      "name": "적재함 7",
-      "rotation": 0
-    }
-  ],
-  "anchorData": [
-    {
-      "startID": "1",
-      "startX": 100,
-      "startY": 100,
-      "endID": "1",
-      "endX": 501,
-      "endY": 101
-    },
-    {
-      "startID": "1",
-      "startX": 501,
-      "startY": 101,
-      "endID": "2",
-      "endX": 499,
-      "endY": 300
-    },
-    {
-      "startID": "1",
-      "startX": 501,
-      "startY": 101,
-      "endID": "3",
-      "endX": 603,
-      "endY": 99
-    },
-    {
-      "startID": "2",
-      "startX": 499,
-      "startY": 300,
-      "endID": "4",
-      "endX": 198,
-      "endY": 303
-    },
-    {
-      "startID": "1",
-      "startX": 100,
-      "startY": 100,
-      "endID": "5",
-      "endX": 99,
-      "endY": 302
-    }
-  ]
-}
+[
+  {
+    "id": "0",
+    "x": 307,
+    "y": 96,
+    "width": 10.451301786037657,
+    "height": 209.18895442466962,
+    "fill": "brown",
+    "type": "wall",
+    "name": "Wall 1",
+    "rotation": 90
+  },
+  {
+    "id": "1",
+    "x": 241,
+    "y": 122,
+    "width": 50,
+    "height": 50,
+    "fill": "blue",
+    "type": "location",
+    "name": "Rect 1",
+    "rotation": 0
+  },
+  {
+    "id": "2",
+    "x": 306,
+    "y": 148,
+    "width": 50,
+    "height": 50,
+    "fill": "blue",
+    "type": "location",
+    "name": "Rect 2",
+    "rotation": 0
+  },
+  {
+    "id": "3",
+    "x": 181,
+    "y": 191,
+    "width": 50,
+    "height": 50,
+    "fill": "blue",
+    "type": "location",
+    "name": "Rect 3",
+    "rotation": 0
+  },
+  {
+    "id": "4",
+    "x": 105.25,
+    "y": 102.80555725097656,
+    "width": 10,
+    "height": 5.952617196536929,
+    "fill": "brown",
+    "type": "wall",
+    "name": "Wall 5",
+    "rotation": 118
+  },
+  {
+    "id": "5",
+    "x": 101.25,
+    "y": 397.80555725097656,
+    "width": 10,
+    "height": 287.8082717444812,
+    "fill": "brown",
+    "type": "wall",
+    "name": "Wall 6",
+    "rotation": 180
+  },
+  {
+    "id": "6",
+    "x": 423.25,
+    "y": 398.80555725097656,
+    "width": 10,
+    "height": 333.2521405684901,
+    "fill": "brown",
+    "type": "wall",
+    "name": "Wall 7",
+    "rotation": 90
+  },
+  {
+    "id": "7",
+    "x": 417.25,
+    "y": 174.80555725097656,
+    "width": 10,
+    "height": 130.76098001938166,
+    "fill": "brown",
+    "type": "wall",
+    "name": "Wall 8",
+    "rotation": 125
+  },
+  {
+    "id": "8",
+    "x": 423.25,
+    "y": 398.80555725097656,
+    "width": 10,
+    "height": 218.82969264683982,
+    "fill": "brown",
+    "type": "wall",
+    "name": "Wall 9",
+    "rotation": 179
+  },
+  {
+    "id": "9",
+    "x": 117,
+    "y": 124,
+    "width": 50,
+    "height": 50,
+    "fill": "#c0c0e7",
+    "type": "location",
+    "name": "Rect 9",
+    "rotation": 0
+  },
+  {
+    "id": "10",
+    "x": 117,
+    "y": 193,
+    "width": 50,
+    "height": 50,
+    "fill": "#d0021b",
+    "type": "location",
+    "name": "Rect 10",
+    "rotation": 0
+  },
+  {
+    "id": "11",
+    "x": 246,
+    "y": 193,
+    "width": 50,
+    "height": 50,
+    "fill": "#f8e71c",
+    "type": "location",
+    "name": "Rect 11",
+    "rotation": 0
+  },
+  {
+    "id": "12",
+    "x": 179,
+    "y": 123,
+    "width": 50,
+    "height": 50,
+    "fill": "blue",
+    "type": "location",
+    "name": "Rect 12",
+    "rotation": 0
+  },
+  {
+    "id": "13",
+    "x": 297,
+    "y": 314,
+    "width": 50,
+    "height": 50,
+    "fill": "#b8e986",
+    "type": "location",
+    "name": "Rect 13",
+    "rotation": 0
+  },
+  {
+    "id": "14",
+    "x": 235,
+    "y": 315,
+    "width": 50,
+    "height": 50,
+    "fill": "blue",
+    "type": "location",
+    "name": "Rect 14",
+    "rotation": 0
+  },
+  {
+    "id": "15",
+    "x": 178,
+    "y": 322,
+    "width": 50,
+    "height": 50,
+    "fill": "#000000",
+    "type": "location",
+    "name": "Rect 15",
+    "rotation": 0
+  },
+  {
+    "id": "16",
+    "x": 118,
+    "y": 317,
+    "width": 50,
+    "height": 50,
+    "fill": "#272738",
+    "type": "location",
+    "name": "Rect 16",
+    "rotation": 0
+  }
+]
