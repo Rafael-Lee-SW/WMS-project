@@ -1,68 +1,55 @@
-import { useState } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions } from '@material-ui/core';
-import { deleteEmployee } from '../../pages/api';
-import { Card } from '@material-ui/core';
-import { makeStyles } from '@material-ui/core';
-import style from '/styles/jss/nextjs-material-kit/effect/modalStyle.js'
-import { useRouter } from 'next/router';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
-const useStyles = makeStyles(style)
+// 직원관리
+const ManageEmployees = () => {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [employees, setEmployees] = useState(['이한솔']);
 
-// 직원 관리 Component
-export default function ManageEmployees({employees, onUpdateEmployees}) {
-  const classes = useStyles();
-  const router = useRouter();
-  const [open, setOpen] = useState(false);
-  const [currentEmployee, setCurrentEmployee] = useState(null);
-  
-  const handleOpen = (employee) => {
-    setCurrentEmployee(employee);
-    setOpen(true);
+// API 호출하여 직원 목록 가져오기
+//   useEffect(() => {
+//     axios.get('/api/employees')
+//       .then(response => {
+//         setEmployees(response.data);
+//         setLoading(false);
+//       })
+//       .catch(error => {
+//         setError(error);
+//         setLoading(false);
+//       });
+//   }, []);
+
+  const handleDelete = (employeeId) => {
+    // 직원 삭제 로직 추가
+    axios.delete(`/api/delete-employee/${employeeId}`)
+      .then(response => {
+        // 성공 처리
+        setEmployees(employees.filter(employee => employee.id !== employeeId));
+        console.log('직원이 성공적으로 삭제되었습니다.');
+      })
+      .catch(error => {
+        // 오류 처리
+        console.error('직원 삭제에 실패했습니다.', error);
+      });
   };
 
-  const handleClose = () => {
-    setOpen(false);
-  };
+//   if (loading) return <div>Loading...</div>;
+//   if (error) return <div>Error: {error.message}</div>;
 
-  const handleDelete = async (employeeId) => {
-      try {
-        deleteEmployee(employeeId);
-        onUpdateEmployees();
-      } catch (error) {
-        router.push('/404');
-      }
-    };
-      
   return (
     <div>
       <h2>직원 관리</h2>
-        { employees ? (
-          employees.map((employee) => (
-          <Card key={employee.id} onClick={() => handleOpen(employee)} style={{ cursor: 'pointer', marginBottom: '10px' }}>
-            {employee.name}
-          </Card>
-        ))
-      ) : (
-      <h4>직원이 없습니다.</h4>
-      )}
-        <Dialog open={open} onClose={handleClose}>
-          <DialogTitle>직원 상세 정보</DialogTitle>
-          <DialogContent>
-            {currentEmployee && (
-              <>
-                <p>이름 : {currentEmployee.name}</p>
-                <p>등록일 : {currentEmployee.createDate}</p>              
-              </>
-            )}
-          </DialogContent>
-          <DialogActions style={{ justifyContent: 'space-between' }}>
-            <button onClick={() => handleDelete(currentEmployee.id)}>삭제</button>
-            <button className={classes.modalCloseButton} onClick={handleClose} color="primary">
-              X
-            </button>
-          </DialogActions>
-        </Dialog>
+      <ul>
+        {employees.map((employee) => (
+          <p key={employee.id}>
+            {employee.id} {employee.created_date}
+            <button onClick={() => handleDelete(employee.id)}>삭제</button>
+          </p>
+        ))}
+      </ul>
     </div>
   );
 };
 
+export default ManageEmployees;
