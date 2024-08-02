@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions } from '@material-ui/core';
 import { deleteEmployee } from '../../pages/api';
 import { Card } from '@material-ui/core';

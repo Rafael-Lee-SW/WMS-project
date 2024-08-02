@@ -14,7 +14,7 @@ const manageBusinessStyle = {
     },
     button: {
         margin: "10px",
-        backgroundColor: "light-gray",
+        backgroundColor: "lightgray",
         height: "30px"
     }
 }

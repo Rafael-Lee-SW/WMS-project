@@ -10,7 +10,7 @@ const mypageStyle = {
     alignItems: 'flex-start',
     paddingLeft: '50px',
     paddingTop: '70px',
-    flex: '2', // 왼쪽 패널의 비율을 2로 설정합니다.
+    flex: '2',
     backgroundColor: '#ffffff', 
   },
   rightPanel: {
@@ -18,7 +18,7 @@ const mypageStyle = {
     flexDirection: 'column',
     alignItems: 'center',
     paddingTop: '100px',
-    flex: '8', // 오른쪽 패널의 비율을 8로 설정합니다.
+    flex: '8', 
     backgroundColor: '#ffffff',
     textAlign: 'center',
   },
@@ -37,17 +37,19 @@ const mypageStyle = {
   divHr: {
     width: '90%',
     borderTop: '1px solid #000',
-    marginTop: '20px',
+    marginTop: '14px',
   },
   headerContainer: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'flex-start',
     width: '100%',
+    paddingLeft: '10px'
   },
   rendering: {
-    paddingRight: '100px',
-    paddingTop: '20px'
+    width: '100%',
+    top: '20px',
+    left: '0',
   }
 };
 
