@@ -15,7 +15,7 @@ const headerLinksStyle = (theme) => ({
   },
   listItem: {
     float: "left",
-    color: "black",
+    color: "inherit",
     position: "relative",
     display: "block",
     width: "auto",

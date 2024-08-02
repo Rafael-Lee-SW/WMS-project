@@ -1,53 +1,26 @@
 import { Button, Input, makeStyles } from "@material-ui/core";
-import axios from "axios";
-import { useEffect, useState } from "react"
+import { useState, useEffect } from "react";
+import { editBusiness } from "../../pages/api";
+import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/editInfoStyle.js";
+import { useRouter } from "next/router";
 
-const useStyles = makeStyles((theme) => ({
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    height: '100vh',
-    textAlign: 'center', 
-    padding: "10px"
-  },
-  div: {
-    padding: "10px"
-  },
-  button: {
-    margin: "10px",
-    backgroundColor: "lightgray",
-    height: "30px"
-  }
-}))
+const useStyles = makeStyles(styles);
 
-// 개인정보수정
-const EditInfo = () => {
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [userInfo, setUserInfo] = useState({
-        email: '',
-        password: '',
-    });
+export default function EditInfo({ id, name, email, nickname, statusEnum, onUpdateInfo }) {
     const classes = useStyles();
+    const router = useRouter();
 
+    const initialUserInfo = statusEnum !== 'DELETED' ? { name, email, nickname } : { name: '', email: '', nickname: '' };
 
-    // 기존 정보 받아오기
+    const [userInfo, setUserInfo] = useState(initialUserInfo);
 
-    // useEffect(() => {
-    //     axios.get('').then(response => {
-    //         const { email, password } = response.data;
-    //         setUserInfo({ email, password });
-    //         setLoading(false);
-    //     })
-    //     .catch(error => {
-    //         setError(error);
-    //         setLoading(false);
-    //     });
-    // }, []);
-
-    // if (loading) return <div>Loading</div>;
-    // if (error) return <div>Error: {error.message}</div>;
+    useEffect(() => {
+        if (statusEnum !== 'DELETED') {
+            setUserInfo({ name, email, nickname });
+        } else {
+            setUserInfo({ name: '', email: '', nickname: '' });
+        }
+    }, [name, email, nickname, statusEnum]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -57,54 +30,59 @@ const EditInfo = () => {
         }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-
-        axios.post('', userInfo).then(response => {
-            console.log('성공')
-        }).catch(error => {
-            console.log(error)
-        });
+        try {
+            const data = {
+                name: userInfo.name,
+                email: userInfo.email,
+                nickname: userInfo.nickname
+            };
+            await editBusiness(id, data);
+            onUpdateInfo();
+        } catch (error) {
+            router.push('/404');
+        }
     };
 
-   return (
-    <div className={classes.container}>
-      <h2>내 정보 수정</h2>
-      <form onSubmit={handleSubmit}>
-        <div className={classes.div}>
-          <Input
-            type="text"
-            name="name"
-            value={userInfo.name}
-            onChange={handleChange}
-            placeholder="기존 이름"
-          />
+    return (
+        <div className={classes.container}>
+            <h3 className={classes.h3}>내 정보 수정</h3>
+            <form onSubmit={handleSubmit} className={classes.form}>
+                <label className={classes.label}>이름:</label>
+                <Input
+                    type="text"
+                    name="name"
+                    value={userInfo.name}
+                    onChange={handleChange}
+                    className={classes.input}
+                    placeholder="이름"
+                />
+                <label className={classes.label}>이메일:</label>
+                <Input
+                    type="email"
+                    name="email"
+                    value={userInfo.email}
+                    onChange={handleChange}
+                    className={classes.input}
+                    placeholder="ssafy@ssafy.com"
+                />
+                <label className={classes.label}>닉네임:</label>
+                <Input
+                    type="text"
+                    name="nickname"
+                    value={userInfo.nickname}
+                    onChange={handleChange}
+                    className={classes.input}
+                    placeholder="오영팔"
+                />
+                <div className={classes.buttonContainer}>
+                    <Button 
+                        type="submit"
+                        className={classes.button}
+                    >저장</Button>
+                </div>
+            </form>
         </div>
-        <div className={classes.div}>
-          <Input
-            type="email"
-            name="email"
-            value={userInfo.email}
-            onChange={handleChange}
-            placeholder="기존 이메일"
-          />
-        </div>
-        <div className={classes.div}>
-          <Input
-            type="text"
-            name="phone"
-            value={userInfo.phone}
-            onChange={handleChange}
-            placeholder="기존 연락처"
-          />
-        </div>
-        <Button 
-        type="submit"
-        className={classes.button}
-        >저장</Button>
-      </form>
-    </div>
-  );
-};
-
-export default EditInfo;
+    );
+}
