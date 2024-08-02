@@ -58,11 +58,11 @@ const headerStyle = {
     fontSize: "18px",
     borderRadius: "3px",
     textTransform: "none",
-    color: "#black",
-    padding: "8px 10px",
+    color: "inherit",
+    padding: "8px 16px",
     letterSpacing: "unset",
     "&:hover,&:focus": {
-      color: "deb887",
+      color: "inherit",
       background: "transparent",
       fontWeight: "bold",
     }
@@ -73,7 +73,7 @@ const headerStyle = {
   primary: {
     backgroundColor: primaryColor,
     color: "#FFFFFF",
-    backgroundColor: "#fff",
+    // backgroundColor: "#fff",
     boxShadow: `0 4px 20px 0px rgba(0, 0, 0, 0.14), 0 7px 12px -5px ${hexToRGBAlpha(
       primaryColor,
       0.46
@@ -82,7 +82,7 @@ const headerStyle = {
   info: {
     backgroundColor: infoColor,
     color: "#FFFFFF",
-    backgroundColor: "#fff",
+    // backgroundColor: "#fff",
     boxShadow: `0 4px 20px 0px rgba(0, 0, 0, 0.14), 0 7px 12px -5px ${hexToRGBAlpha(
       infoColor,
       0.46
@@ -91,7 +91,7 @@ const headerStyle = {
   success: {
     backgroundColor: successColor,
     color: "#FFFFFF",
-    backgroundColor: "#fff",
+    // backgroundColor: "#fff",
     boxShadow: `0 4px 20px 0px rgba(0, 0, 0, 0.14), 0 7px 12px -5px ${hexToRGBAlpha(
       successColor,
       0.46
@@ -100,7 +100,7 @@ const headerStyle = {
   warning: {
     backgroundColor: warningColor,
     color: "#FFFFFF",
-    backgroundColor: "#fff",
+    // backgroundColor: "#fff",
     boxShadow: `0 4px 20px 0px rgba(0, 0, 0, 0.14), 0 7px 12px -5px ${hexToRGBAlpha(
       warningColor,
       0.46
@@ -109,7 +109,7 @@ const headerStyle = {
   danger: {
     backgroundColor: dangerColor,
     color: "#FFFFFF",
-    backgroundColor: "#fff",
+    // backgroundColor: "#fff",
     boxShadow: `0 4px 20px 0px rgba(0, 0, 0, 0.14), 0 7px 12px -5px ${hexToRGBAlpha(
       dangerColor,
       0.46
@@ -118,7 +118,7 @@ const headerStyle = {
   rose: {
     backgroundColor: roseColor,
     color: "#FFFFFF",
-    backgroundColor: "#fff",
+    // backgroundColor: "#fff",
     boxShadow: `0 4px 20px 0px rgba(0, 0, 0, 0.14), 0 7px 12px -5px ${hexToRGBAlpha(
       roseColor,
       0.46
@@ -127,13 +127,12 @@ const headerStyle = {
   transparent: {
     backgroundColor: "transparent !important",
     boxShadow: "none",
-    paddingTop: "10px",
-    color: "#FFFFFF",
-    backgroundColor: "#fff",
+    paddingTop: "25px",
+    color: "#FFFFFF"
   },
   dark: {
     color: "#FFFFFF",
-    backgroundColor: "#fff",
+    // backgroundColor: "#fff",
     backgroundColor: "#212121 !important",
     boxShadow:
       "0 4px 20px 0px rgba(0, 0, 0, 0.14), 0 7px 12px -5px rgba(33, 33, 33, 0.46)"

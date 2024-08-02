@@ -18,8 +18,7 @@ class MyDocument extends Document {
           {/* Fonts and icons */}
           <link
             rel="stylesheet"
-            type="text/css"
-            href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons"
+            href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR&family=Nanum+Brush+Script&family=Nanum+Gothic+Coding&family=Roboto:wght@300;400;500;700&family=Roboto+Slab:wght@400;700&display=swap"
           />
           <link
             href="https://use.fontawesome.com/releases/v5.0.10/css/all.css"
