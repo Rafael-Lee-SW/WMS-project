@@ -1,5 +1,5 @@
 import React from 'react';
-import Button from "@material-ui/core/Button";
+import { Button } from "@mui/material";
 import GridContainer from "/components/Grid/GridContainer.js";
 import { makeStyles } from '@material-ui/core/styles';
 import Divider from '@material-ui/core/Divider';

@@ -4,14 +4,12 @@ import Link from "next/link";
 import classNames from "classnames";
 // nodejs library to set properties for components
 import PropTypes from "prop-types";
+
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
-import AppBar from "@material-ui/core/AppBar";
-import Toolbar from "@material-ui/core/Toolbar";
-import IconButton from "@material-ui/core/IconButton";
-import Button from "@material-ui/core/Button";
-import Hidden from "@material-ui/core/Hidden";
-import Drawer from "@material-ui/core/Drawer";
+
+import { AppBar, Toolbar, IconButton, Drawer, Button} from "@mui/material";
+
 // @material-ui/icons
 import Menu from "@material-ui/icons/Menu";
 // core components
@@ -30,7 +28,7 @@ export default function Header({
 }) {
   const classes = useStyles();
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  
+
   React.useEffect(() => {
     if (changeColorOnScroll) {
       window.addEventListener("scroll", headerColorChange);
@@ -78,17 +76,13 @@ export default function Header({
         {leftLinks !== undefined ? brandComponent : null}
         <div className={classes.flex}>
           {leftLinks !== undefined ? (
-            <Hidden smDown implementation="css">
-              {leftLinks}
-            </Hidden>
+            <div className={classes.hiddenSmDown}>{leftLinks}</div>
           ) : (
             brandComponent
           )}
         </div>
-        <Hidden smDown implementation="css">
-          {rightLinks}
-        </Hidden>
-        <Hidden mdUp>
+        <div className={classes.hiddenSmDown}>{rightLinks}</div>
+        <div className={classes.hiddenMdUp}>
           <IconButton
             color="inherit"
             aria-label="open drawer"
@@ -96,9 +90,9 @@ export default function Header({
           >
             <Menu />
           </IconButton>
-        </Hidden>
+        </div>
       </Toolbar>
-      <Hidden mdUp implementation="js">
+      <div className={classes.hiddenMdUp}>
         <Drawer
           variant="temporary"
           anchor={"right"}
@@ -113,7 +107,7 @@ export default function Header({
             {rightLinks}
           </div>
         </Drawer>
-      </Hidden>
+      </div>
     </AppBar>
   );
 }

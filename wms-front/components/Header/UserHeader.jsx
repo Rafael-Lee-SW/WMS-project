@@ -6,12 +6,8 @@ import classNames from "classnames";
 import PropTypes from "prop-types";
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
-import AppBar from "@material-ui/core/AppBar";
-import Toolbar from "@material-ui/core/Toolbar";
-import IconButton from "@material-ui/core/IconButton";
-import Button from "@material-ui/core/Button";
-import Hidden from "@material-ui/core/Hidden";
-import Drawer from "@material-ui/core/Drawer";
+
+import { AppBar, Toolbar, IconButton, Drawer, Button, Box } from "@mui/material";
 // @material-ui/icons
 import Menu from "@material-ui/icons/Menu";
 // core components
@@ -42,7 +38,7 @@ export default function Header(props) {
         window.removeEventListener("scroll", headerColorChange);
       }
     };
-  });
+  }, [changeColorOnScroll]);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -80,17 +76,17 @@ export default function Header(props) {
         {leftLinks !== undefined ? brandComponent : null}
         <div className={classes.flex}>
           {leftLinks !== undefined ? (
-            <Hidden smDown implementation="css">
+            <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
               {leftLinks}
-            </Hidden>
+            </Box>
           ) : (
             brandComponent
           )}
         </div>
-        <Hidden smDown implementation="css">
+        <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
           {rightLinks}
-        </Hidden>
-        <Hidden mdUp>
+        </Box>
+        <Box sx={{ display: { xs: 'block', md: 'none' } }}>
           <IconButton
             color="inherit"
             aria-label="open drawer"
@@ -98,9 +94,9 @@ export default function Header(props) {
           >
             <Menu />
           </IconButton>
-        </Hidden>
+        </Box>
       </Toolbar>
-      <Hidden mdUp implementation="js">
+      <Box sx={{ display: { xs: 'block', md: 'none' } }}>
         <Drawer
           variant="temporary"
           anchor={"right"}
@@ -115,7 +111,7 @@ export default function Header(props) {
             {rightLinks}
           </div>
         </Drawer>
-      </Hidden>
+      </Box>
     </AppBar>
   );
 }
