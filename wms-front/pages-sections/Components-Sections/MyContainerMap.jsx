@@ -218,10 +218,6 @@ const MyContainerMap = () => {
       storageType: "상온",
     }));
 
-    console.log(locationData);
-
-    console.log(anchorsRef.current);
-
     // 벽 데이터를 기록합니다.
     const wallData = anchorsRef.current.map(({ start, end }, index) => ({
       id: index + 1,
@@ -509,7 +505,6 @@ const MyContainerMap = () => {
       x = (x - stageAttrs.x) / stageAttrs.scaleX;
       y = (y - stageAttrs.y) / stageAttrs.scaleY;
     }
-    // console.log("출력 : " + Math.round(x) + " : " + Math.round(y));
     return { x, y };
   };
 
@@ -661,7 +656,6 @@ const MyContainerMap = () => {
       if (anchorObj.end === draggedAnchor) anchorObj.end = anchor;
       count++;
     });
-    console.log(count);
     updateLinesBetweenAnchors();
   };
 
@@ -1406,16 +1400,14 @@ const MyContainerMap = () => {
 };
 
 // -----   상자 설정 변경기 영역   ------
-// RectangleTransformer 컴포넌트는 각 사각형의 렌더링 및 변형을 처리
-// Rectangle 컴포넌트는 각 사각형의 렌더링 및 변형을 처리합니다
 const RectangleTransformer = ({
   shapeProps,
   isSelected,
   onSelect,
   onChange,
 }) => {
-  const shapeRef = useRef(); // 사각형 모양에 대한 참조
-  const trRef = useRef(); // 변형 도구에 대한 참조
+  const shapeRef = useRef();
+  const trRef = useRef();
 
   // 사각형이 선택되었을 때 변형기를 연결하기 위한 Effect 훅
   useEffect(() => {

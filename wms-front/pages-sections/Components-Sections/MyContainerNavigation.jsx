@@ -1,17 +1,13 @@
 "use client";
-
 /**
  * 창고 엑셀화 Import
  */
-
 // fundamental importing about React
 import React, { useState, useEffect, useRef } from "react";
 
 // Import MUI components
-import Grid from "@mui/material/Grid";
-import Paper from "@mui/material/Paper";
 import Fab from "@mui/material/Fab";
-import Button from "@mui/material/Button";
+import ButtonIn from "@mui/material/Button";
 // 모달 페이지를 위한 Import
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -50,8 +46,6 @@ import {
   alignHeaders,
 } from "/components/Test/hooksCallbacks.jsx";
 
-import Handsontable from "handsontable";
-
 // Register cell types and plugins
 registerCellType(CheckboxCellType);
 registerCellType(NumericCellType);
@@ -63,11 +57,9 @@ registerPlugin(CopyPaste);
 registerPlugin(DropdownMenu);
 registerPlugin(Filters);
 registerPlugin(HiddenRows);
-
 /**
  * 창고 시각화 Import
  */
-
 // Library of konva and color
 import {
   Stage,
@@ -78,58 +70,28 @@ import {
   Circle,
   Transformer,
 } from "react-konva";
-import { SketchPicker } from "react-color";
-// plugin that creates slider
-import Slider from "nouislider";
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
-import InputAdornment from "@material-ui/core/InputAdornment";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-import Checkbox from "@material-ui/core/Checkbox";
-import Radio from "@material-ui/core/Radio";
-import Switch from "@material-ui/core/Switch";
-// @material-ui/icons
-import Favorite from "@material-ui/icons/Favorite";
-import InventoryIcon from "@mui/icons-material/Inventory";
-import ProductionQuantityLimitsIcon from "@mui/icons-material/ProductionQuantityLimits";
-import ListAltIcon from "@mui/icons-material/ListAlt";
-import People from "@material-ui/icons/People";
-import Check from "@material-ui/icons/Check";
-import FiberManualRecord from "@material-ui/icons/FiberManualRecord";
-// core components
-import GridContainer from "/components/Grid/GridContainer.js";
-import GridItem from "/components/Grid/GridItem.js";
-import Button2 from "/components/CustomButtons/Button.js"; // 기존 버튼과 겹쳐서
-import CustomInput from "/components/CustomInput/CustomInput.js";
-import CustomLinearProgress from "/components/CustomLinearProgress/CustomLinearProgress.js";
-import Paginations from "/components/Pagination/Pagination.js";
-import Badge from "/components/Badge/Badge.js";
 
 import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/MyContainerStyle.jsx";
-import { Canvas } from "canvas";
-import { LocalConvenienceStoreOutlined } from "@mui/icons-material";
 
 // 창고 상수 설정
-
-// 상수 설정(그리드, 컨버스 등)
-const GRID_SIZE = 100; // 100cm = 1m
-const GRID_SIZE_SUB_50 = 50; // 50cm
-const GRID_SIZE_SUB_10 = 10; // 10cm
-const CANVAS_SIZE = 1000; // 100 = 1000cm = 10m
+const GRID_SIZE = 100;
+const GRID_SIZE_SUB_50 = 50;
+const GRID_SIZE_SUB_10 = 10; 
+const CANVAS_SIZE = 1000; 
 
 const useStyles = makeStyles(styles);
 
 // --- 창고 관련 끝
 
 // 복합체 시작
-
-const Complicated = () => {
+const MyContainerNavigation = () => {
   /**
    * 창고 관련 const 들 모음
    */
-  const classes = useStyles();
-  const stageRef = useRef(null); // Create a reference for the stage
-  const layerRef = useRef(null); // Create a reference for the layer
+  const stageRef = useRef(null);
+  const layerRef = useRef(null); 
 
   // Initial Setting the container array 초기 세팅
   const initialContainer = Array.from({ length: CANVAS_SIZE }, () =>
@@ -138,8 +100,6 @@ const Complicated = () => {
       code: "air",
     }))
   );
-  // Container for savinng the info.
-  const [container, setContainer] = useState(initialContainer);
   // 사각형을 추가하고 관리하는 State 추가
   const [rectangles, setRectangles] = useState([]);
   // 줌 인, 줌 아웃을 위한 Scale
@@ -153,25 +113,11 @@ const Complicated = () => {
   // 마지막으로 클릭한 상자를 수정하는 폼을 띄우기 위한 상태 추가
   const [selectedRectTransform, setSelectedRectTransform] = useState(null);
 
-  // Tracking the current setting mode
-  const [currentSetting, setCurrentSetting] = useState(null); // Track current setting mode
-  const [showColorPicker, setShowColorPicker] = useState(false); // Control visibility of the color picker
+  // 현재 어떤 모드인지를 추척하는 메서드
+  const [currentSetting, setCurrentSetting] = useState(null); 
 
-  // New State for rectangle settings - Default exits, and changable now.
-  const [newRectColor, setNewRectColor] = useState("blue");
-  const [newRectWidth, setNewRectWidth] = useState(50);
-  const [newRectHeight, setNewRectHeight] = useState(50);
-  const [newRectName, setNewRectName] = useState("");
-  const [newRectType, setNewRectType] = useState(""); // new type for rectangle
-
-  // New State for wall settings(벽 관련 설정)
-  const [newWallColor, setNewWallColor] = useState("brown");
-  const [newWallWidth, setNewWallWidth] = useState(10);
+  // 벽 생성을 위한 초기 선택값
   const [wallStartPoint, setWallStartPoint] = useState(null);
-  const [wallEndPoint, setWallEndPoint] = useState(null);
-
-  const [draggingAnchor, setDraggingAnchor] = useState(null);
-  const [hoveredAnchor, setHoveredAnchor] = useState(null);
 
   // 앙커를 추가하고 관리하는 State 추가
   const [anchors, setAnchors] = useState([]);
@@ -180,9 +126,7 @@ const Complicated = () => {
   const [selectedFloor, setSelectedFloor] = useState(1);
 
   /**
-   *
    * 창고 관련 Const 끝
-   *
    */
 
   // API로 불러온 현재 상품 데이터 목록
@@ -191,24 +135,16 @@ const Complicated = () => {
   //모달을 위한 데이터 셋
   const [ModalTableData, setModalTableData] = useState([]);
   const [columns, setColumns] = useState([]);
-  const [isChoosingColumn, setIsChoosingColumn] = useState(false);
-  const hotTableRef = useRef(null); // Reference to the Handsontable instance
-  let columnCounter = 0;
+  const hotTableRef = useRef(null);
 
-  const [openModal, setOpenModal] = useState(false); // State for modal open/close
-  const [columnSelectionStep, setColumnSelectionStep] = useState(0); // State for column selection steps
+  const [openModal, setOpenModal] = useState(false); 
+  const [columnSelectionStep, setColumnSelectionStep] = useState(0); 
   const [selectedColumns, setSelectedColumns] = useState({
     barcode: null,
     name: null,
     quantity: null,
     expiry: null,
   });
-
-  // Convert data to array of arrays and set table data
-  const convertToArrayOfArrays = (data) => {
-    setTableData(data);
-    return data;
-  };
 
   // Convert data to array of arrays and set table data
   const convertToArrayOfArraysModal = (data) => {
@@ -240,77 +176,10 @@ const Complicated = () => {
       setColumns(formattedColumns);
       fileData.splice(0, 1);
       convertToArrayOfArraysModal(fileData);
-      setOpenModal(true); // Open the modal after importing the file
+      setOpenModal(true); 
     };
     reader.readAsArrayBuffer(file);
   };
-
-  // Download the table data as an Excel file
-  const downloadExcel = () => {
-    const worksheet = XLSX.utils.aoa_to_sheet([
-      columns.map((col) => col.label),
-      ...tableData,
-    ]);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
-    XLSX.writeFile(workbook, "ADN_project엑셀테스트.xlsx");
-  };
-
-  // Load local Excel file
-  const loadLocalExcel = async () => {
-    const response = await fetch("/excel/Uniqlo.xlsx");
-    const data = await response.arrayBuffer();
-    const file = new File([data], "Uniqlo.xlsx", {
-      type: "application/vnd.ms-excel",
-    });
-    importExcel(file);
-  };
-
-  // -- json save & load part
-
-  // Save the table data as a JSON file in the local public/excel directory
-  const saveJsonToLocal = async () => {
-    try {
-      const response = await fetch("/api/save-json", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(tableData),
-      });
-
-      if (response.ok) {
-        console.log("JSON data saved successfully");
-      } else {
-        console.error("Error saving JSON data");
-      }
-    } catch (error) {
-      console.error("Error saving JSON data:", error);
-    }
-  };
-
-  // Load the JSON data file from the local public/excel directory
-  const loadJsonFromLocal = async () => {
-    try {
-      const response = await fetch("/api/load-json", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (response.ok) {
-        const jsonData = await response.json();
-        setTableData(jsonData);
-      } else {
-        console.error("Error loading JSON data");
-      }
-    } catch (error) {
-      console.error("Error loading JSON data:", error);
-    }
-  };
-
-  // -- json save & load part
 
   // Apply color to the specified column
   const applyColumnColor = (columnIndex) => {
@@ -348,16 +217,9 @@ const Complicated = () => {
     }
   };
 
-  // Start choosing columns for color change
-  const startChoosingColumns = () => {
-    setIsChoosingColumn(true);
-    columnCounter = 0; // Reset counter when starting a new action
-  };
 
   // 최종적으로 선택된 칼럼에 해당하는 데이터를 보낸다.
   const finalizeSelection = () => {
-    console.log("Finalized columns:", selectedColumns);
-    // Gather the selected data based on the user's column selections.
     const postData = ModalTableData.map((row) => ({
       barcode: row[selectedColumns.barcode],
       name: row[selectedColumns.name],
@@ -366,7 +228,6 @@ const Complicated = () => {
         selectedColumns.expiry !== null ? row[selectedColumns.expiry] : null,
     }));
 
-    // Send the gathered data to the API
     APIPOSTConnectionTest(postData);
 
     setOpenModal(false);
@@ -395,8 +256,6 @@ const Complicated = () => {
 
       if (response.ok) {
         console.log("Data posted successfully");
-        const result = await response.json();
-        console.log(result);
       } else {
         console.error("Error posting data");
       }
@@ -404,20 +263,6 @@ const Complicated = () => {
       console.error("Error posting data:", error);
     }
   };
-
-  /**
-   * UseEffect를 통해 새로고침 때마다 api로 사장님의 재고를 불러옴
-   */
-
-  // useEffect(() => {
-  //   APIConnectionTest();
-  // }, []);
-
-  /**
-   *
-   * 창고 관련 메서드 추가
-   *
-   */
 
   // 컨버스에 있는 사각형들의 정보를 저장한다.
   const handleSave = async () => {
@@ -432,8 +277,6 @@ const Complicated = () => {
       name: rect.name,
       rotation: rect.rotation,
     }));
-    console.log("Canvas data", rectData);
-    console.log("container", container);
 
     try {
       const response = await fetch("/api/save-map", {
@@ -605,7 +448,6 @@ const Complicated = () => {
     var stageAttrs = event.target.getStage().attrs;
     x = (x - stageAttrs.x) / stageAttrs.scaleX;
     y = (y - stageAttrs.y) / stageAttrs.scaleY;
-    // console.log("출력 : " + Math.round(x) + " : " + Math.round(y));
     return { x, y };
   };
 
@@ -616,11 +458,9 @@ const Complicated = () => {
       setSelectedRectTransform(null);
     }
   };
-
   /**
    * 앙커를 추가하고 불러올 수 있다.
    */
-
   // 선을 잇는 기능을 넣기 위한 거시기
   const [line, setLine] = useState(null);
   const [startPos, setStartPos] = useState(null);
@@ -725,7 +565,7 @@ const Complicated = () => {
       if (anchor === draggedAnchor) return;
       if (isOverlapping(draggedAnchor, anchor)) {
         updateAnchorReferences(draggedAnchor, anchor);
-        draggedAnchor.destroy(); // Remove the dragged anchor
+        draggedAnchor.destroy();
         layer.batchDraw();
         merged = true;
       }
@@ -743,7 +583,6 @@ const Complicated = () => {
       if (anchorObj.end === draggedAnchor) anchorObj.end = anchor;
       count++;
     });
-    console.log(count);
     updateDottedLines();
   };
 
@@ -776,7 +615,6 @@ const Complicated = () => {
   /**
    * 선택된 사각형의 데이터를 보여주는 메서드
    */
-
   // Fetch JSON data for the selected rectangle
   const fetchRectangleData = async (id) => {
     try {
@@ -789,10 +627,7 @@ const Complicated = () => {
 
       if (response.ok) {
         const jsonData = await response.json();
-        // console.log(jsonData);
         const rectangleData = jsonData.filter((row) => row[0] === String(id));
-        // console.log(id);
-        // console.log(rectangleData);
         return rectangleData || [];
       } else {
         console.error("Error loading JSON data");
@@ -815,35 +650,31 @@ const Complicated = () => {
   useEffect(() => {
     const stage = stageRef.current;
     const layer = layerRef.current;
-    /**
-     * 기존에는 세 개의 원을 추가했으나, 우리는 이미 존재하는 우리 객체에 대해 적용
-     */
 
     //Event Handler for 'mousedown' Stage 위에 올렸을 때,
     const handleMouseDown = () => {
-      // 정확한 위치를 얻어온다.
       if (currentSetting === "wall") {
+        // 정확한 위치를 얻어온다.
         const pos = stage.getPointerPosition();
-        var stageAttrs = stage.attrs; // 보정을 위한 거시기
-
+        var stageAttrs = stage.attrs; 
         if (!stageAttrs.x) {
           // 드래그 하지 않음
-          pos.x = pos.x / stageAttrs.scaleX; //줌에 따른 따른 위치 스케일링
+          pos.x = pos.x / stageAttrs.scaleX; 
           pos.y = pos.y / stageAttrs.scaleY;
         } else {
           // 드래그해서 새로운 stageAttrs의 x,y가 생김
-          pos.x = (pos.x - stageAttrs.x) / stageAttrs.scaleX; //줌에 따른 따른 위치 스케일링
+          pos.x = (pos.x - stageAttrs.x) / stageAttrs.scaleX;
           pos.y = (pos.y - stageAttrs.y) / stageAttrs.scaleY;
         }
         // 무조건 10 pixel 단위로 반올림하여 시작 위치 보정
         pos.x = Math.round(pos.x / 10) * 10;
         pos.y = Math.round(pos.y / 10) * 10;
 
-        setStartPos(pos); // 선의 시작 위치 기록
+        setStartPos(pos); 
         const newLine = new Konva.Line({
           stroke: "black",
           strokeWidth: 5,
-          listening: false, // Hit detective 감지 안됨
+          listening: false, 
           points: [pos.x, pos.y, pos.x, pos.y],
         });
         layer.add(newLine);
@@ -857,14 +688,14 @@ const Complicated = () => {
         if (!line) return;
         // 정확한 위치를 얻어온다.
         const pos = stage.getPointerPosition();
-        var stageAttrs = stage.attrs; // 보정을 위한 거시기
+        var stageAttrs = stage.attrs; 
         if (!stageAttrs.x) {
           // 드래그 하지 않음
-          pos.x = pos.x / stageAttrs.scaleX; //줌에 따른 따른 위치 스케일링
+          pos.x = pos.x / stageAttrs.scaleX;
           pos.y = pos.y / stageAttrs.scaleY;
         } else {
           // 드래그해서 새로운 stageAttrs의 x,y가 생김
-          pos.x = (pos.x - stageAttrs.x) / stageAttrs.scaleX; //줌에 따른 따른 위치 스케일링
+          pos.x = (pos.x - stageAttrs.x) / stageAttrs.scaleX; 
           pos.y = (pos.y - stageAttrs.y) / stageAttrs.scaleY;
         }
 
@@ -884,14 +715,14 @@ const Complicated = () => {
         if (e.target.hasName("target")) {
           // 정확한 위치를 얻어온다.
           const pos = stage.getPointerPosition();
-          var stageAttrs = stage.attrs; // 보정을 위한 거시기
+          var stageAttrs = stage.attrs; 
           if (!stageAttrs.x) {
             // 드래그 하지 않음
-            pos.x = pos.x / stageAttrs.scaleX; //줌에 따른 따른 위치 스케일링
+            pos.x = pos.x / stageAttrs.scaleX; 
             pos.y = pos.y / stageAttrs.scaleY;
           } else {
             // 드래그해서 새로운 stageAttrs의 x,y가 생김
-            pos.x = (pos.x - stageAttrs.x) / stageAttrs.scaleX; //줌에 따른 따른 위치 스케일링
+            pos.x = (pos.x - stageAttrs.x) / stageAttrs.scaleX;
             pos.y = (pos.y - stageAttrs.y) / stageAttrs.scaleY;
           }
           drawLine(startPos, pos);
@@ -901,17 +732,16 @@ const Complicated = () => {
         } else {
           line.remove();
           layer.draw();
-          //벽을 추가하기 위한 메서드
           // 정확한 위치를 얻어온다.
           const pos = stage.getPointerPosition();
-          var stageAttrs = stage.attrs; // 보정을 위한 거시기
+          var stageAttrs = stage.attrs;
           if (!stageAttrs.x) {
             // 드래그 하지 않음
-            pos.x = pos.x / stageAttrs.scaleX; //줌에 따른 따른 위치 스케일링
+            pos.x = pos.x / stageAttrs.scaleX; 
             pos.y = pos.y / stageAttrs.scaleY;
           } else {
             // 드래그해서 새로운 stageAttrs의 x,y가 생김
-            pos.x = (pos.x - stageAttrs.x) / stageAttrs.scaleX; //줌에 따른 따른 위치 스케일링
+            pos.x = (pos.x - stageAttrs.x) / stageAttrs.scaleX; 
             pos.y = (pos.y - stageAttrs.y) / stageAttrs.scaleY;
           }
           handleAddWall(startPos, pos);
@@ -927,39 +757,8 @@ const Complicated = () => {
       /**
        * wall setting 일때만 변경될 수 있도록 설정
        */
-      console.log("벽 생성 function에서 현재 세팅은? : " + currentSetting);
       if (currentSetting === "wall") {
-        // 벽이 입력되는 end point가 벽의 중심이다.
-        const newWall = {
-          id: rectangles.length.toString(),
-          x: end.x,
-          y: end.y,
-          width: newWallWidth,
-          height: Math.sqrt((end.x - start.x) ** 2 + (end.y - start.y) ** 2),
-          fill: newWallColor,
-          draggable: true,
-          order: rectangles.length + 1, // 순서대로 번호 인덱싱
-          name: `Wall ${rectangles.length + 1}`,
-          type: "wall",
-          rotation: Math.round(
-            Math.atan2(end.y - start.y, end.x - start.x) * (180 / Math.PI) + 90
-          ),
-        };
-        // if (!isOverlapping(newWall)) {
-        // setRectangles([...rectangles, newWall]);
-        // updateContainer(newWall, "wall", `wall${newWall.id}`);
-        // Reset wall points
-        setWallStartPoint(null);
-        setWallEndPoint(null);
-        // Reset settings to default after adding
-        setNewWallColor("brown");
-        setNewWallWidth(10);
-        // } else {
-        //   alert("Wall overlaps with another rectangle.");
-        //   // Reset wall points
-        //   setWallStartPoint(null);
-        //   setWallEndPoint(null);
-        // }
+
         const newAnchorTop = buildAnchor(start.x, start.y);
         const newAnchorBottom = buildAnchor(end.x, end.y);
 
@@ -982,7 +781,6 @@ const Complicated = () => {
         layer.batchDraw();
       }
     };
-
     /**
      * 벽 생성 관련 마우스 컨트롤 Mouse
      */
@@ -998,7 +796,6 @@ const Complicated = () => {
     /**
      * 선택된 사각형의 물품 목록을 보여준다.
      */
-
     if (selectedRect) {
       fetchRectangleData(selectedRect.id).then((data) => {
         setRectangleData(data);
@@ -1016,7 +813,6 @@ const Complicated = () => {
   return (
     <div style={{ marginBottom: "1%", margin: "0%" }}>
       <div>
-        {/* JSX 주석 */}
         {/** Main 영역 시작 */}
         <main style={{ display: "flex" }}>
           <Dialog
@@ -1049,18 +845,18 @@ const Complicated = () => {
               )}
               {columnSelectionStep === 3 && (
                 <div>
-                  <Button
+                  <ButtonIn
                     onClick={() => setColumnSelectionStep(4)}
                     color="primary"
                   >
                     Yes
-                  </Button>
-                  <Button
+                  </ButtonIn>
+                  <ButtonIn
                     onClick={() => setColumnSelectionStep(5)}
                     color="primary"
                   >
                     No
-                  </Button>
+                  </ButtonIn>
                 </div>
               )}
               <HotTable
@@ -1088,16 +884,15 @@ const Complicated = () => {
             </DialogContent>
             <DialogActions>
               {columnSelectionStep === 5 && (
-                <Button onClick={finalizeSelection} color="primary">
+                <ButtonIn onClick={finalizeSelection} color="primary">
                   네
-                </Button>
+                </ButtonIn>
               )}
-              <Button onClick={() => setOpenModal(false)} color="primary">
+              <ButtonIn onClick={() => setOpenModal(false)} color="primary">
                 닫기
-              </Button>
+              </ButtonIn>
             </DialogActions>
           </Dialog>
-
           {/* 현재 창고와 적재함들을 보여주는 Sidebar  */}
           <div
             style={{
@@ -1127,7 +922,7 @@ const Complicated = () => {
                   aria-label="add"
                   variant="extended"
                 >
-                  출고 목록 업로드하기
+                  출고 업로드
                 </Fab>
               </label>
             </div>
@@ -1138,7 +933,7 @@ const Complicated = () => {
                 <ul
                   style={{
                     height: "100%",
-                    overflowY: "auto", // Add this line to make the ul scrollable
+                    overflowY: "auto", 
                   }}
                 >
                   {rectangles
@@ -1152,7 +947,6 @@ const Complicated = () => {
               <p>현재 재고함이 없습니다.</p>
             )}
           </div>
-
           {/* 재고현황을 엑셀로 보여주는 bar */}
           <div
             style={{
@@ -1207,7 +1001,7 @@ const Complicated = () => {
                     }}
                   >
                     {Array.from({ length: selectedRect.z }).map((_, index) => (
-                      <button
+                      <ButtonIn
                         key={index+1}
                         style={{
                           display: "block",
@@ -1249,7 +1043,7 @@ const Complicated = () => {
                         }}
                       >
                         {index+1} 층
-                      </button>
+                      </ButtonIn>
                     ))}
                   </div>
                 </div>
@@ -1286,7 +1080,6 @@ const Complicated = () => {
               <p>재고함이 선택되지 않았습니다.</p>
             )}
           </div>
-
           {/* Canvas and 알림창 영역 */}
           <div
             style={{
@@ -1381,10 +1174,10 @@ const Complicated = () => {
                   gap: "10px",
                 }}
               >
-                <button onClick={handleZoomIn}>Zoom In</button>
-                <button onClick={handleZoomOut}>Zoom Out</button>
-                <button onClick={handleSave}>Save</button>
-                <button onClick={loadMapFromLocal}>Load</button>
+                <ButtonIn onClick={handleZoomIn}>Zoom In</ButtonIn>
+                <ButtonIn onClick={handleZoomOut}>Zoom Out</ButtonIn>
+                <ButtonIn onClick={handleSave}>Save</ButtonIn>
+                <ButtonIn onClick={loadMapFromLocal}>Load</ButtonIn>
               </div>
             </div>
             <div
@@ -1406,20 +1199,17 @@ const Complicated = () => {
   );
 };
 
-export default Complicated;
+export default MyContainerNavigation;
 
 // -----   상자 설정 변경기 영역   ------
-// RectangleTransformer 컴포넌트는 각 사각형의 렌더링 및 변형을 처리
-// Rectangle 컴포넌트는 각 사각형의 렌더링 및 변형을 처리합니다
 const RectangleTransformer = ({
   shapeProps,
   isSelected,
   onSelect,
   onChange,
 }) => {
-  const shapeRef = useRef(); // 사각형 모양에 대한 참조
-  const trRef = useRef(); // 변형 도구에 대한 참조
-
+  const shapeRef = useRef();
+  const trRef = useRef();
   // 사각형이 선택되었을 때 변형기를 연결하기 위한 Effect 훅
   useEffect(() => {
     if (isSelected) {
