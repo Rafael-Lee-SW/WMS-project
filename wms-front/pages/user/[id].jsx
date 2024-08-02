@@ -9,35 +9,21 @@ import { makeStyles } from "@material-ui/core/styles";
 import Header from "/components/Header/UserHeader.jsx";
 import HeaderLinks from "/components/Header/UserHeaderLinks.js";
 import Footer from "/components/Footer/Footer.js";
-import GridContainer from "/components/Grid/GridContainer.js";
-import GridItem from "/components/Grid/GridItem.js";
 import Button from "/components/CustomButtons/Button.js";
 import Parallax from "/components/Parallax/ParallaxUser.js";
-// // sections for this page
-// import MyContainer from "/pages-sections/Components-Sections/MyContainer.jsx";
-// // 버튼을 통해 하위 Components 를 바꾸기 위한 Test Components import
-// import MyContainerTest from "/pages-sections/Components-Sections/MyContainerTest";
-// import MyContainerThree from "/pages-sections/Components-Sections/MyContainerThree";
-// 다이나믹 import를 위한 거시기
 import dynamic from "next/dynamic";
-
-// @material-ui/icons
-import InventoryIcon from "@mui/icons-material/Inventory";
-import ProductionQuantityLimitsIcon from "@mui/icons-material/ProductionQuantityLimits";
-import ListAltIcon from "@mui/icons-material/ListAlt";
 
 // 스타일 파일
 import styles from "/styles/jss/nextjs-material-kit/pages/users.js";
 import AOS from "aos";
 import "aos/dist/aos.css";
-import { Preview } from "@mui/icons-material";
 
 // 다이나믹 import 테스트
-const DynamicMyContainer = dynamic(
+const DynamicMyContainerMap = dynamic(
   () => import("/pages-sections/Components-Sections/MyContainerMap.jsx"),
   { ssr: false }
 );
-const DynamicMyContainerDual = dynamic(
+const DynamicMyContainerNavigation = dynamic(
   () => import("/pages-sections/Components-Sections/MyContainerNavigation.jsx"),
   { ssr: false }
 );
@@ -61,8 +47,8 @@ export default function Components(props) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const componentsArray = [
-    <DynamicMyContainer key="DynamicMyContainer" />,
-    <DynamicMyContainerDual key="DynamicMyContainerDual" />,
+    <DynamicMyContainerMap key="DynamicMyContainerMap" />,
+    <DynamicMyContainerNavigation key="DynamicMyContainerNavigation" />,
     <DynamicMyContainerProduct key="DynamicMyContainerProduct" />,
   ];
 
