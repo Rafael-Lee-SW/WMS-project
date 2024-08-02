@@ -66,7 +66,6 @@ const MyContainerProduct = () => {
   //입고 데이터를 받기 위한 State
   const [ModalTableData, setModalTableData] = useState([]);
   const [columns, setColumns] = useState([]);
-  const [isChoosingColumn, setIsChoosingColumn] = useState(false);
   const hotTableRef = useRef(null); // HandsonTable 객체 참조
   const [openModal, setOpenModal] = useState(false); // 입고 모달 열기/닫기 상태
   const [columnSelectionStep, setColumnSelectionStep] = useState(0); // 데이터 선택
@@ -79,9 +78,28 @@ const MyContainerProduct = () => {
   // HandsonTable 엑셀 형식에서 수정하기 위한 Modal State
   const [openEditModal, setOpenEditModal] = useState(false); // 수정용 모달 열기/닫기
 
-  // 처음 엑셀로 데이터를 받았을 때 이를 변환하는 메서드
+  //출고 데이터를 받기 위한 State
+  const [ModalTableExportData, setModalTableExportData] = useState([]);
+  const [exportColumns, setExportColumns] = useState([]);
+  const hotExportTableRef = useRef(null); // HandsonTable 객체 참조
+  const [openExportModal, setOpenExportModal] = useState(false); // 입고 모달 열기/닫기 상태
+  const [columnExportSelectionStep, setExportColumnSelectionStep] = useState(0); // 데이터 선택
+  const [selectedExportColumns, setSelectedExportColumns] = useState({
+    barcode: null,
+    name: null,
+    quantity: null,
+    expiration_date: null,
+  });
+
+  // 엑셀로 입고(import)데이터를 받았을 때 이를 변환하는 메서드
   const convertToArrayOfArraysModal = (data) => {
     setModalTableData(data);
+    return data;
+  };
+
+  // 엑셀로 출고(export)데이터를 받았을 때 이를 변환하는 메서드
+  const convertToArrayOfArraysExportModal = (data) => {
+    setModalTableExportData(data);
     return data;
   };
 
@@ -110,6 +128,36 @@ const MyContainerProduct = () => {
       fileData.splice(0, 1);
       convertToArrayOfArraysModal(fileData);
       setOpenModal(true); // Open the modal after importing the file
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
+  // 엑셀을 통해 출고(export)했을 때의 모든 절차를 밟는 메서드
+  const exportExcel = (input) => {
+    let file;
+    if (input.target && input.target.files) {
+      file = input.target.files[0];
+    } else {
+      file = input;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const bstr = event.target.result;
+      const workBook = XLSX.read(bstr, { type: "binary" });
+      const workSheetName = workBook.SheetNames[0];
+      const workSheet = workBook.Sheets[workSheetName];
+      const fileData = XLSX.utils.sheet_to_json(workSheet, { header: 1 });
+      const headers = fileData[0];
+      const formattedColumns = headers.map((head) => ({
+        name: head,
+        label: head,
+      }));
+      setExportColumns(formattedColumns);
+      fileData.splice(0, 1);
+      convertToArrayOfArraysExportModal(fileData);
+      setOpenExportModal(true); // Open the modal after exporting
+      console.log("됨?");
     };
     reader.readAsArrayBuffer(file);
   };
@@ -160,9 +208,44 @@ const MyContainerProduct = () => {
       setColumnSelectionStep(columnSelectionStep + 1);
     }
   };
+  // 출고 열의 색상을 바꾸는 메서드
+  const applyExportColumnColor = (columnIndex, color) => {
+    const hotInstance = hotExportTableRef.current.hotInstance;
 
-  // 입고 시에, 최종적으로 선택된 칼럼을 DB에 보내는 메서드
-  const finalizeSelection = () => {
+    hotInstance.batch(() => {
+      ModalTableExportData.forEach((row, rowIndex) => {
+        hotInstance.setCellMeta(
+          rowIndex,
+          columnIndex,
+          "className",
+          `background-color-${columnIndex}`
+        );
+      });
+    });
+
+    const styleElement = document.createElement("style");
+    styleElement.textContent = `.background-color-${columnIndex} { background-color: ${color} !important; }`;
+    document.head.append(styleElement);
+
+    hotInstance.render();
+  };
+
+  // 출고 열을 클릭하면 해당하는 열의 색상을 바꾸는 메서드
+  const handleExportColumnClick = (event, coords) => {
+    if (columnSelectionStep >= 0) {
+      const colorMap = ["blue", "green"];
+      const columnKeys = ["barcode", "quantity"];
+      applyExportColumnColor(coords.col, colorMap[columnExportSelectionStep]);
+      setSelectedExportColumns((prevSelected) => ({
+        ...prevSelected,
+        [columnKeys[columnExportSelectionStep]]: coords.col,
+      }));
+      setExportColumnSelectionStep(columnExportSelectionStep + 1);
+    }
+  };
+
+  // 입고 시에, 최종적으로 선택된 칼럼을 DB에 입고 API를 보내는 메서드
+  const finalizeSelectionImport = () => {
     // 선택된 열의 데이터를 postData에 담는 과정
     const postData = ModalTableData.map((row) => ({
       barcode: row[selectedColumns.barcode],
@@ -186,7 +269,29 @@ const MyContainerProduct = () => {
     });
   };
 
-  // API POST 통신 테스트
+  // 출고 시에, 최종적으로 선택된 칼럼을 DB에 출고 API를 보내는 메서드
+  const finalizeSelectionExport = () => {
+    // 선택된 열의 데이터를 postData에 담는 과정
+    const postData = ModalTableExportData.map((row) => ({
+      barcode: row[selectedExportColumns.barcode],
+      quantity: row[selectedExportColumns.quantity],
+      trackingNumber: "121351203",
+      date: "2024-08-02",
+    }));
+
+    // 생성된 데이터를 DB에 전송한다.
+    exportAPI(postData);
+
+    // 입고 시 발생하는 설정 변경 초기화
+    setOpenExportModal(false);
+    setExportColumnSelectionStep(0);
+    setSelectedExportColumns({
+      barcode: null,
+      quantity: null,
+    });
+  };
+
+  // 새로운 엑셀 상품들을 입고시키는 API 메서드
   const importAPI = async (postData) => {
     try {
       // postData에 businessId와 warehouseId를 추가한다.
@@ -209,6 +314,8 @@ const MyContainerProduct = () => {
 
       if (response.ok) {
         console.log("Data posted successfully");
+        const result = await response.json();
+        console.log(result);
       } else {
         console.error("Error posting data");
       }
@@ -217,7 +324,40 @@ const MyContainerProduct = () => {
     }
   };
 
-  //API 통신 테스트
+  // 새로운 엑셀 상품들을 출고고시키는 API 메서드
+  const exportAPI = async (postData) => {
+    try {
+      // postData에 businessId와 warehouseId를 추가한다.
+      const newPostData = {
+        warehouseId: 2,
+        businessId: 1,
+        data: postData,
+      };
+      console.log(newPostData)
+      const response = await fetch(
+        "https://i11a508.p.ssafy.io/api/products/export",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(newPostData),
+        }
+      );
+
+      if (response.ok) {
+        console.log("Data posted successfully");
+        const result = await response.json();
+        console.log(result);
+      } else {
+        console.error("Error posting data");
+      }
+    } catch (error) {
+      console.error("Error posting data:", error);
+    }
+  };
+
+  // 사장님이 갖고 있는 상품들을 가져오는 API
   const productGetAPI = async () => {
     try {
       const response = await fetch(
@@ -286,20 +426,15 @@ const MyContainerProduct = () => {
 
   return (
     <div style={{ marginBottom: "1%", margin: "2%" }}>
-      {isChoosingColumn && (
-        <div style={{ color: "red", fontWeight: "bold" }}>
-          Choose the column that you want
-        </div>
-      )}
       <div>
         <Grid item xs={6} md={4}>
           <div>
-            <label htmlFor="upload-photo">
+            <label htmlFor="upload-import">
               <input
                 required
                 style={{ display: "none" }}
-                id="upload-photo"
-                name="upload_photo"
+                id="upload-import"
+                name="upload-import"
                 type="file"
                 onChange={importExcel}
               />
@@ -311,6 +446,27 @@ const MyContainerProduct = () => {
                 variant="extended"
               >
                 입고 문서 업로드
+              </Fab>
+            </label>
+          </div>
+          <div>
+            <label htmlFor="upload-export">
+              <input
+                required
+                style={{ display: "none" }}
+                id="upload-export"
+                name="upload-export"
+                type="file"
+                onChange={exportExcel}
+              />
+              <Fab
+                color="primary"
+                size="small"
+                component="span"
+                aria-label="add"
+                variant="extended"
+              >
+                출고 문서 업로드
               </Fab>
             </label>
           </div>
@@ -337,6 +493,7 @@ const MyContainerProduct = () => {
         </Grid>
       </div>
       <div>
+        {/* 입고 Modal */}
         <Dialog
           open={openModal}
           onClose={() => setOpenModal(false)}
@@ -405,7 +562,7 @@ const MyContainerProduct = () => {
           </DialogContent>
           <DialogActions>
             {columnSelectionStep === 5 && (
-              <Button onClick={finalizeSelection} color="primary">
+              <Button onClick={finalizeSelectionImport} color="primary">
                 네
               </Button>
             )}
@@ -415,6 +572,63 @@ const MyContainerProduct = () => {
           </DialogActions>
         </Dialog>
 
+        {/* 출고 Modal */}
+        <Dialog
+          open={openExportModal}
+          onClose={() => setOpenExportModal(false)}
+          maxWidth="lg"
+          fullWidth
+        >
+          <DialogTitle>
+            <h1>출고 데이터</h1>
+            {columnExportSelectionStep === 0 &&
+              "바코드가 있는 열을 선택하세요."}
+            {columnExportSelectionStep === 1 && "수량이 있는 열을 선택하세요."}
+            {columnExportSelectionStep === 2 &&
+              "최종적으로 선택된 데이터를 확인하세요."}
+          </DialogTitle>
+          <DialogContent>
+            {columnExportSelectionStep < 1 && (
+              <div>
+                <p>데이터가 충분하지 않습니다.</p>
+              </div>
+            )}
+            <HotTable
+              height={600}
+              ref={hotExportTableRef}
+              data={ModalTableExportData}
+              colHeaders={exportColumns.map((col) => col.label)}
+              dropdownMenu={true}
+              hiddenColumns={{
+                indicators: true,
+              }}
+              contextMenu={true}
+              multiColumnSorting={true}
+              filters={true}
+              rowHeaders={true}
+              autoWrapCol={true}
+              autoWrapRow={true}
+              afterGetColHeader={alignHeaders}
+              beforeRenderer={addClassesToRows}
+              manualRowMove={true}
+              navigableHeaders={true}
+              licenseKey="non-commercial-and-evaluation"
+              afterOnCellMouseDown={handleExportColumnClick}
+            />
+          </DialogContent>
+          <DialogActions>
+            {columnExportSelectionStep === 2 && (
+              <Button onClick={finalizeSelectionExport} color="primary">
+                네
+              </Button>
+            )}
+            <Button onClick={() => setOpenExportModal(false)} color="primary">
+              닫기
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* 데이터 수정 Modal */}
         <Dialog
           open={openEditModal}
           onClose={() => setOpenEditModal(false)}
