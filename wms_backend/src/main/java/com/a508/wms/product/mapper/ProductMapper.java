@@ -24,24 +24,24 @@ public class ProductMapper {
             .expirationDate(product.getExpirationDate())
             .quantity(product.getQuantity())
             .createdDate(product.getCreatedDate())
-            .updateDate(product.getUpdatedDate())
+            .updatedDate(product.getUpdatedDate())
             .statusEnum(product.getStatusEnum())
             .productDetail(ProductDetailMapper.fromProductDetail(product.getProductDetail()))
             .build();
     }
 
-    public static ProductResponseDto.DetailedResponse toProductInnerDetailResponseDto(
+    public static ProductResponseDto.DetailedResponse toProductResponseDetailedResponseDto(
         Product product) {
         ProductDetail productDetail = product.getProductDetail();
 
         return ProductResponseDto.DetailedResponse.builder()
-            .info(toProductInnerInfoDto(product))
+            .info(toProductResponseInfoDto(product))
             .name(productDetail.getName())
             .barcode(productDetail.getBarcode())
             .build();
     }
 
-    public static ProductResponseDto.Info toProductInnerInfoDto(Product product) {
+    public static ProductResponseDto.Info toProductResponseInfoDto(Product product) {
         return ProductResponseDto.Info.builder()
             .id(product.getId())
             .expirationDate(product.getExpirationDate())
@@ -51,7 +51,7 @@ public class ProductMapper {
             .build();
     }
 
-    public static Product fromProductImportData(ProductData productImportRequestData,
+    public static Product fromProductData(ProductData productImportRequestData,
         ProductDetail productDetail,
         Floor floor) {
         return Product.builder()

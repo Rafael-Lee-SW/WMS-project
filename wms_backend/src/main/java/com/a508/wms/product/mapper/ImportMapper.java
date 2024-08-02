@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ImportMapper {
 
-    public static Import fromDto(ProductImportDto productImportDto) {
+    public static Import fromProductImportDto(ProductImportDto productImportDto) {
         return Import.builder()
             .warehouseId(productImportDto.getWarehouseId())
             .barcode(productImportDto.getProductDetail().getBarcode())

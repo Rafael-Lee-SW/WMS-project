@@ -39,30 +39,29 @@ public class ProductController {
     private final ExportModuleService exportModuleService;
 
     /**
-     * (서비스 전체/사업자 별/창고 별/상품 정보별)로의 상품들을 반환하는 기능
+     * (서비스 전체/창고 별/상품 정보별)로의 상품들을 반환하는 기능
      *
-     * @param businessId      사업자 id
      * @param warehouseId     창고 id
      * @param productDetailId 상품정보 id
+     * @param locationId      로케이션 id
      * @return
      */
     @GetMapping
     public BaseSuccessResponse<List<?>> getProducts(
-        @RequestParam(required = false) Long businessId,
         @RequestParam(required = false) Long warehouseId,
         @RequestParam(required = false) Long productDetailId,
         @RequestParam(required = false) Long locationId) {
         if (warehouseId != null) {
-            log.info("findProducts warehouseId: {}", warehouseId);
+            log.info("[Controller] find Products by warehouseId: {}", warehouseId);
             return new BaseSuccessResponse<>(productService.findByWarehouseId(warehouseId));
         } else if (productDetailId != null) {
-            log.info("findProducts productDetailId: {}", productDetailId);
+            log.info("[Controller] find Products by productDetailId: {}", productDetailId);
             return new BaseSuccessResponse<>(productService.findByProductDetailId(productDetailId));
         } else if (locationId != null) {
-            log.info("findProducts locationId: {}", locationId);
+            log.info("[Controller] find Products by LocationId: {}", locationId);
             return new BaseSuccessResponse<>(productService.findByLocationId(locationId));
         } else {
-            log.info("findProducts");
+            log.info("[Controller] find Products");
             return new BaseSuccessResponse<>(productService.findAll());
         }
     }
@@ -75,7 +74,7 @@ public class ProductController {
      */
     @GetMapping("/{id}")
     public BaseSuccessResponse<ProductMainResponseDto> getProduct(@PathVariable Long id) {
-        log.info("find product by id: {}", id);
+        log.info("[Controller] find Product by id: {}", id);
         return new BaseSuccessResponse<>(productService.findById(id));
     }
 
@@ -88,7 +87,7 @@ public class ProductController {
     @PutMapping("/{id}")
     public BaseSuccessResponse<Void> updateProduct(@PathVariable Long id,
         @RequestBody ProductRequestDto productRequestDto) {
-        log.info("update product by id: {}", id);
+        log.info("[Controller] update Product by id: {}", id);
         productService.update(id, productRequestDto);
 
         return new BaseSuccessResponse<>(null);
@@ -96,19 +95,23 @@ public class ProductController {
 
 
     /**
-     * 상품을 삭제하는 기능 -> 상품의 상태값을 삭제로 변경
+     * 상품의 상태값 변경을 통해 삭제하는 기능.
      *
      * @param id: 상품의 id
      */
     @PatchMapping("/{id}")
     public BaseSuccessResponse<Void> deleteProduct(@PathVariable Long id) {
-        log.info("delete product by id: {}", id);
+        log.info("[Controller] delete Product by id: {}", id);
         productService.delete(id);
 
         return new BaseSuccessResponse<>(null);
     }
 
     /**
+     * 입고 명령을 처리하는 기능
+     * TODO: 입력 파라미터와 메서드의 파라미터가 일치하지 않아 차후수정 필요
+     * TODO: 입력 없을 때 리턴타입 정하기
+     *
      * @param date
      * @param businessId
      * @return
@@ -119,9 +122,10 @@ public class ProductController {
         @RequestParam Long businessId
     ) {
         if (businessId != null) {
-            log.info("findImports businessId: {}", businessId);
+            log.info("[Controller] find Imports by businessId: {}", businessId);
             if (date != null) {
-                log.info("findImports date: {}", date);
+                log.info("[Controller] find Imports by businessId and date: {},{}", businessId,
+                    date);
 //                return new BaseSuccessResponse<>(importModuleService.findAllByBusinessIdAndDate(businessId, date));
                 return null;
             } else {
@@ -129,21 +133,22 @@ public class ProductController {
                     importModuleService.findAllByBusinessId(businessId));
             }
         } else {
-            return null; // TODO: 입력 없을 때 리턴타입 정하기
+            return null;
         }
     }
 
     /**
      * 물품들의 입고처리를 수행하는 기능
      *
-     * @param productImportRequestDto: 입고되는 상품의 정보(엑셀의 한 row)
+     * @param productImportRequestDto 입고되는 상품의 정보(엑셀의 한 row)
      * @return
      */
     @PostMapping("/import")
     public BaseSuccessResponse<Void> importProducts(
         @RequestBody ProductImportRequestDto productImportRequestDto
     ) {
-        log.info("import products: {}", productImportRequestDto);
+        log.info("[Controller] create Imports by productImportRequestDto: {}",
+            productImportRequestDto);
         productService.importProducts(productImportRequestDto);
         return new BaseSuccessResponse<>(null);
     }
@@ -151,7 +156,7 @@ public class ProductController {
     /**
      * 물품들의 출고 처리를 하는 로직
      *
-     * @param exportProduct : 출고되는 상품의 정보(엑셀의 한 row)
+     * @param exportProduct 출고되는 상품의 정보(엑셀의 한 row)
      * @return
      */
 
@@ -159,29 +164,39 @@ public class ProductController {
     public BaseSuccessResponse<List<ProductExportResponseDto>> exportProducts(
         @RequestBody ProductExportRequestDto exportProduct
     ) {
-        log.info("export products: {}", exportProduct);
+        log.info("[Controller] create Exports by ProductExportRequestDto: {}",
+            exportProduct);
         return new BaseSuccessResponse<>(productService.exportProducts(exportProduct));
     }
 
+    /**
+     * 사업체에 대한 출고 내역을 조회하는 기능
+     *
+     * @param businessId 사업체의 id
+     * @return
+     */
     @GetMapping("/export")
-    public BaseSuccessResponse<List<ExportResponseDto>> findAllByBusinessId(
-        @RequestParam Long businessId,
-        @RequestParam(required = false) Long key) {
+    public BaseSuccessResponse<List<ExportResponseDto>> findAllExportsByBusinessId(
+        @RequestParam Long businessId) {
         if (businessId != null) {
-            if (key != null) {
-                log.info("findAllByBusinessId: {}", key);
-            }
-            log.info("findAllByBusinessId: {}", businessId);
+            log.info("[Controller] find Exports by businessId: {}", businessId);
             return new BaseSuccessResponse<>(exportModuleService.findAllByBusinessId(businessId));
         }
         return null;
     }
 
+
+    /**
+     * 사업체에 대한 입,출고 내역을 하나로 묶어서 반환하는 기능
+     *
+     * @param businessId 사업체의 id
+     * @return
+     */
     @GetMapping("/notification")
     public BaseSuccessResponse<NotificationResponseDto> findAllNotifications(
         @RequestParam Long businessId) {
         if (businessId != null) {
-            log.info("findAllByBusinessId: {}", businessId);
+            log.info("[Controller] find Notifications by businessId: {}", businessId);
             return new BaseSuccessResponse<>(NotificationResponseDto.builder()
                 .importResponseDtos(importModuleService.findAllByBusinessId(businessId))
                 .exportResponseDtos(exportModuleService.findAllByBusinessId(businessId)).build());

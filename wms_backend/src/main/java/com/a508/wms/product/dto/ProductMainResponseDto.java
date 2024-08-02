@@ -21,6 +21,6 @@ public class ProductMainResponseDto {
     private LocalDateTime expirationDate;
     private ProductDetailResponseDto productDetail;
     private LocalDateTime createdDate;
-    private LocalDateTime updateDate;
+    private LocalDateTime updatedDate;
     private StatusEnum statusEnum;
 }

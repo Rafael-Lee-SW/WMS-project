@@ -6,13 +6,12 @@ import com.a508.wms.product.dto.ProductQuantityDto;
 import com.a508.wms.product.dto.ProductRequestDto;
 import com.a508.wms.product.repository.ProductRepository;
 import com.a508.wms.util.constant.StatusEnum;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
@@ -27,6 +26,7 @@ public class ProductModuleService {
      * @return
      */
     public List<Product> findAll() {
+        log.info("[Service] find Products");
         return productRepository.findAll();
     }
 
@@ -38,8 +38,9 @@ public class ProductModuleService {
      * @return
      */
     public Product findById(Long id) {
+        log.info("[Service] find Product by id: {}", id);
         return productRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid Product Id"));
+            .orElseThrow(() -> new IllegalArgumentException("Invalid Product Id"));
     }
 
     /**
@@ -85,7 +86,7 @@ public class ProductModuleService {
      * @return
      */
     public Optional<Product> findByIdAndExpirationDate(Long productId,
-                                                       LocalDateTime expirationDate) {
+        LocalDateTime expirationDate) {
         return productRepository.findByIdAndExpirationDate(productId, expirationDate);
     }
 
@@ -108,9 +109,9 @@ public class ProductModuleService {
      * @return
      */
     public ProductQuantityDto findProductQuantityByBarcodeAndBusinessId(Long barcode,
-                                                                        Long businessId) {
+        Long businessId) {
         return productRepository.findQuantityByBarcodeAndBusinessId(
-                barcode, businessId);
+            barcode, businessId);
     }
 
 //    /**
@@ -139,14 +140,14 @@ public class ProductModuleService {
      */
     public void update(Long id, ProductRequestDto request) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid Product Id"));
+            .orElseThrow(() -> new IllegalArgumentException("Invalid Product Id"));
 
         product.updateData(
-                (request.getQuantity() == -1) ? product.getQuantity()
-                        : request.getQuantity(),
-                (request.getExpirationDate() == null) ? product.getExpirationDate()
-                        : request.getExpirationDate(),
-                (request.getComment() == null) ? product.getComment() : request.getComment()
+            (request.getQuantity() == -1) ? product.getQuantity()
+                : request.getQuantity(),
+            (request.getExpirationDate() == null) ? product.getExpirationDate()
+                : request.getExpirationDate(),
+            (request.getComment() == null) ? product.getComment() : request.getComment()
         );
 
         productRepository.save(product);
