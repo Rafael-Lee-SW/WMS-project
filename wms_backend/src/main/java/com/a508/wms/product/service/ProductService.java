@@ -4,7 +4,6 @@ import com.a508.wms.business.domain.Business;
 import com.a508.wms.business.service.BusinessModuleService;
 import com.a508.wms.floor.domain.Floor;
 import com.a508.wms.floor.service.FloorModuleService;
-import com.a508.wms.notification.dto.NotificationResponseDto;
 import com.a508.wms.notification.repository.NotificationRepository;
 import com.a508.wms.notification.service.NotificationService;
 import com.a508.wms.product.domain.Product;
@@ -53,6 +52,7 @@ public class ProductService {
     private final NotificationRepository notificationRepository;
     private final ImportModuleService importModuleService;
     private final ProductRepository productRepository;
+    private final ExportModuleService exportModuleService;
 
     /**
      * 서비스의 모든 상품을 반환하는 기능
@@ -215,7 +215,7 @@ public class ProductService {
      * @param request
      * @param defaultFloor: 입고 처리 된 상품이 들어가는 default 층
      */
-    private void importProduct(ProductImportRequestData request, Long businessId,
+    private void importProduct(ProductData request, Long businessId,
         Floor defaultFloor) {
         log.info("Importing product");
 
@@ -232,7 +232,7 @@ public class ProductService {
      * @param request
      * @return
      */
-    private ProductDetail findOrCreateProductDetail(ProductImportRequestData request,
+    private ProductDetail findOrCreateProductDetail(ProductData request,
         Long businessId) {
         Optional<ProductDetail> optionalProductDetail = productDetailModuleService.findByBusinessIdAndBarcode(
             businessId, request.getBarcode());
@@ -500,13 +500,6 @@ public class ProductService {
             .warehouseId(productImportRequestDto.getWarehouseId())
             .productDetail(productDetailRequestDto)
             .product(productRequestDto)
-            .build();
-    }
-
-    private NotificationResponseDto findAllnotificationsByBusinessId(long businessId) {
-        return NotificationResponseDto.builder()
-            .exportResponseDtos(exportModuleService.findAllByBusinessId(businessId))
-            .importResponseDtos(importModuleService.findAllByBusinessId(businessId))
             .build();
     }
 }

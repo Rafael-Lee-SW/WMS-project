@@ -12,6 +12,6 @@ public class ProductImportRequestDto {
 
     private Long businessId;
     private Long warehouseId;
-    private List<ProductImportRequestData> data;
+    private List<ProductData> data;
 
 }
