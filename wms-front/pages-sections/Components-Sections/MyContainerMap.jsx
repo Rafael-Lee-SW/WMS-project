@@ -1,3 +1,4 @@
+//MyContainerMap.jsx
 import React, { useState, useEffect, useRef } from "react";
 // Library of konva and color Checker
 import {
@@ -839,11 +840,11 @@ const MyContainerMap = () => {
           var stageAttrs = stage.attrs;
           if (!stageAttrs.x) {
             // 드래그 하지 않음
-            pos.x = pos.x / stageAttrs.scaleX; 
+            pos.x = pos.x / stageAttrs.scaleX;
             pos.y = pos.y / stageAttrs.scaleY;
           } else {
             // 드래그해서 새로운 stageAttrs의 x,y가 생김
-            pos.x = (pos.x - stageAttrs.x) / stageAttrs.scaleX; 
+            pos.x = (pos.x - stageAttrs.x) / stageAttrs.scaleX;
             pos.y = (pos.y - stageAttrs.y) / stageAttrs.scaleY;
           }
 
@@ -864,7 +865,6 @@ const MyContainerMap = () => {
     // 벽을 추가한다.
     const handleAddWall = (start, end) => {
       if (currentSetting === "wall") {
-
         // 새로운 앙커를 생성하는 메서드
         const getOrCreateAnchor = (x, y) => {
           let existingAnchor = anchorsRef.current.find(
@@ -973,51 +973,23 @@ const MyContainerMap = () => {
   return (
     <div>
       {/** Main 영역 시작 */}
-      <main
-        style={{
-          display: "flex",
-          height: "85vh",
-          backgroundColor: "white",
-          boxShadow: "0 0 10px rgba(0,0,0,0.1)",
-          borderRadius: "10px",
-          overflow: "hidden",
-        }}
-      >
+      <main className={classes.mainBody}>
         {/* Left-SideBar / 좌측 사이드바  */}
-        <div
-          style={{
-            marginLeft: "0",
-            padding: "8px",
-            border: "2px solid #aaaaaa",
-            borderRadius: "14px",
-            width: "20%",
-            height: "80vh",
-            overflowY: "auto",
-          }}
-        >
+        <div className={classes.leftSideBar}>
           <Button
-            style={{
-              width: "20%",
-              fontSize: "14px",
-            }}
+            className={classes.buttonStyle}
             onClick={() => changeCurrentSetting("location")}
           >
             재고함
           </Button>
           <Button
-            style={{
-              width: "20%",
-              fontSize: "14px",
-            }}
+            className={classes.buttonStyle}
             onClick={() => changeCurrentSetting("wall")}
           >
             벽
           </Button>
           <Button
-            style={{
-              width: "20%",
-              fontSize: "14px",
-            }}
+            className={classes.buttonStyle}
             onClick={() => changeCurrentSetting("specialObject")}
           >
             특수 객체
@@ -1213,32 +1185,8 @@ const MyContainerMap = () => {
 
         {/* Canvas 영역  */}
 
-        <div
-          style={{
-            border: "2px solid #aaaaaa",
-            backgroundColor: "#aaaaaa",
-            borderRadius: 5,
-            width: "60%",
-            height: "80vh",
-            margin: "0 auto",
-            position: "relative",
-            overflow: "hidden", // Canvas 영역 이외에는 잠금
-            cursor: customCursor, // 커스텀 커서를 활용하여 상태별로 커서 변경
-          }}
-        >
-          <div
-            style={{
-              border: "2px solid #aaaaaa",
-              backgroundColor: "white",
-              borderRadius: 5,
-              width: "95%",
-              height: "88%",
-              margin: "2% auto",
-              position: "relative",
-              overflow: "hidden", // Canvas 영역 이외에는 잠금
-              cursor: customCursor, // 커스텀 커서를 활용하여 상태별로 커서 변경
-            }}
-          >
+        <div className={classes.outOfCanvas}>
+          <div className={classes.inOfCanvas} style={{ cursor: customCursor }}>
             <Stage
               width={CANVAS_SIZE} // 1000cm = 10m
               height={CANVAS_SIZE} // 1000cm = 10cm
@@ -1309,14 +1257,7 @@ const MyContainerMap = () => {
 
         {/* Right-Sidebar / 우측 사이드바 영역  */}
         <div
-          style={{
-            padding: "10px",
-            border: "2px solid #aaaaaa",
-            borderRadius: "15px",
-            width: "18%",
-            height: "80vh",
-            overflowY: "auto",
-          }}
+          className={classes.rightSideBar}
         >
           <h3>재고함 목록</h3>
           {locations.length !== 0 ? (
