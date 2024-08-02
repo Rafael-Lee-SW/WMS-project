@@ -126,13 +126,13 @@ export default function SignUp() {
 
   const handleEmailCheck = async () => {
     try {
-      const response = await axios.post('http://localhost:8080/api/v1/auth/email-check', { id: email });
+      const response = await axios.post('https://i11a508.p.ssafy.io/api/v1/auth/email-check', { id: email });
       if (response.status === 200 && response.data.code === 'SU') {
         setIsEmailValid(true);
         setEmailCheckMessage('사용 가능한 이메일입니다.');
 
         // 인증 번호 요청
-        const certificationResponse = await axios.post('http://localhost:8080/api/v1/auth/email-certification', { email });
+        const certificationResponse = await axios.post('https://i11a508.p.ssafy.io/api/v1/auth/email-certification', { email });
         if (certificationResponse.status === 200 && certificationResponse.data.code === 'SU') {
           setEmailCheckMessage('이메일 인증 번호가 전송되었습니다.');
         }
@@ -159,7 +159,7 @@ export default function SignUp() {
     e.preventDefault();
     if (isFormValid && isEmailValid) {
       try {
-        const response = await axios.post('http://localhost:8080/api/v1/auth/sign-up', {
+        const response = await axios.post('https://i11a508.p.ssafy.io/api/v1/auth/sign-up', {
           email,
           password,
           certificationNumber,
@@ -227,7 +227,7 @@ export default function SignUp() {
                 </Button>
               </div>
               <span style={{ color: isEmailValid ? 'blue' : 'red' }}>{emailCheckMessage}</span><br /><br />
-              <div style={{ display: 'flex', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center' }}> 
                 <TextField
                   label="인증번호"
                   type="text"
