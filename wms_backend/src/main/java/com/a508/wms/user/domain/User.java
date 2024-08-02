@@ -78,7 +78,7 @@ public class User extends BaseTimeEntity {
         this.statusEnum = statusEnum;
     }
 
-    public void updateBusinessIdId(Long businessId) {
+    public void updateBusinessId(Long businessId) {
         this.businessId = businessId;
     }
 }

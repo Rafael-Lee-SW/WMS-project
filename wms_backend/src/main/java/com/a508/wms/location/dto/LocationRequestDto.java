@@ -2,11 +2,10 @@ package com.a508.wms.location.dto;
 
 import com.a508.wms.floor.dto.FloorRequestDto;
 import com.a508.wms.util.constant.ProductStorageTypeEnum;
+import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
-
-import java.util.List;
 
 @Getter
 @Builder
@@ -16,7 +15,7 @@ public class LocationRequestDto {
     private Long warehouseId;
     private String name;
     @Builder.Default
-    private ProductStorageTypeEnum productStorageType = ProductStorageTypeEnum.상온;
+    private ProductStorageTypeEnum storageType = ProductStorageTypeEnum.상온;
     @Builder.Default
     private int rotation = 0;
     @Builder.Default
