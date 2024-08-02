@@ -46,9 +46,6 @@ import {
   alignHeaders,
 } from "/components/Test/hooksCallbacks.jsx";
 
-// Import the DataGrid component from MUI
-import { DataGrid } from "@mui/x-data-grid";
-
 import MUIDataTable from "mui-datatables";
 
 // Register cell types and plugins
@@ -64,9 +61,9 @@ registerPlugin(HiddenRows);
 
 // 재고를 엑셀 형식으로 보면서 관리하는 Component
 const MyContainerProduct = () => {
-  //API를 통해 창고의 데이터를 가져오기 위한
+  //API를 통해 창고의 데이터를 가져오기 위한 State
   const [tableData, setTableData] = useState([]);
-  //입고 데이터를 받기 위한
+  //입고 데이터를 받기 위한 State
   const [ModalTableData, setModalTableData] = useState([]);
   const [columns, setColumns] = useState([]);
   const [isChoosingColumn, setIsChoosingColumn] = useState(false);
@@ -78,11 +75,11 @@ const MyContainerProduct = () => {
     name: null,
     quantity: null,
     expiration_date: null,
-  }); // 입고를 위한 데이터가 있는 칼럼들
-  // HandsonTable 엑셀 형식에서 수정하기 위한 Modal 상태
+  });
+  // HandsonTable 엑셀 형식에서 수정하기 위한 Modal State
   const [openEditModal, setOpenEditModal] = useState(false); // 수정용 모달 열기/닫기
 
-  // 처음 엑셀로 데이터를 받았을 때 이를 변환하는 메서드 Convert data to array of arrays and set table data
+  // 처음 엑셀로 데이터를 받았을 때 이를 변환하는 메서드
   const convertToArrayOfArraysModal = (data) => {
     setModalTableData(data);
     return data;
@@ -172,11 +169,8 @@ const MyContainerProduct = () => {
       name: row[selectedColumns.name],
       quantity: row[selectedColumns.quantity],
       expirationDate: null,
-      // selectedColumns.expiry !== null ? row[selectedColumns.expiry] : null,
       productStorageTypeEnum: "상온",
     }));
-    console.log("일단 데이터를 만든다.");
-    console.log(postData);
 
     // 생성된 데이터를 DB에 전송한다.
     importAPI(postData);
@@ -215,10 +209,7 @@ const MyContainerProduct = () => {
 
       if (response.ok) {
         console.log("Data posted successfully");
-        const result = await response.json();
-        console.log(result);
       } else {
-        console.log(newPostData);
         console.error("Error posting data");
       }
     } catch (error) {
@@ -277,7 +268,6 @@ const MyContainerProduct = () => {
 
         setColumns(formattedColumns);
         setTableData(data);
-        console.log(products);
       } else {
         console.error("Error loading rectangles data");
       }
@@ -286,35 +276,13 @@ const MyContainerProduct = () => {
     }
   };
 
-  // 열을 선택했을 때 이를 기록한다.
-  const startChoosingColumns = () => {
-    setIsChoosingColumn(true);
-    columnCounter = 0; // Reset counter when starting a new action
-  };
-
   /**
    * UseEffect를 통해 새로고침 때마다 api로 사장님의 재고를 불러옴
    */
+
   useEffect(() => {
     productGetAPI();
   }, [openModal]);
-
-  // DataGrid의 열과 행을 지정한다.
-  const dataGridColumns = [
-    { field: "name", headerName: "이름", width: 130 },
-    { field: "barcode", headerName: "바코드(식별번호)", width: 180 },
-    { field: "quantity", headerName: "수량", width: 100 },
-    { field: "location", headerName: "적재함", width: 130 },
-    { field: "floorLevel", headerName: "단(층)수", width: 100 },
-  ];
-  const dataGridRows = tableData.map((row, index) => ({
-    id: index,
-    name: row[0],
-    barcode: row[1],
-    quantity: row[2],
-    location: row[3],
-    floorLevel: row[4],
-  }));
 
   return (
     <div style={{ marginBottom: "1%", margin: "2%" }}>
@@ -476,7 +444,6 @@ const MyContainerProduct = () => {
               manualRowMove={true}
               navigableHeaders={true}
               licenseKey="non-commercial-and-evaluation"
-              afterOnCellMouseDown={handleColumnClick}
             ></HotTable>
           </DialogContent>
           <DialogActions>
@@ -490,21 +457,6 @@ const MyContainerProduct = () => {
       <Grid item xs={12}>
         <MUIDataTable title={"상품 목록"} data={tableData} columns={columns} />
       </Grid>
-      {/* <Grid item xs={12}>
-        <div style={{ height: 400, width: "100%" }}>
-          <DataGrid
-            rows={dataGridRows}
-            columns={dataGridColumns}
-            initialState={{
-              pagination: {
-                paginationModel: { page: 0, pageSize: 5 },
-              },
-            }}
-            pageSizeOptions={[5, 10]}
-            checkboxSelection
-          />
-        </div>
-      </Grid> */}
     </div>
   );
 };
