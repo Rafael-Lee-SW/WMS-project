@@ -19,7 +19,7 @@ public class WallMapper {
             .build();
     }
 
-    public static WallDto fromWall(Wall wall) {
+    public static WallDto toWallDto(Wall wall) {
         return WallDto.builder()
             .id(wall.getId())
             .startX(wall.getStartX())

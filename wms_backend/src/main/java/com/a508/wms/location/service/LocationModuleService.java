@@ -48,8 +48,8 @@ public class LocationModuleService {
      * @param warehouseId: warehouse id
      * @return 입력 warehouseId를 가지고 있는 Location List
      */
-    public List<Location> findAllByWarehouseId(Long warehouseId) {
-        return locationRepository.findAllByWarehouseId(warehouseId);
+    public List<Location> findAllByWarehouseIdWithFloors(Long warehouseId) {
+        return locationRepository.findAllByWarehouseIdWithFloors(warehouseId);
     }
 
     public Location save(Location location) {

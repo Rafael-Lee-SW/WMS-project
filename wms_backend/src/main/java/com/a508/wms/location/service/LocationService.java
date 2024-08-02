@@ -48,7 +48,8 @@ public class LocationService {
      */
     public List<LocationResponseDto> findAllByWarehouseId(Long warehouseId) {
         log.info("[Service] findAllLocation by warehouseId: {}", warehouseId);
-        List<Location> locations = locationModuleService.findAllByWarehouseId(warehouseId);
+        List<Location> locations = locationModuleService.findAllByWarehouseIdWithFloors(
+            warehouseId);
 
         return locations.stream()
             .map(LocationMapper::toLocationResponseDto)

@@ -32,57 +32,45 @@ public class WarehouseController {
      * 사업자 id의 창고를 저장 POST 방식
      */
     @PostMapping
-    public BaseSuccessResponse<WarehouseDto> createWarehouse(
+    public BaseSuccessResponse<WarehouseDto> save(
         @RequestBody WarehouseDto warehouseDto) {
-        log.info("add warehouse {}", warehouseDto);
-        return new BaseSuccessResponse<>(warehouseService.create(warehouseDto));
+        log.info("[Controller] save Warehouse");
+        return new BaseSuccessResponse<>(warehouseService.save(warehouseDto));
     }
 
     /**
      * 비지니스 id로 창고 생성 창고 id로 창고 생성 GET 방식
      */
     @GetMapping
-    public BaseSuccessResponse<List<WarehouseByBusinessDto>> findAllByIdWarehouses(
+    public BaseSuccessResponse<List<WarehouseByBusinessDto>> findAllByBusinessId(
         @RequestParam Long businessId) {
-        log.info("Getting warehouses for business ID: {}", businessId);
+        log.info("[Controller] find Warehouses by businessId: {}", businessId);
         return new BaseSuccessResponse<>(warehouseService.findByBusinessId(businessId));
     }
 
     @GetMapping("/{id}")
     public BaseSuccessResponse<WarehouseDetailResponseDto> findById(@PathVariable Long id) {
-        log.info("Getting warehouse {}", id);
+        log.info("[Controller] find Warehouse by id: {}", id);
         return new BaseSuccessResponse<>(warehouseService.findById(id));
     }
-
-//    /**
-//     * 창고 id로 창고 정보 수정 PUT 방식
-//     */
-//    @PutMapping("/{warehouseId}")
-//    public BaseSuccessResponse<WarehouseDto> update(
-//        @PathVariable Long warehouseId,
-//        @RequestBody WarehouseDto warehouseDto) {
-//        log.info("Updating warehouse with ID: {}", warehouseId);
-//        return new BaseSuccessResponse<>(warehouseService.updateWarehouse(
-//            warehouseId, warehouseDto));
-//    }
 
     /*
    창고 id의 상태를 비활성화 (status를 0으로 변경) PATCH 방식
    */
-    @PatchMapping("/{warehouseId}")
-    public BaseSuccessResponse<Void> delete(@PathVariable Long warehouseId) {
-        log.info("Deactivating warehouse with ID: {}", warehouseId);
-        warehouseService.delete(warehouseId);
+    @PatchMapping("/{id}")
+    public BaseSuccessResponse<Void> delete(@PathVariable Long id) {
+        log.info("[Controller] delete Warehouse by id: {}", id);
+        warehouseService.delete(id);
         return new BaseSuccessResponse<>(null);
     }
 
-    @PutMapping("/{warehouseId}/locatons-and-walls")
+    @PutMapping("/{id}/locatons-and-walls")
     public BaseSuccessResponse<WarehouseDetailResponseDto> updateLocationsAndWalls(
-        @PathVariable Long warehouseId, @RequestBody LocationsAndWallsRequestDto request
+        @PathVariable Long id, @RequestBody LocationsAndWallsRequestDto request
     ) {
-        log.info("Updating locations and walls with ID: {}", warehouseId);
+        log.info("[Controller] update Warehouse Locations And Walls by id: {}", id);
         return new BaseSuccessResponse<>(
-            warehouseService.updateLocationsAndWalls(warehouseId, request));
+            warehouseService.updateLocationsAndWalls(id, request));
     }
 
 }
