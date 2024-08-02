@@ -24,7 +24,6 @@ public class ExportMapper {
 
     public static ExportResponseDto toExportResponseDto(Export export) {
         return ExportResponseDto.builder()
-            .businessId(export.getBusiness().getId())
             .trackingNumber(export.getTrackingNumber())
             .barcode(export.getBarcode())
             .locationName(export.getLocationName())
