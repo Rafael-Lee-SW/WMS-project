@@ -4,18 +4,11 @@ import com.a508.wms.productdetail.dto.ProductDetailRequestDto;
 import com.a508.wms.productdetail.dto.ProductDetailResponseDto;
 import com.a508.wms.productdetail.service.ProductDetailService;
 import com.a508.wms.util.BaseSuccessResponse;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -29,18 +22,18 @@ public class ProductDetailController {
      * (서비스 전체 / 사업체 별) 상품 정보 조회
      *
      * @param businessId: 사업체 id
-     * @return
+     * @return 상품 정보
      */
     @GetMapping
-    public BaseSuccessResponse<List<ProductDetailResponseDto>> getProductDetail(
-        @RequestParam(required = false) Long businessId) {
+    public BaseSuccessResponse<List<ProductDetailResponseDto>> findAllByBusinessId(
+            @RequestParam(required = false) Long businessId) {
         if (businessId != null) {
-            log.info("get ProductDetail businessId:{}", businessId);
+            log.info("[Controller] find ProductDetails by businessId: {}", businessId);
             return new BaseSuccessResponse<>(
-                productDetailService.getProductDetailByBusinessId(businessId));
+                    productDetailService.findAllByBusinessId(businessId));
         } else {
-            log.info("get productDetail");
-            return new BaseSuccessResponse<>(productDetailService.getProductDetail());
+            log.info("find ProductDetails");
+            return new BaseSuccessResponse<>(productDetailService.findAll());
         }
     }
 
@@ -50,9 +43,9 @@ public class ProductDetailController {
      * @param request : 상품 정보
      */
     @PostMapping
-    public BaseSuccessResponse<Void> createProductDetail(
-        @RequestBody ProductDetailRequestDto request) {
-        log.info("create ProductDetail request:{}", request);
+    public BaseSuccessResponse<Void> save(
+            @RequestBody ProductDetailRequestDto request) {
+        log.info("[Controller] save ProductDetail: {}", request);
         productDetailService.save(request);
         return new BaseSuccessResponse<>(null);
     }
@@ -65,10 +58,10 @@ public class ProductDetailController {
      */
 
     @PutMapping("/{id}")
-    public BaseSuccessResponse<Void> updateProductDetail(@PathVariable Long id,
-        @RequestBody ProductDetailRequestDto request) {
-        log.info("update ProductDetail by id:{} request:{}", id, request);
-        productDetailService.modify(id, request);
+    public BaseSuccessResponse<Void> update(@PathVariable Long id,
+                                            @RequestBody ProductDetailRequestDto request) {
+        log.info("[Controller] update ProductDetail by id:{} ", id);
+        productDetailService.update(id, request);
         return new BaseSuccessResponse<>(null);
     }
 
@@ -79,9 +72,8 @@ public class ProductDetailController {
      */
     @PatchMapping("/{id}")
     public BaseSuccessResponse<Void> deleteProductDetail(@PathVariable Long id) {
-        log.info("delete ProductDetail by id:{}", id);
+        log.info("[Controller] delete ProductDetail by id:{}", id);
         productDetailService.delete(id);
-
         return new BaseSuccessResponse<>(null);
     }
 

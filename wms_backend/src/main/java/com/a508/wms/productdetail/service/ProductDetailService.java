@@ -27,9 +27,10 @@ public class ProductDetailService {
     /**
      * 서비스 전체 상품 정보를 반환함.
      *
-     * @return
+     * @return 모든 ProductDetails
      */
-    public List<ProductDetailResponseDto> getProductDetail() {
+    public List<ProductDetailResponseDto> findAll() {
+        log.info("[Service] find ProductDetails");
         List<ProductDetail> result = productDetailModuleService.findAll();
 
         return result.stream()
@@ -47,10 +48,11 @@ public class ProductDetailService {
      * 사업체에 해당하는 상품정보 반환
      *
      * @param businessId: 사업체 ID
-     * @return
+     * @return 사업체 ID에 맞는 ProductDetails
      */
 
-    public List<ProductDetailResponseDto> getProductDetailByBusinessId(Long businessId) {
+    public List<ProductDetailResponseDto> findAllByBusinessId(Long businessId) {
+        log.info("[Service] find ProductDetails by businessId: {}", businessId);
         List<ProductDetail> result = productDetailModuleService.findByBusinessId(businessId);
 
         return result.stream()
@@ -69,7 +71,7 @@ public class ProductDetailService {
      * @param request 상품 정보
      */
     public ProductDetailResponseDto save(ProductDetailRequestDto request) {
-        log.info("product detail request: {}", request);
+        log.info("[Service] save ProductDetail");
         Business business = businessModuleService.findById(request.getBusinessId());
 
         ProductDetail productDetail = new ProductDetail(
@@ -80,7 +82,6 @@ public class ProductDetailService {
 
         ProductDetail savedProductDetail = productDetailModuleService.save(productDetail);
 
-        log.info("product Detail ID{}", savedProductDetail.getId());
 
         return ProductDetailMapper.fromProductDetail(savedProductDetail);
     }
@@ -91,11 +92,9 @@ public class ProductDetailService {
      * @param id      상품 정보 ID
      * @param request 상품 정보 수정 Data
      */
-    public void modify(Long id, ProductDetailRequestDto request) {
-        log.info("product detail request: {}", request);
+    public void update(Long id, ProductDetailRequestDto request) {
+        log.info("[Service] update ProductDetail by id: {}", id);
         ProductDetail productDetail = productDetailModuleService.findById(id);
-
-        log.info("product detail target: {}", productDetail);
 
         productDetail.updateData(
                 request.getProductStorageType(),
@@ -118,7 +117,7 @@ public class ProductDetailService {
      */
     @Transactional
     public void delete(Long id) {
-        log.info("product detail request: {}", id);
+        log.info("[Service] delete ProductDetail by id: {}", id);
         ProductDetail productDetail = productDetailModuleService.findById(id);
 
         productDetailModuleService.delete(productDetail);

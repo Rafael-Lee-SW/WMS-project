@@ -32,7 +32,7 @@ public class ProductDetail extends BaseTimeEntity {
     private Business business;
     @Column(nullable = false)
     private Long barcode;
-    @Column(nullable = false, length = 255)
+    @Column(nullable = false)
     private String name;
     @Column
     private Long size;
@@ -58,18 +58,15 @@ public class ProductDetail extends BaseTimeEntity {
         this.sellingPrice = sellingPrice;
     }
 
-    //연관관계 편의 메서드
     public void setBusiness(Business business) {
         this.business = business;
         business.getProductDetails().add(this);
     }
 
-    //삭제 상태 변경
     public void updateStatus(StatusEnum statusEnum) {
         this.statusEnum = statusEnum;
     }
 
-    //데이터의 일괄 수정
     public void updateData(ProductStorageTypeEnum productStorageType
             , Long barcode, String name, Long size, Long unit
             , int originalPrice, int sellingPrice) {

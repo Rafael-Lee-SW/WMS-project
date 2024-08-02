@@ -1,6 +1,5 @@
 package com.a508.wms.business.domain;
 
-import com.a508.wms.notification.domain.Notification;
 import com.a508.wms.product.domain.Export;
 import com.a508.wms.productdetail.domain.ProductDetail;
 import com.a508.wms.subscription.domain.Subscription;
@@ -50,9 +49,6 @@ public class Business extends BaseTimeEntity {
     private List<ProductDetail> productDetails = new ArrayList<>();
 
     @OneToMany(mappedBy = "business")
-    private List<Notification> notifications = new ArrayList<>();
-
-    @OneToMany(mappedBy = "business")
     private List<Subscription> subscriptions = new ArrayList<>();
 
     @OneToMany(mappedBy = "business")
@@ -83,10 +79,6 @@ public class Business extends BaseTimeEntity {
 
     public void setProductDetails(List<ProductDetail> productDetails) {
         this.productDetails = productDetails;
-    }
-
-    public void setNotifications(List<Notification> notifications) {
-        this.notifications = notifications;
     }
 
     public void setSubscriptions(List<Subscription> subscriptions) {
