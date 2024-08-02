@@ -4,6 +4,7 @@ import com.a508.wms.floor.mapper.FloorMapper;
 import com.a508.wms.location.domain.Location;
 import com.a508.wms.location.dto.LocationRequestDto;
 import com.a508.wms.location.dto.LocationResponseDto;
+import com.a508.wms.location.dto.LocationUpdateDto;
 import com.a508.wms.warehouse.domain.Warehouse;
 import org.springframework.stereotype.Component;
 
@@ -48,6 +49,22 @@ public class LocationMapper {
             .floorResponses(location.getFloors().stream().map(
                 FloorMapper::toFloorResponseDto
             ).toList())
+            .build();
+    }
+
+    public static Location fromLocationUpdateDto(LocationUpdateDto request,
+        Warehouse warehouse) {
+        return Location.builder()
+            .id(request.getId())
+            .name(request.getName())
+            .rotation(request.getRotation())
+            .xPosition(request.getXPosition())
+            .yPosition(request.getYPosition())
+            .xSize(request.getXSize())
+            .ySize(request.getYSize())
+            .zSize(request.getZSize())
+            .warehouse(warehouse)
+            .productStorageType(request.getStorageType())
             .build();
     }
 
