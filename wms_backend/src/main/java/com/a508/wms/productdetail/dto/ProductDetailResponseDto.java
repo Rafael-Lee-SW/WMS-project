@@ -24,9 +24,7 @@ public class ProductDetailResponseDto {
     private Long unit;
     private int originalPrice;
     private int sellingPrice;
-    // 해당 컬럼이 필요할지에 대한 의논 필요
-    //private List<ProductResponseDto> productResponseDtos; 
     private LocalDateTime createdDate;
-    private LocalDateTime updateDate;
+    private LocalDateTime updatedDate;
     private StatusEnum statusEnum;
 }
