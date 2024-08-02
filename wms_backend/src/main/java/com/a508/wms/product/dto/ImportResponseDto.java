@@ -1,19 +1,16 @@
 package com.a508.wms.product.dto;
 
 import com.a508.wms.util.constant.ProductStorageTypeEnum;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
-import lombok.experimental.SuperBuilder;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
+@Builder
 @Getter
-@SuperBuilder
-@ToString
+@Setter
 @RequiredArgsConstructor
-public class ProductData {
-
+@AllArgsConstructor
+public class ImportResponseDto {
     private String name;
     private Long barcode;
     private int quantity;
@@ -21,5 +18,6 @@ public class ProductData {
     private ProductStorageTypeEnum productStorageType;
     private String warehouseName;
     private Long warehouseId;
+    private LocalDateTime date;
 
 }

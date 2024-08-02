@@ -2,7 +2,7 @@ package com.a508.wms.product.service;
 
 import com.a508.wms.business.domain.Business;
 import com.a508.wms.product.domain.Import;
-import com.a508.wms.product.dto.ProductData;
+import com.a508.wms.product.dto.ImportResponseDto;
 import com.a508.wms.product.dto.ProductImportDto;
 import com.a508.wms.product.dto.ProductImportResponseDto;
 import com.a508.wms.product.mapper.ImportMapper;
@@ -35,16 +35,16 @@ public class ImportModuleService {
 //        1. repository에서 method 호출하기
         List<Import> importList = importRepository.findAllByBusinessIdAndDate(businessId, date);
 //        2. {date, List<PIRD>}형태로 묶기
-        List<ProductData> dataList = new ArrayList<>();
+        List<ImportResponseDto> dataList = new ArrayList<>();
         for (Import imp : importList) {
-            ProductData productData = ProductData.builder()
+            ImportResponseDto importResponseDto = ImportResponseDto.builder()
                     .name(imp.getName())
                     .quantity(imp.getQuantity())
                     .barcode(imp.getBarcode())
                     .expirationDate(imp.getExpirationDate())
-                    .productStorageTypeEnum(imp.getProductStorageTypeEnum())
+                    .productStorageType(imp.getProductStorageType())
                     .build();
-            dataList.add(productData);
+            dataList.add(importResponseDto);
         }
         return ProductImportResponseDto.builder()
                 .date(date.atStartOfDay())
@@ -52,25 +52,42 @@ public class ImportModuleService {
                 .build();
     }
 
-    public ProductImportResponseDto findAllByBusinessId(Long businessId) {
+    /* public ProductImportResponseDto findAllByBusinessId(Long businessId) {
+ //        1. repository에서 method 호출하기
+         List<Import> importList = importRepository.findAllByBusinessId(businessId);
+ //        2. {date, List<PIRD>}형태로 묶기
+         List<ImportResponseDto> dataList = new ArrayList<>();
+         for (Import imp : importList) {
+             ImportResponseDto importResponseDto = ImportResponseDto.builder()
+                     .name(imp.getName())
+                     .quantity(imp.getQuantity())
+                     .barcode(imp.getBarcode())
+                     .expirationDate(imp.getExpirationDate())
+                     .productStorageType(imp.getProductStorageType())
+                     .date(imp.getDate().toLocalDate().atStartOfDay())
+                     .build();
+             dataList.add(importResponseDto);
+         }
+         return ProductImportResponseDto.builder()
+                 .data(dataList)
+                 .build();
+     }*/
+    public List<ImportResponseDto> findAllByBusinessId(Long businessId) {
 //        1. repository에서 method 호출하기
         List<Import> importList = importRepository.findAllByBusinessId(businessId);
 //        2. {date, List<PIRD>}형태로 묶기
-        List<ProductData> dataList = new ArrayList<>();
+        List<ImportResponseDto> dataList = new ArrayList<>();
         for (Import imp : importList) {
-            ProductData productData = ProductData.builder()
+            ImportResponseDto importResponseDto = ImportResponseDto.builder()
                     .name(imp.getName())
                     .quantity(imp.getQuantity())
                     .barcode(imp.getBarcode())
                     .expirationDate(imp.getExpirationDate())
-                    .productStorageTypeEnum(imp.getProductStorageTypeEnum())
-                    .date(imp.getDate().toLocalDate())
+                    .productStorageType(imp.getProductStorageType())
+                    .date(imp.getDate())
                     .build();
-            dataList.add(productData);
+            dataList.add(importResponseDto);
         }
-        return ProductImportResponseDto.builder()
-                .data(dataList)
-                .build();
+        return dataList;
     }
-
 }

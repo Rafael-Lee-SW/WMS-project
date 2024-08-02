@@ -1,12 +1,13 @@
 package com.a508.wms.product.dto;
 
-import java.util.List;
-import java.util.Map;
-
+import com.a508.wms.util.constant.ProductStorageTypeEnum;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -14,6 +15,17 @@ import lombok.ToString;
 @ToString
 public class ExportResponseDto {
 
-    private Long trackingNumber;
-    private Map<String, List<ProductPickingDto>> path;
+    private Long businessId;
+    private String trackingNumber;
+    private Long barcode;
+    private String locationName;
+    private String productName;
+    private int quantity;
+    private int floorLevel;
+    private LocalDate date;
+    private LocalDateTime expirationDate;
+    private ProductStorageTypeEnum productStorageType;
+
+    private String warehouseName;
+    private Long warehouseId;
 }

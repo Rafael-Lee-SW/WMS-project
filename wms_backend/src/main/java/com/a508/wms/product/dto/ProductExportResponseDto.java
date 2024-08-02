@@ -14,7 +14,7 @@ import java.util.Map;
 @ToString
 public class ProductExportResponseDto {
 
-    //    private List<ProductExportData> path;
+    //    private List<ExportResponseDto> path;
 //    private String warehouseName;
-    private Map<String, List<ProductExportData>> path;
+    private Map<String, List<ExportResponseDto>> path;
 }

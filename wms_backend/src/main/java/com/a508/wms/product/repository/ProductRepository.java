@@ -51,7 +51,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query(value =
             "SELECT w.name AS warehouseName, l.name AS locationName, f.floor_level AS floorLevel, p.id AS productId, " +
-                    "pd.name AS productName, p.quantity AS quantity " +
+                    "pd.name AS productName, p.quantity AS quantity, l.product_storage_type, l.warehouse_id " +
                     "FROM product p " +
                     "JOIN product_detail pd ON p.product_detail_id = pd.id " +
                     "JOIN floor f ON p.floor_id = f.id " +

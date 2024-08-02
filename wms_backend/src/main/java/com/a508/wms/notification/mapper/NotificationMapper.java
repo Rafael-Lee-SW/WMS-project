@@ -8,32 +8,23 @@ import org.springframework.stereotype.Component;
 public class NotificationMapper {
     /**
      * notification -> notificationDto
+     *
      * @param notification
      * @return notificationDto
      */
     public static NotificationResponseDto fromNotification(Notification notification) {
-        return NotificationResponseDto.builder()
-                .id(notification.getId())
-                .businessId(notification.getBusiness().getId())
-                .readOrNot(notification.isReadOrNot())
-                .createdDate(notification.getCreatedDate())
-                .updatedDate(notification.getUpdatedDate())
-                .statusEnum(notification.getStatusEnum())
-                .build();
+        return null;
     }
 
     /**
      * from notificationDto, business -> notification
-     *  business 제외. 직접 설정하기
+     * business 제외. 직접 설정하기
+     *
      * @param notificationResponseDto
      * @return Notification
      */
     public static Notification fromDto(NotificationResponseDto notificationResponseDto) {
-        return Notification.builder()
-                .id(notificationResponseDto.getId())
-                .readOrNot(notificationResponseDto.isReadOrNot())
-                .statusEnum(notificationResponseDto.getStatusEnum())
-                .build();
+        return null;
     }
 
 }

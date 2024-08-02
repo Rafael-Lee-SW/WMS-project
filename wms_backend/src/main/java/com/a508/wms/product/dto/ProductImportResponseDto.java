@@ -13,7 +13,7 @@ import java.util.List;
 @ToString
 @Data
 public class ProductImportResponseDto {
-    private List<ProductData> data;
+    private List<ImportResponseDto> data;
     private LocalDateTime date;
     private long id;
 }
