@@ -21,8 +21,10 @@ import com.a508.wms.business.repository.BusinessRepository;
 import com.a508.wms.user.domain.User;
 import com.a508.wms.user.mapper.UserMapper;
 import com.a508.wms.user.repository.UserRepository;
+import java.util.logging.Logger;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -81,9 +83,8 @@ public class AuthServiceImplement implements AuthService {
         log.info("emailCertification method called with dto: {}", dto);
         try {
             // 사용자 ID와 이메일을 가져옴
-            String userId = dto.getId();
             String email = dto.getEmail();
-            log.info("Processing email certification for userId: {} and email: {}", userId, email);
+            log.info("Processing email certification for userId: {} and email: {}", email);
 
             // 사용자 ID 중복 여부 확인
             boolean isExistEmail = userRepository.existsByEmail(email);
@@ -104,13 +105,13 @@ public class AuthServiceImplement implements AuthService {
             }
 
             // 인증 정보를 저장
-            Certification certification = new Certification(userId, email, certificationNumber);
+            Certification certification = new Certification( email, certificationNumber);
             certificationRepository.save(certification);
-            log.info("Saved certification info for userId: {} and email: {}", userId, email);
+            log.info("Saved certification info for userId: {} and email: {}",  email);
 
         } catch (NumberFormatException e) {
             // 사용자 ID가 유효하지 않은 경우 예외 처리
-            log.error("Invalid userId format: {}", dto.getId(), e);
+            log.error("Invalid userId format: {}", dto.getEmail(), e);
             return ResponseDto.validationFail();
         } catch (Exception e) {
             // 기타 예외 처리
@@ -118,7 +119,7 @@ public class AuthServiceImplement implements AuthService {
             return ResponseDto.databaseError();
         }
         // 이메일 인증 성공 응답 반환
-        log.info("Email certification succeeded for userId: {} and email: {}", dto.getId(), dto.getEmail());
+        log.info("Email certification succeeded for userId: {} and email: {}",  dto.getEmail());
         return EmailCertificationResponseDto.success();
     }
 
@@ -128,78 +129,93 @@ public class AuthServiceImplement implements AuthService {
      * @param dto
      * @return
      */
+
     @Override
     public ResponseEntity<? super CheckCertificationResponseDto> checkCertification(
         CheckCertificationRequestDto dto) {
+            try {
+                // 사용자 ID, 이메일, 인증 번호를 DTO로부터 가져옴
+                String email = dto.getEmail();  // 이메일을 DTO로부터 가져옴
+                String inputCertificationNumber = dto.getCertificationNumber();  // 인증 번호를 DTO로부터 가져옴
 
-        try {
-            // 사용자 ID, 이메일, 인증 번호를 DTO로부터 가져옴
-            String userId = dto.getId();  // 사용자 ID를 DTO로부터 가져옴
-            String email = dto.getEmail();  // 이메일을 DTO로부터 가져옴
-            String inputCertificationNumber = dto.getCertificationNumber();  // 인증 번호를 DTO로부터 가져옴
+                log.info("Received certification check request for email: {}", email);
 
-            // 사용자 ID를 기반으로 인증 정보를 데이터베이스에서 조회
-            Certification certificationEntity = certificationRepository.findByUserId(userId);
+                // 사용자 ID를 기반으로 인증 정보를 데이터베이스에서 조회
+                Certification certificationEntity = certificationRepository.findByEmail(email);
 
-            // 인증 정보가 없을 경우 인증 실패 응답 반환
-            if (certificationEntity == null) {
-                return CheckCertificationResponseDto.certificationFail();  // 인증 정보가 없으면 실패 응답 반환
+                // 인증 정보가 없을 경우 인증 실패 응답 반환
+                if (certificationEntity == null) {
+                    log.info("No certification information found for email: {}", email);
+                    return CheckCertificationResponseDto.certificationFail();  // 인증 정보가 없으면 실패 응답 반환
+                }
+
+                log.info("Certification information retrieved for email: {}", email);
+
+                // 저장된 이메일과 인증 번호가 입력된 이메일과 인증 번호와 일치하는지 검증
+                boolean isSuccessed = certificationEntity.getEmail().equals(email) &&
+                    certificationEntity.getCertificationNumber().equals(inputCertificationNumber);
+
+                // 인증 실패 시 응답 반환
+                if (!isSuccessed) {
+                    log.info("Certification failed for email: {}", email);
+                    return CheckCertificationResponseDto.certificationFail();  // 인증 정보가 일치하지 않으면 실패 응답 반환
+                }
+
+            } catch (Exception e) {
+                // 예외 발생 시 예외 스택 트레이스 출력 및 데이터베이스 오류 응답 반환
+                log.info("An error occurred while checking certification for email: {}", dto.getEmail(), e);
+                return ResponseDto.databaseError();  // 예외 발생 시 데이터베이스 오류 응답 반환
             }
 
-            // 저장된 이메일과 인증 번호가 입력된 이메일과 인증 번호와 일치하는지 검증
-            boolean isSuccessed = certificationEntity.getEmail().equals(email) &&
-                certificationEntity.getCertificationNumber().equals(inputCertificationNumber);
-
-            // 인증 실패 시 응답 반환
-            if (!isSuccessed) {
-                return CheckCertificationResponseDto.certificationFail();  // 인증 정보가 일치하지 않으면 실패 응답 반환
-            }
-
-        } catch (Exception e) {
-            // 예외 발생 시 예외 스택 트레이스 출력 및 데이터베이스 오류 응답 반환
-            e.printStackTrace();
-            return ResponseDto.databaseError();  // 예외 발생 시 데이터베이스 오류 응답 반환
+            // 인증 성공 시 성공 응답 반환
+            log.info("Certification successful for email: {}", dto.getEmail());
+            return CheckCertificationResponseDto.success();  // 인증이 성공하면 성공 응답 반환
         }
-
-        // 인증 성공 시 성공 응답 반환
-        return CheckCertificationResponseDto.success();  // 인증이 성공하면 성공 응답 반환
-    }
 
     @Override
     public ResponseEntity<? super SignUpResponseDto> signUp(SignUpRequestDto dto) {
-        try{
+        log.info("Received sign-up request for email: {}", dto.getEmail());
+        try {
             String userEmail = dto.getEmail();
             boolean isExistEmail = userRepository.existsByEmail(userEmail);
-            if (isExistEmail) return SignUpResponseDto.duplicateId(); //나중에 수정필요
+            if (isExistEmail) {
+                log.info("Email already exists: {}", userEmail);
+                return SignUpResponseDto.duplicateId();
+            }
 
             String email = dto.getEmail();
-            String certificationNumber = dto.getCertificationNumber();
             Certification certificationEntity = certificationRepository.findByEmail(userEmail);
-            boolean isMatched = certificationEntity.getEmail().equals(email) &&
-                certificationEntity.getCertificationNumber().equals(certificationNumber);
-            if(!isMatched)return SignUpResponseDto.certificateFail();
 
-            //암호화
+            if (certificationEntity == null) {
+                log.info("No certification information found for email: {}", userEmail);
+                return SignUpResponseDto.certificateFail();
+            }
+
+
+            // 암호화
             String password = dto.getPassword();
             String encodedPassword = passwordEncoder.encode(password);
             dto.setPassword(encodedPassword);
-
+            log.info("Password encoded for email: {}", userEmail);
 
             // DTO를 User 엔티티로 변환
             User user = UserMapper.fromSignUpRequestDto(dto); // UserMapper를 통해 DTO를 User로 변환
 
             // User 엔티티 저장
             userRepository.save(user);
+            log.info("User saved for email: {}", userEmail);
 
             // 인증 정보 삭제
             certificationRepository.delete(certificationEntity);
-        }catch(Exception e){
-            e.printStackTrace();
+            log.info("Certification information deleted for email: {}", userEmail);
+
+        } catch (Exception e) {
+            log.error("An error occurred during sign-up for email: {}", dto.getEmail(), e);
             return ResponseDto.databaseError();
         }
+        log.info("Sign-up successful for email: {}", dto.getEmail());
         return SignUpResponseDto.success();
     }
-
 
     /**
      * 1.email 뽑아오기

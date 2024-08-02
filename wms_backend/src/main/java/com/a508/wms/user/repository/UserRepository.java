@@ -3,6 +3,7 @@ package com.a508.wms.user.repository;
 import com.a508.wms.user.domain.User;
 import com.a508.wms.util.constant.RoleTypeEnum;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -25,4 +26,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findByBusinessId(@Param("businessId") Long businessId);
 
     User findUserByEmail(String email);
+
+    Optional<User> findByEmail(String email);
 }

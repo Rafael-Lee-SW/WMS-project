@@ -15,8 +15,6 @@ import lombok.NoArgsConstructor;
 public class Certification {
 
     @Id
-    private String userId;
     private String email;
     private String certificationNumber;
-
 }
