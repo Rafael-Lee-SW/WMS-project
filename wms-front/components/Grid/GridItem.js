@@ -18,19 +18,15 @@ const styles = {
 
 const useStyles = makeStyles(styles);
 
-export default function GridItem(props) {
+export default function GridItem({ children, className = "", ...rest }) {
   const classes = useStyles();
-  const { children, className, ...rest } = props;
+  
   return (
-    <Grid item {...rest} className={classes.grid + " " + className}>
+    <Grid item {...rest} className={`${classes.grid} ${className}`}>
       {children}
     </Grid>
   );
 }
-
-GridItem.defaultProps = {
-  className: "",
-};
 
 GridItem.propTypes = {
   children: PropTypes.node,
