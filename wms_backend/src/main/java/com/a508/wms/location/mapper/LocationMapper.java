@@ -2,61 +2,53 @@ package com.a508.wms.location.mapper;
 
 import com.a508.wms.floor.mapper.FloorMapper;
 import com.a508.wms.location.domain.Location;
-import com.a508.wms.location.dto.LocationDto;
+import com.a508.wms.location.dto.LocationRequestDto;
+import com.a508.wms.location.dto.LocationResponseDto;
 import com.a508.wms.warehouse.domain.Warehouse;
-import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 @Component
 public class LocationMapper {
 
     /**
-     * from Location -> to LocationDto
-     *
-     * @param location
-     * @return LocationDto
+     * @param request
+     * @param warehouse
+     * @return
      */
-    public static LocationDto fromLocation(Location location) {
-        return LocationDto.builder()
+    public static Location fromLocationRequestDto(LocationRequestDto request,
+        Warehouse warehouse) {
+        return Location.builder()
+            .name(request.getName())
+            .rotation(request.getRotation())
+            .xPosition(request.getXPosition())
+            .yPosition(request.getYPosition())
+            .xSize(request.getXSize())
+            .ySize(request.getYSize())
+            .zSize(request.getZSize())
+            .warehouse(warehouse)
+            .productStorageTypeEnum(request.getStorageType())
+            .build();
+    }
+
+    /**
+     * @param location
+     * @return
+     */
+    public static LocationResponseDto toLocationResponseDto(Location location) {
+        return LocationResponseDto.builder()
             .id(location.getId())
-            .warehouseId(location.getWarehouse().getId())
-            .productStorageTypeEnum(location.getProductStorageTypeEnum())
-            .name(location.getName())
-            .rotation(location.getRotation())
             .xPosition(location.getXPosition())
             .yPosition(location.getYPosition())
             .xSize(location.getXSize())
             .ySize(location.getYSize())
             .zSize(location.getZSize())
-            .floorDtos(location.getFloors().stream()
-                .map(FloorMapper::fromFloor)
-                .collect(Collectors.toList()))
-            .createdDate(location.getCreatedDate())
-            .updatedDate(location.getUpdatedDate())
-            .statusEnum(location.getStatusEnum())
+            .name(location.getName())
+            .storageType(location.getProductStorageTypeEnum())
+            .rotation(location.getRotation())
+            .floorResponses(location.getFloors().stream().map(
+                FloorMapper::toFloorResponseDto
+            ).toList())
             .build();
-    }
-
-    /**
-     * LocationDto -> Location 변환
-     *
-     * @param locationDto
-     * @return Location
-     */
-    public static Location fromDto(LocationDto locationDto, Warehouse warehouse) {
-        Location location = Location.builder()
-            .id(locationDto.getId())
-            .name(locationDto.getName())
-            .rotation(locationDto.getRotation())
-            .xPosition(locationDto.getXPosition())
-            .yPosition(locationDto.getYPosition())
-            .xSize(locationDto.getXSize())
-            .ySize(locationDto.getYSize())
-            .zSize(locationDto.getZSize())
-            .warehouse(warehouse)
-            .productStorageTypeEnum(locationDto.getProductStorageTypeEnum())
-            .build();
-        return location;
     }
 
 }

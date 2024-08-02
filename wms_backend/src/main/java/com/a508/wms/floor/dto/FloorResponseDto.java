@@ -12,7 +12,7 @@ import lombok.ToString;
 @Setter
 @Builder
 @ToString
-public class FloorDto {
+public class FloorResponseDto {
 
     private Long id;
     private Long locationId;

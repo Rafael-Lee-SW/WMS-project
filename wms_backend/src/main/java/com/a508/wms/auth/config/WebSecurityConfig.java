@@ -43,7 +43,6 @@ public class WebSecurityConfig {
     protected SecurityFilterChain configure(HttpSecurity httpSecurity,
         ValidationExceptionHandler validationExceptionHandler, UserService userService) throws Exception {
 
-
         httpSecurity
             .cors(cors -> cors
                 .configurationSource(corsConfigurationSource())

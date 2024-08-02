@@ -1,11 +1,12 @@
 package com.a508.wms.product.dto;
 
 
-import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -14,8 +15,8 @@ import lombok.ToString;
 public class ProductExportRequestDto {
 
     private Long businessId;
-    private Long trackingNumber; //송장번호
-    private Long barcode;
-    private int quantity;
-    private LocalDateTime date;
+    private Long warehouseId;
+    private List<ProductExportData> data;
+
+
 }

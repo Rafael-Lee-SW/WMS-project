@@ -9,6 +9,7 @@ import com.a508.wms.notification.service.NotificationService;
 import com.a508.wms.product.domain.Product;
 import com.a508.wms.product.dto.*;
 import com.a508.wms.product.mapper.ProductMapper;
+import com.a508.wms.product.repository.ProductRepository;
 import com.a508.wms.productdetail.domain.ProductDetail;
 import com.a508.wms.productdetail.dto.ProductDetailRequestDto;
 import com.a508.wms.productdetail.mapper.ProductDetailMapper;
@@ -20,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -36,6 +38,7 @@ public class ProductService {
     private final NotificationService notificationService;
     private final NotificationRepository notificationRepository;
     private final ImportModuleService importModuleService;
+    private final ProductRepository productRepository;
 
     /**
      * 서비스의 모든 상품을 반환하는 기능
@@ -282,33 +285,29 @@ public class ProductService {
     /**
      * 물품들의 출고 판단 및 처리를 하는 기능
      *
-     * @param requests
+     * @param request
      * @return
      */
     @Transactional
-    public List<ProductExportResponseDto> exportProducts(List<ProductExportRequestDto> requests) {
+    public List<ProductExportResponseDto> exportProducts(ProductExportRequestDto request) {
         //재고 확인
-        productQuantityCheck(requests);
+        productQuantityCheck(request);
 
         //경로 처리 및 수량 반영
-
+        List<ProductExportData> datas = request.getData();
         //송장번호별로 데이터를 묶음.
-        Map<Long, List<ProductExportRequestDto>> exports = requests.stream()
-                .collect(Collectors.groupingBy((ProductExportRequestDto::getTrackingNumber)));
+        Map<String, List<ProductExportData>> exports = datas.stream()
+                .collect(Collectors.groupingBy(ProductExportData::getTrackingNumber));
 
-        log.info("exports Size: {}", exports.size());
         //송장별로 처리
         List<ProductExportResponseDto> result = exports.entrySet().stream()
                 .map(entry -> {
-                    Map<String, List<ProductPickingDto>> path = calculatePath(entry.getValue());
+                    Map<String, List<ProductExportData>> path = calculatePath(entry.getValue(), request.getBusinessId());
                     return ProductExportResponseDto.builder()
-                            .trackingNumber(entry.getKey())
                             .path(path)
                             .build();
                 }).toList();
 
-        log.info("result: {}", result);
-//        notificationService.save(NotificationRequestDto.builder().date().build());
         return result;
     }
 
@@ -318,19 +317,16 @@ public class ProductService {
      * @param invoice : 한 송장의 출고 상품 내역 정보
      * @return
      */
-    private Map<String, List<ProductPickingDto>> calculatePath(
-            List<ProductExportRequestDto> invoice) {
-        Map<String, List<ProductPickingDto>> path = new HashMap<>();
-        for (ProductExportRequestDto exportProduct : invoice) {
+    private Map<String, List<ProductExportData>> calculatePath(
+            List<ProductExportData> invoice, long businessId) {
+        Map<String, List<ProductExportData>> path = new HashMap<>();
+        for (ProductExportData productExportData : invoice) {
             //목적 상품에 해당하는 모든 로케이션 data
-            List<ProductPickingLocationDto> candidates = productModuleService.findPickingLocation(
-                    exportProduct.getBarcode(), exportProduct.getBusinessId());
+            List<ProductPickingLocationDto> candidates = productRepository.findPickingLocation(
+                    productExportData.getBarcode(), businessId);
 
             //남은양
-            int remains = exportProduct.getQuantity();
-
-            log.info("candidates Size: {}", candidates.size());
-            log.info("remains:{}", remains);
+            int remains = productExportData.getQuantity();
 
             for (ProductPickingLocationDto candidate : candidates) {
                 if (candidate.getQuantity() == 0) {
@@ -342,16 +338,18 @@ public class ProductService {
                     updateProductQuantity(candidate.getProductId(),
                             candidate.getQuantity() - remains);
                     //path에 추가
-                    List<ProductPickingDto> pickings = path.getOrDefault(
+                    List<ProductExportData> pickings = path.getOrDefault(
                             candidate.getWarehouseName(), new ArrayList<>());
 
-                    pickings.add(ProductPickingDto.builder()
+                    pickings.add(ProductExportData.builder()
+                            .trackingNumber(productExportData.getTrackingNumber())
+                            .barcode(productExportData.getBarcode())
                             .locationName(candidate.getLocationName())
                             .floorLevel(candidate.getFloorLevel())
                             .productName(candidate.getProductName())
                             .quantity(candidate.getQuantity() - remains)
+                            .date(LocalDate.now())
                             .build());
-
                     path.put(candidate.getWarehouseName(), pickings);
                     break;
                 }
@@ -362,16 +360,15 @@ public class ProductService {
                 updateProductQuantity(candidate.getProductId(), 0);
 
                 //path에 추가
-                List<ProductPickingDto> pickings = path.getOrDefault(
+                List<ProductExportData> pickings = path.getOrDefault(
                         candidate.getWarehouseName(), new ArrayList<>());
 
-                pickings.add(ProductPickingDto.builder()
+                pickings.add(ProductExportData.builder()
                         .locationName(candidate.getLocationName())
                         .floorLevel(candidate.getFloorLevel())
                         .productName(candidate.getProductName())
                         .quantity(0)
                         .build());
-
                 path.put(candidate.getWarehouseName(), pickings);
             }
         }
@@ -398,14 +395,15 @@ public class ProductService {
     /**
      * 현제 출고 명령이 재고상 가능한 상태인지 판단해주는 기능,예외처리 안되면 출고 가능
      *
-     * @param requests
+     * @param request
      */
-    private void productQuantityCheck(List<ProductExportRequestDto> requests) {
-        Long businessId = requests.get(0).getBusinessId();
+    private void productQuantityCheck(ProductExportRequestDto request) {
+        Long businessId = request.getBusinessId();
+        List<ProductExportData> datas = request.getData();
         //각 물품별 총합
-        Map<Long, Integer> productTotalCount = requests.stream().collect(
-                Collectors.groupingBy((ProductExportRequestDto::getBarcode),
-                        Collectors.summingInt(ProductExportRequestDto::getQuantity)));
+        Map<Long, Integer> productTotalCount = datas.stream().collect(
+                Collectors.groupingBy((ProductExportData::getBarcode),
+                        Collectors.summingInt(ProductExportData::getQuantity)));
 
         //물품별 총 재고에 따른 타입 분류 (나중에 Integer를 Enum으로 바꿔도 좋을듯)
         Map<Long, Integer> productQuantityResult = productTotalCount.entrySet().stream()
@@ -453,7 +451,7 @@ public class ProductService {
         //매장+전시의 총합과 보관의 총합이 들어있는 게산 결과 반환.
         ProductQuantityDto productQuantityDto = productModuleService.findProductQuantityByBarcodeAndBusinessId(
                 barcode, businessId);
-
+        log.info("productQuantityDto: {}", productQuantityDto);
         if (productQuantityDto.getPossibleQuantity() >= quantity) {
             return 0; //추가 명령 처리 x
         }

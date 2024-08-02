@@ -13,8 +13,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmail(String email);
 
     //businessId에 맞는 role이 직원인 모든 직원을 반환
-    @Query("SELECT u FROM User u WHERE u.business.id = :businessId AND u.roleTypeEnum = :roleTypeEnum")
-    List<User> findEmployeesByBusinessId(@Param("businessId") long businessId);
+    @Query("SELECT u FROM User u WHERE u.businessId = :businessId AND u.roleTypeEnum = :roleTypeEnum")
+    List<User> findEmployeesByBusinessId(@Param("businessId") Long businessId,
+        @Param("roleTypeEnum") RoleTypeEnum roleTypeEnum);
 
     // role이 직원인 모든 사용자를 반환
     @Query("SELECT u FROM User u WHERE u.roleTypeEnum = :roleTypeEnum")
@@ -22,7 +23,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     // businessId에 맞는 모든 사용자를 반환
     @Query("SELECT u FROM User u WHERE u.businessId = :businessId")
-    List<User> findByBusinessId(@Param("businessId") long businessId);
+    List<User> findByBusinessId(@Param("businessId") Long businessId);
 
     User findUserByEmail(String email);
 

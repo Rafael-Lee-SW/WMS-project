@@ -26,9 +26,6 @@ public class WallMapper {
             .startY(wall.getStartY())
             .endX(wall.getEndX())
             .endY(wall.getEndY())
-            .createdDate(wall.getCreatedDate())
-            .updatedDate(wall.getUpdatedDate())
-            .statusEnum(wall.getStatusEnum())
             .build();
     }
 

@@ -15,4 +15,6 @@ public class ProductPickingDto {
     private int floorLevel;
     private String productName;
     private int quantity;
+    private Long barcode;
+    private String trackingNumber;
 }

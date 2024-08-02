@@ -1,11 +1,10 @@
 package com.a508.wms.location.service;
 
 import com.a508.wms.floor.domain.Floor;
-import com.a508.wms.floor.repository.FloorRepository;
+import com.a508.wms.floor.service.FloorModuleService;
 import com.a508.wms.location.domain.Location;
 import com.a508.wms.location.repository.LocationRepository;
 import com.a508.wms.util.constant.StatusEnum;
-import com.a508.wms.warehouse.repository.WarehouseRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,8 +16,7 @@ import org.springframework.stereotype.Service;
 public class LocationModuleService {
 
     private final LocationRepository locationRepository;
-    private final WarehouseRepository warehouseRepository;
-    private final FloorRepository floorRepository;
+    private final FloorModuleService floorModuleService;
 
     /**
      * 모든 로케이션 반환
@@ -41,7 +39,7 @@ public class LocationModuleService {
     }
 
     public Location findByName(String name) {
-        return locationRepository.findLocationByName(name);
+        return locationRepository.findByName(name);
     }
 
     /**
@@ -50,8 +48,8 @@ public class LocationModuleService {
      * @param warehouseId: warehouse id
      * @return 입력 warehouseId를 가지고 있는 Location List
      */
-    public List<Location> findByWarehouseId(Long warehouseId) {
-        return locationRepository.findLocationsByWarehouseId(warehouseId);
+    public List<Location> findAllByWarehouseId(Long warehouseId) {
+        return locationRepository.findAllByWarehouseId(warehouseId);
     }
 
     public Location save(Location location) {
@@ -75,13 +73,13 @@ public class LocationModuleService {
             .orElseThrow(() -> new IllegalArgumentException("Invalid location ID"));
         location.updateStatusEnum(StatusEnum.DELETED);
 
-        List<Floor> floors = floorRepository.findAllByLocationId(
+        List<Floor> floors = floorModuleService.findAllByLocationId(
             location.getId()); //location의 층 전부 조회
         for (Floor floor : floors) {
             floor.updateStatusEnum(StatusEnum.DELETED);
         }   //층들 전부 DELETED상태로 변경
 
-        floorRepository.saveAll(floors); //변경사항 저장 
+        floorModuleService.saveAll(floors); //변경사항 저장
         locationRepository.save(location);
         //변경사항 저장
     }
