@@ -19,27 +19,34 @@ import styles from "/styles/jss/nextjs-material-kit/components/headerStyle.js";
 
 const useStyles = makeStyles(styles);
 
-export default function Header(props) {
+export default function Header({
+  color = "white", // Default value for color
+  rightLinks,
+  leftLinks,
+  brand,
+  fixed,
+  absolute,
+  changeColorOnScroll,
+}) {
   const classes = useStyles();
   const [mobileOpen, setMobileOpen] = React.useState(false);
   
   React.useEffect(() => {
-    if (props.changeColorOnScroll) {
+    if (changeColorOnScroll) {
       window.addEventListener("scroll", headerColorChange);
     }
     return function cleanup() {
-      if (props.changeColorOnScroll) {
+      if (changeColorOnScroll) {
         window.removeEventListener("scroll", headerColorChange);
       }
     };
-  });
+  }, [changeColorOnScroll]);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
   const headerColorChange = () => {
-    const { color, changeColorOnScroll } = props;
     const windowsScrollTop = window.pageYOffset;
     const header = document.body.getElementsByTagName("header")[0];
 
@@ -52,7 +59,6 @@ export default function Header(props) {
     }
   };
 
-  const { color, rightLinks, leftLinks, brand, fixed, absolute } = props;
   const appBarClasses = classNames({
     [classes.appBar]: true,
     [classes[color]]: color,
@@ -111,10 +117,6 @@ export default function Header(props) {
     </AppBar>
   );
 }
-
-Header.defaultProps = {
-  color: "white"
-};
 
 Header.propTypes = {
   color: PropTypes.oneOf([

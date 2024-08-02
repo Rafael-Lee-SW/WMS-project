@@ -20,15 +20,25 @@ import styles from "/styles/jss/nextjs-material-kit/components/userHeaderStyle.j
 const useStyles = makeStyles(styles);
 
 export default function Header(props) {
+  const {
+    color = "white",
+    rightLinks,
+    leftLinks,
+    brand,
+    fixed,
+    absolute,
+    changeColorOnScroll,
+  } = props; // Use default parameter for color
+
   const classes = useStyles();
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  
+
   React.useEffect(() => {
-    if (props.changeColorOnScroll) {
+    if (changeColorOnScroll) {
       window.addEventListener("scroll", headerColorChange);
     }
     return function cleanup() {
-      if (props.changeColorOnScroll) {
+      if (changeColorOnScroll) {
         window.removeEventListener("scroll", headerColorChange);
       }
     };
@@ -39,7 +49,6 @@ export default function Header(props) {
   };
 
   const headerColorChange = () => {
-    const { color, changeColorOnScroll } = props;
     const windowsScrollTop = window.pageYOffset;
     const header = document.body.getElementsByTagName("header")[0];
 
@@ -52,12 +61,11 @@ export default function Header(props) {
     }
   };
 
-  const { color, rightLinks, leftLinks, brand, fixed, absolute } = props;
   const appBarClasses = classNames({
     [classes.appBar]: true,
     [classes[color]]: color,
     [classes.absolute]: absolute,
-    [classes.fixed]: fixed
+    [classes.fixed]: fixed,
   });
 
   const brandComponent = (
@@ -98,7 +106,7 @@ export default function Header(props) {
           anchor={"right"}
           open={mobileOpen}
           classes={{
-            paper: classes.drawerPaper
+            paper: classes.drawerPaper,
           }}
           onClose={handleDrawerToggle}
         >
@@ -112,10 +120,6 @@ export default function Header(props) {
   );
 }
 
-Header.defaultProps = {
-  color: "white"
-};
-
 Header.propTypes = {
   color: PropTypes.oneOf([
     "primary",
@@ -126,7 +130,7 @@ Header.propTypes = {
     "transparent",
     "white",
     "rose",
-    "dark"
+    "dark",
   ]),
   rightLinks: PropTypes.node,
   leftLinks: PropTypes.node,
@@ -143,7 +147,7 @@ Header.propTypes = {
       "transparent",
       "white",
       "rose",
-      "dark"
-    ]).isRequired
-  })
+      "dark",
+    ]).isRequired,
+  }),
 };
