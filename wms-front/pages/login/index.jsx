@@ -71,7 +71,7 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:8080/api/v1/auth/sign-in', {
+      const response = await axios.post('https://i11a508.p.ssafy.io/api/v1/auth/sign-in', {
         email,
         password,
       });

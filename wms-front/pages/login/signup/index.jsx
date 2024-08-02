@@ -126,7 +126,7 @@ export default function SignUp() {
 
   const handleEmailCheck = async () => {
     try {
-      const response = await axios.post('http://localhost:8080/api/v1/auth/email-check', { id: email });
+      const response = await axios.post('https://i11a508.p.ssafy.io/api/v1/auth/email-check', { id: email });
       if (response.status === 200 && response.data.code === 'SU') {
         setIsEmailValid(true);
         setEmailCheckMessage('사용 가능한 이메일입니다.');
