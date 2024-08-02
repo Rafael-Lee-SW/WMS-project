@@ -1,6 +1,5 @@
-// fundamental importing about React
 import React, { useState, useEffect, useRef } from "react";
-// Library of konva and color
+// Library of konva and color Checker
 import {
   Stage,
   Layer,
@@ -20,27 +19,26 @@ import SaveIcon from "@mui/icons-material/Save";
 import UnarchiveIcon from "@mui/icons-material/Unarchive";
 // core components
 import Button from "/components/CustomButtons/Button.js";
-
+// CSS스타일
 import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/MyContainerStyle.jsx";
 
 // 상수 설정(그리드, 컨버스 등)
-const GRID_SIZE = 100; // 100cm = 1m
-const GRID_SIZE_SUB_50 = 50; // 50cm
-const GRID_SIZE_SUB_10 = 10; // 10cm
-const CANVAS_SIZE = 1000; // 100 = 1000cm = 10m
+const GRID_SIZE = 100;
+const GRID_SIZE_SUB_50 = 50;
+const GRID_SIZE_SUB_10 = 10;
+const CANVAS_SIZE = 1000;
 
 const useStyles = makeStyles(styles);
 
 /**
  * 창고 관리 Component
  */
-
 const MyContainerMap = () => {
-  const classes = useStyles(); // 스타일 불러오기
-  const stageRef = useRef(null); // reference for the stage
-  const layerRef = useRef(null); // reference for the layer
+  const classes = useStyles();
+  const stageRef = useRef(null);
+  const layerRef = useRef(null);
 
-  // Initial Setting the container array 초기 세팅
+  // 창고 배열을 저장하기 위한 초기 세팅
   const initialContainer = Array.from({ length: CANVAS_SIZE }, () =>
     Array.from({ length: CANVAS_SIZE }, () => ({
       type: "empty",
@@ -64,10 +62,10 @@ const MyContainerMap = () => {
       height: 0,
       fill: "blue",
       draggable: false,
-      order: 0, // 순서대로 번호 인덱싱
+      order: 0,
       name: "임시",
-      type: "임시", // 저장 타입
-      rotation: 0, // 초기 회전값
+      type: "임시",
+      rotation: 0,
     },
   ]);
 
@@ -78,8 +76,8 @@ const MyContainerMap = () => {
     useState(null);
 
   // 현재 벽 생성 / 일반 커서 를 선택하기 위한 State
-  const [currentSetting, setCurrentSetting] = useState("location"); // 초기 모드는 location
-  const [showColorPicker, setShowColorPicker] = useState(false); // ColorPicker를 보기 위한 State
+  const [currentSetting, setCurrentSetting] = useState("location");
+  const [showColorPicker, setShowColorPicker] = useState(false);
 
   // 새롭게 생성되는 적재함(location)의 속성 설정을 위한 State
   const [newLocationColor, setNewLocationColor] = useState("blue");
@@ -87,7 +85,7 @@ const MyContainerMap = () => {
   const [newLocationHeight, setNewLocationHeight] = useState(50);
   const [newLocationZIndex, setNewLocationZIndex] = useState(1);
   const [newLocationName, setNewLocationName] = useState("");
-  const [newLocationType, setNewLocationType] = useState(""); // 적재함의 속성(냉동, 상온 등) 추후 반영 예정
+  const [newLocationType, setNewLocationType] = useState(""); // 속성 추가 예정
 
   // New State for wall settings(벽 관련 설정)
   const [newWallColor, setNewWallColor] = useState("brown");
@@ -111,7 +109,7 @@ const MyContainerMap = () => {
     },
   ]);
 
-  // 메뉴를 위한
+  // 우클릭 시 나오는 메뉴를 위한 Ref
   const menuRef = useRef(null);
   const currentShapeRef = useRef(null);
 
@@ -119,7 +117,6 @@ const MyContainerMap = () => {
   const handleAddLocation = (type) => {
     const newLocation = {
       id: null,
-      // id: (parseInt(locations[locations.length - 1].id) + 1).toString(),s
       x: 50,
       y: 50,
       z: newLocationZIndex,
@@ -127,24 +124,24 @@ const MyContainerMap = () => {
       height: newLocationHeight,
       fill: newLocationColor,
       draggable: true,
-      order: locations.length + 1, // 순서대로 번호 인덱싱
+      order: locations.length + 1,
       name:
         newLocationName ||
         `적재함 ${parseInt(locations[locations.length - 1].id) + 1}`,
-      type: type, // set the type of the Location
-      rotation: 0, // 초기 회전값
+      type: type,
+      rotation: 0,
     };
     setLocations([...locations, newLocation]);
     updateContainer(newLocation, "location", `location${newLocation.id}`);
-    // Reset settings to default after adding // 적재함 추가 후 값 초기화
+    //적재함 추가 후 값 초기화
     setNewLocationColor("blue");
     setNewLocationWidth(50);
     setNewLocationHeight(50);
-    // setNewLocationZIndex(1); //초기화 하지 아니함
+    setNewLocationZIndex(1);
     setNewLocationName("");
   };
   //
-  // Container Update Function (창고 배열 저장)
+  // 창고 배열 저장
   const updateContainer = (location, type, code) => {
     const newContainer = container.map((row, x) =>
       row.map((cell, y) => {
@@ -162,9 +159,9 @@ const MyContainerMap = () => {
     setContainer(newContainer);
   };
 
-  // 컨버스에 있는 사각형들의 정보를 저장한다.
+  // 컨버스 안에 있는 모든 정보를 Local에 저장한다.
   const handleSave = async () => {
-    // 사각형들을 전부 기록한다.
+    // 적재함들을 전부 기록한다.
     const locationData = locations.map((location) => ({
       id: location.id,
       x: location.x,
@@ -177,10 +174,8 @@ const MyContainerMap = () => {
       name: location.name,
       rotation: location.rotation,
     }));
-    // console.log("Canvas data", locationData);
-    // console.log("container", container);
 
-    //앙커들을 전부 기록한다.
+    // 벽 정보를 전부 기록한다.
     const wallData = anchorsRef.current.map(({ start, end }) => ({
       startID: start.id(),
       startX: start.x(),
@@ -189,8 +184,6 @@ const MyContainerMap = () => {
       endX: end.x(),
       endY: end.y(),
     }));
-    // console.log("Anchor data ", anchorData);
-
     try {
       const response = await fetch("/api/save-map", {
         method: "POST",
@@ -201,17 +194,17 @@ const MyContainerMap = () => {
       });
 
       if (response.ok) {
-        console.log("Map data saved successfully");
+        console.log("창고 정보 저장 성공");
       } else {
-        console.error("Error saving map data");
+        console.error("창고 정보 저장에 Error가 발생했습니다.");
       }
     } catch (error) {
-      console.error("Error saving map data:", error);
+      console.error("에러가 발생했습니다.", error);
     }
   };
 
-  // API를 통해 DB에 저장한다.
-  const APISaveToDB = async () => {
+  // 수정된정보를 API를 통해 보냄
+  const editContainerAPI = async () => {
     const locationData = locations.map((location) => ({
       id: parseInt(location.id),
       name: location.name,
@@ -231,7 +224,6 @@ const MyContainerMap = () => {
 
     // 벽 데이터를 기록합니다.
     const wallData = anchorsRef.current.map(({ start, end }, index) => ({
-      // id: `${start.attrs.id}:${end.attrs.id}`,
       id: index + 1,
       startX: start.x(),
       startY: start.y(),
@@ -239,9 +231,8 @@ const MyContainerMap = () => {
       endY: end.y(),
     }));
 
+    //모든 데이터를 warehouseData로 담아서 전송한다.
     const warehouseData = { locations: locationData, walls: wallData };
-    // Log the request body
-    console.log(JSON.stringify(warehouseData, null, 2));
 
     try {
       const response = await fetch(
@@ -287,8 +278,8 @@ const MyContainerMap = () => {
 
       if (response.ok) {
         const { locationData, wallData } = await response.json();
-        setLocations(locationData); // 사각형들
-        clearAnchorsAndLines(); // Load 전 초기화
+        setLocations(locationData);
+        clearAnchorsAndLines();
 
         const existingAnchors = [];
         const newAnchors = [];
@@ -334,7 +325,7 @@ const MyContainerMap = () => {
   };
 
   // API를 통해 해당하는 창고(번호)의 모든 location(적재함)과 wall(벽)을 가져오는 메서드
-  const APIConnectionTest = async () => {
+  const getWarehouseAPI = async () => {
     try {
       const response = await fetch(
         "https://i11a508.p.ssafy.io/api/warehouses/2",
@@ -350,52 +341,40 @@ const MyContainerMap = () => {
         const apiConnection = await response.json();
         const warehouseData = apiConnection.result; // 데이터 추출
 
-        // Log the received data for debugging
-        console.log("API response:", warehouseData);
-
-        // Check if locations exist
+        // 받아온 데이터 중 로케이션 데이터 처리
         const locations = warehouseData.locations;
         if (!locations) {
           console.error("Locations data not found");
           return;
         }
-        // Map API data to locations
         const newLocations = locations.map((location, index) => {
-          // Get the floorLevel from floorDtos array if it exists
-
-          // Ensure that the width and height are preserved
           return {
             id: location.id.toString(),
             x: location.xposition,
             y: location.yposition,
-            width: location.xsize || 50, // Default width if not provided
-            height: location.ysize || 50, // Default height if not provided
+            width: location.xsize || 50,
+            height: location.ysize || 50,
             z: 5,
-            fill: "blue", // Default color
+            fill: "blue",
             draggable: true,
-            order: index, // 순서대로 번호 인덱싱
+            order: index,
             name: location.name || `적재함 ${index}`,
-            type: "location", // Default type
-            rotation: 0, // 초기 회전값
+            type: "location",
+            rotation: 0,
           };
         });
 
-        // Log the final rectangles for debugging
-        console.log("API rectangles loaded successfully:", newLocations);
-
-        // Check if walls exist
+        // 벽 데이터 처리
         const walls = warehouseData.walls;
         if (!walls) {
           console.error("Walls data not found");
           return;
         }
-
-        // Map API data to walls
-        clearAnchorsAndLines(); // Load 전 초기화
-
+        clearAnchorsAndLines();
         const existingAnchors = [];
         const newAnchors = [];
 
+        // 이미 존재하는 앙커를 가져오거나 생성하는 메서드 정의
         const getOrCreateAnchor = (id, x, y) => {
           let existingAnchor = findExistingAnchor(existingAnchors, x, y);
           if (!existingAnchor) {
@@ -427,7 +406,6 @@ const MyContainerMap = () => {
         newAnchors.forEach(({ line }) => layerRef.current.add(line));
         layerRef.current.batchDraw();
 
-        // Update state with new rectangles and walls
         setLocations(newLocations);
       } else {
         console.error("Error loading rectangles data");
@@ -437,7 +415,7 @@ const MyContainerMap = () => {
     }
   };
 
-  // 줌-인 줌-아웃 기능
+  // 줌-인 / 줌-아웃 함수
   const handleZoomIn = () => {
     setScale(scale * 1.2);
   };
@@ -445,7 +423,7 @@ const MyContainerMap = () => {
     setScale(scale / 1.2);
   };
 
-  // 그리드 라인 생성하는 부분
+  // 그리드 라인 생성하는 함수
   const generateGridLines = () => {
     const lines = [];
     // 100cm 그리드
@@ -584,7 +562,7 @@ const MyContainerMap = () => {
       fill: "#ddd",
       opacity: 0,
       strokeWidth: 2,
-      draggable: currentSetting !== "wall", // Make draggable based on current setting
+      draggable: currentSetting !== "wall",
     });
     layer.add(newAnchor);
     setAnchors((prevAnchors) => [...prevAnchors, newAnchor]);
@@ -594,18 +572,18 @@ const MyContainerMap = () => {
       this.strokeWidth(4);
       this.opacity(1);
       this.moveToTop();
-      setHoveredAnchor(this); // hoverdAnchor를 지정한다.
+      setHoveredAnchor(this);
     });
     newAnchor.on("mouseout", function () {
       document.body.style.cursor = "default";
       this.strokeWidth(2);
       this.opacity(0);
       this.moveToTop();
-      setHoveredAnchor(null); // hoverdAnchor를 지정한다.
+      setHoveredAnchor(null);
     });
 
     newAnchor.on("dragmove", function () {
-      updateDottedLines();
+      updateLinesBetweenAnchors();
       highlightOverlappingAnchors(this);
       this.moveToTop();
     });
@@ -618,15 +596,15 @@ const MyContainerMap = () => {
     return newAnchor;
   };
 
-  //선 구성
-  const updateDottedLines = () => {
+  // 벽의 기준점과 다른 기준점 사이의 선을 만드는 함수
+  const updateLinesBetweenAnchors = () => {
     anchorsRef.current.forEach(({ line, start, end }) => {
       line.points([start.x(), start.y(), end.x(), end.y()]);
     });
     layerRef.current.batchDraw();
   };
 
-  // 클릭 후에 다른 앙커로 갔을 때 앙커가 빛나
+  // 마우스 액션과 무관하게 마우스가 위로 올라가면 Anchor를 강조하는 함수
   const highlightOverlappingAnchors = (draggedAnchor) => {
     const stage = stageRef.current;
     stage.find("Circle").forEach((anchor) => {
@@ -643,6 +621,7 @@ const MyContainerMap = () => {
     });
   };
 
+  // 두개의 anchor가 겹쳤는지를 확인하는 매서드
   const isOverlapping = (anchor1, anchor2) => {
     const a1 = anchor1.getClientRect();
     const a2 = anchor2.getClientRect();
@@ -654,6 +633,7 @@ const MyContainerMap = () => {
     );
   };
 
+  // 두 개의 anchor를 규합하고 선의 관계를 정립하는 메서드
   const mergeAnchors = (draggedAnchor) => {
     const stage = stageRef.current;
     const layer = layerRef.current;
@@ -682,21 +662,19 @@ const MyContainerMap = () => {
       count++;
     });
     console.log(count);
-    updateDottedLines();
+    updateLinesBetweenAnchors();
   };
 
   //실시간 반응을 위해서 currentSetting에 대한 함수 작동을 메서드로 넘기기
   const changeCurrentSetting = (value) => {
     setCurrentSetting(value);
 
-    // Toggle draggable property based on current setting
     const newDraggable = value !== "wall";
     anchorsRef.current.forEach(({ start, end }) => {
       start.draggable(newDraggable);
       end.draggable(newDraggable);
     });
 
-    // Redraw the layer to reflect changes
     layerRef.current.batchDraw();
   };
 
@@ -722,7 +700,7 @@ const MyContainerMap = () => {
     );
   };
 
-  // 삭제를 하기 위한 메서드
+  // 로케이션과 벽을 삭제를 하기 위한 메서드
   const handleDelete = () => {
     if (currentShapeRef.current) {
       const shapeId = currentShapeRef.current.attrs.id;
@@ -763,37 +741,31 @@ const MyContainerMap = () => {
   const handleMouseEnter = (e) => {
     e.target.style.backgroundColor = "lightgray";
   };
-
   const handleMouseLeave = (e) => {
     e.target.style.backgroundColor = "white";
   };
 
   /**
-   *  useEffect Part for Reactive action
+   *  useEffect Part
    */
 
-  // 선을 적용하기 위한 UseEffect
   useEffect(() => {
     const stage = stageRef.current;
     const layer = layerRef.current;
-    /**
-     * 기존에는 세 개의 원을 추가했으나, 우리는 이미 존재하는 우리 객체에 대해 적용
-     */
 
     //Event Handler for 'mousedown' Stage 위에 올렸을 때,
     const handleMouseDown = () => {
-      // 정확한 위치를 얻어온다.
       if (currentSetting === "wall") {
+        // 정확한 위치를 얻어온다.
         const pos = stage.getPointerPosition();
-        var stageAttrs = stage.attrs; // 보정을 위한 거시기
-
+        var stageAttrs = stage.attrs;
+        //드래그 없음
         if (!stageAttrs.x) {
-          // 드래그 하지 않음
-          pos.x = pos.x / stageAttrs.scaleX; //줌에 따른 따른 위치 스케일링
+          pos.x = pos.x / stageAttrs.scaleX;
           pos.y = pos.y / stageAttrs.scaleY;
-        } else {
-          // 드래그해서 새로운 stageAttrs의 x,y가 생김
-          pos.x = (pos.x - stageAttrs.x) / stageAttrs.scaleX; //줌에 따른 따른 위치 스케일링
+        } // 드래그 있음
+        else {
+          pos.x = (pos.x - stageAttrs.x) / stageAttrs.scaleX;
           pos.y = (pos.y - stageAttrs.y) / stageAttrs.scaleY;
         }
 
@@ -801,16 +773,15 @@ const MyContainerMap = () => {
           pos.x = hoveredAnchor.attrs.x;
           pos.y = hoveredAnchor.attrs.y;
         } else {
-          // 무조건 10 pixel 단위로 반올림하여 시작 위치 보정
+          // 10단위로 변경
           pos.x = Math.round(pos.x / 10) * 10;
           pos.y = Math.round(pos.y / 10) * 10;
         }
-
-        setStartPos(pos); // 선의 시작 위치 기록
+        setStartPos(pos);
         const newLine = new Konva.Line({
           stroke: "black",
           strokeWidth: 5,
-          listening: false, // Hit detective 감지 안됨
+          listening: false,
           points: [pos.x, pos.y, pos.x, pos.y],
         });
         layer.add(newLine);
@@ -824,19 +795,19 @@ const MyContainerMap = () => {
         if (!line) return;
         // 정확한 위치를 얻어온다.
         const pos = stage.getPointerPosition();
-        var stageAttrs = stage.attrs; // 보정을 위한 거시기
+        var stageAttrs = stage.attrs;
         if (!stageAttrs.x) {
           // 드래그 하지 않음
-          pos.x = pos.x / stageAttrs.scaleX; //줌에 따른 따른 위치 스케일링
+          pos.x = pos.x / stageAttrs.scaleX;
           pos.y = pos.y / stageAttrs.scaleY;
         } else {
           // 드래그해서 새로운 stageAttrs의 x,y가 생김
-          pos.x = (pos.x - stageAttrs.x) / stageAttrs.scaleX; //줌에 따른 따른 위치 스케일링
+          pos.x = (pos.x - stageAttrs.x) / stageAttrs.scaleX;
           pos.y = (pos.y - stageAttrs.y) / stageAttrs.scaleY;
         }
 
         const points = [startPos.x, startPos.y, pos.x, pos.y];
-        //라인 그리기
+
         line.points(points);
         layer.batchDraw();
       }
@@ -851,14 +822,14 @@ const MyContainerMap = () => {
         if (e.target.hasName("target")) {
           // 정확한 위치를 얻어온다.
           const pos = stage.getPointerPosition();
-          var stageAttrs = stage.attrs; // 보정을 위한 거시기
+          var stageAttrs = stage.attrs;
           if (!stageAttrs.x) {
             // 드래그 하지 않음
-            pos.x = pos.x / stageAttrs.scaleX; //줌에 따른 따른 위치 스케일링
+            pos.x = pos.x / stageAttrs.scaleX;
             pos.y = pos.y / stageAttrs.scaleY;
           } else {
             // 드래그해서 새로운 stageAttrs의 x,y가 생김
-            pos.x = (pos.x - stageAttrs.x) / stageAttrs.scaleX; //줌에 따른 따른 위치 스케일링
+            pos.x = (pos.x - stageAttrs.x) / stageAttrs.scaleX;
             pos.y = (pos.y - stageAttrs.y) / stageAttrs.scaleY;
           }
           drawLine(startPos, pos);
@@ -871,21 +842,22 @@ const MyContainerMap = () => {
           //벽을 추가하기 위한 메서드
           // 정확한 위치를 얻어온다.
           const pos = stage.getPointerPosition();
-          var stageAttrs = stage.attrs; // 보정을 위한 거시기
+          var stageAttrs = stage.attrs;
           if (!stageAttrs.x) {
             // 드래그 하지 않음
-            pos.x = pos.x / stageAttrs.scaleX; //줌에 따른 따른 위치 스케일링
+            pos.x = pos.x / stageAttrs.scaleX; 
             pos.y = pos.y / stageAttrs.scaleY;
           } else {
             // 드래그해서 새로운 stageAttrs의 x,y가 생김
-            pos.x = (pos.x - stageAttrs.x) / stageAttrs.scaleX; //줌에 따른 따른 위치 스케일링
+            pos.x = (pos.x - stageAttrs.x) / stageAttrs.scaleX; 
             pos.y = (pos.y - stageAttrs.y) / stageAttrs.scaleY;
           }
 
+          // 앙커 위에서 벽을 생성하면 그 앙커를 기준으로 생성하게끔 하는 역할
           if (hoveredAnchor !== null) {
             pos.x = hoveredAnchor.attrs.x;
             pos.y = hoveredAnchor.attrs.y;
-          } // 아님 그냥 한다.
+          }
 
           handleAddWall(startPos, pos);
 
@@ -896,25 +868,10 @@ const MyContainerMap = () => {
     };
 
     // 벽을 추가한다.
-    // 벽을 추가한다.
     const handleAddWall = (start, end) => {
       if (currentSetting === "wall") {
-        const newWall = {
-          id: locations.length.toString(),
-          x: end.x,
-          y: end.y,
-          width: newWallWidth,
-          height: Math.sqrt((end.x - start.x) ** 2 + (end.y - start.y) ** 2),
-          fill: newWallColor,
-          draggable: true,
-          order: locations.length + 1,
-          name: `Wall ${locations.length + 1}`,
-          type: "wall",
-          rotation: Math.round(
-            Math.atan2(end.y - start.y, end.x - start.x) * (180 / Math.PI) + 90
-          ),
-        };
 
+        // 새로운 앙커를 생성하는 메서드
         const getOrCreateAnchor = (x, y) => {
           let existingAnchor = anchorsRef.current.find(
             (anchor) =>
@@ -1004,16 +961,12 @@ const MyContainerMap = () => {
     //레이어의 초기 상태 그리기
     layer.draw();
 
-    /**
-     * Anchor에 관한 함수를 넣는 곳
-     */
-
-    // Redraw layer when setting changes
+    // 레이어를 다시 그린다.(세팅이 바뀔 때)
     if (layerRef.current) {
       layerRef.current.batchDraw();
     }
 
-    // Clean-up the Function to remove event Listeners
+    // Event-Lister들을 정리한다.
     return () => {
       stage.off("mousedown", handleMouseDown);
       stage.off("mousemove", handleMouseMove);
@@ -1107,7 +1060,9 @@ const MyContainerMap = () => {
                         width: "1000px",
                       }}
                       color={newLocationColor}
-                      onChangeComplete={(color) => setNewLocationColor(color.hex)}
+                      onChangeComplete={(color) =>
+                        setNewLocationColor(color.hex)
+                      }
                     />
                   )}
                 </label>
@@ -1133,7 +1088,9 @@ const MyContainerMap = () => {
                       min="1"
                       max="10"
                       value={newLocationZIndex}
-                      onChange={(e) => setNewLocationZIndex(Number(e.target.value))}
+                      onChange={(e) =>
+                        setNewLocationZIndex(Number(e.target.value))
+                      }
                     />
                     {newLocationZIndex}
                   </label>
@@ -1347,10 +1304,10 @@ const MyContainerMap = () => {
             <Button justIcon round color="primary" onClick={loadMapFromLocal}>
               <UnarchiveIcon className={classes.icons} />
             </Button>
-            <Button color="primary" onClick={APIConnectionTest}>
+            <Button color="primary" onClick={getWarehouseAPI}>
               API 불러오기
             </Button>
-            <Button color="primary" onClick={APISaveToDB}>
+            <Button color="primary" onClick={editContainerAPI}>
               API 저장하기
             </Button>
           </div>
