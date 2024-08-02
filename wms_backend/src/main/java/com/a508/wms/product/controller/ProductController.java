@@ -2,18 +2,31 @@ package com.a508.wms.product.controller;
 
 
 import com.a508.wms.notification.dto.NotificationResponseDto;
-import com.a508.wms.product.dto.*;
+import com.a508.wms.product.dto.ExportResponseDto;
+import com.a508.wms.product.dto.ImportResponseDto;
+import com.a508.wms.product.dto.ProductExportRequestDto;
+import com.a508.wms.product.dto.ProductExportResponseDto;
+import com.a508.wms.product.dto.ProductImportRequestDto;
+import com.a508.wms.product.dto.ProductMainResponseDto;
+import com.a508.wms.product.dto.ProductRequestDto;
 import com.a508.wms.product.service.ExportModuleService;
 import com.a508.wms.product.service.ImportModuleService;
 import com.a508.wms.product.service.ProductService;
 import com.a508.wms.util.BaseSuccessResponse;
+import java.time.LocalDate;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDate;
-import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
@@ -34,15 +47,12 @@ public class ProductController {
      * @return
      */
     @GetMapping
-    public BaseSuccessResponse<List<ProductResponseDto>> getProducts(
-            @RequestParam(required = false) Long businessId,
-            @RequestParam(required = false) Long warehouseId,
-            @RequestParam(required = false) Long productDetailId,
-            @RequestParam(required = false) Long locationId) {
-        if (businessId != null) {
-            log.info("findProducts businessId: {}", businessId);
-            return new BaseSuccessResponse<>(productService.findByBusinessId(businessId));
-        } else if (warehouseId != null) {
+    public BaseSuccessResponse<List<?>> getProducts(
+        @RequestParam(required = false) Long businessId,
+        @RequestParam(required = false) Long warehouseId,
+        @RequestParam(required = false) Long productDetailId,
+        @RequestParam(required = false) Long locationId) {
+        if (warehouseId != null) {
             log.info("findProducts warehouseId: {}", warehouseId);
             return new BaseSuccessResponse<>(productService.findByWarehouseId(warehouseId));
         } else if (productDetailId != null) {
@@ -64,7 +74,7 @@ public class ProductController {
      * @return
      */
     @GetMapping("/{id}")
-    public BaseSuccessResponse<ProductResponseDto> getProduct(@PathVariable Long id) {
+    public BaseSuccessResponse<ProductMainResponseDto> getProduct(@PathVariable Long id) {
         log.info("find product by id: {}", id);
         return new BaseSuccessResponse<>(productService.findById(id));
     }
@@ -77,7 +87,7 @@ public class ProductController {
      */
     @PutMapping("/{id}")
     public BaseSuccessResponse<Void> updateProduct(@PathVariable Long id,
-                                                   @RequestBody ProductRequestDto productRequestDto) {
+        @RequestBody ProductRequestDto productRequestDto) {
         log.info("update product by id: {}", id);
         productService.update(id, productRequestDto);
 
@@ -105,8 +115,8 @@ public class ProductController {
      */
     @GetMapping("/import")
     public BaseSuccessResponse<List<ImportResponseDto>> getImports(
-            @RequestParam(value = "date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-            @RequestParam Long businessId
+        @RequestParam(value = "date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+        @RequestParam Long businessId
     ) {
         if (businessId != null) {
             log.info("findImports businessId: {}", businessId);
@@ -115,9 +125,12 @@ public class ProductController {
 //                return new BaseSuccessResponse<>(importModuleService.findAllByBusinessIdAndDate(businessId, date));
                 return null;
             } else {
-                return new BaseSuccessResponse<>(importModuleService.findAllByBusinessId(businessId));
+                return new BaseSuccessResponse<>(
+                    importModuleService.findAllByBusinessId(businessId));
             }
-        } else return null; // TODO: 입력 없을 때 리턴타입 정하기
+        } else {
+            return null; // TODO: 입력 없을 때 리턴타입 정하기
+        }
     }
 
     /**
@@ -128,7 +141,7 @@ public class ProductController {
      */
     @PostMapping("/import")
     public BaseSuccessResponse<Void> importProducts(
-            @RequestBody ProductImportRequestDto productImportRequestDto
+        @RequestBody ProductImportRequestDto productImportRequestDto
     ) {
         log.info("import products: {}", productImportRequestDto);
         productService.importProducts(productImportRequestDto);
@@ -144,15 +157,16 @@ public class ProductController {
 
     @PostMapping("/export")
     public BaseSuccessResponse<List<ProductExportResponseDto>> exportProducts(
-            @RequestBody ProductExportRequestDto exportProduct
+        @RequestBody ProductExportRequestDto exportProduct
     ) {
         log.info("export products: {}", exportProduct);
         return new BaseSuccessResponse<>(productService.exportProducts(exportProduct));
     }
 
     @GetMapping("/export")
-    public BaseSuccessResponse<List<ExportResponseDto>> findAllByBusinessId(@RequestParam Long businessId,
-                                                                            @RequestParam(required = false) Long key) {
+    public BaseSuccessResponse<List<ExportResponseDto>> findAllByBusinessId(
+        @RequestParam Long businessId,
+        @RequestParam(required = false) Long key) {
         if (businessId != null) {
             if (key != null) {
                 log.info("findAllByBusinessId: {}", key);
@@ -164,11 +178,13 @@ public class ProductController {
     }
 
     @GetMapping("/notification")
-    public BaseSuccessResponse<NotificationResponseDto> findAllNotifications(@RequestParam Long businessId) {
+    public BaseSuccessResponse<NotificationResponseDto> findAllNotifications(
+        @RequestParam Long businessId) {
         if (businessId != null) {
             log.info("findAllByBusinessId: {}", businessId);
-            return new BaseSuccessResponse<>(NotificationResponseDto.builder().importResponseDtos(importModuleService.findAllByBusinessId(businessId))
-                    .exportResponseDtos(exportModuleService.findAllByBusinessId(businessId)).build());
+            return new BaseSuccessResponse<>(NotificationResponseDto.builder()
+                .importResponseDtos(importModuleService.findAllByBusinessId(businessId))
+                .exportResponseDtos(exportModuleService.findAllByBusinessId(businessId)).build());
         }
         return null;
     }

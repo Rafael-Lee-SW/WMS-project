@@ -26,7 +26,7 @@ public class LocationMapper {
             .ySize(request.getYSize())
             .zSize(request.getZSize())
             .warehouse(warehouse)
-            .productStorageTypeEnum(request.getStorageType())
+            .productStorageType(request.getStorageType())
             .build();
     }
 
@@ -43,7 +43,7 @@ public class LocationMapper {
             .ySize(location.getYSize())
             .zSize(location.getZSize())
             .name(location.getName())
-            .storageType(location.getProductStorageTypeEnum())
+            .storageType(location.getProductStorageType())
             .rotation(location.getRotation())
             .floorResponses(location.getFloors().stream().map(
                 FloorMapper::toFloorResponseDto

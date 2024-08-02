@@ -2,21 +2,23 @@ package com.a508.wms.product.service;
 
 import com.a508.wms.business.domain.Business;
 import com.a508.wms.product.domain.Import;
+import com.a508.wms.product.domain.Product;
 import com.a508.wms.product.dto.ImportResponseDto;
+import com.a508.wms.product.dto.ProductData;
 import com.a508.wms.product.dto.ProductImportDto;
 import com.a508.wms.product.dto.ProductImportResponseDto;
 import com.a508.wms.product.mapper.ImportMapper;
 import com.a508.wms.product.repository.ImportRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class ImportModuleService {
+
     private final ImportRepository importRepository;
 
     /**
@@ -31,6 +33,13 @@ public class ImportModuleService {
         importRepository.save(importEntity);
     }
 
+
+    public void save(ProductData request, Product product) {
+        Import importEntity = ImportMapper.fromProduct(product, request.getExpirationDate());
+        importRepository.save(importEntity);
+    }
+
+
     public ProductImportResponseDto findAllByBusinessIdAndDate(Long businessId, LocalDate date) {
 //        1. repository에서 method 호출하기
         List<Import> importList = importRepository.findAllByBusinessIdAndDate(businessId, date);
@@ -38,20 +47,19 @@ public class ImportModuleService {
         List<ImportResponseDto> dataList = new ArrayList<>();
         for (Import imp : importList) {
             ImportResponseDto importResponseDto = ImportResponseDto.builder()
-                    .name(imp.getName())
-                    .quantity(imp.getQuantity())
-                    .barcode(imp.getBarcode())
-                    .expirationDate(imp.getExpirationDate())
-                    .productStorageType(imp.getProductStorageType())
-                    .build();
+                .name(imp.getName())
+                .quantity(imp.getQuantity())
+                .barcode(imp.getBarcode())
+                .expirationDate(imp.getExpirationDate())
+                .productStorageType(imp.getProductStorageType())
+                .build();
             dataList.add(importResponseDto);
         }
         return ProductImportResponseDto.builder()
-                .date(date.atStartOfDay())
-                .data(dataList)
-                .build();
+            .date(date.atStartOfDay())
+            .data(dataList)
+            .build();
     }
-
     /* public ProductImportResponseDto findAllByBusinessId(Long businessId) {
  //        1. repository에서 method 호출하기
          List<Import> importList = importRepository.findAllByBusinessId(businessId);
@@ -72,6 +80,7 @@ public class ImportModuleService {
                  .data(dataList)
                  .build();
      }*/
+
     public List<ImportResponseDto> findAllByBusinessId(Long businessId) {
 //        1. repository에서 method 호출하기
         List<Import> importList = importRepository.findAllByBusinessId(businessId);
@@ -79,13 +88,13 @@ public class ImportModuleService {
         List<ImportResponseDto> dataList = new ArrayList<>();
         for (Import imp : importList) {
             ImportResponseDto importResponseDto = ImportResponseDto.builder()
-                    .name(imp.getName())
-                    .quantity(imp.getQuantity())
-                    .barcode(imp.getBarcode())
-                    .expirationDate(imp.getExpirationDate())
-                    .productStorageType(imp.getProductStorageType())
-                    .date(imp.getDate())
-                    .build();
+                .name(imp.getName())
+                .quantity(imp.getQuantity())
+                .barcode(imp.getBarcode())
+                .expirationDate(imp.getExpirationDate())
+                .productStorageType(imp.getProductStorageType())
+                .date(imp.getDate())
+                .build();
             dataList.add(importResponseDto);
         }
         return dataList;
