@@ -1,14 +1,23 @@
 package com.a508.wms.user.controller;
 
-import com.a508.wms.user.dto.UserDto;
+import com.a508.wms.user.dto.UserRequestDto;
+import com.a508.wms.user.dto.UserResponseDto;
 import com.a508.wms.user.service.UserService;
 import com.a508.wms.util.BaseSuccessResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequestMapping("/users")
 @Tag(name = "유저 관리", description = "유저 CRUD 관리")
@@ -18,19 +27,16 @@ public class UserController {
     private final UserService userService;
 
     /**
-     * 전체 직원 혹은 특정 사업체의 전체 직원을 조회하는 메서드
+     * 특정 사업체의 전체 직원을 조회하는 메서드
      *
      * @param businessId : 특정 사업체의 전체 직원을 조회하는 경우 사업체 고유 번호 입력
      * @return List<UserDto> (전체 직원), List<UserDto> (특정 사업체의 전체 직원)
      */
     @GetMapping
-    public BaseSuccessResponse<List<UserDto>> getEmployees(
-        @RequestParam(value = "businessId", required = false) Long businessId) {
-        if (businessId != null) {
-            return new BaseSuccessResponse<>(userService.findByBusinessId(businessId));
-        } else {
-            return new BaseSuccessResponse<>(userService.findAllEmployee());
-        }
+    public BaseSuccessResponse<List<UserResponseDto>> findByBusinessId(
+        @RequestParam(value = "businessId") Long businessId) {
+        log.info("[Controller] find User by businessId: {}", businessId);
+        return new BaseSuccessResponse<>(userService.findByBusinessId(businessId));
     }
 
     /**
@@ -40,21 +46,23 @@ public class UserController {
      * @return UserDto
      */
     @GetMapping("/{id}")
-    public BaseSuccessResponse<UserDto> getUser(@PathVariable("id") long id) {
+    public BaseSuccessResponse<UserResponseDto> findById(@PathVariable("id") Long id) {
+        log.info("[Controller] find User by id: {}", id);
         return new BaseSuccessResponse<>(userService.findById(id));
     }
 
     /**
      * 직원 1명의 정보를 수정하는 메서드
      *
-     * @param id          : 직원의 고유 번호
-     * @param userDto : 변경할 직원의 정보
+     * @param id      : 직원의 고유 번호
+     * @param request : 변경할 직원의 정보
      * @return UserDto : 변경된 직원의 정보
      */
     @PutMapping("/{id}")
-    public BaseSuccessResponse<UserDto> updateUser(@PathVariable("id") long id,
-        @RequestBody UserDto userDto) {
-        return new BaseSuccessResponse<>(userService.update(id, userDto));
+    public BaseSuccessResponse<UserResponseDto> update(@PathVariable("id") Long id,
+        @RequestBody UserRequestDto request) {
+        log.info("[Controller] update user by id: {}", id);
+        return new BaseSuccessResponse<>(userService.update(id, request));
     }
 
     /**
@@ -64,7 +72,8 @@ public class UserController {
      * @return UserDto : 변경된 직원의 정보
      */
     @PatchMapping("/{id}")
-    public BaseSuccessResponse<UserDto> deleteUser(@PathVariable("id") long id) {
+    public BaseSuccessResponse<UserResponseDto> delete(@PathVariable("id") Long id) {
+        log.info("[Controller] delete user by id: {}", id);
         return new BaseSuccessResponse<>(userService.delete(id));
     }
 }
