@@ -34,7 +34,7 @@ export default function SubInfo({ subscriptions }) {
           </Card>
         ))
     ) : (
-    <h4>구독 정보가 없습니다.</h4>
+    <h4>구독 정보가 없습니다. </h4>
     )}
 
       <Dialog open={open} onClose={handleClose}>
