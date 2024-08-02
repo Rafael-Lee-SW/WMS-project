@@ -16,7 +16,7 @@ export default function NaverCallback() {
 
       try {
         // 서버에 인증 코드 보내기
-        const response = await axios.post('/api/oauth2/callback/naver', { code, state });
+        const response = await axios.post('/api/oauth2/code/naver', { code, state });
 
         if (response.status === 200) {
           // 로그인 성공 처리
