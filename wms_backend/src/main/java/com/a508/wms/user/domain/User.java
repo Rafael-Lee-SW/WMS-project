@@ -1,6 +1,7 @@
 package com.a508.wms.user.domain;
 
 import com.a508.wms.business.domain.Business;
+import com.a508.wms.user.dto.UserRequestDto;
 import com.a508.wms.util.BaseTimeEntity;
 import com.a508.wms.util.constant.LoginTypeEnum;
 import com.a508.wms.util.constant.RoleTypeEnum;
@@ -68,6 +69,15 @@ public class User extends BaseTimeEntity {
         if (business != null) {
             business.setUser(this);
         }
+    }
+
+    public void updatePassword(String password) {
+        this.password = password;
+    }
+
+    public void updateInfo(UserRequestDto userRequestDto) {
+        this.name = userRequestDto.getName();
+        this.nickname = userRequestDto.getNickname();
     }
 
     public void updateRoleTypeEnum(RoleTypeEnum roleTypeEnum) {
