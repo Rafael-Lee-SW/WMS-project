@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.annotation.RequestScope;
 
 @RestController
-@RequestMapping("/v1/auth")
+@RequestMapping("/oauth")
 @RequiredArgsConstructor
 public class AuthController {
 
