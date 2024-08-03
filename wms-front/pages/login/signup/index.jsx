@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import { makeStyles, Button, TextField, Divider, Typography } from '@material-ui/core';
@@ -7,91 +7,29 @@ import GridItem from '../../../components/Grid/GridItem';
 import Card from '../../../components/Card/Card';
 import CardHeader from '../../../components/Card/CardHeader';
 import CardBody from '../../../components/Card/CardBody';
+import { handleResponse, ResponseCode } from '../../../utils/responseHandler';
 
 const useStyles = makeStyles((theme) => ({
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100vh',
-    textAlign: 'center',
-  },
-  logo: {
-    cursor: 'pointer',
-    width: '80px',
-    height: '80px',
-    marginBottom: theme.spacing(4), // 로고 아래에 여백 추가
-    border: '2px solid black', // 로고 테두리 검은색 실선
-  },
-  snsButtons: {
-    display: 'flex',
-    justifyContent: 'center',
-    marginBottom: theme.spacing(2),
-    '& button': {
-      margin: theme.spacing(1),
-    },
-    '& img': {
-      width: '40px',
-      height: '40px',
-    },
-  },
-  textField: {
-    marginBottom: theme.spacing(2),
-    flex: 1,
-  },
-  button: {
-    margin: theme.spacing(1),
-    height: '56px', // TextField의 높이에 맞춤
-  },
-  buttonSmall: {
-    margin: theme.spacing(1),
-    width: '100px',
-  },
-  dividerContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    width: '80%',
-    margin: theme.spacing(2, 0),
-  },
-  divider: {
-    flex: 1,
-    height: '1px',
-    backgroundColor: '#000',
-  },
-  snsText: {
-    margin: theme.spacing(0, 2),
-  },
-  title: {
-    marginBottom: theme.spacing(4),
-  },
+  // 스타일 정의
 }));
 
 export default function SignUp() {
   const classes = useStyles();
   const router = useRouter();
 
-  const idRef = useRef(null);
-  const passwordRef = useRef(null);
-  const passwordCheckRef = useRef(null);
-  const emailRef = useRef(null);
-  const certificationNumberRef = useRef(null);
-  const nameRef = useRef(null);
-  const nicknameRef = useRef(null);
-
-  const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const [passwordCheck, setPasswordCheck] = useState('');
   const [email, setEmail] = useState('');
   const [certificationNumber, setCertificationNumber] = useState('');
   const [name, setName] = useState('');
   const [nickname, setNickname] = useState('');
-  const [message, setMessage] = useState('');
-  const [isFormValid, setIsFormValid] = useState(false);
-  const [isEmailValid, setIsEmailValid] = useState(false);
   const [emailCheckMessage, setEmailCheckMessage] = useState('');
   const [passwordMessage, setPasswordMessage] = useState('');
   const [showPasswordMessage, setShowPasswordMessage] = useState(false);
+  const [certificationButtonLabel, setCertificationButtonLabel] = useState('인증 메일 발송');
+  const [certificationMessage, setCertificationMessage] = useState('');
+  const [isFormValid, setIsFormValid] = useState(false);
+  const [isEmailValid, setIsEmailValid] = useState(false);
 
   useEffect(() => {
     const validatePassword = (password) => {
@@ -109,7 +47,9 @@ export default function SignUp() {
         if (isValidPassword && isPasswordMatch) {
           setPasswordMessage('비밀번호가 유효합니다.');
         } else if (!isValidPassword) {
-          setPasswordMessage('비밀번호는 영문, 숫자, 특수문자 중 2종류 이상을 조합하여 최소 10자리 이상 또는 3종류 이상을 조합하여 최소 8자리 이상이어야 합니다.');
+          setPasswordMessage(
+            '비밀번호는 영문, 숫자, 특수문자 중 2종류 이상을 조합하여 최소 10자리 이상 또는 3종류 이상을 조합하여 최소 8자리 이상이어야 합니다.'
+          );
         } else if (!isPasswordMatch) {
           setPasswordMessage('비밀번호가 일치하지 않습니다.');
         }
@@ -126,32 +66,56 @@ export default function SignUp() {
 
   const handleEmailCheck = async () => {
     try {
-      const response = await axios.post('https://i11a508.p.ssafy.io/api/oauth/email-check', { id: email });
-      if (response.status === 200 && response.data.code === 'SU') {
-        setIsEmailValid(true);
-        setEmailCheckMessage('사용 가능한 이메일입니다.');
+      const response = await axios.post('http://localhost:8080/api/oauth/email-check', { email });
+      const { message, isSuccess } = handleResponse(response);
+      setEmailCheckMessage(message);
+      setIsEmailValid(isSuccess);
 
-        // 인증 번호 요청
-        const certificationResponse = await axios.post('https://i11a508.p.ssafy.io/api/oauth/email-certification', { email });
-        if (certificationResponse.status === 200 && certificationResponse.data.code === 'SU') {
-          setEmailCheckMessage('이메일 인증 번호가 전송되었습니다.');
+      if (isSuccess) {
+        const certificationResponse = await axios.post('http://localhost:8080/api/oauth/email-certification', { email });
+        const certificationResult = handleResponse(certificationResponse);
+
+        if (certificationResult.isSuccess) {
+          setCertificationMessage('인증번호 발송에 성공하였습니다.');
+          setCertificationButtonLabel('인증 확인');
+          startCountdown();
+        } else {
+          setCertificationMessage(certificationResult.message);
         }
       }
     } catch (error) {
-      if (error.response) {
-        if (error.response.status === 400) {
-          if (error.response.data.code === 'VF') {
-            setEmailCheckMessage('유효성 검사 실패');
-          } else if (error.response.data.code === 'DI') {
-            setEmailCheckMessage('중복된 이메일입니다.');
-          }
-        } else if (error.response.status === 500) {
-          setEmailCheckMessage('서버 오류입니다.');
-        }
-      } else {
-        setEmailCheckMessage('네트워크 오류가 발생했습니다.');
-      }
+      setEmailCheckMessage('네트워크 오류가 발생했습니다.');
       setIsEmailValid(false);
+    }
+  };
+
+  const startCountdown = () => {
+    let time = 180;
+    const interval = setInterval(() => {
+      if (time > 0) {
+        time--;
+        setCertificationMessage(`인증번호 발송에 성공하였습니다. ${time}초 남음.`);
+      } else {
+        clearInterval(interval);
+        setCertificationButtonLabel('인증 메일 발송');
+      }
+    }, 1000);
+  };
+
+  const handleCertification = async () => {
+    if (certificationButtonLabel === '인증 확인') {
+      try {
+        const response = await axios.post('http://localhost:8080/api/oauth/check-certification', {
+          email,
+          certificationNumber,
+        });
+        const { message, isSuccess } = handleResponse(response);
+        setCertificationMessage(message);
+      } catch (error) {
+        setCertificationMessage('네트워크 오류가 발생했습니다.');
+      }
+    } else {
+      handleEmailCheck();
     }
   };
 
@@ -159,18 +123,18 @@ export default function SignUp() {
     e.preventDefault();
     if (isFormValid && isEmailValid) {
       try {
-        const response = await axios.post('https://i11a508.p.ssafy.io/api/oauth/sign-up', {
+        const response = await axios.post('http://localhost:8080/api/oauth/sign-up', {
           email,
           password,
           certificationNumber,
           name,
-          nickname
+          nickname,
         });
-        if (response.status === 200 && response.data.code === 'SU') {
-          alert('회원가입이 완료되었습니다. 로그인 후 이용해주세요.');
+        const { message, isSuccess } = handleResponse(response);
+        alert(message);
+
+        if (isSuccess) {
           router.push('/login');
-        } else {
-          alert('회원가입에 실패하였습니다. 다시 시도해주세요.');
         }
       } catch (error) {
         alert('회원가입에 실패하였습니다. 다시 시도해주세요.');
@@ -178,20 +142,21 @@ export default function SignUp() {
     }
   };
 
+  const handleKakaoSignIn = () => {
+    window.location.href = 'http://localhost:8080/api/oauth2/code/kakao';
+  };
+
+  const handleNaverSignIn = () => {
+    window.location.href = 'http://localhost:8080/api/oauth2/code/naver';
+  };
+
   return (
     <GridContainer className={classes.container}>
-    
       <GridItem xs={12} sm={8} md={6}>
         <Card>
-      
           <CardHeader>
-            <img
-              src="/img/logo.png"
-              alt="Logo"
-              className={classes.logo}
-              onClick={() => router.push('/')}
-            />
-             <h2>FitBox</h2>
+            <img src="/img/logo.png" alt="Logo" className={classes.logo} onClick={() => router.push('/')} />
+            <h2>FitBox</h2>
           </CardHeader>
           <CardBody>
             <div className={classes.dividerContainer}>
@@ -202,14 +167,15 @@ export default function SignUp() {
               <div className={classes.divider} />
             </div>
             <div className={classes.snsButtons}>
-              <button className="sns-button" onClick={() => signIn('kakao')}>
+              <button className="sns-button" onClick={handleKakaoSignIn}>
                 <img src="/img/kakao-sign-in.png" alt="Kakao Sign In" />
               </button>
-              <button className="sns-button" onClick={() => signIn('naver')}>
+              <button className="sns-button" onClick={handleNaverSignIn}>
                 <img src="/img/naver-sign-in.png" alt="Naver Sign In" />
               </button>
             </div>
-            <Divider className={classes.divider} /><br />
+            <Divider className={classes.divider} />
+            <br />
             <form onSubmit={handleSubmit}>
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 <TextField
@@ -226,8 +192,10 @@ export default function SignUp() {
                   이메일 인증
                 </Button>
               </div>
-              <span style={{ color: isEmailValid ? 'blue' : 'red' }}>{emailCheckMessage}</span><br /><br />
-              <div style={{ display: 'flex', alignItems: 'center' }}> 
+              <span style={{ color: isEmailValid ? 'blue' : 'red' }}>{emailCheckMessage}</span>
+              <br />
+              <br />
+              <div style={{ display: 'flex', alignItems: 'center' }}>
                 <TextField
                   label="인증번호"
                   type="text"
@@ -238,10 +206,17 @@ export default function SignUp() {
                   onChange={(e) => setCertificationNumber(e.target.value)}
                   required
                 />
-                <Button variant="contained" color="primary" onClick={() => alert('인증 확인')} className={classes.button}>
-                  인증 확인
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleCertification}
+                  className={classes.button}
+                  disabled={!isEmailValid}
+                >
+                  {certificationButtonLabel}
                 </Button>
               </div>
+              <span style={{ color: 'blue' }}>{certificationMessage}</span>
               <TextField
                 label="비밀번호"
                 type="password"
@@ -263,8 +238,12 @@ export default function SignUp() {
                 required
               />
               {showPasswordMessage && (
-                <span style={{ color: passwordMessage.includes('유효합니다') ? 'blue' : 'red' }}>{passwordMessage}</span>
-              )}<br /><br />
+                <span style={{ color: passwordMessage.includes('유효합니다') ? 'blue' : 'red' }}>
+                  {passwordMessage}
+                </span>
+              )}
+              <br />
+              <br />
               <TextField
                 label="이름"
                 type="text"
@@ -285,7 +264,13 @@ export default function SignUp() {
                 onChange={(e) => setNickname(e.target.value)}
                 required
               />
-              <Button type="submit" variant="contained" color="primary" className={classes.buttonSmall} disabled={!isFormValid || !isEmailValid}>
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                className={classes.buttonSmall}
+                disabled={!isFormValid || !isEmailValid}
+              >
                 회원가입
               </Button>
             </form>
