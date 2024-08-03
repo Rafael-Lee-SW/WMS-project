@@ -35,7 +35,7 @@ public class AuthController {
      */
     @PostMapping("/email-check")
     public ResponseEntity<? super IdCheckResponseDto> idCheck(
-        @RequestBody @Valid IdCheckRequestDto requestBody
+        @RequestBody @Valid EmailCertificationRequestDto requestBody
     ) {
         return authService.idCheck(requestBody);
     }

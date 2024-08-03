@@ -49,7 +49,7 @@ public class AuthServiceImplement implements AuthService {
      * @return 중복 여부에 따른 응답 엔터티
      */
     @Override
-    public ResponseEntity<? super IdCheckResponseDto> idCheck(IdCheckRequestDto dto) {
+    public ResponseEntity<? super IdCheckResponseDto> idCheck(EmailCertificationRequestDto dto) {
         log.info("idCheck method called with dto: {}", dto);
         try {
             // 사용자 이메일을 가져옴
@@ -82,36 +82,35 @@ public class AuthServiceImplement implements AuthService {
     public ResponseEntity<? super EmailCertificationResponseDto> emailCertification(EmailCertificationRequestDto dto) {
         log.info("emailCertification method called with dto: {}", dto);
         try {
-            // 사용자 ID와 이메일을 가져옴
+            // 이메일 주소 가져오기
             String email = dto.getEmail();
-            log.info("Processing email certification for userId: {} and email: {}", email);
-
-            // 사용자 ID 중복 여부 확인
-            boolean isExistEmail = userRepository.existsByEmail(email);
-            if (isExistEmail) {
-                log.info("Email already exists: {}", email);
-                return EmailCertificationResponseDto.duplicatedId();
-            }
+            log.info("Processing email certification for email: {}", email);
 
             // 인증 번호 생성
             String certificationNumber = CertificationNumber.getCertificationNumber();
             log.info("Generated certification number: {}", certificationNumber);
 
+            if (certificationNumber == null || certificationNumber.isEmpty()) {
+                log.error("Certification number generation failed");
+                return EmailCertificationResponseDto.mailSendFail();
+            }
+
             // 인증 이메일 발송
             boolean isSuccessed = emailProvider.sendCertificationMail(email, certificationNumber);
+
             if (!isSuccessed) {
                 log.error("Failed to send certification email to: {}", email);
                 return EmailCertificationResponseDto.mailSendFail();
             }
 
             // 인증 정보를 저장
-            Certification certification = new Certification( email, certificationNumber);
+            Certification certification = new Certification(email, certificationNumber);
             certificationRepository.save(certification);
-            log.info("Saved certification info for userId: {} and email: {}",  email);
+            log.info("Saved certification info for email: {}", email);
 
         } catch (NumberFormatException e) {
-            // 사용자 ID가 유효하지 않은 경우 예외 처리
-            log.error("Invalid userId format: {}", dto.getEmail(), e);
+            // 이메일이 유효하지 않은 경우 예외 처리
+            log.error("Invalid email format: {}", dto.getEmail(), e);
             return ResponseDto.validationFail();
         } catch (Exception e) {
             // 기타 예외 처리
@@ -119,7 +118,7 @@ public class AuthServiceImplement implements AuthService {
             return ResponseDto.databaseError();
         }
         // 이메일 인증 성공 응답 반환
-        log.info("Email certification succeeded for userId: {} and email: {}",  dto.getEmail());
+        log.info("Email certification succeeded for email: {}", dto.getEmail());
         return EmailCertificationResponseDto.success();
     }
 
