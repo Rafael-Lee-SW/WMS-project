@@ -114,7 +114,7 @@ public class WarehouseService {
         Warehouse warehouse = warehouseModuleService.findById(id);
 
         List<LocationResponseDto> locations = request.getLocations().stream()
-            .map(location -> LocationMapper.fromLocationRequestDto(location, warehouse))
+            .map(location -> LocationMapper.fromLocationUpdateDto(location, warehouse))
             .map(locationModuleService::save)
             .map(LocationMapper::toLocationResponseDto)
             .toList();

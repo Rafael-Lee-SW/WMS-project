@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @ToString
 public class ExportResponseDto {
 
-    private Long businessId;
+
     private String trackingNumber;
     private Long barcode;
     private String locationName;

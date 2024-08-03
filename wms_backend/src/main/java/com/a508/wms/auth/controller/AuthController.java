@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.annotation.RequestScope;
 
 @RestController
-@RequestMapping("/v1/auth")
+@RequestMapping("/oauth")
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -35,7 +35,7 @@ public class AuthController {
      */
     @PostMapping("/email-check")
     public ResponseEntity<? super IdCheckResponseDto> idCheck(
-        @RequestBody @Valid IdCheckRequestDto requestBody
+        @RequestBody @Valid EmailCertificationRequestDto requestBody
     ) {
         return authService.idCheck(requestBody);
     }

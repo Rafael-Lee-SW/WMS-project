@@ -54,11 +54,12 @@ public class WebSecurityConfig {
             )
             .authorizeHttpRequests(request -> request
                 .requestMatchers("/api/v1/auth/**", "/oauth2/**").permitAll() // 자체 로그인 및 회원가입 경로
+                .requestMatchers("/oauth2/authorization/**").permitAll()
                 .requestMatchers("/api/v1/social/**").authenticated() // 소셜 로그인 경로
                 .anyRequest().permitAll()
             )
             .oauth2Login(oauth2 -> oauth2
-                .redirectionEndpoint(endpoint -> endpoint.baseUri("/oauth2/callback/*"))
+                .redirectionEndpoint(endpoint -> endpoint.baseUri("/oauth2/code/*"))
                 .userInfoEndpoint(endPoint -> endPoint.userService(oAuth2UserService))
             )
             .exceptionHandling(exceptionHandling -> exceptionHandling
