@@ -6,7 +6,7 @@ import classNames from "classnames";
 
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
-import Button from "@material-ui/core/Button";
+import { Button } from "@mui/material";
 
 import styles from "/styles/jss/nextjs-material-kit/components/paginationStyle.js";
 

@@ -6,12 +6,8 @@ import classNames from "classnames";
 import PropTypes from "prop-types";
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
-import AppBar from "@material-ui/core/AppBar";
-import Toolbar from "@material-ui/core/Toolbar";
-import IconButton from "@material-ui/core/IconButton";
-import Button from "@material-ui/core/Button";
-import Hidden from "@material-ui/core/Hidden";
-import Drawer from "@material-ui/core/Drawer";
+
+import { AppBar, Toolbar, IconButton, Drawer, Button, Box } from "@mui/material";
 // @material-ui/icons
 import Menu from "@material-ui/icons/Menu";
 // core components
@@ -20,26 +16,35 @@ import styles from "/styles/jss/nextjs-material-kit/components/userHeaderStyle.j
 const useStyles = makeStyles(styles);
 
 export default function Header(props) {
+  const {
+    color = "white",
+    rightLinks,
+    leftLinks,
+    brand,
+    fixed,
+    absolute,
+    changeColorOnScroll,
+  } = props; // Use default parameter for color
+
   const classes = useStyles();
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  
+
   React.useEffect(() => {
-    if (props.changeColorOnScroll) {
+    if (changeColorOnScroll) {
       window.addEventListener("scroll", headerColorChange);
     }
     return function cleanup() {
-      if (props.changeColorOnScroll) {
+      if (changeColorOnScroll) {
         window.removeEventListener("scroll", headerColorChange);
       }
     };
-  });
+  }, [changeColorOnScroll]);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
   const headerColorChange = () => {
-    const { color, changeColorOnScroll } = props;
     const windowsScrollTop = window.pageYOffset;
     const header = document.body.getElementsByTagName("header")[0];
 
@@ -52,12 +57,11 @@ export default function Header(props) {
     }
   };
 
-  const { color, rightLinks, leftLinks, brand, fixed, absolute } = props;
   const appBarClasses = classNames({
     [classes.appBar]: true,
     [classes[color]]: color,
     [classes.absolute]: absolute,
-    [classes.fixed]: fixed
+    [classes.fixed]: fixed,
   });
 
   const brandComponent = (
@@ -72,17 +76,17 @@ export default function Header(props) {
         {leftLinks !== undefined ? brandComponent : null}
         <div className={classes.flex}>
           {leftLinks !== undefined ? (
-            <Hidden smDown implementation="css">
+            <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
               {leftLinks}
-            </Hidden>
+            </Box>
           ) : (
             brandComponent
           )}
         </div>
-        <Hidden smDown implementation="css">
+        <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
           {rightLinks}
-        </Hidden>
-        <Hidden mdUp>
+        </Box>
+        <Box sx={{ display: { xs: 'block', md: 'none' } }}>
           <IconButton
             color="inherit"
             aria-label="open drawer"
@@ -90,15 +94,15 @@ export default function Header(props) {
           >
             <Menu />
           </IconButton>
-        </Hidden>
+        </Box>
       </Toolbar>
-      <Hidden mdUp implementation="js">
+      <Box sx={{ display: { xs: 'block', md: 'none' } }}>
         <Drawer
           variant="temporary"
           anchor={"right"}
           open={mobileOpen}
           classes={{
-            paper: classes.drawerPaper
+            paper: classes.drawerPaper,
           }}
           onClose={handleDrawerToggle}
         >
@@ -107,14 +111,10 @@ export default function Header(props) {
             {rightLinks}
           </div>
         </Drawer>
-      </Hidden>
+      </Box>
     </AppBar>
   );
 }
-
-Header.defaultProps = {
-  color: "white"
-};
 
 Header.propTypes = {
   color: PropTypes.oneOf([
@@ -126,7 +126,7 @@ Header.propTypes = {
     "transparent",
     "white",
     "rose",
-    "dark"
+    "dark",
   ]),
   rightLinks: PropTypes.node,
   leftLinks: PropTypes.node,
@@ -143,7 +143,7 @@ Header.propTypes = {
       "transparent",
       "white",
       "rose",
-      "dark"
-    ]).isRequired
-  })
+      "dark",
+    ]).isRequired,
+  }),
 };

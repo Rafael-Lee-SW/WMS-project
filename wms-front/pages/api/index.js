@@ -10,17 +10,12 @@ function createBusiness(id, data = {}) {
     return instance.post(`/businesses?userId=${id}`, data)
 } 
 
-// 모든 사업체 조회
-function fetchBusinesses() {
-    return instance.get('/businesses');
-}
-
 // 특정 사업체 조회
 function fetchBusiness(id) {
     return instance.get(`/businesses/${id}`);
 }
 
-// 사업자 정보 수정
+// 사업체 정보 수정
 function editBusiness(id, data = {}) {
     return instance.put(`/businesses/${id}`, data);
 }
@@ -37,22 +32,22 @@ function fetchEmployees() {
 
 // 특정 사업체 직원 조회
 function fetchBusinessEmployees(id) {
-    return instance.get(`/employees?businessId=${id}`);
+    return instance.get(`/users?businessId=${id}`);
 }
 
 // 특정 직원 조회
 function fetchEmployee(id) {
-    return instance.get(`/employees/${id}`);
+    return instance.get(`/users/${id}`);
 }
 
 // 특정 직원 정보 수정
 function editEmployee(id, data = {}) {
-    return instance.put(`/employees/${id}`, data);
+    return instance.put(`/users/${id}`, data);
 }
 
 // 특정 직원 정보 삭제
 function deleteEmployee(id) {
-    return instance.patch(`/employees/${id}`);
+    return instance.patch(`/users/${id}`);
 }
 
 // 창고 생성
@@ -62,22 +57,22 @@ function createWarehouses(data = {}) {
 
 // 특정 사업체의 모든 창고 정보 조회
 function fetchBusinessWarehouses(businessId) {
-    return instance.get(`/warehouses/${businessId}`)
+    return instance.get(`/warehouses?businessId=${businessId}`)
+}
+
+// 특정 창고 조회
+function fetchWarehouse(id) {
+    return instance.get(`/warehouses/${id}`)
 }
 
 // 창고 수정
-function editBusinessWarehouses(businessId, data = {}) {
-    return instance.put(`/warehouses/${businessId}`, data)
+function editBusinessWarehouses(id, data = {}) {
+    return instance.put(`/warehouses/${id}`, data)
 }
 
 // 창고 삭제
-function deleteBusinessWarehouses(businessId) {
-    return instance.patch(`/warehouses/${businessId}`)
-}
-
-// 구독 정보 전체 조회
-function fetchSubscriptions() {
-    return instance.get('/subscriptions')
+function deleteBusinessWarehouses(id) {
+    return instance.patch(`/warehouses/${id}`)
 }
 
 // 특정 사업체 구독 조회
@@ -100,11 +95,6 @@ function deleteSubscription(id) {
     return instance.patch(`/subscriptions/${id}`)
 }
 
-// 상품 전체 조회
-function fetchProducts() {
-    return instance.get('/products')
-}
-
 // 사업체의 상품 전체 조회
 function fetchBusinessProducts(businessId) {
     return instance.get(`/products?businessId=${businessId}`)
@@ -120,8 +110,8 @@ function fetchDetailProducts(productDetailId) {
     return instance.get(`/products?productDetailId=${productDetailId}`)
 }
 
-// 특정 상품의 로케이션 조회
-function fetchProductLocations(id) {
+// 특정 상품 조회
+function fetchProduct(id) {
     return instance.get(`/products/${id}`)
 }
 
@@ -145,14 +135,24 @@ function importProducts(data = {}) {
     return instance.post('/products/import', data)
 }
 
+// 상품 입고 내역 조회 
+function fetchImport(businessId) {
+    return instance.get(`/products/import?businessId=${businessId}`)
+}
+
 // 상품 출고
 function exportProducts(data = {}) {
     return instance.post('/products/export', data)
 }
 
-// 전체 상품 정보 조회
-function fetchProductsDetail() {
-    return instance.get('/productDetail')
+// 상품 출고 내역 조회
+function fetchExport(businessId) {
+    return instance.get(`/products/export?businessId=${businessId}`)
+}
+
+// 사업체의 입고, 출고 내역 조회
+function fetchNotifications(businessId) {
+    return instance.get(`products/notifications?businessId=${businessId}`)
 }
 
 // 특정 상품 정보 조회
@@ -167,17 +167,12 @@ function fetchBusinessProductsDetail(businessId) {
 
 // 상품 정보 등록
 function createProductDetail(data = {}) {
-    return instance.post('/productDetail', data)
+    return instance.post('/productDetails', data)
 }
 
 // 상품 정보 삭제
 function deleteProductDetail(id) {
-    return instance.patch(`/productDetail/${id}`)
-}
-
-// 전체 로케이션 조회
-function fetchLocations() {
-    return instance.get('/locations')
+    return instance.patch(`/productDetails/${id}`)
 }
 
 // 특정 창고에 있는 로케이션 전체 조회
@@ -214,36 +209,10 @@ function fetchFloors(floorId) {
 function fetchLocationFloors(locationId) {
     return instance.get(`/floors?locationId=${locationId}`)
 }
-
-// 특정 상품로케이션 조회
-function fetchProductsLocation(id) {
-    return instance.get(`/productlocations/${id}`)
-}
-
-// 특정 상품의 상품 로케이션 조회
-function fetchProductLocation(productId) {
-    return instance.get(`/productlocations?productid=${productId}`)
-}
-
-// 특정 층의 상품로케이션 조회
-function fetchFloorLocation(floorId) {
-    return instance.get(`/productlocation?floorid=${floorId}`)
-}
-
-// 특정 바코드의 상품 로케이션 조회
-function fetchBarcodeLocation(barcode) {
-    return instance.get(`productlocations?barcode=${barcode}`)
-}
-
-// 상품 이동
-function moveProduct(data = {}) {
-    return instance.patch('/productlocations', data)
-}
  
 export { 
     instance, 
     createBusiness,
-    fetchBusinesses, 
     fetchBusiness, 
     editBusiness,
     deleteBusiness,
@@ -253,30 +222,30 @@ export {
     editEmployee,
     deleteEmployee,
     createWarehouses,
+    fetchWarehouse,
     editBusinessWarehouses,
     deleteBusinessWarehouses,
     fetchBusinessWarehouses,
-    fetchSubscriptions,
     fetchBusinessSubscriptions,
     createSubscription,
     editSubscription,
     deleteSubscription,
-    fetchProducts,
     fetchBusinessProducts,
     fetchWarehouseProducts,
     fetchDetailProducts,
-    fetchProductLocations,
+    fetchProduct,
     createProduct,
     editProduct,
     deleteProduct,
+    fetchImport,
     importProducts,
+    fetchExport,
+    fetchNotifications,
     exportProducts,
-    fetchProductsDetail,
     fetchProductDetail,
     fetchBusinessProductsDetail,
     createProductDetail,
     deleteProductDetail,
-    fetchLocations,
     fetchWarehouseLocations,
     fetchLocation,
     createLocation,
@@ -284,9 +253,4 @@ export {
     deleteLocation,
     fetchFloors,
     fetchLocationFloors,
-    fetchProductsLocation,
-    fetchProductLocation,
-    fetchFloorLocation,
-    fetchBarcodeLocation,
-    moveProduct
 }   
