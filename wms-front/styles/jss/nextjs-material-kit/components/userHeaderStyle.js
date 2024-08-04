@@ -167,7 +167,13 @@ const headerStyle = {
     paddingRight: "0px",
     paddingLeft: "0",
     ...transition
-  }
+  },
+  whiteButton: {
+    color: "#FFFFFF !important",
+  },
+  blackButton: {
+    color: "#000000 !important",
+  },
 };
 
 export default headerStyle;

@@ -1,20 +1,8 @@
-/*eslint-disable*/
 import React from "react";
 import Link from "next/link";
-
-// @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
-import {List, ListItem, Tooltip, Icon} from "@mui/material"
-
-// @material-ui/icons
-import { Apps, CloudDownload } from "@material-ui/icons";
-import DeleteIcon from "@material-ui/icons/Delete";
-import IconButton from "@material-ui/core/IconButton";
-
-// core components
-import CustomDropdown from "/components/CustomDropdown/CustomDropdown.js";
+import { List, ListItem, Icon } from "@mui/material";
 import Button from "/components/CustomButtons/Button.js";
-
 import styles from "/styles/jss/nextjs-material-kit/components/headerLinksStyle.js";
 
 const useStyles = makeStyles(styles);
@@ -24,10 +12,11 @@ export default function HeaderLinks(props) {
   return (
     <List className={classes.list}>
       <ListItem className={classes.listItem}>
-          <Button
+        <Button
           href="/login"
           color="transparent"
-          className={classes.navLink}>
+          className={`${classes.navLink} ${classes.rightLink} ${classes.whiteButton}`}
+        >
           <Icon className={classes.icons}>unarchive</Icon>로그인
         </Button>
       </ListItem>
@@ -35,8 +24,8 @@ export default function HeaderLinks(props) {
         <Button
           href="/signup"
           color="transparent"
-          // target="_blank" // 이를 통해 새로운 페이지로 띄워버릴 수 있다.
-          className={classes.navLink}>
+          className={`${classes.navLink} ${classes.rightLink} ${classes.whiteButton}`}
+        >
           <Icon className={classes.icons}>unarchive</Icon>회원가입
         </Button>
       </ListItem>
@@ -44,8 +33,9 @@ export default function HeaderLinks(props) {
         <Button
           href="/components"
           color="transparent"
-          className={classes.navLink}>
-          <CloudDownload className={classes.icons} />사용방법
+          className={`${classes.navLink} ${classes.rightLink} ${classes.whiteButton}`}
+        >
+          <Icon className={classes.icons}>unarchive</Icon>사용방법
         </Button>
       </ListItem>
     </List>

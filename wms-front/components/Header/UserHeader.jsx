@@ -1,16 +1,10 @@
 import React from "react";
 import Link from "next/link";
-// nodejs library that concatenates classes
 import classNames from "classnames";
-// nodejs library to set properties for components
 import PropTypes from "prop-types";
-// @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
-
 import { AppBar, Toolbar, IconButton, Drawer, Button, Box } from "@mui/material";
-// @material-ui/icons
 import Menu from "@material-ui/icons/Menu";
-// core components
 import styles from "/styles/jss/nextjs-material-kit/components/userHeaderStyle.js";
 
 const useStyles = makeStyles(styles);
@@ -24,7 +18,7 @@ export default function Header(props) {
     fixed,
     absolute,
     changeColorOnScroll,
-  } = props; // Use default parameter for color
+  } = props;
 
   const classes = useStyles();
   const [mobileOpen, setMobileOpen] = React.useState(false);
@@ -32,6 +26,7 @@ export default function Header(props) {
   React.useEffect(() => {
     if (changeColorOnScroll) {
       window.addEventListener("scroll", headerColorChange);
+      headerColorChange(); // Call this immediately to set the initial color
     }
     return function cleanup() {
       if (changeColorOnScroll) {
@@ -51,9 +46,17 @@ export default function Header(props) {
     if (windowsScrollTop > 0) {
       header.classList.remove(classes[color]);
       header.classList.add(classes[changeColorOnScroll.color]);
+      document.querySelectorAll(`.${classes.rightLink}`).forEach(el => {
+        el.classList.remove(classes.whiteButton);
+        el.classList.add(classes.blackButton);
+      });
     } else {
       header.classList.add(classes[color]);
       header.classList.remove(classes[changeColorOnScroll.color]);
+      document.querySelectorAll(`.${classes.rightLink}`).forEach(el => {
+        el.classList.remove(classes.blackButton);
+        el.classList.add(classes.whiteButton);
+      });
     }
   };
 
@@ -83,8 +86,10 @@ export default function Header(props) {
             brandComponent
           )}
         </div>
-        <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
-          {rightLinks}
+        <Box sx={{ display: { xs: 'none', sm: 'block' }, color: 'inherit' }}>
+          {React.Children.map(rightLinks, child =>
+            React.cloneElement(child, { className: classes.rightLink })
+          )}
         </Box>
         <Box sx={{ display: { xs: 'block', md: 'none' } }}>
           <IconButton
