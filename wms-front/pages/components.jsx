@@ -12,6 +12,7 @@ import HowToUse from "../components/Main/HowToUse";
 import Footer from "/components/Footer/Footer.js";
 import Parallax from "/components/Parallax/Parallax.js";
 import Slider from "react-slick"; 
+import ServiceInfo from '/components/Main/ServiceInfo';
 
 import styles from "/styles/jss/nextjs-material-kit/pages/components.js";
 import AOS from 'aos';
