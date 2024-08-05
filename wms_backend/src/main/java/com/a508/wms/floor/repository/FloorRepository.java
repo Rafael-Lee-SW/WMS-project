@@ -18,4 +18,7 @@ public interface FloorRepository extends JpaRepository<Floor, Long> {
         + " AND f.floorLevel=:floorLevel")
     Floor findByWarehouseId(@Param("warehouseID") Long warehouseID,
         @Param("floorLevel") int floorLevel);
+    @Query("SELECT f FROM Floor f WHERE f.floorLevel = :floorLevel " +
+            "AND f.location.id = :locationId ")
+    Floor findByLocationIdAndFloorLevel(Long locationId, int floorLevel);
 }

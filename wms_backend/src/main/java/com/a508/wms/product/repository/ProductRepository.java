@@ -1,6 +1,7 @@
 package com.a508.wms.product.repository;
 
 import com.a508.wms.product.domain.Product;
+import com.a508.wms.product.dto.ProductPickingDto;
 import com.a508.wms.product.dto.ProductPickingLocationDto;
 import com.a508.wms.product.dto.ProductQuantityDto;
 import java.time.LocalDateTime;
@@ -51,7 +52,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query(value =
         "SELECT w.name AS warehouseName, l.name AS locationName, f.floor_level AS floorLevel, p.id AS productId, "
             +
-            "pd.name AS productName, p.quantity AS quantity, l.product_storage_type, l.warehouse_id "
+            "pd.name AS productName, p.quantity AS quantity, l.product_storage_type, l.warehouse_id, p.expiration_date "
             +
             "FROM product p " +
             "JOIN product_detail pd ON p.product_detail_id = pd.id " +
@@ -59,6 +60,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "JOIN location l ON f.location_id = l.id " +
             "JOIN warehouse w ON l.warehouse_id = w.id " +
             "WHERE pd.barcode = :barcode AND pd.business_id = :businessId " +
+             "AND p.quantity > 0 " +
             "ORDER BY w.priority, " +
             "CAST(SUBSTRING_INDEX(l.name, '-', 1) AS UNSIGNED), " +
             "CAST(SUBSTRING_INDEX(l.name, '-', -1) AS UNSIGNED)",
@@ -66,6 +68,22 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<ProductPickingLocationDto> findPickingLocation(@Param("barcode") Long barcode,
         @Param("businessId") Long businessId);
 
-
+//    @Query(value =
+//            "SELECT w.name AS warehouseName, l.name AS locationName, f.floor_level AS floorLevel, p.id AS productId, "
+//                    +
+//                    "pd.name AS productName, p.quantity AS quantity, l.product_storage_type, l.warehouse_id, p.expiration_date as expdate "
+//                    +
+//                    "FROM product p " +
+//                    "JOIN product_detail pd ON p.product_detail_id = pd.id " +
+//                    "JOIN floor f ON p.floor_id = f.id " +
+//                    "JOIN location l ON f.location_id = l.id " +
+//                    "JOIN warehouse w ON l.warehouse_id = w.id " +
+//                    "WHERE pd.barcode = :barcode AND pd.business_id = :businessId " +
+//                    "ORDER BY w.priority, " +
+//                    "CAST(SUBSTRING_INDEX(l.name, '-', 1) AS UNSIGNED), " +
+//                    "CAST(SUBSTRING_INDEX(l.name, '-', -1) AS UNSIGNED)",
+//            nativeQuery = true)
+//    List<ProductPickingDto> findAllPicking(@Param("barcode") Long barcode,
+//                                           @Param("businessId") Long businessId);
     Optional<Product> findByIdAndExpirationDate(Long id, LocalDateTime expirationDate);
 }

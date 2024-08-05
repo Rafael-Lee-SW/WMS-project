@@ -2,13 +2,7 @@ package com.a508.wms.product.controller;
 
 
 import com.a508.wms.notification.dto.NotificationResponseDto;
-import com.a508.wms.product.dto.ExportResponseDto;
-import com.a508.wms.product.dto.ImportResponseDto;
-import com.a508.wms.product.dto.ProductExportRequestDto;
-import com.a508.wms.product.dto.ProductExportResponseDto;
-import com.a508.wms.product.dto.ProductImportRequestDto;
-import com.a508.wms.product.dto.ProductMainResponseDto;
-import com.a508.wms.product.dto.ProductRequestDto;
+import com.a508.wms.product.dto.*;
 import com.a508.wms.product.service.ExportModuleService;
 import com.a508.wms.product.service.ImportModuleService;
 import com.a508.wms.product.service.ProductService;
@@ -82,13 +76,13 @@ public class ProductController {
      * 상품을 수정하는 기능
      *
      * @param id                상품 id
-     * @param productRequestDto 수정할 상품 정보
+     * @param productUpdateRequestDto 수정할 상품 정보
      */
     @PutMapping("/{id}")
     public BaseSuccessResponse<Void> updateProduct(@PathVariable Long id,
-        @RequestBody ProductRequestDto productRequestDto) {
+        @RequestBody ProductUpdateRequestDto productUpdateRequestDto) {
         log.info("[Controller] update Product by id: {}", id);
-        productService.update(id, productRequestDto);
+        productService.update(id, productUpdateRequestDto);
 
         return new BaseSuccessResponse<>(null);
     }

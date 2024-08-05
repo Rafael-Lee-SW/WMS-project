@@ -21,7 +21,6 @@ public class ProductDetailService {
 
     private final ProductDetailModuleService productDetailModuleService;
     private final BusinessModuleService businessModuleService;
-    private final ProductModuleService productModuleService;
 
 
     /**
@@ -117,11 +116,11 @@ public class ProductDetailService {
      */
     @Transactional
     public void delete(Long id) {
-        log.info("[Service] delete ProductDetail by id: {}", id);
+        /*log.info("[Service] delete ProductDetail by id: {}", id);
         ProductDetail productDetail = productDetailModuleService.findById(id);
 
         productDetailModuleService.delete(productDetail);
 
-        productDetail.getProducts().forEach(productModuleService::delete);
+        productDetail.getProducts().forEach(productModuleService::delete);*/
     }
 }

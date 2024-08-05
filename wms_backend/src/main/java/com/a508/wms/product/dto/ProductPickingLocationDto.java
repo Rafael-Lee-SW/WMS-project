@@ -2,7 +2,9 @@ package com.a508.wms.product.dto;
 
 import com.a508.wms.util.constant.ProductStorageTypeEnum;
 
-public interface ProductPickingLocationDto {
+import java.time.LocalDateTime;
+
+public interface ProductPickingLocationDto  {
 
     String getWarehouseName();
 
@@ -19,4 +21,6 @@ public interface ProductPickingLocationDto {
     Long getWarehouseId();
 
     ProductStorageTypeEnum getProductStorageType();
+
+    LocalDateTime getExpirationDate();
 }

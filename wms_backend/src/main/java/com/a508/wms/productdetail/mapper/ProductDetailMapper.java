@@ -5,7 +5,10 @@ import com.a508.wms.product.dto.ProductData;
 import com.a508.wms.productdetail.domain.ProductDetail;
 import com.a508.wms.productdetail.dto.ProductDetailRequestDto;
 import com.a508.wms.productdetail.dto.ProductDetailResponseDto;
+import com.a508.wms.util.constant.ProductStorageTypeEnum;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 @Component
 public class ProductDetailMapper {
@@ -62,7 +65,9 @@ public class ProductDetailMapper {
             Business business) {
         return ProductDetail.builder()
                 .business(business)
-                .productStorageType(productImportRequestData.getProductStorageType())
+                .productStorageType(Optional.ofNullable(
+                        productImportRequestData.getProductStorageType())
+                        .orElse(ProductStorageTypeEnum.상온))
                 .barcode(productImportRequestData.getBarcode())
                 .name(productImportRequestData.getName())
                 .build();

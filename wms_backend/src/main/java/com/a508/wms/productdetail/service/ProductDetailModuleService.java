@@ -69,7 +69,6 @@ public class ProductDetailModuleService {
         return productDetailRepository.save(productDetail);
     }
 
-
     /**
      * 상품 정보를 soft delete하는 기능.
      *
