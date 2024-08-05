@@ -16,12 +16,12 @@ export default function KakaoCallback() {
 
       try {
         // 서버에 인증 코드 보내기
-        const response = await axios.post('/api/oauth2/code/kakao', { code });
+        const response = await axios.post('/oauth2/code/kakao', { code });
 
         if (response.status === 200) {
           // 로그인 성공 처리
           console.log('User information:', response.data);
-          router.push('/main'); // 메인 페이지로 이동
+          router.push('/'); // 메인 페이지로 이동
         }
       } catch (error) {
         console.error('Kakao OAuth callback error:', error);
