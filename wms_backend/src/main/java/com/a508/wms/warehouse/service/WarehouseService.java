@@ -55,6 +55,7 @@ public class WarehouseService {
         Floor defaultFloor = Floor.builder()
             .location(defaultLocation)
             .exportTypeEnum(ExportTypeEnum.IMPORT)
+            .floorLevel(-1)
             .build();
         floorModuleService.save(defaultFloor);
 
