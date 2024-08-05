@@ -33,6 +33,7 @@ public class AuthController {
      * @param requestBody
      * @return
      */
+
     @PostMapping("/email-check")
     public ResponseEntity<? super IdCheckResponseDto> idCheck(
         @RequestBody @Valid EmailCertificationRequestDto requestBody
@@ -78,7 +79,7 @@ public class AuthController {
     public ResponseEntity<? super SignInResponseDto> signIn(
         @RequestBody @Valid SignInRequestDto requestBody
     ) {
-        ResponseEntity<? super SignInResponseDto> response =authService.signIn(requestBody);
+        ResponseEntity<? super SignInResponseDto> response = authService.signIn(requestBody);
         return response;
     }
 }
