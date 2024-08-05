@@ -14,6 +14,7 @@ import com.a508.wms.auth.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,6 +28,7 @@ import org.springframework.web.context.annotation.RequestScope;
 public class AuthController {
 
     private final AuthService authService;
+    private final DefaultOAuth2UserService defaultOAuth2UserService;
 
     /**
      * 중복 이메일 체크하는 메서드
