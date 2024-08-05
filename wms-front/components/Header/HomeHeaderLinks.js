@@ -28,7 +28,7 @@ export default function HeaderLinks(props) {
           href="/login"
           color="transparent"
           className={classes.navLink}>
-          <Icon className={classes.icons}>unarchive</Icon>로그인
+          로그인
         </Button>
       </ListItem>
       <ListItem className={classes.listItem}>
@@ -37,7 +37,7 @@ export default function HeaderLinks(props) {
           color="transparent"
           // target="_blank" // 이를 통해 새로운 페이지로 띄워버릴 수 있다.
           className={classes.navLink}>
-          <Icon className={classes.icons}>unarchive</Icon>회원가입
+          회원가입
         </Button>
       </ListItem>
       <ListItem className={classes.listItem}>
@@ -45,7 +45,7 @@ export default function HeaderLinks(props) {
           href="/components"
           color="transparent"
           className={classes.navLink}>
-          <CloudDownload className={classes.icons} />사용방법
+          사용방법
         </Button>
       </ListItem>
     </List>

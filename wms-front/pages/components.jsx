@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 // nodejs library that concatenates classes
 import classNames from "classnames";
 // react components for routing our app without refresh
@@ -8,6 +8,8 @@ import { makeStyles } from "@material-ui/core/styles";
 // core components
 import Header from "/components/Header/HomeHeader.js";
 import HeaderLinks from "/components/Header/HomeHeaderLinks.js";
+import ServiceInfo from "../components/Main/serviceInfo";
+import HowToUse from "../components/Main/HowToUse";
 import Footer from "/components/Footer/Footer.js";
 import Parallax from "/components/Parallax/Parallax.js";
 import Slider from "react-slick"; 
@@ -20,7 +22,7 @@ import "slick-carousel/slick/slick-theme.css";
 
 const useStyles = makeStyles(styles);
 
-export default function Components(props) {
+const Components = (props) => {
   const classes = useStyles();
   const { ...rest } = props;
 
@@ -42,11 +44,10 @@ export default function Components(props) {
   };
 
   return (
-    /** 헤더 영역 */
     <div>
       <Header
         brand="FIT-BOX"
-        rightLinks={<HeaderLinks />}
+        rightLinks={<HeaderLinks/>}
         fixed
         color="transparent"
         changeColorOnScroll={{
@@ -70,8 +71,9 @@ export default function Components(props) {
           </Slider>
         </div>
       </Parallax>
-      <div className={classNames(classes.main, classes.mainRaised)}>
-      </div>
+      <ServiceInfo/>
     </div>
   );
-}
+};
+
+export default Components;
