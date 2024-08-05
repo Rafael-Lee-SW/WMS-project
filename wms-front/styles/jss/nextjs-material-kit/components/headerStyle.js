@@ -47,7 +47,8 @@ const headerStyle = {
     alignItems: "center",
     justifyContent: "space-between",
     display: "flex",
-    flexWrap: "nowrap"
+    flexWrap: "nowrap",
+
   },
   flex: {
     flex: 1
@@ -58,11 +59,10 @@ const headerStyle = {
     fontSize: "18px",
     borderRadius: "3px",
     textTransform: "none",
-    color: "#black",
+    color: "#986C58",
     padding: "8px 10px",
     letterSpacing: "unset",
     "&:hover,&:focus": {
-      color: "deb887",
       background: "transparent",
       fontWeight: "bold",
     }

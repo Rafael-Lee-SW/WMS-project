@@ -60,9 +60,10 @@
     "react-dom": ">=16.0.0",
     "react-konva": "^18.2.10",
     "react-modal": "^3.16.1",
-    "react-slick": "0.29.0",
+    "react-slick": "^0.29.0",
     "react-window": "^1.8.10",
     "sass": "1.66.1",
+    "slick-carousel": "^1.8.1",
     "styled-components": "5.3.5",
     "webpack": "5.88.2",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"

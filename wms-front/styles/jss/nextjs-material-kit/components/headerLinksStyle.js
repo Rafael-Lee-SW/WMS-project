@@ -15,7 +15,7 @@ const headerLinksStyle = (theme) => ({
   },
   listItem: {
     float: "left",
-    color: "black",
+    color: "#986C58",
     position: "relative",
     display: "block",
     width: "auto",

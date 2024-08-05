@@ -9,13 +9,14 @@ import { makeStyles } from "@material-ui/core/styles";
 import Header from "/components/Header/HomeHeader.js";
 import HeaderLinks from "/components/Header/HomeHeaderLinks.js";
 import Footer from "/components/Footer/Footer.js";
-import GridContainer from "/components/Grid/GridContainer.js";
-import GridItem from "/components/Grid/GridItem.js";
 import Parallax from "/components/Parallax/Parallax.js";
+import Slider from "react-slick"; 
 
 import styles from "/styles/jss/nextjs-material-kit/pages/components.js";
 import AOS from 'aos';
 import 'aos/dist/aos.css';
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 
 const useStyles = makeStyles(styles);
 
@@ -29,11 +30,22 @@ export default function Components(props) {
     });
   }, []);
 
+  // 캐러셀 설정
+  const settings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 3000,
+  };
+
   return (
     /** 헤더 영역 */
     <div>
       <Header
-        brand="ADN Project for Inventory Manangement"
+        brand="FIT-BOX"
         rightLinks={<HeaderLinks />}
         fixed
         color="transparent"
@@ -43,26 +55,23 @@ export default function Components(props) {
         }}
         {...rest}
       />
-      <Parallax image="/img/WareHouseWallpaper.png">
-        <div className={classes.container}>
-          <GridContainer>
-            <GridItem>
-              <div className={classes.brand} data-aos="fade-up">
-                <h1 className={classes.title}>ADN for Inventory Manangement</h1>
-                <h3 className={classes.subtitle}>
-                  재고 정리의 모든 것은 ADN에서!
-                </h3>
-                <h3 className={classes.subtitle}>
-                  여러분이 원하는 모든 기능을 제공합니다.
-                </h3>
-              </div>
-            </GridItem>
-          </GridContainer>
+      <Parallax>
+        <div style={{ width: '100%', margin: '0 auto' }}>
+          <Slider {...settings}>
+            <div>
+              <img src="/img/main1.jpg" alt="First slide" style={{ width: '100%', height: 'auto' }} />
+            </div>
+            <div>
+              <img src="/img/main2.jpg" alt="Second slide" style={{ width: '100%', height: 'auto' }} />
+            </div>
+            <div>
+              <img src="/img/main3.jpg" alt="Third slide" style={{ width: '100%', height: 'auto' }} />
+            </div>
+          </Slider>
         </div>
       </Parallax>
       <div className={classNames(classes.main, classes.mainRaised)}>
       </div>
-      <Footer />
     </div>
   );
 }
