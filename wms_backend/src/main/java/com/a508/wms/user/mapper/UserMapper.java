@@ -18,7 +18,7 @@ public class UserMapper {
             .email(dto.getEmail())
             .password(dto.getPassword())
             .name(dto.getName())
-            .nickname(dto.getNickName())
+            .nickname(dto.getNickname())
             .roleTypeEnum(RoleTypeEnum.GENERAL) // 기본값 설정
             .loginTypeEnum(LoginTypeEnum.GENERAL) // 기본값 설정
             .statusEnum(StatusEnum.ACTIVE) // 기본값 설정
