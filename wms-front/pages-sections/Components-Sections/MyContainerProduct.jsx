@@ -63,7 +63,7 @@ registerPlugin(HiddenRows);
 const MyContainerProduct = () => {
   //API를 통해 창고의 데이터를 가져오기 위한 State
   const [tableData, setTableData] = useState([]);
-  //입고 데이터를 받기 위한 State
+  const [detailedData, setDetailedData] = useState([]); // Store all import/export data
   const [ModalTableData, setModalTableData] = useState([]);
   const [columns, setColumns] = useState([]);
   const hotTableRef = useRef(null); // HandsonTable 객체 참조
@@ -333,7 +333,7 @@ const MyContainerProduct = () => {
         businessId: 1,
         data: postData,
       };
-      console.log(newPostData)
+      console.log(newPostData);
       const response = await fetch(
         "https://i11a508.p.ssafy.io/api/products/export",
         {
@@ -373,13 +373,14 @@ const MyContainerProduct = () => {
       if (response.ok) {
         const apiConnection = await response.json();
         const products = apiConnection.result;
+        console.log(products);
 
         // Extract only the required columns
         const formattedData = products.map((product) => ({
           name: product.productDetail.name,
           barcode: product.productDetail.barcode,
           quantity: product.quantity,
-          location: product.locationName,
+          location: product.locationName || "임시",
           floorLevel: product.floorLevel,
         }));
 
@@ -416,6 +417,189 @@ const MyContainerProduct = () => {
     }
   };
 
+  const getImportListAPI = async () => {
+    try {
+      const response = await fetch(
+        "https://i11a508.p.ssafy.io/api/products/import?businessId=1",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        const apiConnection = await response.json();
+        const importList = apiConnection.result;
+        //구분을 위한 입고표시
+        return importList.map((item) => ({ ...item, type: "입고" }));
+      } else {
+        console.error("입고 목록을 불러오지 못했습니다.");
+      }
+    } catch (error) {
+      console.error("입고 목록을 불러오지 못했습니다.", error);
+    }
+  };
+
+  const getExportListAPI = async () => {
+    try {
+      const response = await fetch(
+        "https://i11a508.p.ssafy.io/api/products/export?businessId=1",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        const apiConnection = await response.json();
+        const exportList = apiConnection.result;
+        //구분을 위한 출고 표시
+        return exportList.map((item) => ({ ...item, type: "출고" }));
+      } else {
+        console.error("입고 목록을 불러오지 못했습니다.");
+      }
+    } catch (error) {
+      console.error("입고 목록을 불러오지 못했습니다.", error);
+    }
+  };
+
+  // Updated getWholeChangesAPI function
+  const getWholeChangesAPI = async () => {
+    try {
+      const [importList, exportList] = await Promise.all([
+        getImportListAPI(),
+        getExportListAPI(),
+      ]);
+
+      // Combine import and export lists
+      const combinedData = [...importList, ...exportList];
+
+      // Sort combined data by date (assuming 'date' is the key in both lists)
+      const sortedData = combinedData.sort(
+        (a, b) => new Date(a.date) - new Date(b.date)
+      );
+
+      // Define the columns for the combined data
+      const combinedColumns = [
+        { name: "date", label: "날짜" },
+        { name: "type", label: "유형" },
+        { name: "barcode", label: "바코드" },
+        { name: "name", label: "상품명" },
+        { name: "quantity", label: "수량" },
+        { name: "locationName", label: "적재함" },
+        { name: "floorLevel", label: "층수" },
+        { name: "trackingNumber", label: "송장번호" },
+      ];
+
+      // Map sorted data to the table format
+      const formattedData = sortedData.map((item) => ({
+        date: item.date || "2024-08-04",
+        type: item.type || (importList.includes(item) ? "입고" : "출고"), // Distinguish import/export
+        barcode: item.barcode,
+        name: item.name || item.productName, // Assuming name might not be available for export
+        quantity: item.quantity,
+        locationName: item.locationName || "임시",
+        floorLevel: item.floorLevel || "분류 전",
+        trackingNumber: item.trackingNumber || "입고 물품",
+      }));
+
+      // Set the formatted data to state (or directly render it)
+      setTableData(formattedData);
+      setColumns(combinedColumns);
+
+      // Store detailed data for later use
+      setDetailedData(sortedData);
+    } catch (error) {
+      console.error("Error fetching changes:", error);
+    }
+  };
+
+  // New function to show only unique import/export dates
+  const showUniqueDates = async () => {
+    try {
+      const [importList, exportList] = await Promise.all([
+        getImportListAPI(),
+        getExportListAPI(),
+      ]);
+
+      // Combine import and export lists
+      const combinedData = [...importList, ...exportList];
+
+      // Extract unique dates and types
+      const dateSet = new Set();
+      const uniqueDateData = combinedData
+        .map((item) => ({
+          date: item.date,
+          type: item.type,
+        }))
+        .filter((item) => {
+          const key = `${item.date}-${item.type}`;
+          if (!dateSet.has(key)) {
+            dateSet.add(key);
+            return true;
+          }
+          return false;
+        });
+
+      // Define columns for the date/type view
+      const dateColumns = [
+        { name: "date", label: "날짜" },
+        { name: "type", label: "유형" },
+      ];
+
+      // Set the formatted data to state
+      setTableData(uniqueDateData);
+      setColumns(dateColumns);
+
+      // Store all data for future reference
+      setDetailedData(combinedData);
+    } catch (error) {
+      console.error("Error fetching unique dates:", error);
+    }
+  };
+
+  // Function to handle row click and display details
+  const handleRowClick = (rowData) => {
+    const [selectedDate, selectedType] = rowData;
+
+    // Filter detailed data for the selected date and type
+    const filteredData = detailedData.filter(
+      (item) => item.date === selectedDate && item.type === selectedType
+    );
+
+    // Define columns for the detailed view
+    const detailedColumns = [
+      { name: "date", label: "날짜" },
+      { name: "type", label: "유형" },
+      { name: "barcode", label: "바코드" },
+      { name: "name", label: "상품명" },
+      { name: "quantity", label: "수량" },
+      { name: "locationName", label: "적재함" },
+      { name: "floorLevel", label: "층수" },
+      { name: "trackingNumber", label: "송장번호" },
+    ];
+
+    // Map filtered data to the table format
+    const formattedData = filteredData.map((item) => ({
+      date: item.date || "2024-08-04",
+      type: item.type,
+      barcode: item.barcode,
+      name: item.name || item.productName,
+      quantity: item.quantity,
+      locationName: item.locationName || "임시",
+      floorLevel: item.floorLevel || "분류 전",
+      trackingNumber: item.trackingNumber || "입고 물품",
+    }));
+
+    // Update table with detailed data
+    setTableData(formattedData);
+    setColumns(detailedColumns);
+  };
+
   /**
    * UseEffect를 통해 새로고침 때마다 api로 사장님의 재고를 불러옴
    */
@@ -424,9 +608,47 @@ const MyContainerProduct = () => {
     productGetAPI();
   }, [openModal]);
 
+  // 선택 시에 테이블이 바뀐다.
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Separate options for each table view
+  const productOptions = {}; // No onRowClick for product list
+  const importExportOptions = {
+    onRowClick: (rowData) => handleRowClick(rowData), // Handle row click
+  };
+
+  // Define the componentsArray with separate options
+  const componentsArray = [
+    <MUIDataTable
+      key="productList"
+      title={"상품 목록"}
+      data={tableData}
+      columns={columns}
+      options={productOptions}
+    />,
+    <MUIDataTable
+      key="importExportList"
+      title={"입출고 목록"}
+      data={tableData}
+      columns={columns}
+      options={importExportOptions}
+    />,
+  ];
+
+  const handleNextComponent = (index) => {
+    setCurrentIndex(index);
+  };
+
   return (
-    <div style={{ marginBottom: "1%", margin: "2%" }}>
-      <div>
+    <div style={{ marginBottom: "1%", margin: "1%", display: "flex" }}>
+      <div
+        className="button"
+        style={{
+          width: "10%",
+          borderRight: "1px solid black",
+          marginRight: "5px",
+        }}
+      >
         <Grid item xs={6} md={4}>
           <div>
             <label htmlFor="upload-import">
@@ -445,7 +667,7 @@ const MyContainerProduct = () => {
                 aria-label="add"
                 variant="extended"
               >
-                입고 문서 업로드
+                입고하기
               </Fab>
             </label>
           </div>
@@ -466,30 +688,53 @@ const MyContainerProduct = () => {
                 aria-label="add"
                 variant="extended"
               >
-                출고 문서 업로드
+                출고하기
               </Fab>
             </label>
           </div>
-          <Button variant="contained" color="secondary" onClick={downloadExcel}>
-            Excel 다운로드
-          </Button>
-          <Button variant="contained" color="primary" onClick={productGetAPI}>
-            API 데이터 받아오기
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => importAPI(tableData)} // Updated to send current table data
-          >
-            Send POST Request
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => setOpenEditModal(true)}
-          >
-            엑셀에서 수정하기
-          </Button>
+          <div>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={downloadExcel}
+            >
+              다운로드
+            </Button>
+          </div>
+
+          <div>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => setOpenEditModal(true)}
+            >
+              엑셀로 -수정하기
+            </Button>
+          </div>
+          <div>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => {
+                handleNextComponent(0);
+                getWholeChangesAPI();
+              }}
+            >
+              입-출고 내역보기
+            </Button>
+          </div>
+          <div>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => {
+                handleNextComponent(1);
+                showUniqueDates();
+              }}
+            >
+              Only See the Im-Export
+            </Button>
+          </div>
         </Grid>
       </div>
       <div>
@@ -668,8 +913,15 @@ const MyContainerProduct = () => {
           </DialogActions>
         </Dialog>
       </div>
-      <Grid item xs={12}>
-        <MUIDataTable title={"상품 목록"} data={tableData} columns={columns} />
+      <Grid
+        item
+        xs={12}
+        style={{
+          width: "100%",
+        }}
+      >
+        {/* 메인 영역 */}
+        {componentsArray[currentIndex]}
       </Grid>
     </div>
   );
