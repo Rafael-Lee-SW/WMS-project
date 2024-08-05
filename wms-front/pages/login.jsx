@@ -105,8 +105,8 @@ export default function Login() {
 
   const signInWithProvider = (provider) => {
     const urls = {
-      kakao: 'https://i11a508.p.ssafy.io/oauth2/callback/kakao',
-      naver: 'https://i11a508.p.ssafy.io/oauth2/callback/naver',
+      kakao: 'https://kauth.kakao.com/oauth/authorize',
+      naver: 'https://nid.naver.com/oauth2.0/authorize',
     };
     window.location.href = urls[provider];
   };
