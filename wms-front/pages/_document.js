@@ -1,7 +1,6 @@
 import React from "react";
 import Document, { Html, Head, Main, NextScript } from "next/document";
 import { ServerStyleSheets } from "@material-ui/styles";
-
 class MyDocument extends Document {
   render() {
     return (
@@ -21,8 +20,8 @@ class MyDocument extends Document {
             href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR&family=Nanum+Brush+Script&family=Nanum+Gothic+Coding&family=Roboto:wght@300;400;500;700&family=Roboto+Slab:wght@400;700&display=swap"
           />
           <link
-            href="https://use.fontawesome.com/releases/v5.0.10/css/all.css"
             rel="stylesheet"
+            href="https://use.fontawesome.com/releases/v5.0.10/css/all.css"
           />
           {/* <!-- Nepcha Analytics (nepcha.com) -->
           <!-- Nepcha is a easy-to-use web analytics. No cookies and fully compliant with GDPR, CCPA and PECR. --> */}
