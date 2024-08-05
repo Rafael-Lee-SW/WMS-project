@@ -8,7 +8,6 @@ import { makeStyles } from "@material-ui/core/styles";
 // core components
 import Header from "/components/Header/HomeHeader.js";
 import HeaderLinks from "/components/Header/HomeHeaderLinks.js";
-import ServiceInfo from "../components/Main/serviceInfo";
 import HowToUse from "../components/Main/HowToUse";
 import Footer from "/components/Footer/Footer.js";
 import Parallax from "/components/Parallax/Parallax.js";
