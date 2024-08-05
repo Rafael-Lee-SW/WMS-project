@@ -8,6 +8,7 @@ import com.a508.wms.location.domain.Location;
 import com.a508.wms.location.dto.LocationResponseDto;
 import com.a508.wms.location.mapper.LocationMapper;
 import com.a508.wms.location.service.LocationModuleService;
+import com.a508.wms.util.constant.ExportTypeEnum;
 import com.a508.wms.util.constant.ProductStorageTypeEnum;
 import com.a508.wms.warehouse.domain.Warehouse;
 import com.a508.wms.warehouse.dto.LocationsAndWallsRequestDto;
@@ -53,6 +54,7 @@ public class WarehouseService {
 
         Floor defaultFloor = Floor.builder()
             .location(defaultLocation)
+            .exportTypeEnum(ExportTypeEnum.IMPORT)
             .build();
         floorModuleService.save(defaultFloor);
 
