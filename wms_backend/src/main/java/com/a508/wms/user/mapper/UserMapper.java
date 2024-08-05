@@ -45,7 +45,6 @@ public class UserMapper {
                 user.getBusiness()) : null)
             .build();
     }
-
     /**
      * OAuth 사용자 정보를 기반으로 User 객체 생성
      *
