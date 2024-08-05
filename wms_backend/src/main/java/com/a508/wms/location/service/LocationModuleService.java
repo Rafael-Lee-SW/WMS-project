@@ -38,9 +38,7 @@ public class LocationModuleService {
             .orElseThrow(() -> new IllegalArgumentException("Invalid location ID" + locationId));
     }
 
-    public Location findByName(String name) {
-        return locationRepository.findByName(name);
-    }
+
 
     /**
      * 특정 창고가 가지고 있는 로케이션 전부 조회

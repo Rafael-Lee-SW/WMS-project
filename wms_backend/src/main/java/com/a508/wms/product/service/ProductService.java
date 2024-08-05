@@ -5,29 +5,17 @@ import com.a508.wms.business.service.BusinessModuleService;
 import com.a508.wms.floor.domain.Floor;
 import com.a508.wms.floor.service.FloorModuleService;
 import com.a508.wms.product.domain.Product;
-import com.a508.wms.product.dto.ExportResponseDto;
-import com.a508.wms.product.dto.ProductData;
-import com.a508.wms.product.dto.ProductExportRequestDto;
-import com.a508.wms.product.dto.ProductExportResponseDto;
-import com.a508.wms.product.dto.ProductImportRequestDto;
-import com.a508.wms.product.dto.ProductMainResponseDto;
-import com.a508.wms.product.dto.ProductPickingLocationDto;
-import com.a508.wms.product.dto.ProductQuantityDto;
-import com.a508.wms.product.dto.ProductRequestDto;
-import com.a508.wms.product.dto.ProductResponseDto;
+import com.a508.wms.product.dto.*;
 import com.a508.wms.product.mapper.ProductMapper;
 import com.a508.wms.product.repository.ProductRepository;
 import com.a508.wms.productdetail.domain.ProductDetail;
 import com.a508.wms.productdetail.mapper.ProductDetailMapper;
 import com.a508.wms.productdetail.service.ProductDetailModuleService;
+import com.a508.wms.util.constant.ProductStorageTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -149,18 +137,10 @@ public class ProductService {
      * @param id      상품 id
      * @param request 수정할 상품 데이터
      */
-    public void update(Long id, ProductRequestDto request) {
+    public void update(Long id, ProductUpdateRequestDto request) {
         log.info("[Service] update Product by id: {}", id);
         Product product = productModuleService.findById(id);
-
-        product.updateData(
-            (request.getQuantity() == -1) ? product.getQuantity()
-                : request.getQuantity(),
-            (request.getExpirationDate() == null) ? product.getExpirationDate()
-                : request.getExpirationDate(),
-            (request.getComment() == null) ? product.getComment() : request.getComment()
-        );
-
+        productModuleService.update(id, request);
         productModuleService.save(product);
     }
 
@@ -191,7 +171,7 @@ public class ProductService {
         Long warehouseId = productImportRequestDto.getWarehouseId();
 
         Floor defaultFloor = floorModuleService.findDefaultFloorByWarehouse(warehouseId);
-
+        log.info("data : {}",productImportRequestDto);
         productImportRequestDto.getData()
             .forEach(data -> {
                 importProduct(data, productImportRequestDto.getBusinessId(),
@@ -234,6 +214,7 @@ public class ProductService {
         }
 
         Business business = businessModuleService.findById(businessId);
+
         ProductDetail productDetail = ProductDetailMapper.fromProductImportData(request, business);
 
         return productDetailModuleService.save(productDetail);
@@ -267,7 +248,6 @@ public class ProductService {
 
         for (ProductExportResponseDto responseDto : result) {
             Map<String, List<ExportResponseDto>> path = responseDto.getPath();
-
             for (Map.Entry<String, List<ExportResponseDto>> entry : path.entrySet()) {
                 List<ExportResponseDto> dataLists = entry.getValue();
 
@@ -290,59 +270,70 @@ public class ProductService {
         log.info("[Service] calculate export path of exportData: {}", invoice);
 
         Map<String, List<ExportResponseDto>> path = new HashMap<>();
-        for (ExportResponseDto ExportResponseDto : invoice) {
+        for (ExportResponseDto exportResponseDto : invoice) {
             List<ProductPickingLocationDto> candidates = productRepository.findPickingLocation(
-                ExportResponseDto.getBarcode(), businessId);
+                exportResponseDto.getBarcode(), businessId);
+            PriorityQueue<ProductPickingLocationDto> priorityQueue = new PriorityQueue<>(
+                    Comparator
+                            .comparing(ProductPickingLocationDto::getExpirationDate, Comparator.nullsLast(Comparator.naturalOrder()))
+                            .thenComparing(ProductPickingLocationDto::getQuantity, Comparator.reverseOrder())
+            );
 
-            int remains = ExportResponseDto.getQuantity();
+            priorityQueue.addAll(candidates);
 
-            for (ProductPickingLocationDto candidate : candidates) {
-                if (candidate.getQuantity() == 0) {
+            int remains = exportResponseDto.getQuantity();
+            for (ProductPickingLocationDto dto : priorityQueue) {
+                if (dto.getQuantity() == 0) {
                     continue;
                 }
-
-                if (candidate.getQuantity() >= remains) {
-                    updateProductQuantity(candidate.getProductId(),
-                        candidate.getQuantity() - remains);
+                if (dto.getQuantity() >= remains) {
+                    updateProductQuantity(dto.getProductId(),
+                            dto.getQuantity() - remains);
 
                     List<ExportResponseDto> pickings = path.getOrDefault(
-                        candidate.getWarehouseName(), new ArrayList<>());
+                            dto.getWarehouseName(), new ArrayList<>());
 
-                    pickings.add(com.a508.wms.product.dto.ExportResponseDto.builder()
-                        .trackingNumber(ExportResponseDto.getTrackingNumber())
-                        .barcode(ExportResponseDto.getBarcode())
-                        .locationName(candidate.getLocationName())
-                        .floorLevel(candidate.getFloorLevel())
-                        .productName(candidate.getProductName())
-                        .quantity(candidate.getQuantity() - remains)
-                        .date(LocalDate.now())
-                        .productStorageType(candidate.getProductStorageType())
-                        .warehouseName(candidate.getWarehouseName())
-                        .warehouseId(candidate.getWarehouseId())
-                        .build());
-                    path.put(candidate.getWarehouseName(), pickings);
+                    pickings.add(ExportResponseDto.builder()
+                            .expirationDate(dto.getExpirationDate())
+                            .trackingNumber(exportResponseDto.getTrackingNumber())
+                            .barcode(exportResponseDto.getBarcode())
+                            .locationName(dto.getLocationName())
+                            .floorLevel(dto.getFloorLevel())
+                            .productName(dto.getProductName())
+                            .quantity(remains)
+                            .date(LocalDate.now())
+                            .productStorageType(dto.getProductStorageType())
+                            .warehouseName(dto.getWarehouseName())
+                            .warehouseId(dto.getWarehouseId())
+                            .build());
+                    path.put(dto.getWarehouseName(), pickings);
                     break;
                 }
 
-                remains -= candidate.getQuantity();
+                remains -= dto.getQuantity();
 
-                updateProductQuantity(candidate.getProductId(), 0);
+                updateProductQuantity(dto.getProductId(), 0);
 
                 List<ExportResponseDto> pickings = path.getOrDefault(
-                    candidate.getWarehouseName(), new ArrayList<>());
+                        dto.getWarehouseName(), new ArrayList<>());
 
-                pickings.add(com.a508.wms.product.dto.ExportResponseDto.builder()
-                    .locationName(candidate.getLocationName())
-                    .floorLevel(candidate.getFloorLevel())
-                    .productName(candidate.getProductName())
-                    .quantity(0)
-                    .date(LocalDate.now())
-                    .productStorageType(candidate.getProductStorageType())
-                    .warehouseName(candidate.getWarehouseName())
-                    .warehouseId(candidate.getWarehouseId())
-                    .build());
-                path.put(candidate.getWarehouseName(), pickings);
+                pickings.add(ExportResponseDto.builder()
+                        .expirationDate(dto.getExpirationDate())
+                        .trackingNumber(exportResponseDto.getTrackingNumber())
+                        .barcode(exportResponseDto.getBarcode())
+                        .locationName(dto.getLocationName())
+                        .floorLevel(dto.getFloorLevel())
+                        .productName(dto.getProductName())
+                        .quantity(dto.getQuantity())
+                        .date(LocalDate.now())
+                        .productStorageType(dto.getProductStorageType())
+                        .warehouseName(dto.getWarehouseName())
+                        .warehouseId(dto.getWarehouseId())
+                        .build());
+                path.put(dto.getWarehouseName(), pickings);
             }
+
+
         }
 
         return path;
@@ -359,7 +350,7 @@ public class ProductService {
         log.info("[Service] update Product quantity by productId: {}", productId);
         Product product = productModuleService.findById(productId);
 
-        product.updateData(quantity, product.getExpirationDate(), product.getComment());
+        product.updateData(quantity);
 
         productModuleService.save(product);
     }
@@ -433,4 +424,5 @@ public class ProductService {
 
         return 2;
     }
+
 }
