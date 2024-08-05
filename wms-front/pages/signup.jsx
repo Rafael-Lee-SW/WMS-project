@@ -214,11 +214,11 @@ export default function SignUp() {
   };
 
   const handleKakaoSignIn = () => {
-    window.location.href = 'https://i11a508.p.ssafy.io/api/oauth2/code/kakao';
+    window.location.href = 'https://kauth.kakao.com/oauth/authorize';
   };
 
   const handleNaverSignIn = () => {
-    window.location.href = 'https://i11a508.p.ssafy.io/api/oauth2/code/naver';
+    window.location.href = 'https://nid.naver.com/oauth2.0/authorize';
   };
 
   return (
