@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import { makeStyles, Button, TextField, Divider, Typography } from '@material-ui/core';
-import GridContainer from '../../components/Grid/GridContainer';
-import GridItem from '../../components/Grid/GridItem';
-import Card from '../../components/Card/Card';
-import CardHeader from '../../components/Card/CardHeader';
-import CardBody from '../../components/Card/CardBody';
+import GridContainer from '../components/Grid/GridContainer';
+import GridItem from '../components/Grid/GridItem';
+import Card from '../components/Card/Card';
+import CardHeader from '../components/Card/CardHeader';
+import CardBody from '../components/Card/CardBody';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -71,35 +71,42 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('https://i11a508.p.ssafy.io/api/v1/auth/sign-in', {
+      const response = await axios.post('https://i11a508.p.ssafy.io/api/oauth/sign-in', {
         email,
         password,
       });
 
       if (response.status === 200 && response.data.code === 'SU') {
-        alert('로그인 성공!');
-        router.push('/main');
+        const { token, user } = response.data;
+        // 성공 시 쿠키에 토큰 저장
+        document.cookie = `token=${token}; path=/; max-age=${response.data.expirationTime};`;
+
+        // 사용자 이름으로 환영 메시지
+        alert(`${user.name}님 환영합니다!`);
+        router.push('/'); // 메인 페이지로 이동
       }
     } catch (error) {
       if (error.response) {
         if (error.response.status === 400 && error.response.data.code === 'VF') {
-          alert('로그인에 실패하였습니다.');
+          alert('로그인에 실패하였습니다. 입력한 정보를 확인하세요.');
         } else if (error.response.status === 401 && error.response.data.code === 'SF') {
-          alert('로그인 정보가 맞지 않습니다.');
+          alert('로그인 정보가 맞지 않습니다. 다시 시도해주세요.');
         } else if (error.response.status === 500 && error.response.data.code === 'DBE') {
-          alert('서버가 불안정합니다.');
+          alert('서버가 불안정합니다. 잠시 후 다시 시도해주세요.');
+        } else {
+          alert('알 수 없는 오류가 발생했습니다. 관리자에게 문의하세요.');
         }
       } else {
-        alert('로그인에 실패하였습니다.');
+        alert('네트워크 오류가 발생했습니다. 인터넷 연결을 확인하세요.');
       }
-      router.push('/login');
+      // 로그인 페이지에 머무름
     }
   };
 
   const signInWithProvider = (provider) => {
     const urls = {
-      kakao: 'https://i11a508.p.ssafy.io/oauth2/callback/kakao',
-      naver: 'https://i11a508.p.ssafy.io/oauth2/callback/naver',
+      kakao: 'https://i11a508.p.ssafy.io/api/oauth2/authorization/kakao',
+      naver: 'https://i11a508.p.ssafy.io/api/oauth2/authorization/naver',
     };
     window.location.href = urls[provider];
   };
@@ -161,7 +168,7 @@ export default function Login() {
                 <Button type="submit" variant="contained" color="primary" className={classes.button}>
                   로그인
                 </Button>
-                <Button variant="outlined" color="primary" className={classes.button} onClick={() => router.push('/login/signup')}>
+                <Button variant="outlined" color="primary" className={classes.button} onClick={() => router.push('/signup')}>
                   회원가입
                 </Button>
               </div>
