@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import { makeStyles, Button, TextField, Divider, Typography } from '@material-ui/core';
+import { useAuth } from '../context/AuthContext';
 import GridContainer from '../components/Grid/GridContainer';
 import GridItem from '../components/Grid/GridItem';
 import Card from '../components/Card/Card';
@@ -67,6 +68,7 @@ export default function Login() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const { login } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -77,12 +79,8 @@ export default function Login() {
       });
 
       if (response.status === 200 && response.data.code === 'SU') {
-        const { token, user } = response.data;
-        // 성공 시 쿠키에 토큰 저장
-        document.cookie = `token=${token}; path=/; max-age=${response.data.expirationTime};`;
-
-        // 사용자 이름으로 환영 메시지
-        alert(`${user.name}님 환영합니다!`);
+        login(response.data.user, response.data.token); // 전역 상태에 사용자 정보와 토큰 저장
+        alert(`${response.data.user.name}님 환영합니다!`);
         router.push('/'); // 메인 페이지로 이동
       }
     } catch (error) {
