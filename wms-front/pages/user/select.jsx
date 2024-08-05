@@ -94,6 +94,7 @@ const Select = (props) => {
             {/* Image Card */}
             {cards.map((card) => (
               <GridItem key={card.id} xs={12} sm={12} md={4}>
+                
                 <Link href={`/user/${card.id}`} passHref>
                   <Card
                     component="a"

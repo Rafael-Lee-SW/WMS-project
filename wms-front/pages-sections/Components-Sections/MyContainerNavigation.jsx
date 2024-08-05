@@ -78,8 +78,8 @@ import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/MyC
 // 창고 상수 설정
 const GRID_SIZE = 100;
 const GRID_SIZE_SUB_50 = 50;
-const GRID_SIZE_SUB_10 = 10; 
-const CANVAS_SIZE = 1000; 
+const GRID_SIZE_SUB_10 = 10;
+const CANVAS_SIZE = 1000;
 
 const useStyles = makeStyles(styles);
 
@@ -91,37 +91,56 @@ const MyContainerNavigation = () => {
    * 창고 관련 const 들 모음
    */
   const stageRef = useRef(null);
-  const layerRef = useRef(null); 
+  const layerRef = useRef(null);
 
-  // Initial Setting the container array 초기 세팅
-  const initialContainer = Array.from({ length: CANVAS_SIZE }, () =>
-    Array.from({ length: CANVAS_SIZE }, () => ({
-      type: "empty",
-      code: "air",
-    }))
-  );
-  // 사각형을 추가하고 관리하는 State 추가
-  const [rectangles, setRectangles] = useState([]);
   // 줌 인, 줌 아웃을 위한 Scale
   const [scale, setScale] = useState(1); // 초기 줌 값
-  // 벽 생성 시에 클릭하면 생성되는 시작점, 끝점 스팟
-  const [tempSpots, setTempSpots] = useState([]);
+
+  // 사각형을 추가하고 관리하는 State 추가
+  const [locations, setLocations] = useState([
+    {
+      id: "0",
+      x: 0,
+      y: 0,
+      z: 0,
+      width: 0,
+      height: 0,
+      fill: "blue",
+      draggable: false,
+      order: 0,
+      name: "임시",
+      type: "임시",
+      rotation: 0,
+    },
+  ]);
+
+  // 마지막으로 클릭한 상자를 추적하는 상태 추가
+  const [selectedLocation, setSelectedLocation] = useState(null);
+  // 마지막으로 클릭한 상자를 수정하는 폼을 띄우기 위한 상태 추가
+  const [selectedLocationTransform, setSelectedLocationTransform] =
+    useState(null);
+  // 현재 벽 생성 / 일반 커서 를 선택하기 위한 State
+  const [currentSetting, setCurrentSetting] = useState("location");
   // 상자의 hover Effect를 위한 상태 추가
   const [hoveredRectId, setHoveredRectId] = useState(null);
-  // 마지막으로 클릭한 상자를 추적하는 상태 추가
-  const [selectedRect, setSelectedRect] = useState(null);
-  // 마지막으로 클릭한 상자를 수정하는 폼을 띄우기 위한 상태 추가
-  const [selectedRectTransform, setSelectedRectTransform] = useState(null);
-
-  // 현재 어떤 모드인지를 추척하는 메서드
-  const [currentSetting, setCurrentSetting] = useState(null); 
-
-  // 벽 생성을 위한 초기 선택값
-  const [wallStartPoint, setWallStartPoint] = useState(null);
 
   // 앙커를 추가하고 관리하는 State 추가
-  const [anchors, setAnchors] = useState([]);
+  const [anchors, setAnchors] = useState([
+    {
+      id: "0",
+      x: 0,
+      y: 0,
+      radius: 0,
+      stroke: "#666",
+      fill: "#ddd",
+      opacity: 1,
+      strokeWidth: 2,
+      draggable: false,
+    },
+  ]);
 
+  // 마우스 포인터에 닿은 앙커를 기록하는 것
+  const [hoveredAnchor, setHoveredAnchor] = useState(null);
   // 선택된 층을 알려주는 Method
   const [selectedFloor, setSelectedFloor] = useState(1);
 
@@ -137,8 +156,8 @@ const MyContainerNavigation = () => {
   const [columns, setColumns] = useState([]);
   const hotTableRef = useRef(null);
 
-  const [openModal, setOpenModal] = useState(false); 
-  const [columnSelectionStep, setColumnSelectionStep] = useState(0); 
+  const [openModal, setOpenModal] = useState(false);
+  const [columnSelectionStep, setColumnSelectionStep] = useState(0);
   const [selectedColumns, setSelectedColumns] = useState({
     barcode: null,
     name: null,
@@ -176,7 +195,7 @@ const MyContainerNavigation = () => {
       setColumns(formattedColumns);
       fileData.splice(0, 1);
       convertToArrayOfArraysModal(fileData);
-      setOpenModal(true); 
+      setOpenModal(true);
     };
     reader.readAsArrayBuffer(file);
   };
@@ -216,7 +235,6 @@ const MyContainerNavigation = () => {
       setColumnSelectionStep(columnSelectionStep + 1);
     }
   };
-
 
   // 최종적으로 선택된 칼럼에 해당하는 데이터를 보낸다.
   const finalizeSelection = () => {
@@ -264,38 +282,85 @@ const MyContainerNavigation = () => {
     }
   };
 
-  // 컨버스에 있는 사각형들의 정보를 저장한다.
-  const handleSave = async () => {
-    const rectData = rectangles.map((rect) => ({
-      id: rect.id,
-      x: rect.x,
-      y: rect.y,
-      width: rect.width,
-      height: rect.height,
-      fill: rect.fill,
-      type: rect.type,
-      name: rect.name,
-      rotation: rect.rotation,
-    }));
+  // State to manage the list of import/export dates
+  const [imExportList, setImExportList] = useState([]);
+  // State to store the detailed data
+  const [detailedData, setDetailedData] = useState([]);
+  // State to open the modal when a date is clicked
+  const [openDetailModal, setOpenDetailModal] = useState(false);
 
+  // Function to fetch import/export data
+  const fetchImExportData = async () => {
     try {
-      const response = await fetch("/api/save-map", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(rectData),
-      });
+      const importResponse = await fetch(
+        "https://i11a508.p.ssafy.io/api/products/import?businessId=1",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const exportResponse = await fetch(
+        "https://i11a508.p.ssafy.io/api/products/export?businessId=1",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-      if (response.ok) {
-        console.log("Map data saved successfully");
-      } else {
-        console.error("Error saving map data");
-      }
+      const importData = await importResponse.json();
+      const exportData = await exportResponse.json();
+
+      const imExportData = [
+        ...importData.result.map((item) => ({
+          date: item.date,
+          type: "입고",
+          ...item,
+        })),
+        ...exportData.result.map((item) => ({
+          date: item.date,
+          type: "출고",
+          ...item,
+        })),
+      ];
+
+      // Extract unique dates
+      const uniqueDateSet = new Set(
+        imExportData.map((item) => `${item.date}###${item.type}`)
+      );
+      const uniqueDates = Array.from(uniqueDateSet).map((key) => {
+        const [date, type] = key.split("###")
+        return { date, type };
+      });
+      
+      setImExportList(uniqueDates);
+      setDetailedData(imExportData);
     } catch (error) {
-      console.error("Error saving map data:", error);
+      console.error("Error fetching import/export data:", error);
     }
   };
+
+  // Fetch import/export data when component mounts
+  useEffect(() => {
+    fetchImExportData();
+  }, []);
+
+  // Handle cell click to show details
+  const handleCellClick = (date, type) => {
+    const filteredData = detailedData.filter(
+      (item) => item.date === date && item.type === type
+    );
+    setModalTableData(filteredData);
+    setOpenDetailModal(true);
+  };
+
+  /**
+   * Location 함수 영역
+   */
+
   // Add this helper function to clear existing anchors and lines
   const clearAnchorsAndLines = () => {
     anchorsRef.current.forEach(({ start, end, line }) => {
@@ -306,40 +371,73 @@ const MyContainerNavigation = () => {
     anchorsRef.current = [];
   };
 
-  // Load the rectangle data from the local public/map directory
-  const loadMapFromLocal = async () => {
+  // API를 통해 해당하는 창고(번호)의 모든 location(적재함)과 wall(벽)을 가져오는 메서드
+  const getWarehouseAPI = async () => {
     try {
-      const response = await fetch("/api/load-map", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        "https://i11a508.p.ssafy.io/api/warehouses/2",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (response.ok) {
-        const { rectData, anchorData } = await response.json();
-        setRectangles(rectData); // 사각형들
-        clearAnchorsAndLines(); // Load 전 초기화
+        const apiConnection = await response.json();
+        const warehouseData = apiConnection.result; // 데이터 추출
 
+        // 받아온 데이터 중 로케이션 데이터 처리
+        const locations = warehouseData.locations;
+        if (!locations) {
+          console.error("Locations data not found");
+          return;
+        }
+        const newLocations = locations.map((location, index) => {
+          return {
+            id: location.id.toString(),
+            x: location.xposition,
+            y: location.yposition,
+            width: location.xsize || 50,
+            height: location.ysize || 50,
+            z: 5,
+            fill: "blue",
+            draggable: true,
+            order: index,
+            name: location.name || `적재함 ${index}`,
+            type: "location",
+            rotation: 0,
+          };
+        });
+
+        // 벽 데이터 처리
+        const walls = warehouseData.walls;
+        if (!walls) {
+          console.error("Walls data not found");
+          return;
+        }
+        clearAnchorsAndLines();
         const existingAnchors = [];
         const newAnchors = [];
 
-        const getOrCreateAnchor = (x, y) => {
+        // 이미 존재하는 앙커를 가져오거나 생성하는 메서드 정의
+        const getOrCreateAnchor = (id, x, y) => {
           let existingAnchor = findExistingAnchor(existingAnchors, x, y);
           if (!existingAnchor) {
-            existingAnchor = buildAnchor(x, y);
+            existingAnchor = buildAnchor(id, x, y);
             existingAnchors.push(existingAnchor);
           }
           return existingAnchor;
         };
 
-        anchorData.forEach(({ startX, startY, endX, endY }) => {
-          const startAnchor = getOrCreateAnchor(startX, startY);
-          const endAnchor = getOrCreateAnchor(endX, endY);
+        walls.forEach(({ startID, startX, startY, endID, endX, endY }) => {
+          const startAnchor = getOrCreateAnchor(startID, startX, startY);
+          const endAnchor = getOrCreateAnchor(endID, endX, endY);
 
           const newLine = new Konva.Line({
             points: [startX, startY, endX, endY],
-            stroke: "black",
+            stroke: "brown",
             strokeWidth: 10,
             lineCap: "round",
           });
@@ -354,11 +452,13 @@ const MyContainerNavigation = () => {
         anchorsRef.current = newAnchors;
         newAnchors.forEach(({ line }) => layerRef.current.add(line));
         layerRef.current.batchDraw();
+
+        setLocations(newLocations);
       } else {
-        console.error("Error loading map data");
+        console.error("Error loading locations data");
       }
     } catch (error) {
-      console.error("Error loading map data:", error);
+      console.error("Error loading locations data:", error);
     }
   };
 
@@ -417,27 +517,7 @@ const MyContainerNavigation = () => {
           dash={[10, 10]}
         />
       );
-    }
-    for (let i = 0; i <= CANVAS_SIZE / GRID_SIZE_SUB_10; i++) {
-      const pos = i * GRID_SIZE_SUB_10;
-      lines.push(
-        <Line
-          key={`sub10h${i}`}
-          points={[0, pos, CANVAS_SIZE, pos]}
-          stroke="whitesmoke"
-          strokeWidth={0.5}
-          dash={[5, 5]}
-        />
-      );
-      lines.push(
-        <Line
-          key={`sub10v${i}`}
-          points={[pos, 0, pos, CANVAS_SIZE]}
-          stroke="whitesmoke"
-          strokeWidth={0.5}
-          dash={[5, 5]}
-        />
-      );
+      // Handle more grid lines for finer detail
     }
     return lines;
   };
@@ -446,8 +526,16 @@ const MyContainerNavigation = () => {
   const Pointer = (event) => {
     const { x, y } = event.target.getStage().getPointerPosition();
     var stageAttrs = event.target.getStage().attrs;
-    x = (x - stageAttrs.x) / stageAttrs.scaleX;
-    y = (y - stageAttrs.y) / stageAttrs.scaleY;
+
+    if (!stageAttrs.x) {
+      // 드래그 하지 않음
+      x = x / stageAttrs.scaleX;
+      y = y / stageAttrs.scaleY;
+    } else {
+      // 드래그해서 새로운 stageAttrs의 x,y가 생김
+      x = (x - stageAttrs.x) / stageAttrs.scaleX;
+      y = (y - stageAttrs.y) / stageAttrs.scaleY;
+    }
     return { x, y };
   };
 
@@ -455,13 +543,15 @@ const MyContainerNavigation = () => {
   const checkDeselect = (e) => {
     const clickedOnEmpty = e.target === e.target.getStage();
     if (clickedOnEmpty) {
-      setSelectedRectTransform(null);
+      setSelectedLocationTransform(null);
     }
   };
+
   /**
-   * 앙커를 추가하고 불러올 수 있다.
+   * 벽 생성 파트
    */
-  // 선을 잇는 기능을 넣기 위한 거시기
+
+  // 선을 잇는 기능을 넣기 위한 State
   const [line, setLine] = useState(null);
   const [startPos, setStartPos] = useState(null);
 
@@ -476,19 +566,19 @@ const MyContainerNavigation = () => {
     layerRef.current.batchDraw();
   };
 
-  // --- Build Anchor Function ---
-  const buildAnchor = (x, y) => {
+  // --- 벽의 기준점을 생성하는 메서드 ---
+  const buildAnchor = (id, x, y) => {
     const layer = layerRef.current;
     const newAnchor = new Konva.Circle({
-      id: `anchor_${anchors.length}`,
-      x: x,
-      y: y,
+      id: id,
+      x: Math.round(x),
+      y: Math.round(y),
       radius: 20,
       stroke: "#666",
       fill: "#ddd",
       opacity: 0,
       strokeWidth: 2,
-      draggable: true,
+      draggable: currentSetting !== "wall",
     });
     layer.add(newAnchor);
     setAnchors((prevAnchors) => [...prevAnchors, newAnchor]);
@@ -498,16 +588,18 @@ const MyContainerNavigation = () => {
       this.strokeWidth(4);
       this.opacity(1);
       this.moveToTop();
+      setHoveredAnchor(this);
     });
     newAnchor.on("mouseout", function () {
       document.body.style.cursor = "default";
       this.strokeWidth(2);
       this.opacity(0);
       this.moveToTop();
+      setHoveredAnchor(null);
     });
 
     newAnchor.on("dragmove", function () {
-      updateDottedLines();
+      updateLinesBetweenAnchors();
       highlightOverlappingAnchors(this);
       this.moveToTop();
     });
@@ -519,16 +611,15 @@ const MyContainerNavigation = () => {
 
     return newAnchor;
   };
-
-  //선 구성
-  const updateDottedLines = () => {
+  // 벽의 기준점과 다른 기준점 사이의 선을 만드는 함수
+  const updateLinesBetweenAnchors = () => {
     anchorsRef.current.forEach(({ line, start, end }) => {
       line.points([start.x(), start.y(), end.x(), end.y()]);
     });
     layerRef.current.batchDraw();
   };
 
-  // 클릭 후에 다른 앙커로 갔을 때 앙커가 빛나
+  // 마우스 액션과 무관하게 마우스가 위로 올라가면 Anchor를 강조하는 함수
   const highlightOverlappingAnchors = (draggedAnchor) => {
     const stage = stageRef.current;
     stage.find("Circle").forEach((anchor) => {
@@ -545,6 +636,7 @@ const MyContainerNavigation = () => {
     });
   };
 
+  // 두개의 anchor가 겹쳤는지를 확인하는 매서드
   const isOverlapping = (anchor1, anchor2) => {
     const a1 = anchor1.getClientRect();
     const a2 = anchor2.getClientRect();
@@ -556,6 +648,7 @@ const MyContainerNavigation = () => {
     );
   };
 
+  // 두 개의 anchor를 규합하고 선의 관계를 정립하는 메서드
   const mergeAnchors = (draggedAnchor) => {
     const stage = stageRef.current;
     const layer = layerRef.current;
@@ -565,7 +658,7 @@ const MyContainerNavigation = () => {
       if (anchor === draggedAnchor) return;
       if (isOverlapping(draggedAnchor, anchor)) {
         updateAnchorReferences(draggedAnchor, anchor);
-        draggedAnchor.destroy();
+        draggedAnchor.destroy(); // Remove the dragged anchor
         layer.batchDraw();
         merged = true;
       }
@@ -583,12 +676,20 @@ const MyContainerNavigation = () => {
       if (anchorObj.end === draggedAnchor) anchorObj.end = anchor;
       count++;
     });
-    updateDottedLines();
+    updateLinesBetweenAnchors();
   };
 
   //실시간 반응을 위해서 currentSetting에 대한 함수 작동을 메서드로 넘기기
   const changeCurrentSetting = (value) => {
     setCurrentSetting(value);
+
+    const newDraggable = value !== "wall";
+    anchorsRef.current.forEach(({ start, end }) => {
+      start.draggable(newDraggable);
+      end.draggable(newDraggable);
+    });
+
+    layerRef.current.batchDraw();
   };
 
   const [lineData, setLineData] = useState({
@@ -656,25 +757,30 @@ const MyContainerNavigation = () => {
       if (currentSetting === "wall") {
         // 정확한 위치를 얻어온다.
         const pos = stage.getPointerPosition();
-        var stageAttrs = stage.attrs; 
+        var stageAttrs = stage.attrs;
+        //드래그 없음
         if (!stageAttrs.x) {
-          // 드래그 하지 않음
-          pos.x = pos.x / stageAttrs.scaleX; 
+          pos.x = pos.x / stageAttrs.scaleX;
           pos.y = pos.y / stageAttrs.scaleY;
-        } else {
-          // 드래그해서 새로운 stageAttrs의 x,y가 생김
+        } // 드래그 있음
+        else {
           pos.x = (pos.x - stageAttrs.x) / stageAttrs.scaleX;
           pos.y = (pos.y - stageAttrs.y) / stageAttrs.scaleY;
         }
-        // 무조건 10 pixel 단위로 반올림하여 시작 위치 보정
-        pos.x = Math.round(pos.x / 10) * 10;
-        pos.y = Math.round(pos.y / 10) * 10;
 
-        setStartPos(pos); 
+        if (hoveredAnchor !== null) {
+          pos.x = hoveredAnchor.attrs.x;
+          pos.y = hoveredAnchor.attrs.y;
+        } else {
+          // 10단위로 변경
+          pos.x = Math.round(pos.x / 10) * 10;
+          pos.y = Math.round(pos.y / 10) * 10;
+        }
+        setStartPos(pos);
         const newLine = new Konva.Line({
           stroke: "black",
           strokeWidth: 5,
-          listening: false, 
+          listening: false,
           points: [pos.x, pos.y, pos.x, pos.y],
         });
         layer.add(newLine);
@@ -688,19 +794,19 @@ const MyContainerNavigation = () => {
         if (!line) return;
         // 정확한 위치를 얻어온다.
         const pos = stage.getPointerPosition();
-        var stageAttrs = stage.attrs; 
+        var stageAttrs = stage.attrs;
         if (!stageAttrs.x) {
           // 드래그 하지 않음
           pos.x = pos.x / stageAttrs.scaleX;
           pos.y = pos.y / stageAttrs.scaleY;
         } else {
           // 드래그해서 새로운 stageAttrs의 x,y가 생김
-          pos.x = (pos.x - stageAttrs.x) / stageAttrs.scaleX; 
+          pos.x = (pos.x - stageAttrs.x) / stageAttrs.scaleX;
           pos.y = (pos.y - stageAttrs.y) / stageAttrs.scaleY;
         }
 
         const points = [startPos.x, startPos.y, pos.x, pos.y];
-        //라인 그리기
+
         line.points(points);
         layer.batchDraw();
       }
@@ -715,10 +821,10 @@ const MyContainerNavigation = () => {
         if (e.target.hasName("target")) {
           // 정확한 위치를 얻어온다.
           const pos = stage.getPointerPosition();
-          var stageAttrs = stage.attrs; 
+          var stageAttrs = stage.attrs;
           if (!stageAttrs.x) {
             // 드래그 하지 않음
-            pos.x = pos.x / stageAttrs.scaleX; 
+            pos.x = pos.x / stageAttrs.scaleX;
             pos.y = pos.y / stageAttrs.scaleY;
           } else {
             // 드래그해서 새로운 stageAttrs의 x,y가 생김
@@ -732,18 +838,26 @@ const MyContainerNavigation = () => {
         } else {
           line.remove();
           layer.draw();
+          //벽을 추가하기 위한 메서드
           // 정확한 위치를 얻어온다.
           const pos = stage.getPointerPosition();
           var stageAttrs = stage.attrs;
           if (!stageAttrs.x) {
             // 드래그 하지 않음
-            pos.x = pos.x / stageAttrs.scaleX; 
+            pos.x = pos.x / stageAttrs.scaleX;
             pos.y = pos.y / stageAttrs.scaleY;
           } else {
             // 드래그해서 새로운 stageAttrs의 x,y가 생김
-            pos.x = (pos.x - stageAttrs.x) / stageAttrs.scaleX; 
+            pos.x = (pos.x - stageAttrs.x) / stageAttrs.scaleX;
             pos.y = (pos.y - stageAttrs.y) / stageAttrs.scaleY;
           }
+
+          // 앙커 위에서 벽을 생성하면 그 앙커를 기준으로 생성하게끔 하는 역할
+          if (hoveredAnchor !== null) {
+            pos.x = hoveredAnchor.attrs.x;
+            pos.y = hoveredAnchor.attrs.y;
+          }
+
           handleAddWall(startPos, pos);
 
           setLine(null);
@@ -752,23 +866,47 @@ const MyContainerNavigation = () => {
       }
     };
 
-    //벽을 추가한다.
+    // 벽을 추가한다.
     const handleAddWall = (start, end) => {
-      /**
-       * wall setting 일때만 변경될 수 있도록 설정
-       */
       if (currentSetting === "wall") {
+        // 새로운 앙커를 생성하는 메서드
+        const getOrCreateAnchor = (x, y) => {
+          let existingAnchor = anchorsRef.current.find(
+            (anchor) =>
+              isSamePosition(anchor.start.x(), anchor.start.y(), x, y) ||
+              isSamePosition(anchor.end.x(), anchor.end.y(), x, y)
+          );
+          if (!existingAnchor) {
+            const newId = anchorsRef.current.length
+              ? Math.max(
+                  ...anchorsRef.current.flatMap(({ start, end }) => [
+                    parseInt(start.id(), 10),
+                    parseInt(end.id(), 10),
+                  ])
+                ) + 1
+              : 1;
+            existingAnchor = buildAnchor(newId, x, y);
+          } else {
+            existingAnchor = isSamePosition(
+              existingAnchor.start.x(),
+              existingAnchor.start.y(),
+              x,
+              y
+            )
+              ? existingAnchor.start
+              : existingAnchor.end;
+          }
+          return existingAnchor;
+        };
 
-        const newAnchorTop = buildAnchor(start.x, start.y);
-        const newAnchorBottom = buildAnchor(end.x, end.y);
+        const newAnchorTop = getOrCreateAnchor(start.x, start.y);
+        const newAnchorBottom = getOrCreateAnchor(end.x, end.y);
 
         const newLine = new Konva.Line({
           points: [start.x, start.y, end.x, end.y],
           stroke: "brown",
           strokeWidth: 10,
           lineCap: "round",
-          // dash: [10, 10, 0, 10],
-          // opacity: 0.3,
         });
         const layer = layerRef.current;
         layer.add(newLine);
@@ -778,6 +916,7 @@ const MyContainerNavigation = () => {
           end: newAnchorBottom,
           line: newLine,
         });
+
         layer.batchDraw();
       }
     };
@@ -796,8 +935,8 @@ const MyContainerNavigation = () => {
     /**
      * 선택된 사각형의 물품 목록을 보여준다.
      */
-    if (selectedRect) {
-      fetchRectangleData(selectedRect.id).then((data) => {
+    if (selectedLocation) {
+      fetchRectangleData(selectedLocation.id).then((data) => {
         setRectangleData(data);
       });
     }
@@ -808,87 +947,55 @@ const MyContainerNavigation = () => {
       stage.off("mousemove", handleMouseMove);
       stage.off("mouseup", handleMouseUp);
     };
-  }, [line, startPos, currentSetting, selectedRect]);
+  }, [line, startPos, currentSetting, selectedLocation]);
+  
+  //처음에 창고 정보를 불러온다.
+  useEffect(() => {
+    getWarehouseAPI();
+  }, []);
 
   return (
     <div style={{ marginBottom: "1%", margin: "0%" }}>
       <div>
         {/** Main 영역 시작 */}
         <main style={{ display: "flex" }}>
+          
+          {/* Detail Modal */}
           <Dialog
-            open={openModal}
-            onClose={() => setOpenModal(false)}
+            open={openDetailModal}
+            onClose={() => setOpenDetailModal(false)}
             maxWidth="lg"
             fullWidth
           >
-            <DialogTitle>
-              {columnSelectionStep === 0 && "바코드가 있는 열을 선택하세요."}
-              {columnSelectionStep === 1 && "상품 이름이 있는 열을 선택하세요."}
-              {columnSelectionStep === 2 && "수량이 있는 열을 선택하세요."}
-              {columnSelectionStep === 3 && "유통기한이 있는 상품들입니까?"}
-              {columnSelectionStep === 4 && "유통 기한 칼럼을 선택하세요."}
-              {columnSelectionStep === 5 &&
-                "최종적으로 선택된 데이터를 확인하세요."}
-            </DialogTitle>
+            <DialogTitle>상세 데이터</DialogTitle>
             <DialogContent>
-              {columnSelectionStep < 3 && (
-                <div>
-                  <p>
-                    {columnSelectionStep === 0 &&
-                      "바코드가 있는 열을 선택하세요."}
-                    {columnSelectionStep === 1 &&
-                      "상품 이름이 있는 열을 선택하세요."}
-                    {columnSelectionStep === 2 &&
-                      "수량이 있는 열을 선택하세요."}
-                  </p>
-                </div>
+              {ModalTableData.length > 0 && (
+                <HotTable
+                  height={600}
+                  ref={hotTableRef}
+                  data={ModalTableData}
+                  colWidths={[100, 100, 100, 100, 100, 100]}
+                  colHeaders={["날짜", "유형", "바코드", "상품명", "수량", "송장번호"]}
+                  dropdownMenu={true}
+                  hiddenColumns={{
+                    indicators: true,
+                  }}
+                  contextMenu={true}
+                  multiColumnSorting={true}
+                  filters={true}
+                  rowHeaders={true}
+                  autoWrapCol={true}
+                  autoWrapRow={true}
+                  afterGetColHeader={alignHeaders}
+                  beforeRenderer={addClassesToRows}
+                  manualRowMove={true}
+                  navigableHeaders={true}
+                  licenseKey="non-commercial-and-evaluation"
+                />
               )}
-              {columnSelectionStep === 3 && (
-                <div>
-                  <ButtonIn
-                    onClick={() => setColumnSelectionStep(4)}
-                    color="primary"
-                  >
-                    Yes
-                  </ButtonIn>
-                  <ButtonIn
-                    onClick={() => setColumnSelectionStep(5)}
-                    color="primary"
-                  >
-                    No
-                  </ButtonIn>
-                </div>
-              )}
-              <HotTable
-                height={600}
-                ref={hotTableRef}
-                data={ModalTableData}
-                colHeaders={columns.map((col) => col.label)}
-                dropdownMenu={true}
-                hiddenColumns={{
-                  indicators: true,
-                }}
-                contextMenu={true}
-                multiColumnSorting={true}
-                filters={true}
-                rowHeaders={true}
-                autoWrapCol={true}
-                autoWrapRow={true}
-                afterGetColHeader={alignHeaders}
-                beforeRenderer={addClassesToRows}
-                manualRowMove={true}
-                navigableHeaders={true}
-                licenseKey="non-commercial-and-evaluation"
-                afterOnCellMouseDown={handleColumnClick}
-              />
             </DialogContent>
             <DialogActions>
-              {columnSelectionStep === 5 && (
-                <ButtonIn onClick={finalizeSelection} color="primary">
-                  네
-                </ButtonIn>
-              )}
-              <ButtonIn onClick={() => setOpenModal(false)} color="primary">
+              <ButtonIn onClick={() => setOpenDetailModal(false)} color="primary">
                 닫기
               </ButtonIn>
             </DialogActions>
@@ -928,18 +1035,18 @@ const MyContainerNavigation = () => {
             </div>
             <hr />
             <h4>현재 적재함 목록</h4>
-            {rectangles.length !== 0 ? (
+            {locations.length !== 0 ? (
               <div>
                 <ul
                   style={{
                     height: "100%",
-                    overflowY: "auto", 
+                    overflowY: "auto",
                   }}
                 >
-                  {rectangles
-                    .filter((rectangles) => rectangles.type === "location")
-                    .map((rectangles, index) => (
-                      <li key={index}>{rectangles.id}번</li>
+                  {locations
+                    .filter((locations) => locations.type === "location")
+                    .map((locations, index) => (
+                      <li key={index}>{locations.id}번</li>
                     ))}
                 </ul>
               </div>
@@ -960,7 +1067,7 @@ const MyContainerNavigation = () => {
             }}
           >
             <h3>현재 선택된 재고함</h3>
-            {selectedRect ? (
+            {selectedLocation ? (
               <div>
                 <div
                   id="상자 정보"
@@ -974,17 +1081,17 @@ const MyContainerNavigation = () => {
                       width: "45%",
                     }}
                   >
-                    <b>ID : {selectedRect.id}</b>
+                    <b>ID : {selectedLocation.id}</b>
                     <br />
                     <b>
-                      X : {selectedRect.x} | Y : {selectedRect.y}
+                      X : {selectedLocation.x} | Y : {selectedLocation.y}
                     </b>
                     <br />
-                    <b>Name : {selectedRect.name}</b>
+                    <b>Name : {selectedLocation.name}</b>
                     <br />
-                    <b>Type : {selectedRect.type}</b>
+                    <b>Type : {selectedLocation.type}</b>
                     <br />
-                    <b>층수 : {selectedRect.z}</b>
+                    <b>층수 : {selectedLocation.z}</b>
                   </div>
                   <div
                     id="상자의 z Index를 시각화"
@@ -1000,51 +1107,47 @@ const MyContainerNavigation = () => {
                       flexDirection: "column-reverse",
                     }}
                   >
-                    {Array.from({ length: selectedRect.z }).map((_, index) => (
-                      <ButtonIn
-                        key={index+1}
-                        style={{
-                          display: "block",
-                          width: "90%",
-                          height: "30px",
-                          backgroundColor:
-                            selectedFloor === index+1
-                              ? "blue"
-                              : "white",
-                          marginBottom: "5px",
-                          borderRadius: "5px",
-                          border: "1px solid black",
-                          textAlign: "center",
-                          lineHeight: "30px",
-                          marginLeft: "auto",
-                          marginRight: "auto",
-                          cursor: "pointer",
-                        }}
-                        onClick={() =>
-                          setSelectedFloor(
-                            selectedFloor === index+1
-                              ? null
-                              : index+1
-                          )
-                        }
-                        onMouseEnter={(e) => {
-                          e.target.style.backgroundColor =
-                            selectedFloor === index+1
-                              ? "blue"
-                              : "lightgray";
-                          e.target.style.border = "2px solid red";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.backgroundColor =
-                            selectedFloor === index+1
-                              ? "blue"
-                              : "white";
-                          e.target.style.border = "1px solid black";
-                        }}
-                      >
-                        {index+1} 층
-                      </ButtonIn>
-                    ))}
+                    {Array.from({ length: selectedLocation.z }).map(
+                      (_, index) => (
+                        <ButtonIn
+                          key={index + 1}
+                          style={{
+                            display: "block",
+                            width: "90%",
+                            height: "30px",
+                            backgroundColor:
+                              selectedFloor === index + 1 ? "blue" : "white",
+                            marginBottom: "5px",
+                            borderRadius: "5px",
+                            border: "1px solid black",
+                            textAlign: "center",
+                            lineHeight: "30px",
+                            marginLeft: "auto",
+                            marginRight: "auto",
+                            cursor: "pointer",
+                          }}
+                          onClick={() =>
+                            setSelectedFloor(
+                              selectedFloor === index + 1 ? null : index + 1
+                            )
+                          }
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor =
+                              selectedFloor === index + 1
+                                ? "blue"
+                                : "lightgray";
+                            e.target.style.border = "2px solid red";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor =
+                              selectedFloor === index + 1 ? "blue" : "white";
+                            e.target.style.border = "1px solid black";
+                          }}
+                        >
+                          {index + 1} 층
+                        </ButtonIn>
+                      )
+                    )}
                   </div>
                 </div>
                 <hr />
@@ -1098,24 +1201,6 @@ const MyContainerNavigation = () => {
                 height: "60vh",
                 position: "relative",
                 overflow: "hidden",
-                cursor: currentSetting === "wall" ? "crosshair" : "default",
-              }}
-              onClick={(e) => {
-                if (currentSetting === "wall") {
-                  const stage = stageRef.current;
-                  const pointerPosition = stage.getPointerPosition();
-                  var stageAttrs = stage.attrs;
-                  pointerPosition.x =
-                    (pointerPosition.x - stageAttrs.x) / stageAttrs.scaleX;
-                  pointerPosition.y =
-                    (pointerPosition.y - stageAttrs.y) / stageAttrs.scaleY;
-                  setTempSpots([...tempSpots, pointerPosition]);
-                  if (!wallStartPoint) {
-                    setWallStartPoint(pointerPosition);
-                  } else {
-                    handleAddWall(wallStartPoint, pointerPosition);
-                  }
-                }
               }}
             >
               <Stage
@@ -1131,7 +1216,7 @@ const MyContainerNavigation = () => {
               >
                 <Layer ref={layerRef}>
                   {generateGridLines()}
-                  {rectangles.map((rect, i) => (
+                  {locations.map((rect, i) => (
                     <RectangleTransformer
                       key={rect.id}
                       x={rect.x}
@@ -1140,26 +1225,17 @@ const MyContainerNavigation = () => {
                       height={rect.height}
                       fill={rect.fill}
                       shapeProps={rect}
-                      isSelected={rect.id === selectedRectTransform}
+                      isSelected={rect.id === selectedLocationTransform}
                       onSelect={() => {
-                        setSelectedRectTransform(rect.id);
-                        setSelectedRect(rect);
+                        setSelectedLocationTransform(rect.id);
+                        setSelectedLocation(rect);
                         setSelectedFloor(1);
                       }}
                       onChange={(newAttrs) => {
-                        const rects = rectangles.slice();
+                        const rects = locations.slice();
                         rects[i] = newAttrs;
-                        setRectangles(rects);
+                        setLocations(rects);
                       }}
-                    />
-                  ))}
-                  {tempSpots.map((spot, index) => (
-                    <Circle
-                      key={index}
-                      x={spot.x}
-                      y={spot.y}
-                      radius={5}
-                      fill="red"
                     />
                   ))}
                 </Layer>
@@ -1176,8 +1252,7 @@ const MyContainerNavigation = () => {
               >
                 <ButtonIn onClick={handleZoomIn}>Zoom In</ButtonIn>
                 <ButtonIn onClick={handleZoomOut}>Zoom Out</ButtonIn>
-                <ButtonIn onClick={handleSave}>Save</ButtonIn>
-                <ButtonIn onClick={loadMapFromLocal}>Load</ButtonIn>
+                <ButtonIn onClick={getWarehouseAPI}>Load From Local</ButtonIn>
               </div>
             </div>
             <div
@@ -1188,9 +1263,27 @@ const MyContainerNavigation = () => {
                 width: "100%",
                 height: "17vh",
                 marginTop: "20px",
+                overflowY: "auto",
               }}
             >
-              알림창
+              <div className="notification">
+                <h3>Im-Export Dates</h3>
+                <ul style={{ listStyle: "none", padding: 0 }}>
+                  {imExportList.map(({ date, type }, index) => (
+                    <li
+                      key={index}
+                      onClick={() => handleCellClick(date, type)}
+                      style={{
+                        cursor: "pointer",
+                        padding: "5px",
+                        borderBottom: "1px solid #ccc",
+                      }}
+                    >
+                      {date.slice(0,10)} / {type}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </div>
         </main>

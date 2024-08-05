@@ -968,6 +968,11 @@ const MyContainerMap = () => {
     };
   }, [line, startPos, currentSetting, hoveredAnchor]);
 
+  //처음에 창고 정보를 불러온다.
+  useEffect(() => {
+    getWarehouseAPI();
+  }, []);
+
   //--- 리턴 Part ---
 
   return (

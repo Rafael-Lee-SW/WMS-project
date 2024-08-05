@@ -18,6 +18,9 @@ import styles from "/styles/jss/nextjs-material-kit/pages/users.js";
 import AOS from "aos";
 import "aos/dist/aos.css";
 
+// Import useRouter to access route parameters
+import { useRouter } from "next/router";
+
 // 다이나믹 import 테스트
 const DynamicMyContainerMap = dynamic(
   () => import("/pages-sections/Components-Sections/MyContainerMap.jsx"),
@@ -37,14 +40,16 @@ const useStyles = makeStyles(styles);
 export default function Components(props) {
   const classes = useStyles();
   const { ...rest } = props;
-  
+  const router = useRouter();
+  const { id } = router.query; // Destructure id from router.query to get the current warehouse ID
+
   useEffect(() => {
     AOS.init({
       duration: 100,
     });
   }, []);
 
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(1);
 
   const componentsArray = [
     <DynamicMyContainerMap key="DynamicMyContainerMap" />,
@@ -83,7 +88,7 @@ export default function Components(props) {
           <div className={classes.container}>
             <br />
             <div className={classes.flexContainer}>
-              <div className={classes.currentWarehouse}>현재 창고 : 1번</div>
+              <div className={classes.currentWarehouse}>현재 창고 : {id}</div>
               <div className={classes.buttonsContainer}>
                 <Button
                   color="primary"
