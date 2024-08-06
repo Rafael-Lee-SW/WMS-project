@@ -4,8 +4,12 @@ import com.a508.wms.business.domain.Business;
 import com.a508.wms.business.service.BusinessModuleService;
 import com.a508.wms.floor.domain.Floor;
 import com.a508.wms.floor.service.FloorModuleService;
+import com.a508.wms.location.service.LocationModuleService;
 import com.a508.wms.product.domain.Product;
 import com.a508.wms.product.dto.*;
+import com.a508.wms.product.exception.ProductExportException;
+import com.a508.wms.product.exception.ProductInvalidDataException;
+import com.a508.wms.product.exception.ProductInvalidRequestException;
 import com.a508.wms.product.mapper.ProductMapper;
 import com.a508.wms.product.repository.ProductRepository;
 import com.a508.wms.productdetail.domain.ProductDetail;
@@ -13,6 +17,8 @@ import com.a508.wms.productdetail.mapper.ProductDetailMapper;
 import com.a508.wms.productdetail.service.ProductDetailModuleService;
 import com.a508.wms.util.constant.ProductStorageTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;
+import com.a508.wms.warehouse.domain.Warehouse;
+import com.a508.wms.warehouse.service.WarehouseModuleService;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -37,6 +43,8 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ExportModuleService exportModuleService;
     private final int LIMIT_DAY=1;
+    private final WarehouseModuleService warehouseModuleService;
+    private final LocationModuleService locationModuleService;
 
     /**
      * 서비스의 모든 상품을 반환하는 기능
@@ -61,9 +69,12 @@ public class ProductService {
      */
     public ProductMainResponseDto findById(Long id) {
         log.info("[Service] find Products by id: {}", id);
-        Product product = productModuleService.findById(id);
-
-        return ProductMapper.fromProduct(product);
+        try {
+            Product product = productModuleService.findById(id);
+            return ProductMapper.fromProduct(product);
+        }catch (IllegalArgumentException e){
+            throw new ProductInvalidRequestException("id",id);
+        }
     }
 
     /**
@@ -74,6 +85,13 @@ public class ProductService {
      */
     public List<ProductMainResponseDto> findByProductDetailId(Long productDetailId) {
         log.info("[Service] find Products by productDetailId: {}", productDetailId);
+
+        try{
+            productDetailModuleService.findById(productDetailId);
+        }
+        catch (IllegalArgumentException e){
+            throw new ProductInvalidRequestException("productDetailId",productDetailId);
+        }
         final List<Product> products = productModuleService.findByProductDetailId(productDetailId);
 
         return products.stream()
@@ -90,11 +108,21 @@ public class ProductService {
 
     public List<ProductMainResponseDto> findByBusinessId(Long businessId) {
         log.info("[Service] find Products by businessId: {}", businessId);
+
+        try{
+            businessModuleService.findById(businessId);
+        }
+        catch(IllegalArgumentException e){
+            throw new ProductInvalidRequestException("businessId",businessId);
+        }
+
+
         final List<Product> products = productModuleService.findByBusinessId(businessId);
 
         return products.stream()
             .map(ProductMapper::fromProduct)
             .toList();
+
     }
 
     /**
@@ -105,6 +133,11 @@ public class ProductService {
      */
     public List<ProductResponseDto.DetailedResponse> findByWarehouseId(Long warehouseId) {
         log.info("[Service] find Products by warehouseId: {}", warehouseId);
+
+        if(warehouseModuleService.notExist(warehouseId)){
+            throw new ProductInvalidRequestException("warehouseId",warehouseId);
+        }
+
         final List<Product> products = productModuleService.findByWarehouseId(warehouseId);
 
         return products.stream()
@@ -121,6 +154,11 @@ public class ProductService {
     @Transactional
     public List<ProductMainResponseDto> findByLocationId(Long locationId) {
         log.info("[Service] find Products by locationId: {}", locationId);
+
+        if(locationModuleService.notExist(locationId)){
+            throw new ProductInvalidRequestException("locationId",locationId);
+        }
+
         final List<Product> products = productModuleService.findByLocationId(locationId);
         return products.stream()
             .map((product) ->
@@ -148,9 +186,12 @@ public class ProductService {
      */
     public void update(ProductUpdateRequestDto request) {
         log.info("[Service] update Product by id: {}", request.getProductId());
-        Product product = productModuleService.findById(request.getProductId());
-        productModuleService.update(request);
-        productModuleService.save(product);
+        try{
+            productModuleService.update(request);
+        }catch(IllegalArgumentException e){
+            throw new ProductInvalidRequestException("request",request);
+        }
+
     }
 
     /**
@@ -161,11 +202,14 @@ public class ProductService {
     @Transactional
     public void delete(Long id) {
         log.info("[Service] delete Product by id: {}", id);
-
-        Product product = productModuleService.findById(id);
-        product.updateStatus(StatusEnum.DELETED);
-
-        productModuleService.save(product);
+        try {
+            Product product = productModuleService.findById(id);
+            product.updateStatus(StatusEnum.DELETED);
+            productModuleService.save(product);
+        }
+        catch (IllegalArgumentException e){
+            throw new ProductInvalidRequestException("id",id);
+        }
     }
 
     /**
@@ -179,13 +223,32 @@ public class ProductService {
             productImportRequestDto);
         Long warehouseId = productImportRequestDto.getWarehouseId();
 
+        importValidate(productImportRequestDto.getBusinessId(),warehouseId);
+
         Floor defaultFloor = floorModuleService.findDefaultFloorByWarehouse(warehouseId);
-        log.info("data : {}",productImportRequestDto);
+
+        if(defaultFloor==null){
+            throw new ProductInvalidDataException("Default floor","null");
+        }
+
         productImportRequestDto.getData()
             .forEach(data -> {
                 importProduct(data, productImportRequestDto.getBusinessId(),
                     defaultFloor);
             });
+    }
+
+    private void importValidate(Long businessId, Long warehouseId) {
+        try {
+            Warehouse warehouse = warehouseModuleService.findById(warehouseId);
+
+            if (!Objects.equals(warehouse.getBusiness().getId(), businessId)) {
+                throw new ProductInvalidRequestException("businessId", businessId);
+            }
+        } catch(IllegalArgumentException e){
+            throw new ProductInvalidRequestException("warehouseId",warehouseId);
+        }
+
     }
 
     /**
@@ -238,6 +301,14 @@ public class ProductService {
     @Transactional
     public List<ProductExportResponseDto> exportProducts(ProductExportRequestDto request) {
         log.info("[Service] export Products by ProductExportRequestDto: {}", request);
+
+        try{
+            businessModuleService.findById(request.getBusinessId());
+        }
+        catch(IllegalArgumentException e){
+            throw new ProductInvalidRequestException("businessId",request.getBusinessId());
+        }
+
         productQuantityCheck(request);
 
         List<ExportResponseDto> datas = request.getData();
@@ -384,7 +455,7 @@ public class ProductService {
                 entry -> calculateProductQuantity(entry.getKey(), entry.getValue(), businessId)));
 
         if (containsImpossibleExportProduct(productQuantityResult)) {
-            throw new IllegalArgumentException("수량 부족");
+            throw new ProductExportException("수량 부족");
         }
 
         List<Long> movingProductBarcodes = new ArrayList<>();
@@ -394,7 +465,7 @@ public class ProductService {
             .forEach(entry -> movingProductBarcodes.add(entry.getKey()));
 
         if (!movingProductBarcodes.isEmpty()) {
-            throw new IllegalArgumentException(
+            throw new ProductExportException(
                 "해당 물품들의 이동이 필요합니다." + movingProductBarcodes);
         }
     }

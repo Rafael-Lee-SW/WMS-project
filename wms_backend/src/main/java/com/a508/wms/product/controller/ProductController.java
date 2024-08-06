@@ -3,6 +3,7 @@ package com.a508.wms.product.controller;
 
 import com.a508.wms.notification.dto.NotificationResponseDto;
 import com.a508.wms.product.dto.*;
+import com.a508.wms.product.exception.ProductInvalidRequestException;
 import com.a508.wms.product.service.ExportModuleService;
 import com.a508.wms.product.service.ImportModuleService;
 import com.a508.wms.product.service.ProductService;
@@ -59,8 +60,7 @@ public class ProductController {
             log.info("[Controller] find Products by businessId: {}", businessId);
             return new BaseSuccessResponse<>(productService.findByBusinessId(businessId));
         }else {
-            log.info("[Controller] find Products");
-            return new BaseSuccessResponse<>(productService.findAll());
+           throw new ProductInvalidRequestException("no Variable","null");
         }
     }
 
@@ -127,7 +127,7 @@ public class ProductController {
                     importModuleService.findAllByBusinessId(businessId));
             }
         } else {
-            return null;
+            throw new ProductInvalidRequestException("no Variable","null");
         }
     }
 
@@ -172,11 +172,9 @@ public class ProductController {
     @GetMapping("/export")
     public BaseSuccessResponse<List<ExportResponseDto>> findAllExportsByBusinessId(
         @RequestParam Long businessId) {
-        if (businessId != null) {
-            log.info("[Controller] find Exports by businessId: {}", businessId);
-            return new BaseSuccessResponse<>(exportModuleService.findAllByBusinessId(businessId));
-        }
-        return null;
+        log.info("[Controller] find Exports by businessId: {}", businessId);
+        return new BaseSuccessResponse<>(exportModuleService.findAllByBusinessId(businessId));
+
     }
 
 
@@ -189,14 +187,13 @@ public class ProductController {
     @GetMapping("/notification")
     public BaseSuccessResponse<NotificationResponseDto> findAllNotifications(
         @RequestParam Long businessId) {
-        if (businessId != null) {
-            log.info("[Controller] find Notifications by businessId: {}", businessId);
-            return new BaseSuccessResponse<>(NotificationResponseDto.builder()
-                .importResponseDtos(importModuleService.findAllByBusinessId(businessId))
-                .exportResponseDtos(exportModuleService.findAllByBusinessId(businessId))
-                .expirationProductResponseDtos(productService.findExpirationProducts(businessId))
-                .build());
-        }
-        return null;
+
+        log.info("[Controller] find Notifications by businessId: {}", businessId);
+        return new BaseSuccessResponse<>(NotificationResponseDto.builder()
+            .importResponseDtos(importModuleService.findAllByBusinessId(businessId))
+            .exportResponseDtos(exportModuleService.findAllByBusinessId(businessId))
+            .expirationProductResponseDtos(productService.findExpirationProducts(businessId))
+            .build());
+
     }
 }

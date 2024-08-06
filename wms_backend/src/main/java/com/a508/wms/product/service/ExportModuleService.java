@@ -1,8 +1,10 @@
 package com.a508.wms.product.service;
 
 import com.a508.wms.business.domain.Business;
+import com.a508.wms.business.repository.BusinessRepository;
 import com.a508.wms.product.domain.Export;
 import com.a508.wms.product.dto.ExportResponseDto;
+import com.a508.wms.product.exception.ProductInvalidRequestException;
 import com.a508.wms.product.mapper.ExportMapper;
 import com.a508.wms.product.repository.ExportRepository;
 import java.util.ArrayList;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Service;
 public class ExportModuleService {
 
     private final ExportRepository exportRepository;
+    private final BusinessRepository businessRepository;
 
     public void save(ExportResponseDto exportResponseDto, Business business) {
 
@@ -27,6 +30,9 @@ public class ExportModuleService {
     }
 
     public List<ExportResponseDto> findAllByBusinessId(Long businessId) {
+        if(!businessRepository.existsById(businessId)){
+            throw new ProductInvalidRequestException("businessId",businessId);
+        }
         List<ExportResponseDto> exportResponseDtos = new ArrayList<>();
         List<Export> exports = exportRepository.findAllByBusinessId(businessId);
         for (Export export : exports) {
