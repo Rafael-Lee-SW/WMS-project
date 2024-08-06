@@ -62,6 +62,7 @@
     "react-infinite-scroll-component": "^6.1.0",
     "react-konva": "^18.2.10",
     "react-modal": "^3.16.1",
+    "react-scroll": "^1.9.0",
     "react-slick": "^0.29.0",
     "react-window": "^1.8.10",
     "sass": "1.66.1",
