@@ -25,10 +25,19 @@ export default class MyApp extends App {
   render() {
     const { Component, pageProps, router } = this.props;
 
-    // Define the routes where the header should not be displayed
-    const noHeaderRoutes = ["/user/[id]"];
+    // 헤더가 출력되지 않는 페이지
+    const noHeaderRoutes = [
+      "/user/[id]",
+      "/user/select",
+      "/login",
+      "/mypage",
+      "/subDetail",
+      "/subscribe",
+      "/signup",
+      "/components",
+    ]; // 새로운 페이지가 생기면 추가한다.
 
-    // Check if the current route matches any of the routes in noHeaderRoutes
+    // 헤더를 사용하지 않을 페이지인지 체크
     const shouldDisplayHeader = !noHeaderRoutes.includes(router.pathname);
 
     return (
