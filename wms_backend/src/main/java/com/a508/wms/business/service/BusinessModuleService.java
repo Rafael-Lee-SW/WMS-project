@@ -22,8 +22,7 @@ public class BusinessModuleService {
      * @return BusinessDto
      */
     public Business findById(long businessId) {
-        return businessRepository.findById(businessId)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid businessId: " + businessId));
+        return businessRepository.findById(businessId).orElse(null);
     }
 
     public Business findByUserId(Long userId) {

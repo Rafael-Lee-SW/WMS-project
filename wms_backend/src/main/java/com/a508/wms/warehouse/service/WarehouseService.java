@@ -8,14 +8,17 @@ import com.a508.wms.location.domain.Location;
 import com.a508.wms.location.dto.LocationResponseDto;
 import com.a508.wms.location.mapper.LocationMapper;
 import com.a508.wms.location.service.LocationModuleService;
+import com.a508.wms.util.BaseExceptionResponse;
 import com.a508.wms.util.constant.ExportTypeEnum;
 import com.a508.wms.util.constant.ProductStorageTypeEnum;
+import com.a508.wms.util.constant.ResponseEnum;
 import com.a508.wms.warehouse.domain.Warehouse;
 import com.a508.wms.warehouse.dto.LocationsAndWallsRequestDto;
 import com.a508.wms.warehouse.dto.WallDto;
 import com.a508.wms.warehouse.dto.WarehouseByBusinessDto;
 import com.a508.wms.warehouse.dto.WarehouseDetailResponseDto;
 import com.a508.wms.warehouse.dto.WarehouseDto;
+import com.a508.wms.warehouse.exception.WarehouseException;
 import com.a508.wms.warehouse.mapper.WallMapper;
 import com.a508.wms.warehouse.mapper.WarehouseMapper;
 import java.util.List;
@@ -42,7 +45,7 @@ public class WarehouseService {
      * @return
      */
     @Transactional
-    public WarehouseDto save(WarehouseDto warehouseDto) {
+    public WarehouseDto save(WarehouseDto warehouseDto) throws WarehouseException {
         log.info("[Service] save Warehouse");
         Warehouse warehouse = createWarehouse(warehouseDto);
         warehouse = warehouseModuleService.save(warehouse);
@@ -148,10 +151,24 @@ public class WarehouseService {
         return (int) Math.sqrt(sizeInSquareMeters); // 제곱근 계산
     }
 
-    private Warehouse createWarehouse(WarehouseDto warehouseDto) {
+    private Warehouse createWarehouse(WarehouseDto warehouseDto) throws WarehouseException {
 
-        // 사업체 ID로 사업체를 조회
         Business business = businessModuleService.findById(warehouseDto.getBusinessId());
+
+        if(business == null)
+            throw new WarehouseException.BusinessNotFoundException("businessId가 올바르지 않습니다.",ResponseEnum.BAD_REQUEST);
+        if (warehouseDto.getSize() <= 0) {
+            throw new WarehouseException.InvalidInputException("유효하지 않은 창고 크기입니다.", ResponseEnum.BAD_REQUEST);
+        }
+        if (warehouseDto.getName() == null || warehouseDto.getName().trim().isEmpty()) {
+            throw new WarehouseException.InvalidInputException("창고 이름이 입력되지 않았습니다.", ResponseEnum.BAD_REQUEST);
+        }
+        if (warehouseDto.getPriority() == 0) {
+            throw new WarehouseException.InvalidInputException("창고 우선순위가 입력되지 않았습니다.", ResponseEnum.BAD_REQUEST);
+        }
+        if (warehouseDto.getFacilityTypeEnum() == null) {
+            throw new WarehouseException.InvalidInputException("창고 유형이 입력되지 않았습니다.", ResponseEnum.BAD_REQUEST);
+        }
 
         //수직 배치수 수평 배치수 계산
         int rowCnt = calculateRowCount(warehouseDto.getSize());
