@@ -5,6 +5,7 @@ import com.a508.wms.warehouse.dto.LocationsAndWallsRequestDto;
 import com.a508.wms.warehouse.dto.WarehouseByBusinessDto;
 import com.a508.wms.warehouse.dto.WarehouseDetailResponseDto;
 import com.a508.wms.warehouse.dto.WarehouseDto;
+import com.a508.wms.warehouse.exception.WarehouseException;
 import com.a508.wms.warehouse.service.WarehouseService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -33,13 +34,13 @@ public class WarehouseController {
      */
     @PostMapping
     public BaseSuccessResponse<WarehouseDto> save(
-        @RequestBody WarehouseDto warehouseDto) {
+        @RequestBody WarehouseDto warehouseDto) throws WarehouseException {
         log.info("[Controller] save Warehouse");
         return new BaseSuccessResponse<>(warehouseService.save(warehouseDto));
     }
 
     /**
-     * 비지니스 id로 창고 생성 창고 id로 창고 생성 GET 방식
+     * 비지니스 id로 창고 조회 GET 방식
      */
     @GetMapping
     public BaseSuccessResponse<List<WarehouseByBusinessDto>> findAllByBusinessId(
