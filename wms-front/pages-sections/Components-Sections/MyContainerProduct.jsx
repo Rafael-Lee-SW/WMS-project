@@ -1,5 +1,3 @@
-"use client";
-
 // Import React and required hooks
 import React, { useState, useRef, useEffect } from "react";
 
@@ -77,6 +75,7 @@ const MyContainerProduct = () => {
   });
   // HandsonTable 엑셀 형식에서 수정하기 위한 Modal State
   const [openEditModal, setOpenEditModal] = useState(false); // 수정용 모달 열기/닫기
+  const [editData, setEditData] = useState([]); // State to track edited data
 
   //출고 데이터를 받기 위한 State
   const [ModalTableExportData, setModalTableExportData] = useState([]);
@@ -162,7 +161,7 @@ const MyContainerProduct = () => {
     reader.readAsArrayBuffer(file);
   };
 
-  // 데이터를 엑셀로 다운로드 받는 메서드
+  // 엑셀을 통해 상품 데이터를 다운로드하는 메서드
   const downloadExcel = () => {
     const worksheet = XLSX.utils.aoa_to_sheet([
       columns.map((col) => col.label),
@@ -373,7 +372,7 @@ const MyContainerProduct = () => {
       if (response.ok) {
         const apiConnection = await response.json();
         const products = apiConnection.result;
-
+        console.log(apiConnection)
         console.log(products); // 삭제해야 할 console.log (콘솔)
 
         // Extract only the required columns
@@ -399,7 +398,7 @@ const MyContainerProduct = () => {
         ];
 
         const formattedColumns = [
-          { name: "hiddenId", label: "식별자", options:{display:false} },
+          { name: "hiddenId", label: "식별자", options: { display: false } },
           { name: "name", label: "상품명" },
           { name: "barcode", label: "바코드" },
           { name: "quantity", label: "수량" },
@@ -421,6 +420,7 @@ const MyContainerProduct = () => {
 
         setColumns(formattedColumns);
         setTableData(data);
+        setEditData(data); // Initialize editData with the current table data
       } else {
         console.error("Error loading rectangles data");
       }
@@ -613,29 +613,51 @@ const MyContainerProduct = () => {
   };
 
   // 상품 정보를 수정하는 API 호출 메서드
-  const productEditAPI = async () => {
+  const productEditAPI = async (productData) => {
     try {
       const response = await fetch(
-        "https://i11a508.p.ssafy.io/api/products/export?businessId=1",
+        `https://i11a508.p.ssafy.io/api/products/${productData.id}`,
         {
-          method: "GET",
+          method: "PUT",
           headers: {
             "Content-Type": "application/json",
           },
+          body: JSON.stringify(productData),
         }
       );
 
       if (response.ok) {
-        const apiConnection = await response.json();
-        const exportList = apiConnection.result;
-        //구분을 위한 출고 표시
-        return exportList.map((item) => ({ ...item, type: "출고" }));
+        console.log("Product updated successfully");
       } else {
-        console.error("입고 목록을 불러오지 못했습니다.");
+        console.error("Failed to update product");
       }
     } catch (error) {
-      console.error("입고 목록을 불러오지 못했습니다.", error);
+      console.error("Failed to update product:", error);
     }
+  };
+
+  // 수정된 상품 정보를 저장하고 이를 API로 반복호출하는 메서드
+  const handleSaveEdits = () => {
+    const hotInstance = hotTableRef.current.hotInstance;
+    const updatedData = hotInstance.getData();
+
+    // Loop through updated data and send PUT request for each product
+    updatedData.forEach((row) => {
+      const productData = {
+        id: row[0], // Ensure IDs are correctly mapped
+        name: row[1],
+        barcode: row[2],
+        quantity: row[3],
+        locationName: row[4],
+        floorLevel: row[5],
+        expirationDate: row[6],
+        warehouseId: 2,
+      };
+      console.log(productData)
+      productEditAPI(productData);
+    });
+
+    setOpenEditModal(false); // Close modal after saving
   };
 
   /**
@@ -923,7 +945,7 @@ const MyContainerProduct = () => {
             <HotTable
               height={600}
               ref={hotTableRef}
-              data={tableData}
+              data={editData}
               colWidths={[`120vw`, `130vw`, `50`, `100`, `100`, `100`, `100`]}
               colHeaders={columns.map((col) => col.label)}
               dropdownMenu={true}
@@ -942,10 +964,10 @@ const MyContainerProduct = () => {
               manualRowMove={true}
               navigableHeaders={true}
               licenseKey="non-commercial-and-evaluation"
-            ></HotTable>
+            />
           </DialogContent>
           <DialogActions>
-            <Button onClick={productEditAPI} color="primary">저장하기</Button>
+            <Button onClick={handleSaveEdits} color="primary">저장하기</Button>
             <Button onClick={() => setOpenEditModal(false)} color="primary">
               닫기
             </Button>
