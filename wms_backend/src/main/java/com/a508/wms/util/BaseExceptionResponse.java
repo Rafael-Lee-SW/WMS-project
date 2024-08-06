@@ -12,7 +12,7 @@ import lombok.Getter;
  */
 @Getter
 @JsonPropertyOrder({"success", "statusCode", "httpStatus", "message", "timestamp"})
-public class BaseExceptionResponse {
+public class BaseExceptionResponse extends Throwable{
 
     private final boolean success;
     private final int statusCode;
@@ -26,5 +26,10 @@ public class BaseExceptionResponse {
         this.httpStatus = httpStatus;
         this.message = message;
         this.timestamp = LocalDateTime.now();
+
+    }
+
+    @Override
+    public void printStackTrace() {
     }
 }
