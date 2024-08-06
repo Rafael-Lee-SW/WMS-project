@@ -9,7 +9,7 @@ export default function NaverCallback() {
 
   useEffect(() => {
     const handleNaverCallback = async () => {
-      const { code } = router.query;
+      const { code, state } = router.query; // state도 보통 인증에 포함되므로 같이 가져옵니다.
 
       if (!code) {
         console.error('인증 코드를 찾을 수 없습니다.');
@@ -18,10 +18,12 @@ export default function NaverCallback() {
 
       try {
         // 서버에 인증 코드 전송
-        const response = await axios.post('/api/oauth2/code/naver', { code });
+        const response = await axios.post('/api/oauth2/code/naver', { code, state });
 
         if (response.status === 200) {
           const { user, token } = response.data;
+
+
           // 로그인 성공 처리
           login(user, token); // 전역 상태에 사용자 정보 및 토큰 저장
           alert(`${user.name}님 환영합니다!`); // 사용자 이름으로 환영 메시지 표시
@@ -29,6 +31,7 @@ export default function NaverCallback() {
         }
       } catch (error) {
         console.error('네이버 OAuth 콜백 에러:', error);
+        alert('로그인에 실패했습니다. 다시 시도해주세요.');
         router.push('/login'); // 로그인 페이지로 리디렉션
       }
     };
