@@ -1,6 +1,4 @@
-// pages/user/select.jsx
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react"; // Add useEffect
 import Link from "next/link"; // Import the Link component from Next.js
 import Header from "../../components/Header/SelectHeader";
 import HeaderLinks from "/components/Header/SelectHeaderLinks.js";
@@ -13,7 +11,7 @@ import GridContainer from "/components/Grid/GridContainer.js";
 import GridItem from "/components/Grid/GridItem.js";
 import Card from "/components/Card/Card.js";
 
-//Material ui
+//Material UI
 import { Modal, Backdrop, Fade, Button, TextField } from "@mui/material";
 
 // Import styles from the selectStyle.js
@@ -37,13 +35,9 @@ const Select = (props) => {
     column: "",
   });
 
-  const [cards, setCards] = useState([
-    {
-      id: 1,
-      title: "1번 창고",
-      image: "/img/bg.jpg",
-    },
-  ]);
+  // Initialize cards state to an empty array to be populated with data from API
+  const [cards, setCards] = useState([]);
+
   const handleOpen = () => {
     setOpen(true);
   };
@@ -70,6 +64,44 @@ const Select = (props) => {
     handleClose();
   };
 
+  // 사장님이 갖고 있는 상품들을 가져오는 API
+  const getAllWarehouseInfoAPI = async () => {
+    try {
+      const response = await fetch(
+        "https://i11a508.p.ssafy.io/api/warehouses?businessId=1",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        const apiConnection = await response.json();
+        const warehouses = apiConnection.result;
+
+        // Update the cards state with data from the API
+        const warehouseCards = warehouses.map((warehouse) => ({
+          id: warehouse.id,
+          title: warehouse.name,
+          image: "/img/bg.jpg", // Assign an image path if available
+        }));
+
+        setCards(warehouseCards); // Set the cards state with the API data
+
+      } else {
+        console.error("Error loading warehouse data");
+      }
+    } catch (error) {
+      console.error("Error loading warehouse data:", error);
+    }
+  };
+
+  useEffect(() => {
+    getAllWarehouseInfoAPI(); // Call API to fetch warehouse info on component mount
+  }, []);
+
   return (
     <div>
       {/* Header */}
@@ -94,7 +126,6 @@ const Select = (props) => {
             {/* Image Card */}
             {cards.map((card) => (
               <GridItem key={card.id} xs={12} sm={12} md={4}>
-                
                 <Link href={`/user/${card.id}`} passHref>
                   <Card
                     component="a"
@@ -102,7 +133,7 @@ const Select = (props) => {
                   >
                     {/* Card is wrapped in Link */}
                     <img
-                      src="/img/bg.jpg"
+                      src={card.image}
                       alt="Card image"
                       className={classes.cardImage}
                     />
@@ -127,10 +158,11 @@ const Select = (props) => {
             onClose={handleClose}
             closeAfterTransition
           >
-            <Fade in={open}
-            style={{
-              justifyContent:"center"
-            }}
+            <Fade
+              in={open}
+              style={{
+                justifyContent: "center",
+              }}
             >
               <div className={classes.paper}>
                 <h2>새 창고 정보 입력</h2>
