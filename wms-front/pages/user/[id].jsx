@@ -65,7 +65,7 @@ export default function Components(props) {
     /** 헤더 영역 */
     <div>
       <Header
-        brand="ADN Project for Inventory Manangement"
+        brand="FIT-BOX"
         rightLinks={<HeaderLinks />}
         fixed
         color="transparent"

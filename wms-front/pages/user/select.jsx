@@ -74,7 +74,7 @@ const Select = (props) => {
     <div>
       {/* Header */}
       <Header
-        brand="FitBox"
+        brand="FIT-BOX"
         rightLinks={<HeaderLinks />}
         fixed
         color="white"
