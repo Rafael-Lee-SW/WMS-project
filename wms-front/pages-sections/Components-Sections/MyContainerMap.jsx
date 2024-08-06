@@ -329,7 +329,7 @@ const MyContainerMap = () => {
   const getWarehouseAPI = async () => {
     try {
       const response = await fetch(
-        "https://i11a508.p.ssafy.io/api/warehouses/2",
+        "https://i11a508.p.ssafy.io/api/warehouses/12",
         {
           method: "GET",
           headers: {
