@@ -1,22 +1,13 @@
-// pages/user/select.jsx
-
-import React, { useState } from "react";
-import Link from "next/link"; // Import the Link component from Next.js
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import Header from "../../components/Header/SelectHeader";
 import HeaderLinks from "/components/Header/SelectHeaderLinks.js";
-// @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
-// @material-ui/icons
 import AddCircleOutline from "@material-ui/icons/AddCircleOutline";
-// core components
 import GridContainer from "/components/Grid/GridContainer.js";
 import GridItem from "/components/Grid/GridItem.js";
 import Card from "/components/Card/Card.js";
-
-//Material ui
-import { Modal, Backdrop, Fade, Button, TextField } from "@mui/material";
-
-// Import styles from the selectStyle.js
+import { Modal, Fade, Button, TextField } from "@mui/material";
 import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/selectStyle.js";
 
 const useStyles = makeStyles(styles);
@@ -28,8 +19,7 @@ const Select = (props) => {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     containerName: "",
-    containerXSize: "",
-    containerYSize: "",
+    containerSize: "",
     locationX: "",
     locationY: "",
     locationZ: "",
@@ -37,13 +27,10 @@ const Select = (props) => {
     column: "",
   });
 
-  const [cards, setCards] = useState([
-    {
-      id: 1,
-      title: "1번 창고",
-      image: "/img/bg.jpg",
-    },
-  ]);
+  const [cards, setCards] = useState([]);
+  const [userData, setUserData] = useState(null); // State to store user data
+  const [businessData, setBusinessData] = useState(null); // State to store business data
+
   const handleOpen = () => {
     setOpen(true);
   };
@@ -57,18 +44,234 @@ const Select = (props) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  // 입력된 창고 정보를 바탕으로 새로운 창고를 만드는 메서드 (클릭시 작용)
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Logic to create a new card
-    const newCard = {
-      id: cards.length + 1,
-      title: formData.containerName || `Container ${cards.length + 1}`,
-      image: "/img/bg.jpg", // Change to your desired image or logic to set a different one
+
+    // 창고 생성을 위한 데이터
+    const postData = {
+      businessId: businessData.id, // Use the stored business ID
+      size: parseInt(formData.containerSize), // Ensure size is a number
+      columnCount: parseInt(formData.column), // Ensure columnCount is a number
+      rowCount: parseInt(formData.row), // Ensure rowCount is a number
+      name: formData.containerName || `Container ${cards.length + 1}`,
+      priority: 1, // Default priority
+      facilityTypeEnum: "STORE", // Default facility type
     };
 
-    setCards((prev) => [...prev, newCard]);
-    handleClose();
+    // 창고 내의 로케이션 생성을 위한 데이터 추출
+    const { locationX, locationY, locationZ, row, column } = formData;
+
+    // Calculate spacing between locations
+    const xSpacing = postData.size / row;
+    const ySpacing = postData.size / column;
+
+    // Location(적재함) 생성
+    const locationData = [];
+    for (let i = 0; i < row; i++) {
+      for (let j = 0; j < column; j++) {
+        // Format row and column numbers as two-digit strings
+        const rowNumber = (i + 1).toString().padStart(2, "0"); // Convert to string and pad with zeros
+        const columnNumber = (j + 1).toString().padStart(2, "0"); // Convert to string and pad with zeros
+
+        locationData.push({
+          id: null,
+          x: Math.round(j * xSpacing + xSpacing / 2 - locationX / 2),
+          y: Math.round(i * ySpacing + ySpacing / 2 - locationY / 2),
+          z: parseInt(locationZ),
+          width: Math.round(parseInt(locationX)),
+          height: Math.round(parseInt(locationY)),
+          fill: "lightblue", // Default fill color
+          draggable: true,
+          order: locationData.length + 1,
+          name: `${rowNumber}-${columnNumber}`, // Use formatted row and column numbers
+          type: "temp",
+          rotation: 0,
+        });
+      }
+    }
+    // walls(벽) 생성
+    const wallData = generateWalls(locationData);
+
+    //모든 데이터를 warehouseData로 담아서 전송한다.
+    const warehouseData = { locations: locationData, walls: wallData };
+
+    try {
+      const response = await fetch(
+        "https://i11a508.p.ssafy.io/api/warehouses",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(postData),
+        }
+      );
+
+      if (response.ok) {
+        const newWarehouse = await response.json();
+        const warehouses = newWarehouse.result;
+
+        const warehousesId = warehouses.id;
+
+        // 창고가 생성되면 해당 창고에 자동 로케이션 설정에 들어간다.
+        editContainerAPI(warehouseData, warehousesId);
+
+        // card 섹션 추가
+        console.log("New warehouse created:", newWarehouse);
+
+        // Optionally update the cards state to reflect the new warehouse
+        const newCard = {
+          id: newWarehouse.result.id, // Assuming the API returns the new warehouse ID
+          title: newWarehouse.result.name,
+          image: "/img/bg.jpg", // Replace with an actual image path if available
+        };
+
+        setCards((prev) => [...prev, newCard]);
+        handleClose();
+      } else {
+        console.error("Error creating new warehouse");
+      }
+    } catch (error) {
+      console.error("Error creating new warehouse:", error);
+    }
   };
+
+  // Function to generate walls around locations
+  // Function to generate a perimeter wall around all locations
+  const generateWalls = (generatedLocations) => {
+    if (generatedLocations.length === 0) return null;
+
+    // Calculate the bounding box for the new locations
+    let minX = Number.MAX_VALUE,
+      minY = Number.MAX_VALUE,
+      maxX = 0,
+      maxY = 0;
+
+    generatedLocations.forEach((location) => {
+      minX = Math.min(minX, location.x);
+      minY = Math.min(minY, location.y);
+      maxX = Math.max(maxX, location.x + location.width);
+      maxY = Math.max(maxY, location.y + location.height);
+    });
+
+    // 벽 데이터를 기록합니다.
+    const wallData = [
+      { id: 1, startX: minX, startY: minY, endX: maxX, endY: minY },
+      { id: 2, startX: maxX, startY: minY, endX: maxX, endY: maxY },
+      { id: 3, startX: maxX, startY: maxY, endX: minX, endY: maxY },
+      { id: 4, startX: minX, startY: maxY, endX: minX, endY: minY },
+    ];
+
+    return wallData;
+  };
+
+  // 수정된정보를 API를 통해 보냄
+  const editContainerAPI = async (warehouseData, warehousesId) => {
+    console.log(warehouseData);
+
+    try {
+      const response = await fetch(
+        `https://i11a508.p.ssafy.io/api/warehouses/${warehousesId}/locatons-and-walls`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(warehouseData),
+        }
+      );
+
+      if (response.ok) {
+        console.log("Map data saved successfully");
+      } else {
+        console.error("Error saving map data");
+      }
+    } catch (error) {
+      console.error("Error saving map data:", error);
+    }
+  };
+
+  // API call to fetch warehouse information
+  const getAllWarehouseInfoAPI = async (businessId) => {
+    try {
+      const response = await fetch(
+        `https://i11a508.p.ssafy.io/api/warehouses?businessId=${businessId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        const apiConnection = await response.json();
+        const warehouses = apiConnection.result;
+
+        const warehouseCards = warehouses.map((warehouse) => ({
+          id: warehouse.id,
+          title: warehouse.name,
+          image: "/img/bg.jpg",
+        }));
+
+        setCards(warehouseCards);
+      } else {
+        console.error("Error loading warehouse data");
+      }
+    } catch (error) {
+      console.error("Error loading warehouse data:", error);
+    }
+  };
+
+  const fetchBusinessData = async (userId) => {
+    try {
+      const response = await fetch(
+        `https://i11a508.p.ssafy.io/api/users/${userId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        const userData = await response.json();
+        const businessInfo = userData.result.business;
+        setBusinessData(businessInfo); // Store business data in state
+        console.log("Business data loaded:", businessInfo);
+
+        // Now call the warehouse info API with the business ID
+        getAllWarehouseInfoAPI(businessInfo.id);
+      } else {
+        console.error("Error fetching user data");
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
+
+  /**
+   * UseEffect Part
+   */
+
+  useEffect(() => {
+    // Retrieve user data from localStorage
+    const user = localStorage.getItem("user");
+    if (user) {
+      try {
+        const parsedUser = JSON.parse(user);
+        setUserData(parsedUser);
+        console.log("User data loaded from localStorage:", parsedUser);
+
+        // Fetch business data using user ID
+        fetchBusinessData(parsedUser.id);
+      } catch (error) {
+        console.error("Error parsing user data from localStorage:", error);
+      }
+    }
+  }, []);
 
   return (
     <div>
@@ -94,15 +297,13 @@ const Select = (props) => {
             {/* Image Card */}
             {cards.map((card) => (
               <GridItem key={card.id} xs={12} sm={12} md={4}>
-                
                 <Link href={`/user/${card.id}`} passHref>
                   <Card
                     component="a"
                     className={`${classes.cardLink} ${classes.imageCard}`}
                   >
-                    {/* Card is wrapped in Link */}
                     <img
-                      src="/img/bg.jpg"
+                      src={card.image}
                       alt="Card image"
                       className={classes.cardImage}
                     />
@@ -127,10 +328,11 @@ const Select = (props) => {
             onClose={handleClose}
             closeAfterTransition
           >
-            <Fade in={open}
-            style={{
-              justifyContent:"center"
-            }}
+            <Fade
+              in={open}
+              style={{
+                justifyContent: "center",
+              }}
             >
               <div className={classes.paper}>
                 <h2>새 창고 정보 입력</h2>
@@ -145,21 +347,12 @@ const Select = (props) => {
                     onChange={handleChange}
                   />
                   <TextField
-                    name="containerXSize"
-                    label="창고 가로 크기"
+                    name="containerSize"
+                    label="창고 크기"
                     fullWidth
                     variant="outlined"
                     className={classes.formControl}
-                    value={formData.containerXSize}
-                    onChange={handleChange}
-                  />
-                  <TextField
-                    name="containerYSize"
-                    label="창고 세로 크기"
-                    fullWidth
-                    variant="outlined"
-                    className={classes.formControl}
-                    value={formData.containerYSize}
+                    value={formData.containerSize}
                     onChange={handleChange}
                   />
                   <TextField

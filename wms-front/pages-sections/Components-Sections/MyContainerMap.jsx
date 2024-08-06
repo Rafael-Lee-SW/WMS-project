@@ -22,6 +22,8 @@ import UnarchiveIcon from "@mui/icons-material/Unarchive";
 import Button from "/components/CustomButtons/Button.js";
 // CSS스타일
 import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/MyContainerStyle.jsx";
+//Material UI 창고 생성 테스트를 위한
+import { Modal, Fade, TextField } from "@mui/material";
 
 // 상수 설정(그리드, 컨버스 등)
 const GRID_SIZE = 100;
@@ -231,6 +233,8 @@ const MyContainerMap = () => {
     //모든 데이터를 warehouseData로 담아서 전송한다.
     const warehouseData = { locations: locationData, walls: wallData };
 
+    console.log(warehouseData);
+
     try {
       const response = await fetch(
         "https://i11a508.p.ssafy.io/api/warehouses/2/locatons-and-walls",
@@ -325,7 +329,7 @@ const MyContainerMap = () => {
   const getWarehouseAPI = async () => {
     try {
       const response = await fetch(
-        "https://i11a508.p.ssafy.io/api/warehouses/2",
+        "https://i11a508.p.ssafy.io/api/warehouses/12",
         {
           method: "GET",
           headers: {
@@ -973,6 +977,128 @@ const MyContainerMap = () => {
     getWarehouseAPI();
   }, []);
 
+  /**
+   * 창고 자동 생성 로직을 위한 부분
+   */
+
+  const [cards, setCards] = useState([]);
+
+  const [openContainerCreation, setOpenContainerCreation] = useState(false);
+  const [formData, setFormData] = useState({
+    containerName: "",
+    containerXSize: "",
+    containerYSize: "",
+    locationX: "",
+    locationY: "",
+    locationZ: "",
+    row: "",
+    column: "",
+  });
+
+  const handleOpen = () => {
+    setOpenContainerCreation(true);
+  };
+
+  const handleClose = () => {
+    setOpenContainerCreation(false);
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    // Extract values from formData
+    const { locationX, locationY, locationZ, row, column } = formData;
+
+    // Calculate spacing between locations
+    const xSpacing = CANVAS_SIZE / row;
+    const ySpacing = CANVAS_SIZE / column;
+
+    // Generate new locations based on input
+    const newLocations = [];
+    for (let i = 0; i < row; i++) {
+      for (let j = 0; j < column; j++) {
+        // Format row and column numbers as two-digit strings
+        const rowNumber = (i + 1).toString().padStart(2, "0"); // Convert to string and pad with zeros
+        const columnNumber = (j + 1).toString().padStart(2, "0"); // Convert to string and pad with zeros
+
+        newLocations.push({
+          id: null,
+          x: Math.round(j * xSpacing + xSpacing / 2 - locationX / 2),
+          y: Math.round(i * ySpacing + ySpacing / 2 - locationY / 2),
+          z: parseInt(locationZ),
+          width: Math.round(parseInt(locationX)),
+          height: Math.round(parseInt(locationY)),
+          fill: "lightblue", // Default fill color
+          draggable: true,
+          order: newLocations.length + 1,
+          name: `${rowNumber}-${columnNumber}`, // Use formatted row and column numbers
+          type: "temp",
+          rotation: 0,
+        });
+      }
+    }
+
+    // Update locations state
+    setLocations((prevLocations) => [...prevLocations, ...newLocations]);
+
+    // Automatically create walls around the generated locations
+    generateWalls(newLocations);
+
+    handleClose();
+  };
+
+  // Function to generate walls around locations
+  // Function to generate a perimeter wall around all locations
+  const generateWalls = (generatedLocations) => {
+    if (generatedLocations.length === 0) return;
+
+    // Calculate the bounding box for the new locations
+    let minX = Number.MAX_VALUE,
+      minY = Number.MAX_VALUE,
+      maxX = 0,
+      maxY = 0;
+
+    generatedLocations.forEach((location) => {
+      minX = Math.min(minX, location.x);
+      minY = Math.min(minY, location.y);
+      maxX = Math.max(maxX, location.x + location.width);
+      maxY = Math.max(maxY, location.y + location.height);
+    });
+
+    // Create four corner anchors for the perimeter
+    const topLeft = buildAnchor(null, minX, minY);
+    const topRight = buildAnchor(null, maxX, minY);
+    const bottomLeft = buildAnchor(null, minX, maxY);
+    const bottomRight = buildAnchor(null, maxX, maxY);
+
+    // Create walls (lines) between the corner anchors
+    const newLines = [
+      { start: topLeft, end: topRight },
+      { start: topRight, end: bottomRight },
+      { start: bottomRight, end: bottomLeft },
+      { start: bottomLeft, end: topLeft },
+    ];
+
+    // Add the lines to the layer
+    newLines.forEach(({ start, end }) => {
+      const line = new Konva.Line({
+        points: [start.x(), start.y(), end.x(), end.y()],
+        stroke: newWallColor,
+        strokeWidth: newWallWidth,
+      });
+      layerRef.current.add(line);
+
+      anchorsRef.current.push({ start, end, line });
+    });
+
+    layerRef.current.batchDraw();
+  };
+
   //--- 리턴 Part ---
 
   return (
@@ -998,6 +1124,9 @@ const MyContainerMap = () => {
             onClick={() => changeCurrentSetting("specialObject")}
           >
             특수 객체
+          </Button>
+          <Button className={classes.buttonCard} onClick={handleOpen}>
+            창고 생성
           </Button>
           {currentSetting && currentSetting !== "wall" && (
             <div>
@@ -1261,9 +1390,7 @@ const MyContainerMap = () => {
         </div>
 
         {/* Right-Sidebar / 우측 사이드바 영역  */}
-        <div
-          className={classes.rightSideBar}
-        >
+        <div className={classes.rightSideBar}>
           <h3>재고함 목록</h3>
           {locations.length !== 0 ? (
             <div>
@@ -1341,6 +1468,107 @@ const MyContainerMap = () => {
           </div>
         </div>
       </main>
+      {/* Modal for input form 창고 자동 생성을 위한 데이터 받는 모달 */}
+      <Modal
+        className={classes.modal}
+        open={openContainerCreation}
+        onClose={handleClose}
+        closeAfterTransition
+      >
+        <Fade
+          in={openContainerCreation}
+          style={{
+            justifyContent: "center",
+          }}
+        >
+          <div className={classes.paper}>
+            <h2>새 창고 정보 입력</h2>
+            <form onSubmit={handleSubmit}>
+              <TextField
+                name="containerName"
+                label="창고 이름"
+                fullWidth
+                variant="outlined"
+                className={classes.formControl}
+                value={formData.containerName}
+                onChange={handleChange}
+              />
+              <TextField
+                name="containerXSize"
+                label="창고 가로 크기"
+                fullWidth
+                variant="outlined"
+                className={classes.formControl}
+                value={formData.containerXSize}
+                onChange={handleChange}
+              />
+              <TextField
+                name="containerYSize"
+                label="창고 세로 크기"
+                fullWidth
+                variant="outlined"
+                className={classes.formControl}
+                value={formData.containerYSize}
+                onChange={handleChange}
+              />
+              <TextField
+                name="locationX"
+                label="Location(적재함) 가로 크기"
+                fullWidth
+                variant="outlined"
+                className={classes.formControl}
+                value={formData.locationX}
+                onChange={handleChange}
+              />
+              <TextField
+                name="locationY"
+                label="Location(적재함) 세로 크기"
+                fullWidth
+                variant="outlined"
+                className={classes.formControl}
+                value={formData.locationY}
+                onChange={handleChange}
+              />
+              <TextField
+                name="locationZ"
+                label="Location(적재함) 층수"
+                fullWidth
+                variant="outlined"
+                className={classes.formControl}
+                value={formData.locationZ}
+                onChange={handleChange}
+              />
+              <TextField
+                name="row"
+                label="행"
+                fullWidth
+                variant="outlined"
+                className={classes.formControl}
+                value={formData.row}
+                onChange={handleChange}
+              />
+              <TextField
+                name="column"
+                label="열"
+                fullWidth
+                variant="outlined"
+                className={classes.formControl}
+                value={formData.column}
+                onChange={handleChange}
+              />
+
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                fullWidth
+              >
+                Finish
+              </Button>
+            </form>
+          </div>
+        </Fade>
+      </Modal>
     </div>
   );
 };
