@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
-import { useAuth } from '../../context/AuthContext'; // AuthContext에서 제공하는 훅을 import
+import { useAuth } from '../../../../context/AuthContext'; // AuthContext에서 제공하는 훅을 import
 
 export default function KakaoCallback() {
   const router = useRouter();
