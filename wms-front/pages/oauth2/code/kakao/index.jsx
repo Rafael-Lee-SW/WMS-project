@@ -1,9 +1,11 @@
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
+import { useAuth } from '../../context/AuthContext'; // AuthContext에서 제공하는 훅을 import
 
 export default function KakaoCallback() {
   const router = useRouter();
+  const { login } = useAuth(); // AuthContext의 login 함수를 가져옵니다.
 
   useEffect(() => {
     const handleKakaoCallback = async () => {
@@ -16,11 +18,14 @@ export default function KakaoCallback() {
 
       try {
         // 서버에 인증 코드 보내기
-        const response = await axios.post('/oauth2/code/kakao', { code });
+        const response = await axios.post('/api/oauth/code/kakao', { code });
 
         if (response.status === 200) {
+          const { user, token } = response.data;
+
           // 로그인 성공 처리
-          console.log('User information:', response.data);
+          login(user, token); // 전역 상태에 사용자 정보와 토큰 저장
+          alert(`${user.name}님 환영합니다!`); // 환영 메시지 표시
           router.push('/'); // 메인 페이지로 이동
         }
       } catch (error) {
@@ -32,7 +37,7 @@ export default function KakaoCallback() {
     if (router.isReady) {
       handleKakaoCallback();
     }
-  }, [router.isReady, router.query]);
+  }, [router.isReady, router.query, login]);
 
   return <div>카카오 로그인 처리 중...</div>;
 }
