@@ -77,10 +77,12 @@ export default function Login() {
         email,
         password,
       });
-
+    
       if (response.status === 200 && response.data.code === 'SU') {
-        login(response.data.user, response.data.token); // 전역 상태에 사용자 정보와 토큰 저장
-        alert(`${response.data.user.name}님 환영합니다!`);
+        const { user, token } = response.data;
+        
+        login(user, token); // 전역 상태에 사용자 정보와 토큰 저장
+        alert(`${user.name}님 환영합니다!`);
         router.push('/'); // 메인 페이지로 이동
       }
     } catch (error) {

@@ -1,5 +1,3 @@
-"use client";
-
 // Import React and required hooks
 import React, { useState, useRef, useEffect } from "react";
 
@@ -77,6 +75,7 @@ const MyContainerProduct = () => {
   });
   // HandsonTable 엑셀 형식에서 수정하기 위한 Modal State
   const [openEditModal, setOpenEditModal] = useState(false); // 수정용 모달 열기/닫기
+  const [editData, setEditData] = useState([]); // State to track edited data
 
   //출고 데이터를 받기 위한 State
   const [ModalTableExportData, setModalTableExportData] = useState([]);
@@ -162,7 +161,7 @@ const MyContainerProduct = () => {
     reader.readAsArrayBuffer(file);
   };
 
-  // 데이터를 엑셀로 다운로드 받는 메서드
+  // 엑셀을 통해 상품 데이터를 다운로드하는 메서드
   const downloadExcel = () => {
     const worksheet = XLSX.utils.aoa_to_sheet([
       columns.map((col) => col.label),
@@ -373,42 +372,55 @@ const MyContainerProduct = () => {
       if (response.ok) {
         const apiConnection = await response.json();
         const products = apiConnection.result;
-        console.log(products);
+        console.log(apiConnection)
+        console.log(products); // 삭제해야 할 console.log (콘솔)
 
         // Extract only the required columns
         const formattedData = products.map((product) => ({
+          hiddenId: product.id,
           name: product.productDetail.name,
           barcode: product.productDetail.barcode,
           quantity: product.quantity,
-          location: product.locationName || "임시",
+          locationName: product.locationName || "임시",
           floorLevel: product.floorLevel,
+          expirationDate: product.expirationDate || "없음",
         }));
 
         // Define the columns
         const headers = [
+          "식별자",
           "이름",
           "바코드(식별번호)",
           "수량",
           "적재함",
           "단(층)수",
+          "유통기한",
         ];
 
-        const formattedColumns = headers.map((head) => ({
-          name: head,
-          label: head,
-        }));
+        const formattedColumns = [
+          { name: "hiddenId", label: "식별자", options: { display: false } },
+          { name: "name", label: "상품명" },
+          { name: "barcode", label: "바코드" },
+          { name: "quantity", label: "수량" },
+          { name: "locationName", label: "적재함" },
+          { name: "floorLevel", label: "층수" },
+          { name: "expirationDate", label: "유통기한" },
+        ];
 
         // Prepare the data for Handsontable
         const data = formattedData.map((product) => [
+          product.hiddenId,
           product.name,
           product.barcode,
           product.quantity,
-          product.location,
+          product.locationName,
           product.floorLevel,
+          product.expirationDate,
         ]);
 
         setColumns(formattedColumns);
         setTableData(data);
+        setEditData(data); // Initialize editData with the current table data
       } else {
         console.error("Error loading rectangles data");
       }
@@ -598,6 +610,54 @@ const MyContainerProduct = () => {
     // Update table with detailed data
     setTableData(formattedData);
     setColumns(detailedColumns);
+  };
+
+  // 상품 정보를 수정하는 API 호출 메서드
+  const productEditAPI = async (productData) => {
+    try {
+      const response = await fetch(
+        `https://i11a508.p.ssafy.io/api/products/${productData.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(productData),
+        }
+      );
+
+      if (response.ok) {
+        console.log("Product updated successfully");
+      } else {
+        console.error("Failed to update product");
+      }
+    } catch (error) {
+      console.error("Failed to update product:", error);
+    }
+  };
+
+  // 수정된 상품 정보를 저장하고 이를 API로 반복호출하는 메서드
+  const handleSaveEdits = () => {
+    const hotInstance = hotTableRef.current.hotInstance;
+    const updatedData = hotInstance.getData();
+
+    // Loop through updated data and send PUT request for each product
+    updatedData.forEach((row) => {
+      const productData = {
+        id: row[0], // Ensure IDs are correctly mapped
+        name: row[1],
+        barcode: row[2],
+        quantity: row[3],
+        locationName: row[4],
+        floorLevel: row[5],
+        expirationDate: row[6],
+        warehouseId: 2,
+      };
+      console.log(productData)
+      productEditAPI(productData);
+    });
+
+    setOpenEditModal(false); // Close modal after saving
   };
 
   /**
@@ -873,7 +933,7 @@ const MyContainerProduct = () => {
           </DialogActions>
         </Dialog>
 
-        {/* 데이터 수정 Modal */}
+        {/* 상품 데이터 수정 Modal */}
         <Dialog
           open={openEditModal}
           onClose={() => setOpenEditModal(false)}
@@ -885,11 +945,12 @@ const MyContainerProduct = () => {
             <HotTable
               height={600}
               ref={hotTableRef}
-              data={tableData}
-              colWidths={[`120vw`, `130vw`, `50`, `100`, `100`, 130, 156]}
+              data={editData}
+              colWidths={[`120vw`, `130vw`, `50`, `100`, `100`, `100`, `100`]}
               colHeaders={columns.map((col) => col.label)}
               dropdownMenu={true}
               hiddenColumns={{
+                columns: [0], // Hide the first column (hiddenId) during editing
                 indicators: true,
               }}
               contextMenu={true}
@@ -903,10 +964,10 @@ const MyContainerProduct = () => {
               manualRowMove={true}
               navigableHeaders={true}
               licenseKey="non-commercial-and-evaluation"
-            ></HotTable>
+            />
           </DialogContent>
           <DialogActions>
-            <Button color="primary">저장하기</Button>
+            <Button onClick={handleSaveEdits} color="primary">저장하기</Button>
             <Button onClick={() => setOpenEditModal(false)} color="primary">
               닫기
             </Button>
