@@ -41,14 +41,13 @@ const headerStyle = {
     zIndex: "1100"
   },
   container: {
-    ...container,
     minHeight: "50px",
     flex: "1",
     alignItems: "center",
     justifyContent: "space-between",
     display: "flex",
     flexWrap: "nowrap",
-
+    padding: "0 50px",
   },
   flex: {
     flex: 1
@@ -60,7 +59,7 @@ const headerStyle = {
     borderRadius: "3px",
     textTransform: "none",
     color: "#986C58",
-    padding: "8px 10px",
+    padding: "8px 0",
     letterSpacing: "unset",
     "&:hover,&:focus": {
       background: "transparent",

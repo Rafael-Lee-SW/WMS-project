@@ -8,17 +8,23 @@ import { makeStyles } from "@material-ui/core/styles";
 // core components
 import Header from "/components/Header/HomeHeader.js";
 import HeaderLinks from "/components/Header/HomeHeaderLinks.js";
-import HowToUse from "../components/Main/HowToUse";
 import Footer from "/components/Footer/Footer.js";
-import Parallax from "/components/Parallax/Parallax.js";
 import Slider from "react-slick"; 
-import ServiceInfo from '/components/Main/ServiceInfo';
+import ServiceInfo1 from '/components/Main/ServiceInfo1';
+import ServiceInfo2 from '/components/Main/ServiceInfo2';
+import ServiceInfo3 from '/components/Main/ServiceInfo3';
 
 import styles from "/styles/jss/nextjs-material-kit/pages/components.js";
 import AOS from 'aos';
 import 'aos/dist/aos.css';
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
+import HowToUse1 from "../components/Main/HowToUse1";
+import HowToUse2 from "../components/Main/HowToUse2";
+import HowToUse3 from "../components/Main/HowToUse3";
+import HowToUse4 from "../components/Main/HowToUse4";
+import HowToUse5 from "../components/Main/HowToUse5";
+import HowToUse6 from "../components/Main/HowToUse6";
+import HowToUseStart from "../components/Main/HowToUseStart";
+import MainEnd from "../components/Main/MainEnd";
 
 const useStyles = makeStyles(styles);
 
@@ -56,22 +62,39 @@ const Components = (props) => {
         }}
         {...rest}
       />
-      <Parallax>
-        <div style={{ width: '100%', margin: '0 auto' }}>
+        <div style={{ width: '100%', height: '85vh', margin: '0', overflow: 'hidden' }}>
           <Slider {...settings}>
-            <div>
               <img src="/img/main1.jpg" alt="First slide" style={{ width: '100%', height: 'auto' }} />
-            </div>
-            <div>
               <img src="/img/main2.jpg" alt="Second slide" style={{ width: '100%', height: 'auto' }} />
-            </div>
-            <div>
               <img src="/img/main3.jpg" alt="Third slide" style={{ width: '100%', height: 'auto' }} />
-            </div>
           </Slider>
         </div>
-      </Parallax>
-      <ServiceInfo/>
+        <div data-aos="fade-up">
+          <ServiceInfo1/>
+        </div>
+        <div data-aos="fade-up">
+          <ServiceInfo2/>
+        </div>
+        <div data-aos="fade-up">
+          <ServiceInfo3/>
+        </div>
+        <div data-aos="fade-up">
+          <HowToUseStart/>
+        </div>
+        <div data-aos="fade-up" style={{ width: '100%', height: '100vh', margin: '0', overflow: 'hidden' }}>
+          <Slider {...{ ...settings, autoplay: false }}>
+            <HowToUse1/>
+            <HowToUse2/>
+            <HowToUse3/>
+            <HowToUse4/>
+            <HowToUse5/>
+            <HowToUse6/>
+          </Slider>
+        </div>
+        <div>
+          <MainEnd/>
+        </div>
+        <Footer/>
     </div>
   );
 };

@@ -1,7 +1,7 @@
-const serviceInfo = {
+const serviceInfo3 = {
     container: {
-        height: "100vh",
-        backgroundColor: "#FBF9F7",
+        height: "80vh",
+        backgroundColor: "#D3C7B5",
         padding: "0",
         display: "flex", 
         flexDirection: "row", 
@@ -12,12 +12,14 @@ const serviceInfo = {
         paddingTop: "50px",
         paddingBottom: "50px",
         paddingLeft: "200px",
+        paddingRight: "70px",
         flex: 1,
     },
     section2: {
         width: "30%",
         height: "50vh",
         marginRight: "200px",
+        backgroundColor: "white",
         flex: 1, 
     },
     title: {
@@ -26,14 +28,10 @@ const serviceInfo = {
         fontWeight: "bold",
         paddingBottom: "20px",
     },
-    subTitle: {
+    content: {
         fontSize: '20px',
         color: "#4E4544",
-    },
-    subImg: {
-        width: "100%",
-        height: "100%",
     }
 }
 
-export default serviceInfo;
+export default serviceInfo3;
