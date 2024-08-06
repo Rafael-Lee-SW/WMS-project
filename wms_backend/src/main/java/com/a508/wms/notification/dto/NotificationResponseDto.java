@@ -1,5 +1,6 @@
 package com.a508.wms.notification.dto;
 
+import com.a508.wms.product.dto.ExpirationProductResponseDto;
 import com.a508.wms.product.dto.ExportResponseDto;
 import com.a508.wms.product.dto.ImportResponseDto;
 import lombok.Builder;
@@ -15,4 +16,5 @@ public class NotificationResponseDto {
 
     private List<ImportResponseDto> importResponseDtos;
     private List<ExportResponseDto> exportResponseDtos;
+    private List<ExpirationProductResponseDto> expirationProductResponseDtos;
 }
