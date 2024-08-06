@@ -24,8 +24,10 @@ public class ProductMapper {
     public static ProductMainResponseDto fromProduct(Product product) {
         return ProductMainResponseDto.builder()
             .id(product.getId())
+            .floorLevel(product.getFloor().getFloorLevel())
             .expirationDate(product.getExpirationDate())
             .quantity(product.getQuantity())
+            .locationName(product.getFloor().getLocation().getName())
             .createdDate(product.getCreatedDate())
             .updatedDate(product.getUpdatedDate())
             .statusEnum(product.getStatusEnum())
@@ -70,6 +72,7 @@ public class ProductMapper {
         Floor floor=product.getFloor();
         Location location=floor.getLocation();
         Warehouse warehouse=location.getWarehouse();
+
 
         return ExpirationProductResponseDto.builder()
             .barcode(productDetail.getBarcode())

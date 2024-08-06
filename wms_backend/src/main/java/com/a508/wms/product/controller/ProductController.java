@@ -44,7 +44,8 @@ public class ProductController {
     public BaseSuccessResponse<List<?>> getProducts(
         @RequestParam(required = false) Long warehouseId,
         @RequestParam(required = false) Long productDetailId,
-        @RequestParam(required = false) Long locationId) {
+        @RequestParam(required = false) Long locationId,
+        @RequestParam(required = false) Long businessId) {
         if (warehouseId != null) {
             log.info("[Controller] find Products by warehouseId: {}", warehouseId);
             return new BaseSuccessResponse<>(productService.findByWarehouseId(warehouseId));
@@ -54,7 +55,10 @@ public class ProductController {
         } else if (locationId != null) {
             log.info("[Controller] find Products by LocationId: {}", locationId);
             return new BaseSuccessResponse<>(productService.findByLocationId(locationId));
-        } else {
+        } else if (businessId != null) {
+            log.info("[Controller] find Products by businessId: {}", businessId);
+            return new BaseSuccessResponse<>(productService.findByBusinessId(businessId));
+        }else {
             log.info("[Controller] find Products");
             return new BaseSuccessResponse<>(productService.findAll());
         }
@@ -73,20 +77,16 @@ public class ProductController {
     }
 
     /**
-     * 상품을 수정하는 기능
+     * 상품들을 수정하는 기능
      *
-     * @param id                상품 id
-     * @param productUpdateRequestDto 수정할 상품 정보
+     * @param productUpdateRequestDtos 수정할 상품들의 정보
      */
-    @PutMapping("/{id}")
-    public BaseSuccessResponse<Void> updateProduct(@PathVariable Long id,
-        @RequestBody ProductUpdateRequestDto productUpdateRequestDto) {
-        log.info("[Controller] update Product by id: {}", id);
-        productService.update(id, productUpdateRequestDto);
-
+    @PutMapping
+    public BaseSuccessResponse<Void> updateProducts(@RequestBody List<ProductUpdateRequestDto> productUpdateRequestDtos) {
+        log.info("[Controller] update Products");
+        productService.updateAll(productUpdateRequestDtos);
         return new BaseSuccessResponse<>(null);
     }
-
 
     /**
      * 상품의 상태값 변경을 통해 삭제하는 기능.
