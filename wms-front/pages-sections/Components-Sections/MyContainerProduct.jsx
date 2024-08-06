@@ -373,38 +373,50 @@ const MyContainerProduct = () => {
       if (response.ok) {
         const apiConnection = await response.json();
         const products = apiConnection.result;
-        console.log(products);
+
+        console.log(products); // 삭제해야 할 console.log (콘솔)
 
         // Extract only the required columns
         const formattedData = products.map((product) => ({
+          hiddenId: product.id,
           name: product.productDetail.name,
           barcode: product.productDetail.barcode,
           quantity: product.quantity,
-          location: product.locationName || "임시",
+          locationName: product.locationName || "임시",
           floorLevel: product.floorLevel,
+          expirationDate: product.expirationDate || "없음",
         }));
 
         // Define the columns
         const headers = [
+          "식별자",
           "이름",
           "바코드(식별번호)",
           "수량",
           "적재함",
           "단(층)수",
+          "유통기한",
         ];
 
-        const formattedColumns = headers.map((head) => ({
-          name: head,
-          label: head,
-        }));
+        const formattedColumns = [
+          { name: "hiddenId", label: "식별자", options:{display:false} },
+          { name: "name", label: "상품명" },
+          { name: "barcode", label: "바코드" },
+          { name: "quantity", label: "수량" },
+          { name: "locationName", label: "적재함" },
+          { name: "floorLevel", label: "층수" },
+          { name: "expirationDate", label: "유통기한" },
+        ];
 
         // Prepare the data for Handsontable
         const data = formattedData.map((product) => [
+          product.hiddenId,
           product.name,
           product.barcode,
           product.quantity,
-          product.location,
+          product.locationName,
           product.floorLevel,
+          product.expirationDate,
         ]);
 
         setColumns(formattedColumns);
@@ -598,6 +610,32 @@ const MyContainerProduct = () => {
     // Update table with detailed data
     setTableData(formattedData);
     setColumns(detailedColumns);
+  };
+
+  // 상품 정보를 수정하는 API 호출 메서드
+  const productEditAPI = async () => {
+    try {
+      const response = await fetch(
+        "https://i11a508.p.ssafy.io/api/products/export?businessId=1",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        const apiConnection = await response.json();
+        const exportList = apiConnection.result;
+        //구분을 위한 출고 표시
+        return exportList.map((item) => ({ ...item, type: "출고" }));
+      } else {
+        console.error("입고 목록을 불러오지 못했습니다.");
+      }
+    } catch (error) {
+      console.error("입고 목록을 불러오지 못했습니다.", error);
+    }
   };
 
   /**
@@ -873,7 +911,7 @@ const MyContainerProduct = () => {
           </DialogActions>
         </Dialog>
 
-        {/* 데이터 수정 Modal */}
+        {/* 상품 데이터 수정 Modal */}
         <Dialog
           open={openEditModal}
           onClose={() => setOpenEditModal(false)}
@@ -886,10 +924,11 @@ const MyContainerProduct = () => {
               height={600}
               ref={hotTableRef}
               data={tableData}
-              colWidths={[`120vw`, `130vw`, `50`, `100`, `100`, 130, 156]}
+              colWidths={[`120vw`, `130vw`, `50`, `100`, `100`, `100`, `100`]}
               colHeaders={columns.map((col) => col.label)}
               dropdownMenu={true}
               hiddenColumns={{
+                columns: [0], // Hide the first column (hiddenId) during editing
                 indicators: true,
               }}
               contextMenu={true}
@@ -906,7 +945,7 @@ const MyContainerProduct = () => {
             ></HotTable>
           </DialogContent>
           <DialogActions>
-            <Button color="primary">저장하기</Button>
+            <Button onClick={productEditAPI} color="primary">저장하기</Button>
             <Button onClick={() => setOpenEditModal(false)} color="primary">
               닫기
             </Button>
