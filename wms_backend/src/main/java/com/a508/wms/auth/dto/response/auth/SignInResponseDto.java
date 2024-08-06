@@ -6,6 +6,8 @@ import com.a508.wms.auth.dto.response.ResponseDto;
 import com.a508.wms.user.domain.User;
 import com.a508.wms.user.dto.UserResponseDto;
 import com.a508.wms.user.mapper.UserMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,5 +33,16 @@ public class SignInResponseDto extends ResponseDto {
     public static ResponseEntity<ResponseDto> signInFail() {
         ResponseDto responseBody = new ResponseDto(ResponseCode.SIGN_IN_FAIL, ResponseMessage.SIGN_IN_FAIL);
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseBody);
+    }
+
+    // JSON 변환 메서드 추가
+    public String toJsonString() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            return objectMapper.writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return "{}"; // 예외 발생 시 빈 JSON 반환
+        }
     }
 }

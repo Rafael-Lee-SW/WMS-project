@@ -45,6 +45,7 @@ public class UserMapper {
                 user.getBusiness()) : null)
             .build();
     }
+
     /**
      * OAuth 사용자 정보를 기반으로 User 객체 생성
      *
@@ -58,13 +59,18 @@ public class UserMapper {
         String name = null;
         String nickname = null;
 
-        if ("kakao".equals(oauthClientName)) {
-            Map<String, Object> properties = (Map<String, Object>) attributes.get("properties");
-            name = (String) properties.get("nickname");
-            nickname = name;
-        } else if ("naver".equals(oauthClientName)) {
-            name = (String) attributes.get("name");
-            nickname = (String) attributes.get("nickname");
+        // OAuth 공급자에 따라 사용자 정보 추출
+        switch (oauthClientName.toLowerCase()) {
+            case "kakao":
+                name = getKakaoName(attributes);
+                nickname = name; // 카카오는 별명이 이름과 같다고 가정
+                break;
+            case "naver":
+                name = getNaverName(attributes);
+                nickname = getNaverNickname(attributes);
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported OAuth2 provider: " + oauthClientName);
         }
 
         return User.builder()
@@ -73,11 +79,39 @@ public class UserMapper {
             .name(name)
             .nickname(nickname)
             .roleTypeEnum(RoleTypeEnum.GENERAL) // 기본 역할 설정
-            .loginTypeEnum(
-                LoginTypeEnum.valueOf(oauthClientName.toUpperCase())) // OAuth 공급자로 로그인 타입 설정
+            .loginTypeEnum(LoginTypeEnum.valueOf(oauthClientName.toUpperCase())) // OAuth 공급자로 로그인 타입 설정
             .statusEnum(StatusEnum.ACTIVE) // 기본 상태 설정
             .businessId(null)
             .build();
     }
 
+    // 카카오 사용자 이름 추출 메서드
+    private static String getKakaoName(Map<String, Object> attributes) {
+        Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
+        if (kakaoAccount != null) {
+            Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
+            if (profile != null) {
+                return (String) profile.get("nickname");
+            }
+        }
+        return null;
+    }
+
+    // 네이버 사용자 이름 추출 메서드
+    private static String getNaverName(Map<String, Object> attributes) {
+        Map<String, Object> response = (Map<String, Object>) attributes.get("response");
+        if (response != null) {
+            return (String) response.get("name");
+        }
+        return null;
+    }
+
+    // 네이버 사용자 별명 추출 메서드
+    private static String getNaverNickname(Map<String, Object> attributes) {
+        Map<String, Object> response = (Map<String, Object>) attributes.get("response");
+        if (response != null) {
+            return (String) response.get("nickname");
+        }
+        return null;
+    }
 }

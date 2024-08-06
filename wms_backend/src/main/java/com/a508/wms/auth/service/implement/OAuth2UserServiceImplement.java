@@ -4,8 +4,7 @@ import com.a508.wms.auth.exception.DuplicatedEmailException;
 import com.a508.wms.user.domain.User;
 import com.a508.wms.user.mapper.UserMapper;
 import com.a508.wms.user.repository.UserRepository;
-import java.util.Map;
-import java.util.Optional;
+import com.a508.wms.util.constant.LoginTypeEnum;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -13,42 +12,52 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
+import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class OAuth2UserService extends DefaultOAuth2UserService {
+public class OAuth2UserServiceImplement extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
-    private final RestTemplate restTemplate = new RestTemplate();
-
-
+    private final UserMapper userMapper;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest request) throws OAuth2AuthenticationException {
+        // OAuth2User 정보
         OAuth2User oAuth2User = super.loadUser(request);
-        String oauthClientName = request.getClientRegistration().getClientName();
+        String oauthClientName = request.getClientRegistration().getClientName().toLowerCase();
 
-        // 로깅을 통해 사용자 정보 확인
-        log.info("OAuth2 User Attributes: {}", oAuth2User.getAttributes());
-
+        // 사용자 이메일 추출
         String email = extractEmail(oAuth2User.getAttributes(), oauthClientName);
-
-        // 이메일 중복 체크
-        Optional<User> existingUser = userRepository.findByEmail(email);
-
-        if (existingUser.isPresent()) {
-            // 중복된 이메일인 경우 예외 발생
-            throw new DuplicatedEmailException("이미 가입된 이메일이 있습니다.");
+        if (email == null) {
+            throw new IllegalArgumentException("Email not found in user attributes");
         }
 
-        // 새로운 사용자 생성 및 저장
-        User newUser = UserMapper.fromOAuthAttributes(email, oauthClientName, oAuth2User.getAttributes());
-        userRepository.save(newUser);
+        // 이메일을 통해 사용자 조회
+        Optional<User> existingUserOptional = userRepository.findByEmail(email);
 
-        return oAuth2User;
+        if (existingUserOptional.isPresent()) {
+            User existingUser = existingUserOptional.get();
+
+            // 로그인 유형이 현재 OAuth2 요청과 일치하는지 확인
+            if (existingUser.getLoginTypeEnum().name().equalsIgnoreCase(oauthClientName)) {
+                // 이미 등록된 사용자라면 로그인 처리
+                log.info("{} user logged in: {}", oauthClientName, email);
+                return oAuth2User;
+            } else {
+                // 중복된 이메일 처리
+                throw new DuplicatedEmailException("이미 가입된 이메일이 있습니다.");
+            }
+        } else {
+            // 새로운 사용자 생성 및 저장
+            log.info("New user registration: {}", email);
+            User newUser = userMapper.fromOAuthAttributes(email, oauthClientName, oAuth2User.getAttributes());
+            userRepository.save(newUser);
+            return oAuth2User;
+        }
     }
 
     /**
@@ -59,20 +68,21 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
      * @return 이메일
      */
     private String extractEmail(Map<String, Object> attributes, String oauthClientName) {
+        String email = null;
+
         if ("kakao".equals(oauthClientName)) {
             Object kakaoAccountObj = attributes.get("kakao_account");
             if (kakaoAccountObj instanceof Map) {
                 Map<String, Object> kakaoAccount = (Map<String, Object>) kakaoAccountObj;
-                return (String) kakaoAccount.get("email");
+                email = (String) kakaoAccount.get("email");
             }
         } else if ("naver".equals(oauthClientName)) {
             Object responseObj = attributes.get("response");
             if (responseObj instanceof Map) {
                 Map<String, Object> response = (Map<String, Object>) responseObj;
-                return (String) response.get("email");
+                email = (String) response.get("email");
             }
         }
-        return null;
+        return email;
     }
-
 }

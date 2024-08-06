@@ -43,6 +43,7 @@ public class WebSecurityConfig {
     private final DefaultOAuth2UserService oAuth2UserService;
     private final UserRepository userRepository;
     private final JwtProvider jwtProvider;
+    private final AuthenticationSuccessHandler customSuccessHandler;
 
     @Bean
     protected SecurityFilterChain configure(HttpSecurity httpSecurity,
@@ -64,9 +65,11 @@ public class WebSecurityConfig {
                 .anyRequest().permitAll()
             )
             .oauth2Login(oauth2 -> oauth2
-                .redirectionEndpoint(endpoint -> endpoint.baseUri("/oauth2/code/*"))
+                //리다이렉트 엔드포인트 경로 인가코드로 엑세스 토큰 받기
+                .redirectionEndpoint(endpoint -> endpoint.baseUri("/api/oauth2/code/*"))
+                //사용자 정보 받아오기
                 .userInfoEndpoint(endPoint -> endPoint.userService(oAuth2UserService))
-                .successHandler(customSuccessHandler())  // 성공 핸들러 설정
+                .successHandler(customSuccessHandler)  // 성공 핸들러 설정
             )
             .exceptionHandling(exceptionHandling -> exceptionHandling
                 .authenticationEntryPoint(new FailedAuthenticationEntryPoint())
@@ -88,42 +91,7 @@ public class WebSecurityConfig {
         return source;
     }
 
-    @Bean
-    public AuthenticationSuccessHandler customSuccessHandler() {
-        return (request, response, authentication) -> {
-            // 인증된 사용자 정보 가져오기
-            String email = authentication.getName();
-            User user = userRepository.findByEmail(email).orElseThrow();
 
-            // JWT 생성
-            String token = jwtProvider.create(String.valueOf(user.getId()));
-
-            // JSON 응답 생성
-            Map<String, Object> body = new HashMap<>();
-            body.put("code", ResponseCode.SUCCESS);
-            body.put("message", ResponseMessage.SUCCESS);
-            body.put("token", token);
-            body.put("expirationTime", 3600); // 만료 시간 설정 (예: 3600초)
-
-            Map<String, Object> userMap = new HashMap<>();
-            userMap.put("id", user.getId());
-            userMap.put("email", user.getEmail());
-            userMap.put("name", user.getName());
-            userMap.put("nickname", user.getNickname());
-            userMap.put("roleTypeEnum", user.getRoleTypeEnum().name());
-            userMap.put("loginTypeEnum", user.getLoginTypeEnum().name());
-            userMap.put("statusEnum", user.getStatusEnum().name());
-            userMap.put("business", user.getBusiness());
-
-            body.put("user", userMap);
-
-            // JSON 응답 전송
-            response.setContentType("application/json");
-            response.setStatus(HttpServletResponse.SC_OK);
-            ObjectMapper objectMapper = new ObjectMapper();
-            objectMapper.writeValue(response.getWriter(), body);
-        };
-    }
 }
 
 /**
