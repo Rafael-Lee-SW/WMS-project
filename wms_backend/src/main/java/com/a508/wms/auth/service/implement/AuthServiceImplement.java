@@ -202,6 +202,7 @@ public class AuthServiceImplement implements AuthService {
 
             // User 엔티티 저장
             userRepository.save(user);
+
             log.info("User saved for email: {}", userEmail);
 
             // 인증 정보 삭제

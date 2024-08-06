@@ -1,12 +1,20 @@
 package com.a508.wms.auth.config;
 
+import com.a508.wms.auth.common.ResponseCode;
+import com.a508.wms.auth.common.ResponseMessage;
 import com.a508.wms.auth.filter.JwtAuthenticationFilter;
 import com.a508.wms.auth.handler.ValidationExceptionHandler;
+import com.a508.wms.auth.provider.JwtProvider;
+import com.a508.wms.user.domain.User;
+import com.a508.wms.user.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.a508.wms.user.service.UserService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,30 +23,27 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HttpBasicConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-@Configuration // 빈 메서드
-@EnableWebSecurity // 웹 보안 활성화
-@RequiredArgsConstructor // 필터 의존성 주입
+@Configuration
+@EnableWebSecurity
+@RequiredArgsConstructor
 public class WebSecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final DefaultOAuth2UserService oAuth2UserService;
+    private final UserRepository userRepository;
+    private final JwtProvider jwtProvider;
 
-    /**
-     * 보안 필터 체인을 구성합니다.
-     *
-     * @param httpSecurity HttpSecurity 객체
-     * @return SecurityFilterChain 객체
-     * @throws Exception 예외
-     */
     @Bean
     protected SecurityFilterChain configure(HttpSecurity httpSecurity,
         ValidationExceptionHandler validationExceptionHandler, UserService userService) throws Exception {
@@ -53,14 +58,15 @@ public class WebSecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             .authorizeHttpRequests(request -> request
-                .requestMatchers("/api/v1/auth/**", "/oauth2/**").permitAll() // 자체 로그인 및 회원가입 경로
+                .requestMatchers("/api/v1/auth/**", "/oauth2/**").permitAll()
                 .requestMatchers("/oauth2/authorization/**").permitAll()
-                .requestMatchers("/api/v1/social/**").authenticated() // 소셜 로그인 경로
+                .requestMatchers("/api/v1/social/**").authenticated()
                 .anyRequest().permitAll()
             )
             .oauth2Login(oauth2 -> oauth2
                 .redirectionEndpoint(endpoint -> endpoint.baseUri("/oauth2/code/*"))
                 .userInfoEndpoint(endPoint -> endPoint.userService(oAuth2UserService))
+                .successHandler(customSuccessHandler())  // 성공 핸들러 설정
             )
             .exceptionHandling(exceptionHandling -> exceptionHandling
                 .authenticationEntryPoint(new FailedAuthenticationEntryPoint())
@@ -69,44 +75,54 @@ public class WebSecurityConfig {
 
         return httpSecurity.build();
     }
-    /**
-     * 요청 권한 설정
-     *             .authorizeHttpRequests(request -> request
-     *                 // "/" 및 "/api/v1/auth/**" 경로를 허가
-     *                 .requestMatchers("/", "/**").permitAll()
-     *                 // "/api/v1/admin/**" 경로에 "ADMIN" 역할 필요
-     *                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-     *                 // "/api/v1/user/**" 경로에 "USER" 역할 필요
-     *                 .requestMatchers("/api/v1/user/**").hasRole("USER")
-     *                 // 나머지 모든 요청은 인증 필요
-     *                 .anyRequest().authenticated()
-     *             )
-     *             // 인증 실패 처리
-     *             .exceptionHandling(exceptionHandling -> exceptionHandling
-     *                 .authenticationEntryPoint(new FailedAuthenticationEntryPoint()))
-     *             // JWT 필터를 UsernamePasswordAuthenticationFilter 앞에 추가
-     *             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-     */
 
-    /**
-     * CORS 설정을 구성합니다.
-     *
-     * @return CorsConfigurationSource 객체
-     */
     @Bean
     protected CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // 모든 도메인을 허용
         configuration.addAllowedOrigin("*");
-        // 모든 헤더를 허용
         configuration.addAllowedHeader("*");
-        // 모든 HTTP 메서드를 허용
         configuration.addAllowedMethod("*");
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        // 모든 경로에 대해 위의 설정을 적용
         source.registerCorsConfiguration("/**", configuration);
 
         return source;
+    }
+
+    @Bean
+    public AuthenticationSuccessHandler customSuccessHandler() {
+        return (request, response, authentication) -> {
+            // 인증된 사용자 정보 가져오기
+            String email = authentication.getName();
+            User user = userRepository.findByEmail(email).orElseThrow();
+
+            // JWT 생성
+            String token = jwtProvider.create(String.valueOf(user.getId()));
+
+            // JSON 응답 생성
+            Map<String, Object> body = new HashMap<>();
+            body.put("code", ResponseCode.SUCCESS);
+            body.put("message", ResponseMessage.SUCCESS);
+            body.put("token", token);
+            body.put("expirationTime", 3600); // 만료 시간 설정 (예: 3600초)
+
+            Map<String, Object> userMap = new HashMap<>();
+            userMap.put("id", user.getId());
+            userMap.put("email", user.getEmail());
+            userMap.put("name", user.getName());
+            userMap.put("nickname", user.getNickname());
+            userMap.put("roleTypeEnum", user.getRoleTypeEnum().name());
+            userMap.put("loginTypeEnum", user.getLoginTypeEnum().name());
+            userMap.put("statusEnum", user.getStatusEnum().name());
+            userMap.put("business", user.getBusiness());
+
+            body.put("user", userMap);
+
+            // JSON 응답 전송
+            response.setContentType("application/json");
+            response.setStatus(HttpServletResponse.SC_OK);
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.writeValue(response.getWriter(), body);
+        };
     }
 }
 
@@ -118,11 +134,8 @@ class FailedAuthenticationEntryPoint implements AuthenticationEntryPoint {
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
         AuthenticationException authException) throws IOException, ServletException {
-        // 응답의 콘텐츠 타입을 JSON으로 설정
         response.setContentType("application/json");
-        // 응답 상태를 403 (Forbidden)으로 설정
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-        // JSON 형식의 에러 메시지를 응답 본문에 작성
-        response.getWriter().write("{\"code\":\"NP\" , \"message\":\"No Permission.\"}");
+        response.getWriter().write("{\"code\":\"" + ResponseCode.SIGN_IN_FAIL + "\" , \"message\":\"" + ResponseMessage.SIGN_IN_FAIL + "\"}");
     }
 }
