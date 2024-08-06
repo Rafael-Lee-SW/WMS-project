@@ -48,7 +48,7 @@ public class CustomSuccessHandler implements AuthenticationSuccessHandler {
         String jsonResponse = responseEntity.getBody().toJsonString();
 
         // 리다이렉트할 URL
-        String redirectUrl = "https://i11a508.p.ssafy.io/sociallogin";
+        String redirectUrl = "https://i11a508.p.ssafy.io/oauth/callback";
 
         // 리다이렉트 수행
         response.sendRedirect(redirectUrl + "?response=" + jsonResponse);
