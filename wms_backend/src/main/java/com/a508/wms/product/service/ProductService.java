@@ -135,16 +135,21 @@ public class ProductService {
             .toList();
     }
 
+    public void updateAll(List<ProductUpdateRequestDto> requestDtos) {
+        log.info("[Service] update Products :");
+        for(ProductUpdateRequestDto productUpdateRequestDto : requestDtos) {
+            update(productUpdateRequestDto);
+        }
+    }
     /**
      * 기존 상품 데이터를 조회하여 수정하는 기능
      *
-     * @param id      상품 id
      * @param request 수정할 상품 데이터
      */
-    public void update(Long id, ProductUpdateRequestDto request) {
-        log.info("[Service] update Product by id: {}", id);
-        Product product = productModuleService.findById(id);
-        productModuleService.update(id, request);
+    public void update(ProductUpdateRequestDto request) {
+        log.info("[Service] update Product by id: {}", request.getProductId());
+        Product product = productModuleService.findById(request.getProductId());
+        productModuleService.update(request);
         productModuleService.save(product);
     }
 

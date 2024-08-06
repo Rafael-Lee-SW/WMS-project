@@ -148,13 +148,11 @@ public class ProductModuleService {
     /**
      * 기존 상품 데이터를 조회하여 수정하는 기능
      *
-     * @param id      상품 id
      * @param request 수정할 상품 데이터
      */
     @Transactional
-    public void update(Long id,
-                       ProductUpdateRequestDto request) {
-        Product product = productRepository.findById(id)
+    public void update(ProductUpdateRequestDto request) {
+        Product product = productRepository.findById(request.getProductId())
             .orElseThrow(() -> new IllegalArgumentException("Invalid Product Id"));
         Location location = locationRepository.findByNameAndWarehouseId(request.getLocationName(),
                 request.getWarehouseId());

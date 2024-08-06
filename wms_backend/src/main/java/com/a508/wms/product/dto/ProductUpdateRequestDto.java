@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 @Setter
 @ToString
 public class ProductUpdateRequestDto {
+    Long productId;
     Long barcode;
     Long warehouseId;
     String name;

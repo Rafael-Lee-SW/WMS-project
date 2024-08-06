@@ -22,6 +22,7 @@ public class ProductDetailMapper {
     public static ProductDetailResponseDto fromProductDetail(ProductDetail productDetail) {
         return ProductDetailResponseDto.builder()
                 .id(productDetail.getId())
+                .businessId(productDetail.getBusiness().getId())
                 .barcode(productDetail.getBarcode())
                 .name(productDetail.getName())
                 .size(productDetail.getSize())
