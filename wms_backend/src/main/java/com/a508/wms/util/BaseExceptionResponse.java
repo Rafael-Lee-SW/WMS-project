@@ -1,5 +1,6 @@
 package com.a508.wms.util;
 
+import com.a508.wms.util.constant.ResponseEnum;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.time.LocalDateTime;
 import lombok.Getter;
@@ -11,7 +12,7 @@ import lombok.Getter;
  */
 @Getter
 @JsonPropertyOrder({"success", "statusCode", "httpStatus", "message", "timestamp"})
-public class BaseExceptionResponse extends Exception{
+public class BaseExceptionResponse {
 
     private final boolean success;
     private final int statusCode;

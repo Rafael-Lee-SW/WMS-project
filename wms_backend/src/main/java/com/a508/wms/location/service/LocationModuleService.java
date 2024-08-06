@@ -82,4 +82,8 @@ public class LocationModuleService {
         //변경사항 저장
     }
 
+    public boolean notExist(Long id){
+        return !locationRepository.existsById(id);
+    }
+
 }

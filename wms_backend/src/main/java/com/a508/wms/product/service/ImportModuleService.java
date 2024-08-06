@@ -1,10 +1,12 @@
 package com.a508.wms.product.service;
 
+import com.a508.wms.business.repository.BusinessRepository;
 import com.a508.wms.product.domain.Import;
 import com.a508.wms.product.domain.Product;
 import com.a508.wms.product.dto.ImportResponseDto;
 import com.a508.wms.product.dto.ProductData;
 import com.a508.wms.product.dto.ProductImportResponseDto;
+import com.a508.wms.product.exception.ProductInvalidRequestException;
 import com.a508.wms.product.mapper.ImportMapper;
 import com.a508.wms.product.repository.ImportRepository;
 import java.time.LocalDate;
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Service;
 public class ImportModuleService {
 
     private final ImportRepository importRepository;
+    private final BusinessRepository businessRepository;
 
     /**
      * 입고 내역을 저장하는 기능
@@ -60,6 +63,10 @@ public class ImportModuleService {
      */
 
     public List<ImportResponseDto> findAllByBusinessId(Long businessId) {
+        if(!businessRepository.existsById(businessId)){
+            throw new ProductInvalidRequestException("businessId",businessId);
+        }
+
         List<Import> importList = importRepository.findAllByBusinessId(businessId);
         List<ImportResponseDto> dataList = new ArrayList<>();
         for (Import imp : importList) {
