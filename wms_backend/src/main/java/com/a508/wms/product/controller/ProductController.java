@@ -181,7 +181,7 @@ public class ProductController {
 
 
     /**
-     * 사업체에 대한 입,출고 내역을 하나로 묶어서 반환하는 기능
+     * 사업체에 대한 입,출고,유통기한 경고 상품 내역을 하나로 묶어서 반환하는 기능
      *
      * @param businessId 사업체의 id
      * @return
@@ -193,7 +193,9 @@ public class ProductController {
             log.info("[Controller] find Notifications by businessId: {}", businessId);
             return new BaseSuccessResponse<>(NotificationResponseDto.builder()
                 .importResponseDtos(importModuleService.findAllByBusinessId(businessId))
-                .exportResponseDtos(exportModuleService.findAllByBusinessId(businessId)).build());
+                .exportResponseDtos(exportModuleService.findAllByBusinessId(businessId))
+                .expirationProductResponseDtos(productService.findExpirationProducts(businessId))
+                .build());
         }
         return null;
     }

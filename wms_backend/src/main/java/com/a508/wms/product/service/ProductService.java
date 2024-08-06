@@ -15,10 +15,13 @@ import com.a508.wms.util.constant.ProductStorageTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -33,6 +36,7 @@ public class ProductService {
     private final ImportModuleService importModuleService;
     private final ProductRepository productRepository;
     private final ExportModuleService exportModuleService;
+    private final int LIMIT_DAY=1;
 
     /**
      * 서비스의 모든 상품을 반환하는 기능
@@ -425,4 +429,67 @@ public class ProductService {
         return 2;
     }
 
+
+    /**
+     * 특정 사업자의 Product 중 유통기한이 머지 않았거나,이미 지난 상품을 반환하는 기능 .
+     * @param businessId 사업자의 id
+     * @return
+     */
+    @Transactional
+    public List<ExpirationProductResponseDto> findExpirationProducts(Long businessId){
+        log.info("[Service] find Expired Warning Product by businessId: {}", businessId);
+        LocalDateTime currentTime = LocalDateTime.now();
+
+        List<Product> products=productModuleService.findByBusinessId(businessId)
+            .stream()
+            .filter(product -> product.getExpirationDate()!=null)
+            .toList();
+
+        List<Product> expirationSoonProducts=products.stream()
+            .filter(product->isExpiredSoonProduct(product,currentTime))
+            .toList();
+
+        List<Product> expirationExpiredProducts=products.stream()
+            .filter(product -> isAlreadyExpiredProduct(product,currentTime))
+            .toList();
+
+
+        return mergeAndConvertExpirationProducts(expirationSoonProducts,expirationExpiredProducts);
+    }
+
+    /**
+     * Product의 유통기한이 얼마 안남았는지 여부를 반환하는 기능.
+     * @param product 상품
+     * @param currentTime 현재 시간
+     * @return
+     */
+    private boolean isExpiredSoonProduct(Product product,LocalDateTime currentTime) {
+        return product.getExpirationDate().isAfter(currentTime)&&product.getExpirationDate().isBefore(currentTime.plusDays(LIMIT_DAY));
+    }
+
+    /**
+     * Product의 유통기한이 이미 지났는지 여부를 반환하는 기능.
+     * @param product
+     * @param currentTime
+     * @return
+     */
+    private boolean isAlreadyExpiredProduct(Product product,LocalDateTime currentTime) {
+        return product.getExpirationDate().isBefore(currentTime);
+    }
+
+    /**
+     * 유통기한에 관련된 두 리스트를 하나의 반환 리스트로 병합하여 반환하는 기능.
+     * @param expirationSoonProducts
+     * @param expirationExpiredProducts
+     * @return
+     */
+    private List<ExpirationProductResponseDto> mergeAndConvertExpirationProducts(List<Product> expirationSoonProducts, List<Product> expirationExpiredProducts){
+        return Stream.concat(
+            expirationSoonProducts.stream()
+                .map(product->ProductMapper.toExpirationProductResponseDto(product,false))
+            ,
+            expirationExpiredProducts.stream()
+                .map(product->ProductMapper.toExpirationProductResponseDto(product,true))
+        ).toList();
+    }
 }

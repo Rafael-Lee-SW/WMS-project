@@ -16,8 +16,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByProductDetailId(Long id);
 
     @Query("SELECT p FROM Product p " +
-        "JOIN p.productDetail pd " +
-        "JOIN pd.business b " +
+        "JOIN FETCH p.productDetail pd " +
+        "JOIN FETCH pd.business b " +
         "WHERE b.id = :businessID")
     List<Product> findByBusinessId(@Param("businessID") Long businessID);
 
