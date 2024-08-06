@@ -7,7 +7,7 @@ export default function ServiceInfo() {
     const classes = useStyles();
 
     return (
-        <div className={classes.container}>
+        <div id="service-info" className={classes.container}>
             <div className={classes.section1}>
                 <h2 className={classes.title}>재고관리의 시작, FitBox에서</h2>
                 <p className={classes.subTitle}>FitBox는 보다 쉬운 재고관리를 위해</p>
