@@ -8,6 +8,8 @@ import com.a508.wms.location.domain.Location;
 import com.a508.wms.location.dto.LocationResponseDto;
 import com.a508.wms.location.mapper.LocationMapper;
 import com.a508.wms.location.service.LocationModuleService;
+import com.a508.wms.product.domain.Product;
+import com.a508.wms.product.service.ProductModuleService;
 import com.a508.wms.util.constant.ExportTypeEnum;
 import com.a508.wms.util.constant.ProductStorageTypeEnum;
 import com.a508.wms.warehouse.domain.Warehouse;
@@ -34,6 +36,7 @@ public class WarehouseService {
     private final LocationModuleService locationModuleService;
     private final FloorModuleService floorModuleService;
     private final WallModuleService wallModuleService;
+    private final ProductModuleService productModuleService;
 
     /**
      * 최초 창고를 생성하는 메서드
@@ -89,10 +92,11 @@ public class WarehouseService {
         log.info("[Service] find Warehouse with id {}", id);
         Warehouse warehouse = warehouseModuleService.findById(id);
 
-        List<LocationResponseDto> locations = locationModuleService.findAllByWarehouseIdWithFloors(
+        List<LocationResponseDto> locations = locationModuleService.findAllByWarehouseId(
                 id)
             .stream()
-            .map(LocationMapper::toLocationResponseDto)
+            .map(location -> LocationMapper.toLocationResponseDto(location,
+                calculateFillRate(location)))
             .toList();
 
         List<WallDto> walls = wallModuleService.findByWarehouseId(id)
@@ -119,7 +123,8 @@ public class WarehouseService {
         List<LocationResponseDto> locations = request.getLocations().stream()
             .map(location -> LocationMapper.fromLocationUpdateDto(location, warehouse))
             .map(locationModuleService::save)
-            .map(LocationMapper::toLocationResponseDto)
+            .map(location -> LocationMapper.toLocationResponseDto(location,
+                calculateFillRate(location)))
             .toList();
 
         List<WallDto> walls = request.getWalls().stream()
@@ -129,6 +134,29 @@ public class WarehouseService {
             .toList();
 
         return WarehouseMapper.toWarehouseDetailResponseDto(warehouse, locations, walls);
+    }
+
+    private int calculateFillRate(Location location) {
+        List<Floor> floors = floorModuleService.findAllByLocationId(location.getId());
+
+        if (floors.isEmpty()) {
+            return 0;
+        }
+        int totalSize = 0;
+        int floorSize = location.getXSize() * location.getYSize() * 2500;
+
+        for (Floor floor : floors) {
+            List<Product> products = productModuleService.findByFloor(floor);
+            int productSize = 0;
+
+            for (Product product : products) {
+                productSize += product.getProductDetail().getSize() * product.getQuantity();
+            }
+
+            totalSize += Math.min(100, productSize * 100 / floorSize); //0~100단위의
+        }
+
+        return totalSize / floors.size();
     }
 
     /**

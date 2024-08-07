@@ -8,6 +8,8 @@ import com.a508.wms.location.domain.Location;
 import com.a508.wms.location.dto.LocationRequestDto;
 import com.a508.wms.location.dto.LocationResponseDto;
 import com.a508.wms.location.mapper.LocationMapper;
+import com.a508.wms.product.domain.Product;
+import com.a508.wms.product.service.ProductModuleService;
 import com.a508.wms.util.constant.ExportTypeEnum;
 import com.a508.wms.util.constant.FacilityTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;
@@ -27,6 +29,7 @@ public class LocationService {
     private final LocationModuleService locationModuleService;
     private final WarehouseModuleService warehouseModuleService;
     private final FloorModuleService floorModuleService;
+    private final ProductModuleService productModuleService;
 
     /**
      * 특정 로케이션 조회
@@ -37,7 +40,7 @@ public class LocationService {
     public LocationResponseDto findById(Long id) {
         log.info("[Service] find Location by id: {}", id);
         Location location = locationModuleService.findById(id);
-        return LocationMapper.toLocationResponseDto(location);
+        return LocationMapper.toLocationResponseDto(location, calculateFillRate(location));
     }
 
     /**
@@ -48,11 +51,12 @@ public class LocationService {
      */
     public List<LocationResponseDto> findAllByWarehouseId(Long warehouseId) {
         log.info("[Service] findAllLocation by warehouseId: {}", warehouseId);
-        List<Location> locations = locationModuleService.findAllByWarehouseIdWithFloors(
+        List<Location> locations = locationModuleService.findAllByWarehouseId(
             warehouseId);
 
         return locations.stream()
-            .map(LocationMapper::toLocationResponseDto)
+            .map(location -> LocationMapper.toLocationResponseDto(location,
+                calculateFillRate(location)))
             .toList();
     }
 
@@ -85,7 +89,7 @@ public class LocationService {
 
         location.setFloors(floors);  //location에 층 정보 넣어주기
 
-        return LocationMapper.toLocationResponseDto(location);
+        return LocationMapper.toLocationResponseDto(location, calculateFillRate(location));
     }
 
 
@@ -120,7 +124,28 @@ public class LocationService {
         location.updatePosition(request.getXPosition(), request.getYPosition());
 
         Location savedLocation = locationModuleService.save(location);
-        return LocationMapper.toLocationResponseDto(savedLocation);
+        return LocationMapper.toLocationResponseDto(savedLocation,
+            calculateFillRate(savedLocation));
+    }
+
+    private int calculateFillRate(Location location) {
+        List<Floor> floors = floorModuleService.findAllByLocationId(location.getId());
+
+        int totalSize = 0;
+        int floorSize = location.getXSize() * location.getYSize() * 2500;
+
+        for (Floor floor : floors) {
+            List<Product> products = productModuleService.findByFloor(floor);
+            int productSize = 0;
+
+            for (Product product : products) {
+                productSize += product.getProductDetail().getSize() * product.getQuantity();
+            }
+
+            totalSize += Math.max(100, productSize * 100 / floorSize); //0~100단위의
+        }
+
+        return totalSize / floors.size();
     }
 
     /**

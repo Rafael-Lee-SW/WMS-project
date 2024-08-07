@@ -39,15 +39,14 @@ public class LocationModuleService {
     }
 
 
-
     /**
      * 특정 창고가 가지고 있는 로케이션 전부 조회
      *
      * @param warehouseId: warehouse id
      * @return 입력 warehouseId를 가지고 있는 Location List
      */
-    public List<Location> findAllByWarehouseIdWithFloors(Long warehouseId) {
-        return locationRepository.findAllByWarehouseIdWithFloors(warehouseId);
+    public List<Location> findAllByWarehouseId(Long warehouseId) {
+        return locationRepository.findAllByWarehouseId(warehouseId);
     }
 
     public Location save(Location location) {
@@ -82,7 +81,7 @@ public class LocationModuleService {
         //변경사항 저장
     }
 
-    public boolean notExist(Long id){
+    public boolean notExist(Long id) {
         return !locationRepository.existsById(id);
     }
 
