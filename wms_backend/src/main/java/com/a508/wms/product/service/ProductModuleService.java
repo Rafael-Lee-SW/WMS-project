@@ -8,6 +8,8 @@ import com.a508.wms.product.domain.Product;
 import com.a508.wms.product.dto.ProductPickingLocationDto;
 import com.a508.wms.product.dto.ProductQuantityDto;
 import com.a508.wms.product.dto.ProductUpdateRequestDto;
+import com.a508.wms.product.dto.ProductWithBusinessResponseDto;
+import com.a508.wms.product.mapper.ProductMapper;
 import com.a508.wms.product.repository.ProductRepository;
 import com.a508.wms.productdetail.repository.ProductDetailRepository;
 import com.a508.wms.productdetail.service.ProductDetailModuleService;
@@ -73,10 +75,14 @@ public class ProductModuleService {
      * @return
      */
 
+    public List<ProductWithBusinessResponseDto> findAllByBusinessId(Long businessId) {
+        return productRepository.findAllByBusinessId(businessId)
+                .stream().map((ProductMapper::toProductWithBusinessDto))
+                .toList();
+    }
     public List<Product> findByBusinessId(Long businessId) {
         return productRepository.findByBusinessId(businessId);
     }
-
     /**
      * 창고 id에 해당하는 상품들을 반환하는 기능
      *

@@ -155,20 +155,20 @@ public class WarehouseService {
 
         Business business = businessModuleService.findById(warehouseDto.getBusinessId());
 
-        if(business == null)
-            throw new WarehouseException.BusinessNotFoundException("businessId가 올바르지 않습니다.",ResponseEnum.BAD_REQUEST);
-        if (warehouseDto.getSize() <= 0) {
-            throw new WarehouseException.InvalidInputException("유효하지 않은 창고 크기입니다.", ResponseEnum.BAD_REQUEST);
-        }
-        if (warehouseDto.getName() == null || warehouseDto.getName().trim().isEmpty()) {
-            throw new WarehouseException.InvalidInputException("창고 이름이 입력되지 않았습니다.", ResponseEnum.BAD_REQUEST);
-        }
-        if (warehouseDto.getPriority() == 0) {
-            throw new WarehouseException.InvalidInputException("창고 우선순위가 입력되지 않았습니다.", ResponseEnum.BAD_REQUEST);
-        }
-        if (warehouseDto.getFacilityTypeEnum() == null) {
-            throw new WarehouseException.InvalidInputException("창고 유형이 입력되지 않았습니다.", ResponseEnum.BAD_REQUEST);
-        }
+//        if(business == null)
+//            throw new WarehouseException.BusinessNotFoundException("businessId가 올바르지 않습니다.",ResponseEnum.BAD_REQUEST);
+//        if (warehouseDto.getSize() <= 0) {
+//            throw new WarehouseException.InvalidInputException("유효하지 않은 창고 크기입니다.", ResponseEnum.BAD_REQUEST);
+//        }
+//        if (warehouseDto.getName() == null || warehouseDto.getName().trim().isEmpty()) {
+//            throw new WarehouseException.InvalidInputException("창고 이름이 입력되지 않았습니다.", ResponseEnum.BAD_REQUEST);
+//        }
+//        if (warehouseDto.getPriority() == 0) {
+//            throw new WarehouseException.InvalidInputException("창고 우선순위가 입력되지 않았습니다.", ResponseEnum.BAD_REQUEST);
+//        }
+//        if (warehouseDto.getFacilityTypeEnum() == null) {
+//            throw new WarehouseException.InvalidInputException("창고 유형이 입력되지 않았습니다.", ResponseEnum.BAD_REQUEST);
+//        }
 
         //수직 배치수 수평 배치수 계산
         int rowCnt = calculateRowCount(warehouseDto.getSize());

@@ -1,7 +1,6 @@
 package com.a508.wms.product.repository;
 
 import com.a508.wms.product.domain.Product;
-import com.a508.wms.product.dto.ProductPickingDto;
 import com.a508.wms.product.dto.ProductPickingLocationDto;
 import com.a508.wms.product.dto.ProductQuantityDto;
 import java.time.LocalDateTime;
@@ -15,11 +14,25 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     List<Product> findByProductDetailId(Long id);
 
-    @Query("SELECT p FROM Product p " +
-        "JOIN FETCH p.productDetail pd " +
-        "JOIN FETCH pd.business b " +
-        "WHERE b.id = :businessID")
-    List<Product> findByBusinessId(@Param("businessID") Long businessID);
+      @Query("SELECT p FROM Product p " +
+              "JOIN p.productDetail pd " +
+              "JOIN pd.business b " +
+            "WHERE b.id = :businessId")
+      List<Product> findByBusinessId(@Param ("businessId") Long businessId);
+
+    @Query(value = "select SUM(p.quantity) as quantity, p.id as id, l.name as locationName, " +
+            " f.floor_level as floorLevel, p.expiration_date as expiration_date, " +
+            " l.warehouse_id as warehouseId, pd.product_storage_type as productStorageType, " +
+            " pd.barcode as barcode, pd.name as productName, pd.size as size,pd.unit as unit, " +
+            " pd.original_price as originalPrice, pd.selling_price as sellingPrice, " +
+            " p.created_date, p.updated_date, p.status_enum, p.floor_id, p.product_detail_id " +
+            "from product p " +
+            "join product_detail pd on pd.id = p.product_detail_id " +
+            "join floor f on p.floor_id = f.id " +
+            "join location l on f.location_id = l.id " +
+            "where pd.business_id = :businessId " +
+            "group by floor_id, expiration_date, product_detail_id ", nativeQuery = true)
+    List<Product> findAllByBusinessId(@Param("businessId") Long businessId);
 
     @Query("SELECT p FROM Product p " +
         "JOIN p.floor f " +
@@ -33,6 +46,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
         "JOIN f.location l " +
         "WHERE l.id = :locationID")
     List<Product> findByLocationId(@Param("locationID") Long locationID);
+
 
 
     @Query(value = "SELECT pd.barcode, " +
@@ -87,3 +101,18 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 //                                           @Param("businessId") Long businessId);
     Optional<Product> findByIdAndExpirationDate(Long id, LocalDateTime expirationDate);
 }
+
+/**
+ *  @Query(value = "select SUM(p.quantity) as quantity, p.id as id, l.name as locationName, " +
+ *             " f.floor_level as floorLevel, p.expiration_date as expiration_date, " +
+ *             " l.warehouse_id as warehouseId, pd.product_storage_type as productStorageType, " +
+ *             " pd.barcode as barcode, pd.name as productName, pd.size as size,pd.unit as unit, " +
+ *             " pd.original_price as originalPrice, pd.selling_price as sellingPrice, " +
+ *             " p.created_date, p.updated_date, p.status_enum, p.floor_id, p.product_detail_id " +
+ *             "from product p " +
+ *             "join product_detail pd on pd.id = p.product_detail_id " +
+ *             "join floor f on p.floor_id = f.id " +
+ *             "join location l on f.location_id = l.id " +
+ *             "where pd.business_id = :businessId " +
+ *             "group by floor_id, expiration_date, product_detail_id ", nativeQuery = true)
+ */

@@ -16,8 +16,8 @@ public class ProductDetailRequestDto {
     private int sellingPrice;
     private Long barcode;
     private ProductStorageTypeEnum productStorageType;
-    private Long size;
-    private Long unit;
+    private int size;
+    private int unit;
     private String name;
     private Long businessId;
 }

@@ -30,11 +30,10 @@ public class Product extends BaseTimeEntity {
     @JoinColumn(name = "floor_id", nullable = false)
     private Floor floor;
     @Column(nullable = false)
-    private int quantity;
+    private Integer quantity;
     @Column
     private LocalDateTime expirationDate;
-    @Column(nullable = true, length = 255)
-    private String comment;
+
     @Enumerated(EnumType.STRING)
     private StatusEnum statusEnum = StatusEnum.ACTIVE;
 
@@ -46,7 +45,6 @@ public class Product extends BaseTimeEntity {
         this.floor = floor;
         this.quantity = quantity;
         this.expirationDate = expirationDate;
-        this.comment = comment;
     }
 
     public void updateFloor(Floor floor) {

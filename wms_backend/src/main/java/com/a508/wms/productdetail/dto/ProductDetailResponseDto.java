@@ -20,8 +20,8 @@ public class ProductDetailResponseDto {
     private ProductStorageTypeEnum productStorageType;
     private Long barcode;
     private String name;
-    private Long size;
-    private Long unit;
+    private int size;
+    private int unit;
     private int originalPrice;
     private int sellingPrice;
     private LocalDateTime createdDate;

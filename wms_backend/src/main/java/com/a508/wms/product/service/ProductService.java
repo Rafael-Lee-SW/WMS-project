@@ -568,4 +568,8 @@ public class ProductService {
                 .map(product->ProductMapper.toExpirationProductResponseDto(product,true))
         ).toList();
     }
+
+    public List<?> findAllByBusinessId(Long businessId) {
+        return productModuleService.findAllByBusinessId(businessId);
+    }
 }

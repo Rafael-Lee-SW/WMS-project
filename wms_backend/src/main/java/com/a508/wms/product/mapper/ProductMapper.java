@@ -3,10 +3,7 @@ package com.a508.wms.product.mapper;
 import com.a508.wms.floor.domain.Floor;
 import com.a508.wms.location.domain.Location;
 import com.a508.wms.product.domain.Product;
-import com.a508.wms.product.dto.ExpirationProductResponseDto;
-import com.a508.wms.product.dto.ProductData;
-import com.a508.wms.product.dto.ProductMainResponseDto;
-import com.a508.wms.product.dto.ProductResponseDto;
+import com.a508.wms.product.dto.*;
 import com.a508.wms.productdetail.domain.ProductDetail;
 import com.a508.wms.productdetail.mapper.ProductDetailMapper;
 import com.a508.wms.warehouse.domain.Warehouse;
@@ -86,5 +83,26 @@ public class ProductMapper {
             .warehouseId(warehouse.getId())
             .warehouseName(warehouse.getName())
             .build();
+    }
+    public static ProductWithBusinessResponseDto toProductWithBusinessDto(Product product) {
+        return ProductWithBusinessResponseDto.builder()
+                .id(product.getId())
+                .quantity(product.getQuantity())
+                .locationName(product.getFloor().getLocation().getName())
+                .floorLevel(product.getFloor().getFloorLevel())
+                .expirationDate(product.getExpirationDate())
+                .warehouseId(product.getFloor().getLocation().getWarehouse().getId())
+                .productStorageType(product.getProductDetail().getProductStorageType())
+                .barcode(product.getProductDetail().getBarcode())
+                .name(product.getProductDetail().getName())
+                .size((product.getProductDetail().getSize() == null) ? 0
+                        : product.getProductDetail().getSize())
+                .unit((product.getProductDetail().getUnit() == null) ? 0
+                        : product.getProductDetail().getUnit())
+                .originalPrice((product.getProductDetail().getOriginalPrice() == null) ? 0
+                        : product.getProductDetail().getOriginalPrice())
+                .sellingPrice((product.getProductDetail().getSellingPrice() == null) ? 0
+                        : product.getProductDetail().getSellingPrice())
+                .build();
     }
 }
