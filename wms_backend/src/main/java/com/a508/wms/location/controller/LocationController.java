@@ -1,5 +1,6 @@
 package com.a508.wms.location.controller;
 
+import com.a508.wms.floor.exception.FloorException;
 import com.a508.wms.location.dto.LocationRequestDto;
 import com.a508.wms.location.dto.LocationResponseDto;
 import com.a508.wms.location.dto.LocationSaveRequestDto;
@@ -81,7 +82,7 @@ public class LocationController {
      * @param id -> locationId
      */
     @PatchMapping("/{id}")
-    public BaseSuccessResponse<Void> delete(@PathVariable Long id) {
+    public BaseSuccessResponse<Void> delete(@PathVariable Long id) throws Exception, FloorException {
         log.info("[Controller] delete Location by id: {}", id);
         locationService.delete(id);
         return new BaseSuccessResponse<>(null);

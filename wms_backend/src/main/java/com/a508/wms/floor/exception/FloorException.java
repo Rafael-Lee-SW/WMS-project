@@ -14,11 +14,11 @@ public class FloorException extends Throwable {
         this.exceptionMessage = exceptionMessage;
     }
 
-    public static class NotFountException extends FloorException {
+    public static class NotFoundException extends FloorException {
 
         private static final String MESSAGE_FORMAT = " 층 id: %s";
 
-        NotFountException(Long id) {
+        public NotFoundException(Long id) {
             super(ResponseEnum.FLOOR_NOT_FOUND,
                 String.format(ResponseEnum.FLOOR_NOT_FOUND.getMessage() + MESSAGE_FORMAT, id));
         }
@@ -28,7 +28,7 @@ public class FloorException extends Throwable {
 
         private static final String MESSAGE_FORMAT = " 층 id: %s";
 
-        DeletedException(Long id) {
+        public DeletedException(Long id) {
             super(ResponseEnum.FLOOR_DELETED,
                 String.format(ResponseEnum.FLOOR_DELETED.getMessage() + MESSAGE_FORMAT, id));
         }
@@ -38,7 +38,7 @@ public class FloorException extends Throwable {
 
         private static final String MESSAGE_FORMAT = " default 층 id: %s";
 
-        NotFoundDefaultFloorException(Long id) {
+        public NotFoundDefaultFloorException(Long id) {
             super(ResponseEnum.DEFAULT_FLOOR_NOT_FOUND,
                 String.format(ResponseEnum.DEFAULT_FLOOR_NOT_FOUND.getMessage() + MESSAGE_FORMAT,
                     id));
@@ -49,7 +49,7 @@ public class FloorException extends Throwable {
 
         private static final String MESSAGE_FORMAT = " 층 id: %s";
 
-        InvalidExportType(Long id) {
+        public InvalidExportType(Long id) {
             super(ResponseEnum.INVALID_FLOOR_EXPORT_TYPE,
                 String.format(ResponseEnum.INVALID_FLOOR_EXPORT_TYPE.getMessage() + MESSAGE_FORMAT,
                     id));
