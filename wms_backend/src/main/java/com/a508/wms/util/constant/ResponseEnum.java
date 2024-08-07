@@ -51,7 +51,15 @@ public enum ResponseEnum {
     DEFAULT_FLOOR_NOT_FOUND(false, 8002, HttpStatus.BAD_REQUEST.value(),
         "Default Floor를 찾을수 없습니다."),
     INVALID_FLOOR_EXPORT_TYPE(false, 8003, HttpStatus.BAD_REQUEST.value(),
-        "해당되는 창고에 적합하지 않는 출고 타입으로 층을 변경할수 없습니다.");
+        "해당되는 창고에 적합하지 않는 출고 타입으로 층을 변경할수 없습니다."),
+
+    //Location 오류
+    LOCATION_NOT_FOUND(false, 9000, HttpStatus.BAD_REQUEST.value(), "로케이션을 찾을수 없습니다."),
+    LOCATION_DELETED(false, 9001, HttpStatus.BAD_REQUEST.value(), "삭제된 로케이션 입니다."),
+    DEFAULT_LOCATION_NOT_FOUND(false, 9002, HttpStatus.BAD_REQUEST.value(),
+        "Default Location을 찾을수 없습니다."),
+    INVALID_LOCATION_STORAGE_TYPE(false, 9003, HttpStatus.BAD_REQUEST.value(),
+        "해당 로케이션에 속해있는 상품들로 인해 보관 타입을 변경할수 없습니다.");
 
     private final boolean success;  //성공여부
     private final int statusCode;
