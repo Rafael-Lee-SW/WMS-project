@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
-import { useAuth } from '../context/AuthContext'; // AuthContext를 import
+import { useAuth } from '../../context/AuthContext'; // AuthContext를 import
 
 const OAuthCallback = () => {
   const router = useRouter();
