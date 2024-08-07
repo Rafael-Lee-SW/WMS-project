@@ -112,11 +112,6 @@ const useStyles = makeStyles(() => ({
     paddingBottom: '20px'
   }
 }));
-const SNS_SIGN_IN_URL = (type:'kakao' | 'naver') => `${API_DOMAIN}/auth/oauth2/${type}`;
-https://i11a508.p.ssafy.io/auth/oauth2/kakao
-const onSnsSignInButtonClickHandler = (type: `kakao` | `naver`) => {
-  window.location.href = SNS_SIGN_IN_URL(type);
-}
 
 
 export default function Login() {
@@ -162,8 +157,8 @@ export default function Login() {
 
   const signInWithProvider = (provider) => {
     const urls = {
-      kakao: 'https://i11a508.p.ssafy.io/oauth2/authorization/kakao',
-      naver: 'https://i11a508.p.ssafy.io/oauth2/authorization/naver',
+      kakao: 'https://i11a508.p.ssafy.io/api/oauth2/authorization/kakao',
+      naver: 'https://i11a508.p.ssafy.io/api/oauth2/authorization/naver',
     };
     window.location.href = urls[provider];
   };
