@@ -1,12 +1,18 @@
 package com.a508.wms.product.exception;
 
-import com.a508.wms.util.BaseExceptionResponse;
-import org.springframework.security.core.parameters.P;
+import com.a508.wms.util.constant.ResponseEnum;
+import lombok.Getter;
 
-public class ProductException extends BaseExceptionResponse {
-    private static final String PACKAGE_NAME="[PRODUCTS] ";
+@Getter
+public class ProductException extends Throwable {
 
-    public ProductException(boolean success, int statusCode, int httpStatus, String message) {
-        super(success, statusCode, httpStatus, PACKAGE_NAME+message);
+    private static final String PACKAGE_NAME = "[PRODUCTS] ";
+
+    private final ResponseEnum responseEnum;
+    private final String exceptionMessage;
+
+    public ProductException(ResponseEnum responseEnum, String exceptionMessage) {
+        this.responseEnum = responseEnum;
+        this.exceptionMessage = PACKAGE_NAME + responseEnum.getMessage() + exceptionMessage;
     }
 }
