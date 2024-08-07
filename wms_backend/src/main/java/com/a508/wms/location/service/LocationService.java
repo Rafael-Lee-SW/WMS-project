@@ -7,6 +7,7 @@ import com.a508.wms.floor.service.FloorModuleService;
 import com.a508.wms.location.domain.Location;
 import com.a508.wms.location.dto.LocationRequestDto;
 import com.a508.wms.location.dto.LocationResponseDto;
+import com.a508.wms.location.dto.LocationSaveRequestDto;
 import com.a508.wms.location.mapper.LocationMapper;
 import com.a508.wms.product.domain.Product;
 import com.a508.wms.product.service.ProductModuleService;
@@ -64,32 +65,19 @@ public class LocationService {
      * location 정보 받아와서 DB에 저장하는 메서드 1.locationDto내부의 창고,저장타입 id를 통해 저장소에 조회해서 location에 담은 후 저장
      * 2.floorDto들을 floor객체로 바꿔주고 내부에 location정보 담아줌 3.floor객체들을 전부 저장하고 location에도 floor 객체정보 담아줌
      *
-     * @param request : 프론트에서 넘어오는 location 정보 모든 작업이 하나의 트랜잭션에서 일어나야하므로 @Transactional 추가
+     * @param saveRequest : 프론트에서 넘어오는 location 정보 모든 작업이 하나의 트랜잭션에서 일어나야하므로 @Transactional 추가
      */
     @Transactional
-    public LocationResponseDto save(LocationRequestDto request) {
+    public void save(LocationSaveRequestDto saveRequest) {
         log.info("[Service] save Location");
+        Warehouse warehouse = warehouseModuleService.findById(saveRequest.getWarehouseId());
 
-        Warehouse warehouse = warehouseModuleService.findById(request.getWarehouseId());
-        Location location = LocationMapper.fromLocationRequestDto(request, warehouse);
+        for(LocationRequestDto request : saveRequest.getRequests()) {
 
-        locationModuleService.save(location);
-
-        List<FloorRequestDto> floorRequests = request.getFloorRequests();
-
-        List<Floor> floors = floorRequests.stream()
-            .map(floorDto -> {
-                modifyExportType(floorDto, warehouse);
-                // Floor 객체로 변환, location정보 넣어주기
-                return FloorMapper.fromFloorRequestDto(floorDto).setLocation(location);
-            })
-            .toList();
-
-        floorModuleService.saveAll(floors);    //floor 전부 저장\
-
-        location.setFloors(floors);  //location에 층 정보 넣어주기
-
-        return LocationMapper.toLocationResponseDto(location, calculateFillRate(location));
+            Location location = LocationMapper.fromLocationRequestDto(request, warehouse);
+            locationModuleService.save(location);
+            floorModuleService.saveAllByLocation(request,location);
+        }
     }
 
 

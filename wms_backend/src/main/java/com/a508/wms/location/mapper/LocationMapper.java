@@ -20,14 +20,14 @@ public class LocationMapper {
         Warehouse warehouse) {
         return Location.builder()
             .name(request.getName())
-            .rotation(request.getRotation())
             .xPosition(request.getXPosition())
             .yPosition(request.getYPosition())
             .xSize(request.getXSize())
             .ySize(request.getYSize())
             .zSize(request.getZSize())
+            .rotation(request.getRotation())
             .warehouse(warehouse)
-            .productStorageType(request.getStorageType())
+            .productStorageType(request.getProductStorageType())
             .build();
     }
 

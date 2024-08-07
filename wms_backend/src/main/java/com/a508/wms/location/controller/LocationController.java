@@ -2,6 +2,7 @@ package com.a508.wms.location.controller;
 
 import com.a508.wms.location.dto.LocationRequestDto;
 import com.a508.wms.location.dto.LocationResponseDto;
+import com.a508.wms.location.dto.LocationSaveRequestDto;
 import com.a508.wms.location.service.LocationService;
 import com.a508.wms.util.BaseSuccessResponse;
 import java.util.List;
@@ -55,7 +56,7 @@ public class LocationController {
      * @param request
      */
     @PostMapping
-    public BaseSuccessResponse<Void> save(@RequestBody LocationRequestDto request) {
+    public BaseSuccessResponse<Void> save(@RequestBody LocationSaveRequestDto request) {
         log.info("[Controller] save Location");
         locationService.save(request);
         return new BaseSuccessResponse<>(null);
