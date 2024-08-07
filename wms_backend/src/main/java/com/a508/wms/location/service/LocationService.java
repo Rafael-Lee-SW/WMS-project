@@ -3,6 +3,7 @@ package com.a508.wms.location.service;
 import com.a508.wms.floor.domain.Floor;
 import com.a508.wms.floor.dto.FloorRequestDto;
 import com.a508.wms.floor.mapper.FloorMapper;
+import com.a508.wms.floor.exception.FloorException;
 import com.a508.wms.floor.service.FloorModuleService;
 import com.a508.wms.location.domain.Location;
 import com.a508.wms.location.dto.LocationRequestDto;
@@ -38,7 +39,7 @@ public class LocationService {
      * @param id: location id
      * @return id값과 일치하는 Location 하나, 없으면 null 리턴
      */
-    public LocationResponseDto findById(Long id) {
+    public LocationResponseDto findById(Long id) throws FloorException {
         log.info("[Service] find Location by id: {}", id);
         Location location = locationModuleService.findById(id);
         return LocationMapper.toLocationResponseDto(location, calculateFillRate(location));
@@ -50,7 +51,7 @@ public class LocationService {
      * @param warehouseId: warehouse id
      * @return 입력 warehouseId를 가지고 있는 Location List
      */
-    public List<LocationResponseDto> findAllByWarehouseId(Long warehouseId) {
+    public List<LocationResponseDto> findAllByWarehouseId(Long warehouseId) throws FloorException {
         log.info("[Service] findAllLocation by warehouseId: {}", warehouseId);
         List<Location> locations = locationModuleService.findAllByWarehouseId(
             warehouseId);
@@ -101,7 +102,7 @@ public class LocationService {
      * @param request: 바꿀 로케이션 정보들
      */
     @Transactional
-    public LocationResponseDto update(Long id, LocationRequestDto request) {
+    public LocationResponseDto update(Long id, LocationRequestDto request) throws FloorException {
         log.info("[Service] update Location by id: {}", id);
         Location location = locationModuleService.findById(id);
 
@@ -116,7 +117,7 @@ public class LocationService {
             calculateFillRate(savedLocation));
     }
 
-    private int calculateFillRate(Location location) {
+    private int calculateFillRate(Location location)  {
         List<Floor> floors = floorModuleService.findAllByLocationId(location.getId());
 
         int totalSize = 0;
@@ -143,7 +144,7 @@ public class LocationService {
      * @param id: locationId
      */
     @Transactional
-    public void delete(Long id) {
+    public void delete(Long id) throws FloorException {
         log.info("[Service] delete Location by id: {}", id);
         Location location = locationModuleService.findById(id);
 

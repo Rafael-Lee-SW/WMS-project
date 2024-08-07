@@ -2,6 +2,7 @@ package com.a508.wms.floor.service;
 
 import com.a508.wms.floor.domain.Floor;
 import com.a508.wms.floor.dto.FloorResponseDto;
+import com.a508.wms.floor.exception.FloorException;
 import com.a508.wms.floor.mapper.FloorMapper;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,10 +24,9 @@ public class FloorService {
      * @param locationId: 로케이션 iD
      * @return FloorDto List
      */
-    public List<FloorResponseDto> findAllByLocationId(Long locationId) {
+    public List<FloorResponseDto> findAllByLocationId(Long locationId) throws FloorException {
         log.info("[Service] find all Floors by locationId: {}", locationId);
         List<Floor> floors = floorModuleService.findAllByLocationId(locationId);
-
         return floors.stream()
             .map(FloorMapper::toFloorResponseDto)
             .collect(Collectors.toList());
@@ -38,10 +38,19 @@ public class FloorService {
      * @param id: 층 id
      * @return FloorDto
      */
-    public FloorResponseDto findById(@PathVariable Long id) {
+    public FloorResponseDto findById(@PathVariable Long id) throws FloorException {
         log.info("[Service] find Floor by id: {}", id);
-        Floor floor = floorModuleService.findById(id);
-
-        return FloorMapper.toFloorResponseDto(floor);
+        try {
+            Floor floor = floorModuleService.findById(id);
+            return FloorMapper.toFloorResponseDto(floor);
+        } catch (FloorException.DeletedException e) {
+            throw new FloorException.DeletedException(id);
+        } catch (NullPointerException e) {
+            throw new FloorException.NotFoundException(id);
+        } catch (FloorException.NotFoundDefaultFloorException e) {
+            throw new FloorException.NotFoundDefaultFloorException(id);
+        } catch (FloorException.InvalidExportType e) {
+            throw new FloorException.InvalidExportType(id);
+        }
     }
 }

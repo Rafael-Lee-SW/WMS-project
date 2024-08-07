@@ -1,6 +1,7 @@
 package com.a508.wms.floor.service;
 
 import com.a508.wms.floor.domain.Floor;
+import com.a508.wms.floor.exception.FloorException;
 import com.a508.wms.floor.repository.FloorRepository;
 
 import java.util.ArrayList;
@@ -9,6 +10,7 @@ import java.util.List;
 import com.a508.wms.location.domain.Location;
 import com.a508.wms.location.dto.LocationRequestDto;
 import com.a508.wms.util.constant.ExportTypeEnum;
+import com.a508.wms.util.constant.ResponseEnum;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,6 +30,7 @@ public class FloorModuleService {
      * @return Floor List
      */
     public List<Floor> findAllByLocationId(Long locationId) {
+
         return floorRepository.findAllByLocationId(locationId);
     }
 
@@ -37,10 +40,10 @@ public class FloorModuleService {
      * @param floorId: 층 id
      * @return Floor
      */
-    public Floor findById(Long floorId) {
-        return floorRepository.findById(floorId)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid Floor Id"));
+    public Floor findById(Long floorId) throws FloorException {
+        return floorRepository.findById(floorId).orElse(null);
     }
+
 
     /**
      * warehouse의 id와 floorLevel을 통해 default floor를 조회 (차후 수정 필요)

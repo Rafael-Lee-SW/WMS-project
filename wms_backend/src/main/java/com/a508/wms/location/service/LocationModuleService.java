@@ -1,6 +1,7 @@
 package com.a508.wms.location.service;
 
 import com.a508.wms.floor.domain.Floor;
+import com.a508.wms.floor.exception.FloorException;
 import com.a508.wms.floor.service.FloorModuleService;
 import com.a508.wms.location.domain.Location;
 import com.a508.wms.location.repository.LocationRepository;
@@ -65,7 +66,7 @@ public class LocationModuleService {
      *
      * @param id: locationId
      */
-    public void delete(Long id) {
+    public void delete(Long id) throws FloorException {
         Location location = locationRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Invalid location ID"));
         location.updateStatusEnum(StatusEnum.DELETED);
