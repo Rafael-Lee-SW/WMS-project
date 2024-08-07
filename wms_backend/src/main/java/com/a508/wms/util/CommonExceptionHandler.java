@@ -1,14 +1,13 @@
-package com.a508.wms.warehouse.exception;
+package com.a508.wms.util;
 
-import com.a508.wms.util.BaseExceptionResponse;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
-public class WarehouseExceptionHandler {
+public class CommonExceptionHandler {
 
-    @ExceptionHandler(WarehouseException.class)
-    public BaseExceptionResponse warehouseException(WarehouseException e) {
+    @ExceptionHandler(CommonException.class)
+    public BaseExceptionResponse globalException(CommonException e) {
         return new BaseExceptionResponse(e.getResponseEnum(), e.getExceptionMessage());
     }
 }
