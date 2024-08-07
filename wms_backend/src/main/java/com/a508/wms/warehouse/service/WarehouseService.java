@@ -12,12 +12,9 @@ import com.a508.wms.util.BaseExceptionResponse;
 import com.a508.wms.util.constant.ExportTypeEnum;
 import com.a508.wms.util.constant.ProductStorageTypeEnum;
 import com.a508.wms.util.constant.ResponseEnum;
+import com.a508.wms.warehouse.domain.Wall;
 import com.a508.wms.warehouse.domain.Warehouse;
-import com.a508.wms.warehouse.dto.LocationsAndWallsRequestDto;
-import com.a508.wms.warehouse.dto.WallDto;
-import com.a508.wms.warehouse.dto.WarehouseByBusinessDto;
-import com.a508.wms.warehouse.dto.WarehouseDetailResponseDto;
-import com.a508.wms.warehouse.dto.WarehouseDto;
+import com.a508.wms.warehouse.dto.*;
 import com.a508.wms.warehouse.exception.WarehouseException;
 import com.a508.wms.warehouse.mapper.WallMapper;
 import com.a508.wms.warehouse.mapper.WarehouseMapper;
@@ -184,5 +181,11 @@ public class WarehouseService {
             .facilityTypeEnum(warehouseDto.getFacilityTypeEnum())
             .build();
     }
-
+    public void saveAllWall(WallRequestDto saveRequest) {
+        log.info("[Service] save All Wall");
+        Warehouse warehouse = warehouseModuleService.findById(saveRequest.getWarehouseId());
+        for (WallDto request : saveRequest.getWallDtos()) {
+            wallModuleService.save(WallMapper.fromDto(request, warehouse));
+        }
+    }
 }

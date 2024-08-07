@@ -1,10 +1,7 @@
 package com.a508.wms.warehouse.controller;
 
 import com.a508.wms.util.BaseSuccessResponse;
-import com.a508.wms.warehouse.dto.LocationsAndWallsRequestDto;
-import com.a508.wms.warehouse.dto.WarehouseByBusinessDto;
-import com.a508.wms.warehouse.dto.WarehouseDetailResponseDto;
-import com.a508.wms.warehouse.dto.WarehouseDto;
+import com.a508.wms.warehouse.dto.*;
 import com.a508.wms.warehouse.exception.WarehouseException;
 import com.a508.wms.warehouse.service.WarehouseService;
 import java.util.List;
@@ -64,7 +61,12 @@ public class WarehouseController {
         warehouseService.delete(id);
         return new BaseSuccessResponse<>(null);
     }
-
+    @PostMapping("/walls")
+    public BaseSuccessResponse<Void> saveAllWall(@RequestBody WallRequestDto request) {
+        log.info("[Controller] save Walls: ");
+        warehouseService.saveAllWall(request);
+        return new BaseSuccessResponse<>(null);
+    }
     @PutMapping("/{id}/locatons-and-walls")
     public BaseSuccessResponse<WarehouseDetailResponseDto> updateLocationsAndWalls(
         @PathVariable Long id, @RequestBody LocationsAndWallsRequestDto request

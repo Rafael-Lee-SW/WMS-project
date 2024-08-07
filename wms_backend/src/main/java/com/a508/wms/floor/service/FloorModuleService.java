@@ -2,7 +2,13 @@ package com.a508.wms.floor.service;
 
 import com.a508.wms.floor.domain.Floor;
 import com.a508.wms.floor.repository.FloorRepository;
+
+import java.util.ArrayList;
 import java.util.List;
+
+import com.a508.wms.location.domain.Location;
+import com.a508.wms.location.dto.LocationRequestDto;
+import com.a508.wms.util.constant.ExportTypeEnum;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -71,4 +77,23 @@ public class FloorModuleService {
         return floorRepository.save(floor);
     }
 
+    /**
+     * 매핑할 request의 zSize만큼 floor를 만들어서 각 floor를 location에 매핑한다..
+     * @param request
+     * @param location
+     */
+    public void saveAllByLocation(LocationRequestDto request, Location location) {
+        List <Floor> floors = new ArrayList<>();
+        for (int currentFloorLevel = 1; currentFloorLevel <= request.getZSize(); currentFloorLevel++) {
+            Floor floor = Floor.builder()
+                    .exportTypeEnum((currentFloorLevel <= request.getTouchableFloor()) ? ExportTypeEnum.DISPLAY
+                            : ExportTypeEnum.KEEP)
+                            .floorLevel(currentFloorLevel)
+                    .location(location)
+                    .build();
+            floors.add(floor);
+        }
+        saveAll(floors);
+        location.setFloors(floors);
+    }
 }
