@@ -20,10 +20,9 @@ const useStyles = makeStyles((theme) => ({
   },
   logo: {
     cursor: 'pointer',
-    width: '80px',
-    height: '80px',
-    marginBottom: theme.spacing(4),
-    border: '2px solid black',
+    width: '100%',
+    height: '300px',
+    marginBottom: theme.spacing(1),
   },
   snsButtons: {
     display: 'flex',
@@ -31,15 +30,24 @@ const useStyles = makeStyles((theme) => ({
     marginBottom: theme.spacing(2),
     '& button': {
       margin: theme.spacing(1),
+      border: 'none',
+      backgroundColor: 'transparent',
+      cursor: 'pointer'
     },
     '& img': {
-      width: '40px',
-      height: '40px',
+      width: '50px',
+      height: '50px',
     },
   },
   textField: {
-    marginBottom: theme.spacing(2),
+    margin: '8px',
     flex: 1,
+    '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+      borderColor: '#7d4a1a', 
+    },
+    '& .MuiInputLabel-root.Mui-focused': {
+      color: '#7d4a1a', 
+    },
   },
   button: {
     margin: theme.spacing(1),
@@ -52,7 +60,8 @@ const useStyles = makeStyles((theme) => ({
   dividerContainer: {
     display: 'flex',
     alignItems: 'center',
-    width: '80%',
+    justifyContent: 'center',
+    width: '100%',
     margin: theme.spacing(2, 0),
   },
   divider: {
@@ -62,6 +71,7 @@ const useStyles = makeStyles((theme) => ({
   },
   snsText: {
     margin: theme.spacing(0, 2),
+    fontSize: '20px'
   },
   title: {
     marginBottom: theme.spacing(4),
@@ -223,19 +233,16 @@ export default function SignUp() {
 
   return (
     <GridContainer className={classes.container}>
-      <GridItem xs={12} sm={8} md={6}>
+      <GridItem xs={12} sm={6} md={4}>
         <Card>
-          <CardHeader>
-            <img src="/img/logo.png" alt="Logo" className={classes.logo} onClick={() => router.push('/')} />
-            <h2>FitBox</h2>
-          </CardHeader>
+          <cardHeader>
+            <img src="/img/loginLogo.jpg" alt="Logo" className={classes.logo} onClick={() => router.push('/')} />
+          </cardHeader>
           <CardBody>
             <div className={classes.dividerContainer}>
-              <div className={classes.divider} />
-              <Typography variant="body1" className={classes.snsText}>
+              <h3 variant="body1" className={classes.snsText}>
                 SNS 회원가입
-              </Typography>
-              <div className={classes.divider} />
+              </h3>
             </div>
             <div className={classes.snsButtons}>
               <button className="sns-button" onClick={handleKakaoSignIn}>
@@ -245,10 +252,9 @@ export default function SignUp() {
                 <img src="/img/naver-sign-in.png" alt="Naver Sign In" />
               </button>
             </div>
-            <Divider className={classes.divider} />
             <br />
             <form onSubmit={handleSubmit}>
-              <div style={{ display: 'flex', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
                 <TextField
                   label="이메일"
                   type="email"
@@ -259,7 +265,7 @@ export default function SignUp() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                 />
-                <Button variant="contained" color="primary" onClick={handleEmailCheck} className={classes.button}>
+                <Button variant="contained" style={{ backgroundColor: "#7D4A1A", color: "white" }} onClick={handleEmailCheck} className={classes.button}>
                   이메일 인증
                 </Button>
               </div>
@@ -279,7 +285,6 @@ export default function SignUp() {
                 />
                 <Button
                   variant="contained"
-                  color="primary"
                   onClick={handleSendCertificationEmail}
                   className={classes.button}
                   disabled={!isEmailValid}
@@ -288,7 +293,6 @@ export default function SignUp() {
                 </Button>
                 <Button
                   variant="contained"
-                  color="primary"
                   onClick={handleCertification}
                   className={classes.button}
                   disabled={!isEmailValid}

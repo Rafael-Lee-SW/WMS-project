@@ -17,6 +17,9 @@ const useStyles = makeStyles((theme) => ({
     height: '100vh',
     textAlign: 'center',
   },
+  card: {
+    border: "1px solid #7D4A1A",
+  },
   logo: {
     cursor: 'pointer',
     width: '100%',
@@ -41,10 +44,10 @@ const useStyles = makeStyles((theme) => ({
   textField: {
     marginBottom: theme.spacing(2),
     '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
-      borderColor: '#7d4a1a', // 클릭 시 아웃라인 색상
+      borderColor: '#7d4a1a', 
     },
     '& .MuiInputLabel-root.Mui-focused': {
-      color: '#7d4a1a', // 클릭 시 레이블 색상
+      color: '#7d4a1a', 
     },
   },
   button: {
@@ -118,7 +121,7 @@ export default function Login() {
   return (
     <GridContainer className={classes.container}>
       <GridItem xs={12} sm={6} md={4}>
-        <Card>
+        <Card className={classes.card}>
           <cardHeader>
             <img
               src="/img/loginLogo.jpg"
