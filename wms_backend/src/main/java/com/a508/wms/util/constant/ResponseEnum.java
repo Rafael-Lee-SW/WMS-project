@@ -62,10 +62,15 @@ public enum ResponseEnum {
         "해당 로케이션에 속해있는 상품들로 인해 보관 타입을 변경할수 없습니다."),
 
     //Warehouse 오류
-    WAREHOUSE_NOT_FOUND(false, 10000, HttpStatus.BAD_REQUEST.value(), "창고 찾을수 없습니다."),
+    WAREHOUSE_NOT_FOUND(false, 10000, HttpStatus.BAD_REQUEST.value(), "창고를 찾을수 없습니다."),
     WAREHOUSE_DELETED(false, 10001, HttpStatus.BAD_REQUEST.value(), "삭제된 창고 입니다."),
     INVALID_WAREHOUSE_TYPE(false, 10002, HttpStatus.BAD_REQUEST.value(),
-        "해당 창고에 속해있는 로케이션들로 인해 warehouse의 타입을 변경할수 없습니다.");
+        "해당 창고에 속해있는 로케이션들로 인해 warehouse의 타입을 변경할수 없습니다."),
+
+    //Subscription 오류
+    SUBSCRIPTION_NOT_FOUND(false, 11000, HttpStatus.BAD_REQUEST.value(), "구독 정보를 찾을수 없습니다."),
+    SUBSCRIPTION_DELETED(false, 11001, HttpStatus.BAD_REQUEST.value(), "삭제된 구독정보 입니다.");
+
 
     private final boolean success;  //성공여부
     private final int statusCode;
