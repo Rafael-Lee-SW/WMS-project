@@ -27,12 +27,12 @@ const OAuthCallback = () => {
             router.push('/'); // 메인 페이지로 이동
           } else {
             alert('로그인에 실패하였습니다.');
-            router.push('/login'); // 로그인 페이지로 이동
+            router.push('/signIn'); // 로그인 페이지로 이동
           }
         } catch (error) {
           console.error('Error processing OAuth response:', error);
           alert('인증 처리 중 오류가 발생했습니다.');
-          router.push('/login');
+          router.push('/signIn');
         }
       }
     };

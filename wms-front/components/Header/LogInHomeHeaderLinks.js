@@ -1,20 +1,12 @@
-/*eslint-disable*/
 import React from "react";
 import Link from "next/link";
-
-// @material-ui/core components
+import { Link as ScrollLink } from "react-scroll"; // react-scroll import 추가
+import { useRouter } from "next/router"; // Import useRouter
 import { makeStyles } from "@material-ui/core/styles";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-import Tooltip from "@material-ui/core/Tooltip";
-import Icon from "@material-ui/core/Icon";
-
-// @material-ui/icons
+import { List, ListItem, Tooltip, Icon } from "@mui/material";
 import { Apps, CloudDownload } from "@material-ui/icons";
 import DeleteIcon from "@material-ui/icons/Delete";
 import IconButton from "@material-ui/core/IconButton";
-
-// core components
 import CustomDropdown from "/components/CustomDropdown/CustomDropdown.js";
 import Button from "/components/CustomButtons/Button.js";
 
@@ -24,52 +16,58 @@ const useStyles = makeStyles(styles);
 
 export default function HeaderLinks(props) {
   const classes = useStyles();
+  const router = useRouter(); // Initialize useRouter
+
+  const handleLogout = () => {
+    // Remove the token from local storage
+    localStorage.removeItem("token");
+    // Redirect to the homepage
+    router.push("/");
+  };
+
   return (
     <List className={classes.list}>
       <ListItem className={classes.listItem}>
-          <Button
-          href="/user/id"
+        <Button
+          href="/user/select"
           color="transparent"
-          target="_blank"
           className={classes.navLink}>
-          <Icon className={classes.icons}>unarchive</Icon>재고관리
+          창고 관리
         </Button>
       </ListItem>
       <ListItem className={classes.listItem}>
         <Button
           href="/mypage"
           color="transparent"
-          target="_blank"
           className={classes.navLink}>
-          <Icon className={classes.icons}>unarchive</Icon>마이페이지
-        </Button>
-      </ListItem>
-      <ListItem className={classes.listItem}>
-          <Button 
-          href="/signIn"
-          color="transparent"
-          target="_blank"
-          className={classes.navLink}>
-          <Icon className={classes.icons}>unarchive</Icon>로그인
+          마이페이지
         </Button>
       </ListItem>
       <ListItem className={classes.listItem}>
         <Button
-          href="/signup"
+          onClick={handleLogout} 
           color="transparent"
-          target="_blank"
           className={classes.navLink}>
-          <Icon className={classes.icons}>unarchive</Icon>회원가입
+          로그아웃
         </Button>
       </ListItem>
       <ListItem className={classes.listItem}>
-        <Button
-          href="https://www.creative-tim.com/product/nextjs-material-kit?ref=njsmk-navbar"
-          color="transparent"
-          target="_blank"
-          className={classes.navLink}>
-          <CloudDownload className={classes.icons} />사용방법
-        </Button>
+        <ScrollLink to="service-info" smooth={true} duration={500}>
+          <Button
+            color="transparent"
+            className={classes.navLink}>
+            서비스 소개
+          </Button>
+        </ScrollLink>
+      </ListItem>
+      <ListItem className={classes.listItem}>
+        <ScrollLink to="how-to-use-start" smooth={true} duration={500}>
+          <Button
+            color="transparent"
+            className={classes.navLink}>
+            사용방법
+          </Button>
+        </ScrollLink>
       </ListItem>
     </List>
   );
