@@ -33,7 +33,7 @@ public class LocationController {
      */
     @GetMapping
     public BaseSuccessResponse<List<LocationResponseDto>> findAllByWarehouseId(
-        @RequestParam(name = "warehouseId") Long warehouseId) {
+        @RequestParam(name = "warehouseId") Long warehouseId) throws FloorException {
         log.info("[Controller] find Locations by warehouseId: {}", warehouseId);
         return new BaseSuccessResponse<>(
             locationService.findAllByWarehouseId(warehouseId));
@@ -46,7 +46,7 @@ public class LocationController {
      * @return location이 있으면 locationDto, 없으면 null
      */
     @GetMapping("/{id}")
-    public BaseSuccessResponse<LocationResponseDto> findById(@PathVariable Long id) {
+    public BaseSuccessResponse<LocationResponseDto> findById(@PathVariable Long id) throws FloorException {
         log.info("[Controller] find Location by id: {}", id);
         return new BaseSuccessResponse<>(locationService.findById(id));
     }
@@ -71,7 +71,7 @@ public class LocationController {
      */
     @PutMapping("/{id}")
     public BaseSuccessResponse<LocationResponseDto> update(@PathVariable Long id,
-        @RequestBody LocationRequestDto locationDto) {
+        @RequestBody LocationRequestDto locationDto) throws FloorException {
         log.info("[Controller] update Location by id: {}", id);
         return new BaseSuccessResponse<>(locationService.update(id, locationDto));
     }

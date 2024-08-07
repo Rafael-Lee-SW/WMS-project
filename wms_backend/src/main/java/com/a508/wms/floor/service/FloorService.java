@@ -26,20 +26,10 @@ public class FloorService {
      */
     public List<FloorResponseDto> findAllByLocationId(Long locationId) throws FloorException {
         log.info("[Service] find all Floors by locationId: {}", locationId);
-        try {
-            List<Floor> floors = floorModuleService.findAllByLocationId(locationId);
-            return floors.stream()
-                .map(FloorMapper::toFloorResponseDto)
-                .collect(Collectors.toList());
-        } catch (FloorException.NotFoundException e) {
-            throw new FloorException.NotFoundException(locationId);
-        } catch (FloorException.DeletedException e) {
-            throw new FloorException.DeletedException(locationId);
-        } catch (FloorException.NotFoundDefaultFloorException e) {
-            throw new FloorException.NotFoundDefaultFloorException(locationId);
-        } catch (FloorException.InvalidExportType e) {
-            throw new FloorException.InvalidExportType(locationId);
-        }
+        List<Floor> floors = floorModuleService.findAllByLocationId(locationId);
+        return floors.stream()
+            .map(FloorMapper::toFloorResponseDto)
+            .collect(Collectors.toList());
     }
 
     /**

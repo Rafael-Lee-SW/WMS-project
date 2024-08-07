@@ -35,7 +35,7 @@ public class LocationMapper {
      * @param location
      * @return
      */
-    public static LocationResponseDto toLocationResponseDto(Location location) {
+    public static LocationResponseDto toLocationResponseDto(Location location, int fill) {
         return LocationResponseDto.builder()
             .id(location.getId())
             .xPosition(location.getXPosition())
@@ -44,6 +44,7 @@ public class LocationMapper {
             .ySize(location.getYSize())
             .zSize(location.getZSize())
             .name(location.getName())
+            .fill(fill)
             .storageType(location.getProductStorageType())
             .rotation(location.getRotation())
             .floorResponses(location.getFloors().stream().map(

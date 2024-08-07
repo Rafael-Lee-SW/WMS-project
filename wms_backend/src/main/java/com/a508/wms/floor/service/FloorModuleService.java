@@ -29,7 +29,8 @@ public class FloorModuleService {
      * @param locationId: 로케이션 iD
      * @return Floor List
      */
-    public List<Floor> findAllByLocationId(Long locationId) throws FloorException {
+    public List<Floor> findAllByLocationId(Long locationId) {
+
         return floorRepository.findAllByLocationId(locationId);
     }
 

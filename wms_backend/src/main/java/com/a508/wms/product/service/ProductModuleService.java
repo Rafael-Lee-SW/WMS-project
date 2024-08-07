@@ -77,12 +77,14 @@ public class ProductModuleService {
 
     public List<ProductWithBusinessResponseDto> findAllByBusinessId(Long businessId) {
         return productRepository.findAllByBusinessId(businessId)
-                .stream().map((ProductMapper::toProductWithBusinessDto))
-                .toList();
+            .stream().map((ProductMapper::toProductWithBusinessDto))
+            .toList();
     }
+
     public List<Product> findByBusinessId(Long businessId) {
         return productRepository.findByBusinessId(businessId);
     }
+
     /**
      * 창고 id에 해당하는 상품들을 반환하는 기능
      *
@@ -95,6 +97,10 @@ public class ProductModuleService {
 
     public List<Product> findByLocationId(Long locationId) {
         return productRepository.findByLocationId(locationId);
+    }
+
+    public List<Product> findByFloor(Floor floor) {
+        return productRepository.findByFloor(floor);
     }
 
     /**
@@ -161,9 +167,9 @@ public class ProductModuleService {
         Product product = productRepository.findById(request.getProductId())
             .orElseThrow(() -> new IllegalArgumentException("Invalid Product Id"));
         Location location = locationRepository.findByNameAndWarehouseId(request.getLocationName(),
-                request.getWarehouseId());
+            request.getWarehouseId());
         Floor floor = floorRepository.findByLocationIdAndFloorLevel(location.getId(),
-                request.getFloorLevel());
+            request.getFloorLevel());
         if (floor == null) {
             throw new IllegalArgumentException("Invalid Floor Level");
         }
