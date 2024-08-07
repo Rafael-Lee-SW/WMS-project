@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -34,6 +35,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+@Configurable
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -44,10 +46,8 @@ public class WebSecurityConfig {
     private final UserRepository userRepository;
     private final JwtProvider jwtProvider;
     private final AuthenticationSuccessHandler customSuccessHandler;
-
     @Bean
-    protected SecurityFilterChain configure(HttpSecurity httpSecurity,
-        ValidationExceptionHandler validationExceptionHandler, UserService userService) throws Exception {
+    protected SecurityFilterChain configure(HttpSecurity httpSecurity) throws Exception {
 
         httpSecurity
             .cors(cors -> cors
@@ -59,14 +59,14 @@ public class WebSecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             .authorizeHttpRequests(request -> request
-                .requestMatchers("/api/v1/auth/**", "/oauth2/**").permitAll()
+                .requestMatchers("/api/oauth2/**", "/oauth2/code/**","").permitAll()
                 .requestMatchers("/oauth2/authorization/**").permitAll()
                 .requestMatchers("/api/v1/social/**").authenticated()
                 .anyRequest().permitAll()
             )
             .oauth2Login(oauth2 -> oauth2
                 //리다이렉트 엔드포인트 경로 인가코드로 엑세스 토큰 받기
-                .redirectionEndpoint(endpoint -> endpoint.baseUri("/oauth2/code/**"))
+                .redirectionEndpoint(endpoint -> endpoint.baseUri("/oauth2/code/*"))
                 //사용자 정보 받아오기
                 .userInfoEndpoint(endPoint -> endPoint.userService(oAuth2UserService))
                 .successHandler(customSuccessHandler)  // 성공 핸들러 설정
