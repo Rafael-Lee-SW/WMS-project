@@ -953,10 +953,17 @@ const MyContainerNavigation = ({ WHId }) => {
   useEffect(() => {
     getWarehouseAPI();
   }, []);
-  const [showDetails, setShowDetails] = useState(true); // Default to showing details
 
+  const [showDetails, setShowDetails] = useState(true); // Default to showing details
   return (
-    <div style={{ position: "relative", height: "100vh", width: "100vw" }}>
+    <div
+      style={{
+        position: "relative",
+        height: "100vh",
+        width: "100%",
+        overflow: "hidden",
+      }}
+    >
       <Stage
         width={window.innerWidth}
         height={window.innerHeight}
@@ -998,15 +1005,14 @@ const MyContainerNavigation = ({ WHId }) => {
       <div
         style={{
           position: "absolute",
-          top: "10px",
+          top: "10vh",
           left: "10px",
           padding: "10px",
-          border: "1px solid black",
-          borderRadius: "10px",
-          width: "13%",
-          height: "95vh",
+          width: "220px",
+          height: "80vh",
           overflowY: "auto",
-          backgroundColor: "rgba(255, 255, 255, 0.9)",
+          backgroundColor: "rgba(247, 247, 247, 0.9)",
+          boxShadow: "2px 0 5px rgba(0, 0, 0, 0.1)",
         }}
       >
         <h4>현재 창고는 1번 창고입니다.</h4>
@@ -1033,10 +1039,11 @@ const MyContainerNavigation = ({ WHId }) => {
         </div>
         <hr />
         <div style={{ marginBottom: "10px" }}>
-          <ButtonIn onClick={() => setShowDetails(true)}>
-            Show Details
-          </ButtonIn>
-          <ButtonIn onClick={() => setShowDetails(false)} style={{ marginLeft: "5px" }}>
+          <ButtonIn onClick={() => setShowDetails(true)}>Show Details</ButtonIn>
+          <ButtonIn
+            onClick={() => setShowDetails(false)}
+            style={{ marginLeft: "5px" }}
+          >
             Show Notifications
           </ButtonIn>
         </div>
@@ -1047,7 +1054,7 @@ const MyContainerNavigation = ({ WHId }) => {
               <div>
                 <ul
                   style={{
-                    height: "100%",
+                    height: "42vh",
                     overflowY: "auto",
                   }}
                 >
@@ -1083,25 +1090,35 @@ const MyContainerNavigation = ({ WHId }) => {
           </div>
         )}
       </div>
-      {/* Right Sidebar */}
-      <div
-        style={{
-          position: "absolute",
-          top: "10px",
-          right: "10px",
-          padding: "8px",
-          border: "2px solid black",
-          borderRadius: "10px",
-          width: "36%",
-          height: "95vh",
-          overflowY: "auto",
-          backgroundColor: "rgba(255, 255, 255, 0.9)",
-        }}
-      >
-        {showDetails ? (
-          <div>
-            <h3>현재 선택된 재고함</h3>
-            {selectedLocation ? (
+      {/* Right Sidebar: Conditional rendering based on selection */}
+      {(selectedLocation || ModalTableData.length > 0) && (
+        <div
+          style={{
+            position: "absolute",
+            top: "10vh",
+            right: "10px",
+            padding: "10px",
+            border: "2px solid black",
+            borderRadius: "10px",
+            width: "36%",
+            height: "80vh",
+            overflowY: "auto",
+            backgroundColor: "rgba(255, 255, 255, 0.9)",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <ButtonIn
+              onClick={() => {
+                setSelectedLocation(null);
+                setModalTableData([]);
+              }}
+            >
+              Close
+            </ButtonIn>
+          </div>
+          {showDetails && selectedLocation ? (
+            <div>
+              <h3>현재 선택된 재고함</h3>
               <div>
                 <div
                   id="상자 정보"
@@ -1167,7 +1184,9 @@ const MyContainerNavigation = ({ WHId }) => {
                           }
                           onMouseEnter={(e) => {
                             e.target.style.backgroundColor =
-                              selectedFloor === index + 1 ? "blue" : "lightgray";
+                              selectedFloor === index + 1
+                                ? "blue"
+                                : "lightgray";
                             e.target.style.border = "2px solid red";
                           }}
                           onMouseLeave={(e) => {
@@ -1210,20 +1229,11 @@ const MyContainerNavigation = ({ WHId }) => {
                   </div>
                 )}
               </div>
-            ) : (
-              <p>재고함이 선택되지 않았습니다.</p>
-            )}
-          </div>
-        ) : (
-          <Dialog
-            open={openDetailModal}
-            onClose={() => setOpenDetailModal(false)}
-            maxWidth="lg"
-            fullWidth
-          >
-            <DialogTitle>상세 데이터</DialogTitle>
-            <DialogContent>
-              {ModalTableData.length > 0 && (
+            </div>
+          ) : (
+            <div>
+              <h3>Notification Details</h3>
+              {ModalTableData.length > 0 ? (
                 <HotTable
                   height={600}
                   ref={hotTableRef}
@@ -1253,37 +1263,16 @@ const MyContainerNavigation = ({ WHId }) => {
                   navigableHeaders={true}
                   licenseKey="non-commercial-and-evaluation"
                 />
+              ) : (
+                <p>세부 정보가 없습니다.</p>
               )}
-            </DialogContent>
-            <DialogActions>
-              <ButtonIn onClick={() => setOpenDetailModal(false)} color="primary">
-                닫기
-              </ButtonIn>
-            </DialogActions>
-          </Dialog>
-        )}
-      </div>
-      <div
-        style={{
-          position: "absolute",
-          bottom: "10px",
-          right: "10px",
-          display: "flex",
-          flexDirection: "column",
-          gap: "10px",
-          backgroundColor: "rgba(255, 255, 255, 0.9)",
-          padding: "5px",
-          borderRadius: "10px",
-        }}
-      >
-        <ButtonIn onClick={handleZoomIn}>Zoom In</ButtonIn>
-        <ButtonIn onClick={handleZoomOut}>Zoom Out</ButtonIn>
-        <ButtonIn onClick={getWarehouseAPI}>Load From Local</ButtonIn>
-      </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
-
 export default MyContainerNavigation;
 
 // -----   상자 설정 변경기 영역   ------

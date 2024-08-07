@@ -23,8 +23,7 @@ const headerStyle = {
     color: "brown",
     width: "100%",
     backgroundColor: "rgba(237, 237, 237, 0.8)",
-    boxShadow:
-      "0 4px 18px 0px rgba(0, 0, 0, 0.12), 0 7px 10px -5px rgba(0, 0, 0, 0.15)",
+    boxShadow: "2px 0 5px rgba(0, 0, 0, 0.1)",
     transition: "all 150ms ease 0s",
     alignItems: "center",
     flexFlow: "row nowrap",
