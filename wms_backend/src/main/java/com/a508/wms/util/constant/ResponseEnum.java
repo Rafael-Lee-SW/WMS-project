@@ -59,7 +59,13 @@ public enum ResponseEnum {
     DEFAULT_LOCATION_NOT_FOUND(false, 9002, HttpStatus.BAD_REQUEST.value(),
         "Default Location을 찾을수 없습니다."),
     INVALID_LOCATION_STORAGE_TYPE(false, 9003, HttpStatus.BAD_REQUEST.value(),
-        "해당 로케이션에 속해있는 상품들로 인해 보관 타입을 변경할수 없습니다.");
+        "해당 로케이션에 속해있는 상품들로 인해 보관 타입을 변경할수 없습니다."),
+
+    //Warehouse 오류
+    WAREHOUSE_NOT_FOUND(false, 10000, HttpStatus.BAD_REQUEST.value(), "창고 찾을수 없습니다."),
+    WAREHOUSE_DELETED(false, 10001, HttpStatus.BAD_REQUEST.value(), "삭제된 창고 입니다."),
+    INVALID_WAREHOUSE_TYPE(false, 10002, HttpStatus.BAD_REQUEST.value(),
+        "해당 창고에 속해있는 로케이션들로 인해 warehouse의 타입을 변경할수 없습니다.");
 
     private final boolean success;  //성공여부
     private final int statusCode;
