@@ -112,6 +112,12 @@ const useStyles = makeStyles(() => ({
     paddingBottom: '20px'
   }
 }));
+const SNS_SIGN_IN_URL = (type:'kakao' | 'naver') => `${API_DOMAIN}/auth/oauth2/${type}`;
+https://i11a508.p.ssafy.io/auth/oauth2/kakao
+const onSnsSignInButtonClickHandler = (type: `kakao` | `naver`) => {
+  window.location.href = SNS_SIGN_IN_URL(type);
+}
+
 
 export default function Login() {
   const classes = useStyles();
