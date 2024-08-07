@@ -35,7 +35,41 @@ const DynamicMyContainerProduct = dynamic(
   { ssr: false }
 );
 
-const useStyles = makeStyles(styles);
+const useStyles = makeStyles((theme) => ({
+  ...styles,
+  // Add sidebar styles
+  sidebar: {
+    width: "80px", // Set a consistent width
+    height: "100vh",
+    position: "fixed",
+    top: 0,
+    left: 0,
+    backgroundColor: "#f7f7f7",
+    padding: "5px 15px 20px 15px",
+    boxShadow: "2px 0 5px rgba(0, 0, 0, 0.1)",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "flex-start",
+    zIndex: 1200,
+  },
+  content: {
+    padding: "20px",
+  },
+  currentWarehouseIndex: {
+    fontSize: "12px",
+  },
+  currentWarehouse: {
+    marginBottom: "20px",
+    fontWeight: "bold",
+  },
+  mainContent: {
+    marginLeft: "80px", // Align with sidebar width
+    width: "calc(100% - 80px)", // Take full width minus sidebar width
+    height: "100vh", // Fill the screen height
+    overflow: "auto", // Allow scrolling if needed
+  },
+}));
 
 export default function Components(props) {
   const classes = useStyles();
@@ -52,9 +86,12 @@ export default function Components(props) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const componentsArray = [
-    <DynamicMyContainerMap key="DynamicMyContainerMap" />,
-    <DynamicMyContainerNavigation key="DynamicMyContainerNavigation" />,
-    <DynamicMyContainerProduct key="DynamicMyContainerProduct" />,
+    <DynamicMyContainerMap key="DynamicMyContainerMap" warehouseId={id} />,
+    <DynamicMyContainerNavigation
+      key="DynamicMyContainerNavigation"
+      WHId={id}
+    />,
+    <DynamicMyContainerProduct key="DynamicMyContainerProduct" WHId={id} />,
   ];
 
   const handleNextComponent = (index) => {
@@ -65,61 +102,40 @@ export default function Components(props) {
     /** 헤더 영역 */
     <div>
       <Header
-        brand="FIT-BOX"
         rightLinks={<HeaderLinks />}
         fixed
-        color="transparent"
-        changeColorOnScroll={{
-          height: 400,
-          color: "white",
-        }}
+        color="rgba(237, 237, 237, 0.8)"
         {...rest}
       />
-      <Parallax image="/img/WareHouseWallpaper.png">
-        <div className={classes.container}>
-          <div className={classes.brand}>
-            <h1 className={classes.title}>내 창고</h1>
-          </div>
-        </div>
-      </Parallax>
-
-      <div className={classNames(classes.main, classes.mainRaised)}>
-        <div className={classes.sections}>
-          <div className={classes.container}>
-            <br />
-            <div className={classes.flexContainer}>
-              <div className={classes.currentWarehouse}>현재 창고 : {id}</div>
-              <div className={classes.buttonsContainer}>
-                <Button
-                  color="primary"
-                  round
-                  onClick={() => handleNextComponent(0)}
-                >
-                  창고 관리
-                </Button>
-                <Button
-                  color="info"
-                  round
-                  onClick={() => handleNextComponent(1)}
-                >
-                  재고 관리
-                </Button>
-                <Button
-                  color="success"
-                  round
-                  onClick={() => handleNextComponent(2)}
-                >
-                  재고 현황
-                </Button>
-              </div>
-            </div>
-            <hr />
-            {/* 메인 영역 */}
-            {componentsArray[currentIndex]}
-          </div>
-        </div>
+      {/* Sidebar */}
+      <div className={classes.sidebar}>
+        <button>
+          <Link href="/components" as="/components">
+            <img
+              style={{ height: "30px", width: "60px", paddingRight: "15px" }}
+              src="/img/logo1.png"
+              alt="logo"
+            />
+          </Link>
+        </button>
+        <br />
+        <div className={classes.currentWarehouseIndex}>현재 창고</div>
+        <div className={classes.currentWarehouse}>{id}번</div>
+        <Button color="primary" round onClick={() => handleNextComponent(0)}>
+          창고 관리
+        </Button>
+        <Button color="info" round onClick={() => handleNextComponent(1)}>
+          재고 관리
+        </Button>
+        <Button color="success" round onClick={() => handleNextComponent(2)}>
+          재고 현황
+        </Button>
       </div>
-      <Footer />
+
+      {/* Main Content Area */}
+      <div className={classes.mainContent}>
+        {componentsArray[currentIndex]}
+      </div>
     </div>
   );
 }

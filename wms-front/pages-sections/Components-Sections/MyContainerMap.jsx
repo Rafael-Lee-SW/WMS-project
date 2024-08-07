@@ -31,12 +31,76 @@ const GRID_SIZE_SUB_50 = 50;
 const GRID_SIZE_SUB_10 = 10;
 const CANVAS_SIZE = 1000;
 
-const useStyles = makeStyles(styles);
+const useStyles = makeStyles((theme) => ({
+  ...styles,
+  canvasContainer: {
+    position: "relative",
+    width: "100%",
+    height: "100vh",
+    overflow: "hidden",
+  },
+  leftSidebar: {
+    position: "absolute",
+    top: "10vh",
+    left: 0,
+    width: "220px",
+    height: "80vh",
+    backgroundColor: "rgba(247, 247, 247, 0.9)",
+    boxShadow: "2px 0 5px rgba(0, 0, 0, 0.1)",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    zIndex: 1100,
+    padding: "10px 0",
+    overflowY: "auto",
+  },
+  rightSidebar: {
+    position: "absolute",
+    top: "10vh",
+    right: 15,
+    width: "220px",
+    height: "80vh",
+    backgroundColor: "rgba(247, 247, 247, 0.9)",
+    boxShadow: "-2px 0 5px rgba(0, 0, 0, 0.1)",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    zIndex: 1100,
+    padding: "10px 0",
+    overflowY: "auto",
+  },
+  buttonStyle: {
+    marginBottom: "10px",
+  },
+  outOfCanvas: {
+    position: "relative",
+    width: "100%",
+    height: "100vh",
+  },
+  inOfCanvas: {
+    width: "100%",
+    height: "100vh",
+    cursor: "default",
+  },
+  modal: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  paper: {
+    backgroundColor: theme.palette.background.paper,
+    border: "2px solid #000",
+    boxShadow: theme.shadows[5],
+    padding: theme.spacing(2, 4, 3),
+    maxWidth: "500px",
+    width: "90%",
+  },
+}));
 
 /**
  * 창고 관리 Component
  */
-const MyContainerMap = () => {
+const MyContainerMap = ({ warehouseId }) => {
   const classes = useStyles();
   const stageRef = useRef(null);
   const layerRef = useRef(null);
@@ -71,6 +135,38 @@ const MyContainerMap = () => {
       rotation: 0,
     },
   ]);
+  // Check if position is within bounds
+  const isPositionWithinBounds = (x, y, width, height) => {
+    return (
+      x >= 0 &&
+      y >= 0 &&
+      x + width <= CANVAS_SIZE &&
+      y + height <= CANVAS_SIZE
+    );
+  };
+  // Function to handle dragging
+  const handleDragMove = (e, rect) => {
+    const node = e.target;
+    const newX = Math.max(
+      Math.min(node.x(), CANVAS_SIZE - rect.width),
+      0
+    );
+    const newY = Math.max(
+      Math.min(node.y(), CANVAS_SIZE - rect.height),
+      0
+    );
+
+    // Update location only if it's within bounds
+    if (isPositionWithinBounds(newX, newY, rect.width, rect.height)) {
+      setLocations((prevLocations) =>
+        prevLocations.map((loc) =>
+          loc.id === rect.id
+            ? { ...loc, x: newX, y: newY }
+            : loc
+        )
+      );
+    }
+  };
 
   // 마지막으로 클릭한 상자를 추적하는 상태 추가
   const [selectedLocation, setSelectedLocation] = useState(null);
@@ -237,7 +333,7 @@ const MyContainerMap = () => {
 
     try {
       const response = await fetch(
-        "https://i11a508.p.ssafy.io/api/warehouses/2/locatons-and-walls",
+        `https://i11a508.p.ssafy.io/api/warehouses/${warehouseId}/locatons-and-walls`,
         {
           method: "PUT",
           headers: {
@@ -326,10 +422,10 @@ const MyContainerMap = () => {
   };
 
   // API를 통해 해당하는 창고(번호)의 모든 location(적재함)과 wall(벽)을 가져오는 메서드
-  const getWarehouseAPI = async () => {
+  const getWarehouseAPI = async (warehouseId) => {
     try {
       const response = await fetch(
-        "https://i11a508.p.ssafy.io/api/warehouses/12",
+        `https://i11a508.p.ssafy.io/api/warehouses/${warehouseId}`,
         {
           method: "GET",
           headers: {
@@ -972,9 +1068,54 @@ const MyContainerMap = () => {
     };
   }, [line, startPos, currentSetting, hoveredAnchor]);
 
-  //처음에 창고 정보를 불러온다.
+  // 유저 및 비즈니스 정보를 담을 State
+  const [userData, setUserData] = useState(null);
+  const [businessData, setBusinessData] = useState(null);
+
+  // LocalStorage(로컬 스토레이지)를 바탕으로 비즈니스 정보를 받아온다.
+  const fetchBusinessData = async (userId) => {
+    try {
+      const response = await fetch(
+        `https://i11a508.p.ssafy.io/api/users/${userId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        const userData = await response.json();
+        const businessInfo = userData.result.business;
+        //Business Data를 추출한다.
+        setBusinessData(businessInfo);
+        console.log("Business data loaded:", businessInfo);
+      } else {
+        console.error("Error fetching user data");
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
+
   useEffect(() => {
-    getWarehouseAPI();
+    // Retrieve user data from localStorage
+    const user = localStorage.getItem("user");
+    if (user) {
+      try {
+        const parsedUser = JSON.parse(user);
+        setUserData(parsedUser);
+        console.log("User data loaded from localStorage:", parsedUser);
+
+        // Fetch business data using user ID
+        fetchBusinessData(parsedUser.id);
+      } catch (error) {
+        console.error("Error parsing user data from localStorage:", error);
+      }
+    }
+    // 현재 param값을 통해 불러온다.
+    getWarehouseAPI(warehouseId);
   }, []);
 
   /**
@@ -1102,373 +1243,379 @@ const MyContainerMap = () => {
   //--- 리턴 Part ---
 
   return (
-    <div>
-      {/** Main 영역 시작 */}
-      <main className={classes.mainBody}>
-        {/* Left-SideBar / 좌측 사이드바  */}
-        <div className={classes.leftSideBar}>
-          <Button
-            className={classes.buttonStyle}
-            onClick={() => changeCurrentSetting("location")}
-          >
-            재고함
-          </Button>
-          <Button
-            className={classes.buttonStyle}
-            onClick={() => changeCurrentSetting("wall")}
-          >
-            벽
-          </Button>
-          <Button
-            className={classes.buttonStyle}
-            onClick={() => changeCurrentSetting("specialObject")}
-          >
-            특수 객체
-          </Button>
-          <Button className={classes.buttonCard} onClick={handleOpen}>
-            창고 생성
-          </Button>
-          {currentSetting && currentSetting !== "wall" && (
+    <div className={classes.canvasContainer}>
+      {/* Left Sidebar */}
+      <div className={classes.leftSidebar}>
+        <Button
+          className={classes.buttonStyle}
+          onClick={() => changeCurrentSetting("location")}
+        >
+          재고함
+        </Button>
+        <Button
+          className={classes.buttonStyle}
+          onClick={() => changeCurrentSetting("wall")}
+        >
+          벽
+        </Button>
+        <Button
+          className={classes.buttonStyle}
+          onClick={() => changeCurrentSetting("specialObject")}
+        >
+          특수 객체
+        </Button>
+        <Button className={classes.buttonCard} onClick={handleOpen}>
+          창고 생성
+        </Button>
+        {currentSetting && currentSetting !== "wall" && (
+          <div>
+            <h3>{currentSetting} 설정</h3>
             <div>
-              <h3>{currentSetting} 설정</h3>
-              <div>
-                <label
+              <label
+                style={{
+                  display: "flex",
+                }}
+              >
+                <div
+                  onClick={() => setShowColorPicker(!showColorPicker)}
                   style={{
-                    display: "flex",
-                  }}
-                >
-                  <div
-                    onClick={() => setShowColorPicker(!showColorPicker)}
-                    style={{
-                      width: "3vh",
-                      height: "3vh",
-                      background: newLocationColor,
-                      border: "1px solid #000",
-                      cursor: "pointer",
-                    }}
-                  />
-                  <div
-                    style={{
-                      marginLeft: "1vh",
-                    }}
-                  >
-                    색상을 지정하세요
-                  </div>
-                  {showColorPicker && (
-                    <SketchPicker
-                      styles={{
-                        width: "1000px",
-                      }}
-                      color={newLocationColor}
-                      onChangeComplete={(color) =>
-                        setNewLocationColor(color.hex)
-                      }
-                    />
-                  )}
-                </label>
-                <hr
-                  style={{
-                    color: "#aaaaaa",
+                    width: "3vh",
+                    height: "3vh",
+                    background: newLocationColor,
+                    border: "1px solid #000",
+                    cursor: "pointer",
                   }}
                 />
-              </div>
-              <p
-                style={{
-                  color: "#aaaaaa",
-                }}
-              >
-                단수와 크기를 정하세요
-              </p>
-              <div>
-                <div>
-                  <label>
-                    Zndex :
-                    <input
-                      type="range"
-                      min="1"
-                      max="10"
-                      value={newLocationZIndex}
-                      onChange={(e) =>
-                        setNewLocationZIndex(Number(e.target.value))
-                      }
-                    />
-                    {newLocationZIndex}
-                  </label>
+                <div
+                  style={{
+                    marginLeft: "1vh",
+                  }}
+                >
+                  색상을 지정하세요
                 </div>
-                <label>
-                  Width:
-                  <input
-                    type="range"
-                    min="10"
-                    max="500"
-                    value={newLocationWidth}
-                    onChange={(e) =>
-                      setNewLocationWidth(
-                        Math.round(Number(e.target.value) / 10) * 10
-                      )
+                {showColorPicker && (
+                  <SketchPicker
+                    styles={{
+                      width: "1000px",
+                    }}
+                    color={newLocationColor}
+                    onChangeComplete={(color) =>
+                      setNewLocationColor(color.hex)
                     }
                   />
-                  {newLocationWidth}
-                </label>
-              </div>
-              <div>
-                <label>
-                  Height:
-                  <input
-                    type="range"
-                    min="10"
-                    max="500"
-                    value={newLocationHeight}
-                    onChange={(e) =>
-                      setNewLocationHeight(
-                        Math.round(Number(e.target.value) / 10) * 10
-                      )
-                    }
-                  />
-                  {newLocationHeight}
-                </label>
-              </div>
-              <hr />
-              <p
+                )}
+              </label>
+              <hr
                 style={{
                   color: "#aaaaaa",
                 }}
-              >
-                이름과 속성을 지정해주세요
-              </p>
-              <div>
-                <label>
-                  Name :
-                  <input
-                    type="text"
-                    value={newLocationName}
-                    onChange={(e) => setNewLocationName(e.target.value)}
-                    style={{
-                      marginLeft: "3px",
-                      width: "14vh",
-                    }}
-                  />
-                </label>
-              </div>
-              <div>
-                <label>
-                  속성 :
-                  <input
-                    type="text"
-                    value={newLocationName}
-                    onChange={(e) => setNewLocationName(e.target.value)}
-                    style={{
-                      marginLeft: "3px",
-                      width: "15vh",
-                    }}
-                  />
-                </label>
-              </div>
-              <Button
-                onClick={() => handleAddLocation(currentSetting)}
-                style={{
-                  width: "100%",
-                  marginTop: "50%",
-                  fontSize: "18px",
-                }}
-              >
-                생성하기
-              </Button>
+              />
             </div>
-          )}
-          {currentSetting === "wall" && (
-            <>
-              <h3>Set Properties for Wall</h3>
+            <p
+              style={{
+                color: "#aaaaaa",
+              }}
+            >
+              단수와 크기를 정하세요
+            </p>
+            <div>
               <div>
                 <label>
-                  Color:
-                  <div
-                    onClick={() => setShowColorPicker(!showColorPicker)}
-                    style={{
-                      width: "36px",
-                      height: "14px",
-                      background: newWallColor,
-                      border: "1px solid #000",
-                      cursor: "pointer",
-                    }}
-                  />
-                  {showColorPicker && (
-                    <SketchPicker
-                      color={newWallColor}
-                      onChangeComplete={(color) => setNewWallColor(color.hex)}
-                    />
-                  )}
-                </label>
-              </div>
-              <div>
-                <label>
-                  Width:
+                  Zndex :
                   <input
                     type="range"
-                    min="5"
-                    max="50"
-                    value={newWallWidth}
-                    onChange={(e) => setNewWallWidth(Number(e.target.value))}
+                    min="1"
+                    max="10"
+                    value={newLocationZIndex}
+                    onChange={(e) =>
+                      setNewLocationZIndex(Number(e.target.value))
+                    }
                   />
-                  {newWallWidth}
+                  {newLocationZIndex}
                 </label>
               </div>
-            </>
-          )}
-        </div>
-
-        {/* Canvas 영역  */}
-
-        <div className={classes.outOfCanvas}>
-          <div className={classes.inOfCanvas} style={{ cursor: customCursor }}>
-            <Stage
-              width={CANVAS_SIZE} // 1000cm = 10m
-              height={CANVAS_SIZE} // 1000cm = 10cm
-              scaleX={scale}
-              scaleY={scale}
-              draggable={currentSetting === "wall" ? false : true}
-              ref={stageRef} // Assign the reference to the stage
-              onPointerMove={Pointer}
-              onMouseDown={checkDeselect} // 마우스 다운 시 선택 해체
-              onTouchStart={checkDeselect} // 처시 시작 시 선택 해체
+              <label>
+                Width:
+                <input
+                  type="range"
+                  min="10"
+                  max="500"
+                  value={newLocationWidth}
+                  onChange={(e) =>
+                    setNewLocationWidth(
+                      Math.round(Number(e.target.value) / 10) * 10
+                    )
+                  }
+                />
+                {newLocationWidth}
+              </label>
+            </div>
+            <div>
+              <label>
+                Height:
+                <input
+                  type="range"
+                  min="10"
+                  max="500"
+                  value={newLocationHeight}
+                  onChange={(e) =>
+                    setNewLocationHeight(
+                      Math.round(Number(e.target.value) / 10) * 10
+                    )
+                  }
+                />
+                {newLocationHeight}
+              </label>
+            </div>
+            <hr />
+            <p
+              style={{
+                color: "#aaaaaa",
+              }}
             >
-              <Layer ref={layerRef}>
-                {generateGridLines()}
-
-                {locations.map((rect, i) => (
-                  <RectangleTransformer
-                    key={rect.id} // 각 사각형에 고유 키 설정
-                    x={rect.x} // 텍스트를 띄우기 위한 위치 정보
-                    y={rect.y}
-                    width={rect.width}
-                    height={rect.height}
-                    fill={rect.fill}
-                    shapeProps={rect} // 모양 속성 전달
-                    isSelected={rect.id === selectedLocationTransform} // 사각형이 선택되었는지 확인
-                    onSelect={() => {
-                      setSelectedLocationTransform(rect.id); // 클릭시 변환 시작
-                      setSelectedLocation(rect); // 클릭 시 사각형 선택
-                    }}
-                    onChange={(newAttrs) => {
-                      const rects = locations.slice();
-                      rects[i] = newAttrs;
-                      setLocations(rects); // 사각형 속성 업데이트
-                    }}
-                  />
-                ))}
-              </Layer>
-            </Stage>
+              이름과 속성을 지정해주세요
+            </p>
+            <div>
+              <label>
+                Name :
+                <input
+                  type="text"
+                  value={newLocationName}
+                  onChange={(e) => setNewLocationName(e.target.value)}
+                  style={{
+                    marginLeft: "3px",
+                    width: "14vh",
+                  }}
+                />
+              </label>
+            </div>
+            <div>
+              <label>
+                속성 :
+                <input
+                  type="text"
+                  value={newLocationName}
+                  onChange={(e) => setNewLocationName(e.target.value)}
+                  style={{
+                    marginLeft: "3px",
+                    width: "15vh",
+                  }}
+                />
+              </label>
+            </div>
+            <Button
+              onClick={() => handleAddLocation(currentSetting)}
+              style={{
+                width: "100%",
+                fontSize: "18px",
+              }}
+            >
+              생성하기
+            </Button>
           </div>
-          <div
-            style={{
-              position: "absolute",
-              bottom: "10px",
-              right: "10px",
-              display: "flex",
-              gap: "10px",
+        )}
+        {currentSetting === "wall" && (
+          <>
+            <h3>Set Properties for Wall</h3>
+            <div>
+              <label>
+                Color:
+                <div
+                  onClick={() => setShowColorPicker(!showColorPicker)}
+                  style={{
+                    width: "36px",
+                    height: "14px",
+                    background: newWallColor,
+                    border: "1px solid #000",
+                    cursor: "pointer",
+                  }}
+                />
+                {showColorPicker && (
+                  <SketchPicker
+                    color={newWallColor}
+                    onChangeComplete={(color) => setNewWallColor(color.hex)}
+                  />
+                )}
+              </label>
+            </div>
+            <div>
+              <label>
+                Width:
+                <input
+                  type="range"
+                  min="5"
+                  max="50"
+                  value={newWallWidth}
+                  onChange={(e) => setNewWallWidth(Number(e.target.value))}
+                />
+                {newWallWidth}
+              </label>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Canvas 영역  */}
+      <div className={classes.outOfCanvas}>
+        <div className={classes.inOfCanvas} style={{ cursor: customCursor }}>
+          <Stage
+            width={window.innerWidth}
+            height={window.innerHeight}
+            scaleX={scale}
+            scaleY={scale}
+            draggable={currentSetting === "wall" ? false : true}
+            ref={stageRef}
+            onPointerMove={Pointer}
+            onMouseDown={checkDeselect}
+            onTouchStart={checkDeselect}
+            dragBoundFunc={(pos) => {
+              // Restrict dragging to within 150% of the CANVAS_SIZE
+              const minX = -(CANVAS_SIZE * 0.25);
+              const minY = -(CANVAS_SIZE * 0.25);
+              const maxX = CANVAS_SIZE * 0.75;
+              const maxY = CANVAS_SIZE * 0.75;
+              return {
+                x: Math.max(minX, Math.min(maxX, pos.x)),
+                y: Math.max(minY, Math.min(maxY, pos.y)),
+              };
             }}
           >
-            <Button justIcon round color="success" onClick={handleZoomIn}>
-              <ZoomInIcon className={classes.icons} />
-            </Button>
-            <Button justIcon round color="primary" onClick={handleZoomOut}>
-              <ZoomOutIcon className={classes.icons} />
-            </Button>
-            <Button justIcon round color="primary" onClick={handleSave}>
-              <SaveIcon className={classes.icons} />
-            </Button>
-            <Button justIcon round color="primary" onClick={loadMapFromLocal}>
-              <UnarchiveIcon className={classes.icons} />
-            </Button>
-            <Button color="primary" onClick={getWarehouseAPI}>
-              API 불러오기
-            </Button>
-            <Button color="primary" onClick={editContainerAPI}>
-              API 저장하기
-            </Button>
-          </div>
-        </div>
+            <Layer ref={layerRef}>
+              {generateGridLines()}
 
-        {/* Right-Sidebar / 우측 사이드바 영역  */}
-        <div className={classes.rightSideBar}>
-          <h3>재고함 목록</h3>
-          {locations.length !== 0 ? (
-            <div>
-              <ul
-                style={{
-                  height: "40vh",
-                  overflowY: "auto", // Add this line to make the ul scrollable
-                }}
-              >
-                {locations
-                  .filter((locations) => locations.type === "location")
-                  .map((locations, index) => (
-                    <li key={index}>{locations.id}번</li>
-                  ))}
-              </ul>
-            </div>
-          ) : (
-            <p>현재 재고함이 없습니다.</p>
-          )}
-          <hr />
-          <h3>선택된 재고함</h3>
-          {selectedLocation ? (
-            <div>
-              <p>ID : {selectedLocation.id}</p>
-              <p>Number : {selectedLocation.order}</p>
-              <p>Name : {selectedLocation.name}</p>
-              <p>Type : {selectedLocation.type}</p>
-              <p>층수 : {selectedLocation.z}</p>
-            </div>
-          ) : (
-            <p>No rectangle selected</p>
-          )}
+              {locations.map((rect, i) => (
+                <RectangleTransformer
+                  key={rect.id}
+                  x={rect.x}
+                  y={rect.y}
+                  width={rect.width}
+                  height={rect.height}
+                  fill={rect.fill}
+                  shapeProps={rect}
+                  isSelected={rect.id === selectedLocationTransform}
+                  onSelect={() => {
+                    setSelectedLocationTransform(rect.id);
+                    setSelectedLocation(rect);
+                  }}
+                  onChange={(newAttrs) => {
+                    const rects = locations.slice();
+                    rects[i] = newAttrs;
+                    setLocations(rects);
+                  }}
+                />
+              ))}
+            </Layer>
+          </Stage>
         </div>
         <div
-          id="menu"
-          ref={menuRef}
           style={{
-            display: "none",
             position: "absolute",
-            width: "60px",
-            backgroundColor: "white",
-            boxShadow: "0 0 5px grey",
-            borderRadius: "3px",
+            bottom: "10px",
+            right: "10px",
+            display: "flex",
+            gap: "10px",
           }}
         >
-          <div>
-            <button
-              id="pulse-button"
-              style={{
-                width: "100%",
-                backgroundColor: "white",
-                border: "none",
-                margin: 0,
-                padding: "10px",
-              }}
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
-            >
-              Pulse
-            </button>
-            <button
-              id="delete-button"
-              style={{
-                width: "100%",
-                backgroundColor: "white",
-                border: "none",
-                margin: 0,
-                padding: "10px",
-              }}
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
-            >
-              Delete
-            </button>
-          </div>
+          <Button justIcon round color="success" onClick={handleZoomIn}>
+            <ZoomInIcon className={classes.icons} />
+          </Button>
+          <Button justIcon round color="primary" onClick={handleZoomOut}>
+            <ZoomOutIcon className={classes.icons} />
+          </Button>
+          <Button justIcon round color="primary" onClick={handleSave}>
+            <SaveIcon className={classes.icons} />
+          </Button>
+          <Button justIcon round color="primary" onClick={loadMapFromLocal}>
+            <UnarchiveIcon className={classes.icons} />
+          </Button>
+          <Button color="primary" onClick={getWarehouseAPI}>
+            API 불러오기
+          </Button>
+          <Button color="primary" onClick={editContainerAPI}>
+            API 저장하기
+          </Button>
         </div>
-      </main>
-      {/* Modal for input form 창고 자동 생성을 위한 데이터 받는 모달 */}
+      </div>
+
+      {/* Right Sidebar */}
+      <div className={classes.rightSidebar}>
+        <h3>재고함 목록</h3>
+        {locations.length !== 0 ? (
+          <div>
+            <ul
+              style={{
+                height: "30vh",
+                overflowY: "auto",
+              }}
+            >
+              {locations
+                .filter((locations) => locations.type === "location")
+                .map((locations, index) => (
+                  <li key={index}>{locations.id}번</li>
+                ))}
+            </ul>
+          </div>
+        ) : (
+          <p>현재 재고함이 없습니다.</p>
+        )}
+        <hr />
+        <h3>선택된 재고함</h3>
+        {selectedLocation ? (
+          <div>
+            <p>ID : {selectedLocation.id}</p>
+            <p>Number : {selectedLocation.order}</p>
+            <p>Name : {selectedLocation.name}</p>
+            <p>Type : {selectedLocation.type}</p>
+            <p>층수 : {selectedLocation.z}</p>
+          </div>
+        ) : (
+          <p>No rectangle selected</p>
+        )}
+      </div>
+      <div
+        id="menu"
+        ref={menuRef}
+        style={{
+          display: "none",
+          position: "absolute",
+          width: "60px",
+          backgroundColor: "white",
+          boxShadow: "0 0 5px grey",
+          borderRadius: "3px",
+        }}
+      >
+        <div>
+          <button
+            id="pulse-button"
+            style={{
+              width: "100%",
+              backgroundColor: "white",
+              border: "none",
+              margin: 0,
+              padding: "10px",
+            }}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          >
+            Pulse
+          </button>
+          <button
+            id="delete-button"
+            style={{
+              width: "100%",
+              backgroundColor: "white",
+              border: "none",
+              margin: 0,
+              padding: "10px",
+            }}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+
       <Modal
         className={classes.modal}
         open={openContainerCreation}

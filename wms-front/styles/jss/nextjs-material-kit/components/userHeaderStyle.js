@@ -20,9 +20,9 @@ const headerStyle = {
     borderRadius: "3px",
     padding: "0.625rem 0",
     marginBottom: "20px",
-    color: "#555",
+    color: "brown",
     width: "100%",
-    backgroundColor: "#fff",
+    backgroundColor: "rgba(237, 237, 237, 0.8)",
     boxShadow:
       "0 4px 18px 0px rgba(0, 0, 0, 0.12), 0 7px 10px -5px rgba(0, 0, 0, 0.15)",
     transition: "all 150ms ease 0s",
@@ -30,7 +30,8 @@ const headerStyle = {
     flexFlow: "row nowrap",
     justifyContent: "flex-start",
     position: "relative",
-    zIndex: "unset"
+    zIndex: "unset",
+    height:"3rem",
   },
   absolute: {
     position: "absolute",
@@ -55,7 +56,7 @@ const headerStyle = {
   title: {
     ...defaultFont,
     lineHeight: "30px",
-    fontSize: "18px",
+    fontSize: "20px",
     borderRadius: "3px",
     textTransform: "none",
     color: "inherit",
