@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
-import { makeStyles, Button, TextField, Divider, Typography } from '@material-ui/core';
+import { Button, TextField, IconButton } from '@mui/material';
+import { makeStyles } from "@material-ui/core/styles";
+import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import { useAuth } from '../context/AuthContext';
 import GridContainer from '../components/Grid/GridContainer';
 import GridItem from '../components/Grid/GridItem';
 import Card from '../components/Card/Card';
-import CardHeader from '../components/Card/CardHeader';
 import CardBody from '../components/Card/CardBody';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
@@ -18,49 +19,98 @@ const useStyles = makeStyles((theme) => ({
     height: '100vh',
     textAlign: 'center',
   },
+  card: {
+    border: "1px solid #7D4A1A", 
+    maxWidth: '350px',
+    marginLeft: '60px'
+  },
   logo: {
     cursor: 'pointer',
-    width: '80px',
-    height: '80px',
-    marginBottom: theme.spacing(4),
-    border: '2px solid black',
+    width: '100%',
+    height: '200px',
+    marginBottom: '8px',
   },
   snsButtons: {
     display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: theme.spacing(2),
+    marginBottom: '16px',
     '& button': {
-      margin: theme.spacing(1),
+      margin: '8px',
+      border: 'none',
+      backgroundColor: 'transparent',
+      cursor: 'pointer',
     },
     '& img': {
-      width: '40px',
-      height: '40px',
+      width: '50px',
+      height: '50px',
     },
   },
   textField: {
-    marginBottom: theme.spacing(2),
+    marginBottom: '16px',
+    '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+      borderColor: '#7d4a1a',
+    },
+    '& .MuiInputLabel-root.Mui-focused': {
+      color: '#7d4a1a',
+    },
   },
   button: {
-    margin: theme.spacing(1),
+    margin: '8px',
     width: '100px',
   },
   dividerContainer: {
     display: 'flex',
     alignItems: 'center',
-    width: '80%',
-    margin: theme.spacing(2, 0),
+    justifyContent: 'center',
+    marginBottom: '16px',
+    width: '100%',
+    margin: 0
   },
   divider: {
-    flex: 1,
     height: '1px',
-    backgroundColor: '#000',
+    width: '100px',
+    backgroundColor: '#7d4a1a',
+    margin: 0
+  },
+  dividerText: {
+    fontSize: '12px',
+    margin: 0,
+    padding: '0 10px'
   },
   snsText: {
-    margin: theme.spacing(0, 2),
+    margin: '8px 16px',
+    fontSize: "18px",
   },
   title: {
-    marginBottom: theme.spacing(4),
+    marginBottom: '32px',
   },
+  backButton: {
+    position: 'absolute',
+    top: '16px',
+    left: '16px',
+  },
+  form: {
+    marginTop: '60px'
+  },
+  signUpContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingBottom: '10px'
+  },
+  signUpText: {
+    fontSize: '12px',
+    margin: '0',
+    padding: '0 5px'
+  },
+  loginTitle: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingBottom: '20px'
+  }
 }));
 
 export default function Login() {
@@ -68,6 +118,7 @@ export default function Login() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showEmailLogin, setShowEmailLogin] = useState(false);
   const { login } = useAuth();
 
   const handleLogin = async (e) => {
@@ -77,10 +128,10 @@ export default function Login() {
         email,
         password,
       });
-    
+
       if (response.status === 200 && response.data.code === 'SU') {
         const { user, token } = response.data;
-        
+
         login(user, token); // 전역 상태에 사용자 정보와 토큰 저장
         alert(`${user.name}님 환영합니다!`);
         router.push('/'); // 메인 페이지로 이동
@@ -113,68 +164,90 @@ export default function Login() {
 
   return (
     <GridContainer className={classes.container}>
-      <Typography variant="h2" className={classes.title}>
-        Web 재고 관리 시스템
-      </Typography>
       <GridItem xs={12} sm={6} md={4}>
-        <Card>
-          <CardHeader>
-            <img
-              src="/img/logo.png"
-              alt="Logo"
-              className={classes.logo}
-              onClick={() => router.push('/')}
-            />
-          </CardHeader>
-          <CardBody>
-            <div className={classes.dividerContainer}>
-              <div className={classes.divider} />
-              <Typography variant="body1" className={classes.snsText}>
-                SNS 로그인하기
-              </Typography>
-              <div className={classes.divider} />
-            </div>
-            <div className={classes.snsButtons}>
-              <button className="sns-button" onClick={() => signInWithProvider('kakao')}>
-                <img src="/img/kakao-sign-in.png" alt="Kakao Sign In" />
-              </button>
-              <button className="sns-button" onClick={() => signInWithProvider('naver')}>
-                <img src="/img/naver-sign-in.png" alt="Naver Sign In" />
-              </button>
-            </div>
-            <Divider className={classes.divider} /><br />
-            <form onSubmit={handleLogin}>
-              <TextField
-                label="이메일 ID"
-                type="email"
-                variant="outlined"
-                fullWidth
-                className={classes.textField}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
+        {showEmailLogin ? (
+          <Card className={classes.card}>
+            <IconButton className={classes.backButton} onClick={() => setShowEmailLogin(false)}>
+              <ArrowBackIcon />
+            </IconButton>
+            <CardBody>
+              <form onSubmit={handleLogin} className={classes.form}>
+                <div className={classes.loginTitle}>
+                  <img style={{ width: '20px', height: '20px', marginRight: '10px' }} src="/img/mailIconBk.png" alt="mailIcon"/>
+                  <h4>이메일로 로그인하기</h4>
+                </div>
+                <TextField
+                  label="이메일주소"
+                  type="email"
+                  variant="outlined"
+                  fullWidth
+                  className={classes.textField}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+                <TextField
+                  label="비밀번호"
+                  type="password"
+                  variant="outlined"
+                  fullWidth
+                  className={classes.textField}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <div>
+                  <Button type="submit" variant="contained" style={{ backgroundColor: "#7D4A1A", color: "white" }} className={classes.button}>
+                    로그인
+                  </Button>
+                </div>
+              </form>
+            </CardBody>
+          </Card>
+        ) : (
+          <Card className={classes.card}>
+            <div>
+              <img
+                src="/img/loginLogo.png"
+                alt="Logo"
+                className={classes.logo}
+                onClick={() => router.push('/')}
               />
-              <TextField
-                label="패스워드"
-                type="password"
-                variant="outlined"
-                fullWidth
-                className={classes.textField}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-              <div>
-                <Button type="submit" variant="contained" color="primary" className={classes.button}>
-                  로그인
-                </Button>
-                <Button variant="outlined" color="primary" className={classes.button} onClick={() => router.push('/signup')}>
-                  회원가입
-                </Button>
+            </div>
+            <CardBody>
+              <div className={classes.dividerContainer}>
+                <h3 variant="body1" className={classes.snsText}>
+                  간편 로그인
+                </h3>
               </div>
-            </form>
-          </CardBody>
-        </Card>
+              <div className={classes.snsButtons}>
+                <button className="sns-button" onClick={() => signInWithProvider('kakao')}>
+                  <img src="/img/kakao-sign-in.png" alt="Kakao Sign In" />
+                </button>
+                <button className="sns-button" onClick={() => signInWithProvider('naver')}>
+                  <img src="/img/naver-sign-in.png" alt="Naver Sign In" />
+                </button>
+              </div>
+              <div className={classes.dividerContainer}>
+                <div className={classes.divider}></div>
+                <p className={classes.dividerText}>또는</p>
+                <div className={classes.divider}></div>
+              </div>
+              <Button
+                  variant="outlined"
+                  style={{ margin: '20px 0', borderColor: '#7D4A1A', color: '#7D4A1A' }}
+                  onClick={() => setShowEmailLogin(true)}
+                >
+                  <img style={{ width: '20px', height: '20px', marginRight: '10px' }} src="/img/mailIcon.png" alt="mailIcon"/>
+                  이메일로 로그인하기
+              </Button>
+              <div className={classes.signUpContainer}>
+                <p className={classes.signUpText}>fit-box가 처음이신가요?</p>
+                <a className={classes.signUpText} href="/signup">회원가입</a>
+              </div>
+            </CardBody>
+          </Card>
+        )}
       </GridItem>
     </GridContainer>
   );

@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
-import { makeStyles, Button, TextField, Divider, Typography } from '@material-ui/core';
+import { Button, TextField, IconButton } from "@mui/material";
+import { makeStyles } from "@material-ui/core/styles";
+import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import GridContainer from '../components/Grid/GridContainer';
 import GridItem from '../components/Grid/GridItem';
 import Card from '../components/Card/Card';
-import CardHeader from '../components/Card/CardHeader';
 import CardBody from '../components/Card/CardBody';
 import { handleResponse, ResponseCode } from '../utils/responseHandler';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
@@ -18,53 +19,101 @@ const useStyles = makeStyles((theme) => ({
     height: '100vh',
     textAlign: 'center',
   },
+  card: {
+    border: "1px solid #7D4A1A",
+    maxWidth: '350px',
+    marginLeft: '60px'
+  },
   logo: {
     cursor: 'pointer',
-    width: '80px',
-    height: '80px',
-    marginBottom: theme.spacing(4),
-    border: '2px solid black',
+    width: '100%',
+    height: '200px',
+    marginBottom: '8px',
   },
   snsButtons: {
     display: 'flex',
     justifyContent: 'center',
-    marginBottom: theme.spacing(2),
+    marginBottom: '16px',
     '& button': {
-      margin: theme.spacing(1),
+      margin: '8px',
+      border: 'none',
+      backgroundColor: 'transparent',
+      cursor: 'pointer'
     },
     '& img': {
-      width: '40px',
-      height: '40px',
+      width: '50px',
+      height: '50px',
     },
   },
   textField: {
-    marginBottom: theme.spacing(2),
+    margin: '8px',
+    minWidth: '100px',
     flex: 1,
+    '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+      borderColor: '#7d4a1a', 
+    },
+    '& .MuiInputLabel-root.Mui-focused': {
+      color: '#7d4a1a', 
+    },
   },
   button: {
-    margin: theme.spacing(1),
+    margin: '8px',
     height: '56px',
   },
   buttonSmall: {
-    margin: theme.spacing(1),
+    margin: '8px',
     width: '100px',
   },
   dividerContainer: {
     display: 'flex',
     alignItems: 'center',
-    width: '80%',
-    margin: theme.spacing(2, 0),
+    justifyContent: 'center',
+    marginBottom: '16px',
+    width: '100%',
+    margin: 0
   },
   divider: {
-    flex: 1,
     height: '1px',
-    backgroundColor: '#000',
+    width: '100px',
+    backgroundColor: '#7d4a1a',
+    margin: 0
+  },
+  dividerText: {
+    fontSize: '12px',
+    margin: 0,
+    padding: '0 10px'
   },
   snsText: {
-    margin: theme.spacing(0, 2),
+    margin: '0, 16px',
+    fontSize: '20px'
   },
   title: {
-    marginBottom: theme.spacing(4),
+    marginBottom: '32px',
+  },
+  backButton: {
+    position: 'absolute',
+    top: '16px',
+    left: '16px',
+  },
+  signUpTitle: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingBottom: '20px'
+  },
+  form: {
+    marginTop: '60px'
+  },
+  loginContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingBottom: '10px'
+  },
+  loginText: {
+    fontSize: '12px',
+    margin: '0',
+    padding: '0 5px'
   },
 }));
 
@@ -83,6 +132,7 @@ export default function SignUp() {
   const [showPasswordMessage, setShowPasswordMessage] = useState(false);
   const [certificationButtonLabel, setCertificationButtonLabel] = useState('인증 메일 발송');
   const [certificationMessage, setCertificationMessage] = useState('');
+  const [showEmailSignUp, setShowEmailSignUp] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const [isEmailValid, setIsEmailValid] = useState(false);
   const [timer, setTimer] = useState(180);
@@ -223,141 +273,182 @@ export default function SignUp() {
 
   return (
     <GridContainer className={classes.container}>
-      <GridItem xs={12} sm={8} md={6}>
-        <Card>
-          <CardHeader>
-            <img src="/img/logo.png" alt="Logo" className={classes.logo} onClick={() => router.push('/')} />
-            <h2>FitBox</h2>
-          </CardHeader>
-          <CardBody>
-            <div className={classes.dividerContainer}>
-              <div className={classes.divider} />
-              <Typography variant="body1" className={classes.snsText}>
-                SNS 회원가입
-              </Typography>
-              <div className={classes.divider} />
-            </div>
-            <div className={classes.snsButtons}>
-              <button className="sns-button" onClick={handleKakaoSignIn}>
-                <img src="/img/kakao-sign-in.png" alt="Kakao Sign In" />
-              </button>
-              <button className="sns-button" onClick={handleNaverSignIn}>
-                <img src="/img/naver-sign-in.png" alt="Naver Sign In" />
-              </button>
-            </div>
-            <Divider className={classes.divider} />
-            <br />
-            <form onSubmit={handleSubmit}>
-              <div style={{ display: 'flex', alignItems: 'center' }}>
+      <GridItem xs={12} sm={6} md={4}>
+        {showEmailSignUp ? ( 
+          <Card className={classes.card}>
+            <IconButton className={classes.backButton} onClick={() => setShowEmailSignUp(false)}>
+              <ArrowBackIcon />
+            </IconButton>
+            <CardBody>
+              <form onSubmit={handleSubmit} className={classes.form}>
+                <div className={classes.signUpTitle}>
+                  <img style={{ width: '20px', height: '20px', marginRight: '10px' }} src="/img/mailIconBk.png" alt="mailIcon"/>
+                  <h4>이메일로 회원가입하기</h4>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <TextField
+                    label="이메일주소"
+                    type="email"
+                    variant="outlined"
+                    fullWidth
+                    className={classes.textField}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                  <Button variant="contained" style={{ backgroundColor: "#7D4A1A", color: "white" }} onClick={handleEmailCheck} className={classes.button}>
+                    이메일 인증
+                  </Button>
+                </div>
+                <span style={{ color: isEmailValid ? 'blue' : 'red' }}>{emailCheckMessage}</span>
+                <br />
+                <br />
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <TextField
+                    label="인증번호"
+                    type="text"
+                    variant="outlined"
+                    fullWidth
+                    className={classes.textField}
+                    value={certificationNumber}
+                    onChange={(e) => setCertificationNumber(e.target.value)}
+                    required
+                  />
+                  <Button
+                    variant="contained"
+                    style={{
+                      backgroundColor: isEmailValid ? "#7D4A1A" : "#c0c0c0",
+                      color: "white",
+                    }} 
+                    onClick={handleSendCertificationEmail}
+                    className={classes.button}
+                    disabled={!isEmailValid}
+                  >
+                    인증 메일 발송
+                  </Button>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'flex-start'}}>
+                  <Button
+                    variant="contained"
+                    style={{
+                      backgroundColor: isEmailValid ? "#7D4A1A" : "#c0c0c0",
+                      color: "white"
+                    }} 
+                    onClick={handleCertification}
+                    className={classes.buttonSmall}
+                    disabled={!isEmailValid}
+                  >
+                    인증 확인
+                  </Button>
+                </div>
+                <span style={{ color: 'blue' }}>{certificationMessage}</span>
+                {certificationButtonLabel === '인증 확인' && <span>{formatTime(timer)}</span>}
+                <br />
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingRight: '5px', paddingLeft: '5px' }}>
                 <TextField
-                  label="이메일"
-                  type="email"
+                  label="비밀번호"
+                  type="password"
                   variant="outlined"
                   fullWidth
                   className={classes.textField}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   required
                 />
-                <Button variant="contained" color="primary" onClick={handleEmailCheck} className={classes.button}>
-                  이메일 인증
-                </Button>
-              </div>
-              <span style={{ color: isEmailValid ? 'blue' : 'red' }}>{emailCheckMessage}</span>
-              <br />
-              <br />
-              <div style={{ display: 'flex', alignItems: 'center' }}>
                 <TextField
-                  label="인증번호"
+                  label="비밀번호 확인"
+                  type="password"
+                  variant="outlined"
+                  fullWidth
+                  className={classes.textField}
+                  value={passwordCheck}
+                  onChange={(e) => setPasswordCheck(e.target.value)}
+                  required
+                />
+                {showPasswordMessage && (
+                  <span style={{ color: passwordMessage.includes('유효합니다') ? 'blue' : 'red' }}>
+                    {passwordMessage}
+                  </span>
+                )}
+                <br />
+                <br />
+                <TextField
+                  label="이름"
                   type="text"
                   variant="outlined"
                   fullWidth
                   className={classes.textField}
-                  value={certificationNumber}
-                  onChange={(e) => setCertificationNumber(e.target.value)}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+                <TextField
+                  label="닉네임"
+                  type="text"
+                  variant="outlined"
+                  fullWidth
+                  className={classes.textField}
+                  value={nickname}
+                  onChange={(e) => setNickname(e.target.value)}
                   required
                 />
                 <Button
+                  type="submit"
                   variant="contained"
                   color="primary"
-                  onClick={handleSendCertificationEmail}
-                  className={classes.button}
-                  disabled={!isEmailValid}
+                  className={classes.buttonSmall}
+                  style={{
+                    backgroundColor: isFormValid && isEmailValid ? "#7D4A1A" : "#c0c0c0",
+                    color: "white",
+                    marginTop: '20px'
+                  }} 
+                  disabled={!isFormValid || !isEmailValid}
                 >
-                  인증 메일 발송
+                  회원가입
                 </Button>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={handleCertification}
-                  className={classes.button}
-                  disabled={!isEmailValid}
-                >
-                  인증 확인
-                </Button>
+                </div>
+              </form>
+            </CardBody>
+          </Card>
+        ) : (
+          <Card className={classes.card}>
+            <div>
+              <img src="/img/loginLogo.png" alt="Logo" className={classes.logo} onClick={() => router.push('/')} />
+            </div>
+            <CardBody>
+              <div className={classes.dividerContainer}>
+                <h3 variant="body1" className={classes.snsText}>
+                  간편 회원가입
+                </h3>
               </div>
-              <span style={{ color: 'blue' }}>{certificationMessage}</span>
-              {certificationButtonLabel === '인증 확인' && <span>{formatTime(timer)}</span>}
-              <br />
-              <TextField
-                label="비밀번호"
-                type="password"
-                variant="outlined"
-                fullWidth
-                className={classes.textField}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-              <TextField
-                label="비밀번호 확인"
-                type="password"
-                variant="outlined"
-                fullWidth
-                className={classes.textField}
-                value={passwordCheck}
-                onChange={(e) => setPasswordCheck(e.target.value)}
-                required
-              />
-              {showPasswordMessage && (
-                <span style={{ color: passwordMessage.includes('유효합니다') ? 'blue' : 'red' }}>
-                  {passwordMessage}
-                </span>
-              )}
-              <br />
-              <br />
-              <TextField
-                label="이름"
-                type="text"
-                variant="outlined"
-                fullWidth
-                className={classes.textField}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-              <TextField
-                label="닉네임"
-                type="text"
-                variant="outlined"
-                fullWidth
-                className={classes.textField}
-                value={nickname}
-                onChange={(e) => setNickname(e.target.value)}
-                required
-              />
+              <div className={classes.snsButtons}>
+                <button className="sns-button" onClick={handleKakaoSignIn}>
+                  <img src="/img/kakao-sign-in.png" alt="Kakao Sign In" />
+                </button>
+                <button className="sns-button" onClick={handleNaverSignIn}>
+                  <img src="/img/naver-sign-in.png" alt="Naver Sign In" />
+                </button>
+              </div>
+              <div className={classes.dividerContainer}>
+                <div className={classes.divider}></div>
+                <p className={classes.dividerText}>또는</p>
+                <div className={classes.divider}></div>
+              </div>
               <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                className={classes.buttonSmall}
-                disabled={!isFormValid || !isEmailValid}
-              >
-                회원가입
+                  variant="outlined"
+                  style={{ margin: '20px 0', borderColor: '#7D4A1A', color: '#7D4A1A' }}
+                  onClick={() => setShowEmailSignUp(true)}
+                >
+                  <img style={{ width: '20px', height: '20px', marginRight: '10px' }} src="/img/mailIcon.png" alt="mailIcon"/>
+                  이메일로 회원가입하기
               </Button>
-            </form>
-          </CardBody>
-        </Card>
+              <div className={classes.loginContainer}>
+                <p className={classes.loginText}>fit-box계정이 있으신가요?</p>
+                <a className={classes.loginText} href="/login">로그인</a>
+              </div>
+              </CardBody>
+            </Card>
+          )}
       </GridItem>
     </GridContainer>
   );
