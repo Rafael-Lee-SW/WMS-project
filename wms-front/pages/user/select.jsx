@@ -75,24 +75,20 @@ const Select = (props) => {
         const columnNumber = (j + 1).toString().padStart(2, "0"); // Convert to string and pad with zeros
 
         locationData.push({
-          id: null,
-          xposition: Math.round(j * xSpacing + xSpacing / 2 - locationX / 2),
-          yposition: Math.round(i * ySpacing + ySpacing / 2 - locationY / 2),
-          zsize: parseInt(locationZ),
-          xsize: Math.round(parseInt(locationX)),
-          ysize: Math.round(parseInt(locationY)),
-          fill: 0,
+          xPosition: Math.round(j * xSpacing + xSpacing / 2 - locationX / 2),
+          yPosition: Math.round(i * ySpacing + ySpacing / 2 - locationY / 2),
+          zSize: parseInt(locationZ),
+          xSize: Math.round(parseInt(locationX)),
+          ySize: Math.round(parseInt(locationY)),
           name: `${rowNumber}-${columnNumber}`, // Use formatted row and column numbers
-          storageType: "상온",
+          productStorageType: "상온",
           rotation: 0,
+          touchableFloor : 2,
         });
       }
     }
     // walls(벽) 생성
     const wallData = generateWalls(locationData);
-
-    //모든 데이터를 warehouseData로 담아서 전송한다.
-    const warehouseData = { locations: locationData, walls: wallData };
 
     try {
       const response = await fetch(
@@ -113,7 +109,8 @@ const Select = (props) => {
         const warehousesId = warehouses.id;
 
         // 창고가 생성되면 해당 창고에 자동 로케이션 설정에 들어간다.
-        editContainerAPI(warehouseData, warehousesId);
+        postLocationAPI(locationData, warehousesId);
+        postWallAPI(wallData, warehousesId);
 
         // card 섹션 추가
         console.log("New warehouse created:", newWarehouse);
@@ -147,42 +144,73 @@ const Select = (props) => {
       maxY = 0;
 
     generatedLocations.forEach((location) => {
-      minX = Math.min(minX, location.xposition);
-      minY = Math.min(minY, location.yposition);
-      maxX = Math.max(maxX, location.xposition + location.xsize);
-      maxY = Math.max(maxY, location.yposition + location.ysize);
+      minX = Math.min(minX, location.xPosition);
+      minY = Math.min(minY, location.yPosition);
+      maxX = Math.max(maxX, location.xPosition + location.xSize);
+      maxY = Math.max(maxY, location.yPosition + location.ySize);
     });
 
     // 벽 데이터를 기록합니다.
     const wallData = [
-      { id: 1, startX: minX, startY: minY, endX: maxX, endY: minY },
-      { id: 2, startX: maxX, startY: minY, endX: maxX, endY: maxY },
-      { id: 3, startX: maxX, startY: maxY, endX: minX, endY: maxY },
-      { id: 4, startX: minX, startY: maxY, endX: minX, endY: minY },
+      { startX: minX, startY: minY, endX: maxX, endY: minY },
+      { startX: maxX, startY: minY, endX: maxX, endY: maxY },
+      { startX: maxX, startY: maxY, endX: minX, endY: maxY },
+      { startX: minX, startY: maxY, endX: minX, endY: minY },
     ];
 
     return wallData;
   };
 
   // 생성된 된정보를 API를 통해 보냄
-  const editContainerAPI = async (warehouseData, warehousesId) => {
+  const postLocationAPI = async (requests, warehouseId) => {
+    
+    console.log("로케이션");
 
-    console.log(warehouseData);
+    const total = {requests, warehouseId};
+    console.log(total);
 
     try {
       const response = await fetch(
-        `https://i11a508.p.ssafy.io/api/warehouses/${warehousesId}/locatons-and-walls`,
+        `https://i11a508.p.ssafy.io/api/locations`,
         {
-          method: "PUT",
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(warehouseData),
+          body: JSON.stringify(total),
         }
       );
 
       if (response.ok) {
-        console.log("Map data saved successfully");
+        console.log("Location data saved successfully");
+      } else {
+        console.error("Error saving map data");
+      }
+    } catch (error) {
+      console.error("Error saving map data:", error);
+    }
+  };
+  // 생성된 된정보를 API를 통해 보냄
+  const postWallAPI = async (wallDtos, warehouseId) => {
+
+    console.log("벽");
+    const total = {wallDtos, warehouseId};
+    console.log(total);
+
+    try {
+      const response = await fetch(
+        `https://i11a508.p.ssafy.io/api/warehouses/walls`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(total),
+        }
+      );
+
+      if (response.ok) {
+        console.log("Walls data saved successfully");
       } else {
         console.error("Error saving map data");
       }
@@ -191,7 +219,7 @@ const Select = (props) => {
     }
   };
 
-  // API call to fetch warehouse information
+  // API call to fetch warehouse information // 해당 비즈니스 아이디의 창고 정보
   const getAllWarehouseInfoAPI = async (businessId) => {
     try {
       const response = await fetch(
