@@ -76,4 +76,5 @@ public class UserController {
         log.info("[Controller] delete user by id: {}", id);
         return new BaseSuccessResponse<>(userService.delete(id));
     }
+
 }

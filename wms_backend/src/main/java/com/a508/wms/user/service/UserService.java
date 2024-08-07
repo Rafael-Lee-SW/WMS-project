@@ -84,4 +84,8 @@ public class UserService {
         User deletedUser = userModuleService.save(user);
         return UserMapper.toUserResponseDto(deletedUser);
     }
+
+    public  User findByEmail(String email) {
+        return userRepository.findUserByEmail(email);
+    }
 }
