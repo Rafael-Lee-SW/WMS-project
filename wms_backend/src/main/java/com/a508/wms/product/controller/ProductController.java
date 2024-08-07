@@ -58,7 +58,7 @@ public class ProductController {
             return new BaseSuccessResponse<>(productService.findByLocationId(locationId));
         } else if (businessId != null) {
             log.info("[Controller] find Products by businessId: {}", businessId);
-            return new BaseSuccessResponse<>(productService.findByBusinessId(businessId));
+            return new BaseSuccessResponse<>(productService.findAllByBusinessId(businessId));
         }else {
            throw new ProductInvalidRequestException("no Variable","null");
         }
