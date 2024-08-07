@@ -76,16 +76,14 @@ const Select = (props) => {
 
         locationData.push({
           id: null,
-          x: Math.round(j * xSpacing + xSpacing / 2 - locationX / 2),
-          y: Math.round(i * ySpacing + ySpacing / 2 - locationY / 2),
-          z: parseInt(locationZ),
-          width: Math.round(parseInt(locationX)),
-          height: Math.round(parseInt(locationY)),
-          fill: "lightblue", // Default fill color
-          draggable: true,
-          order: locationData.length + 1,
+          xposition: Math.round(j * xSpacing + xSpacing / 2 - locationX / 2),
+          yposition: Math.round(i * ySpacing + ySpacing / 2 - locationY / 2),
+          zsize: parseInt(locationZ),
+          xsize: Math.round(parseInt(locationX)),
+          ysize: Math.round(parseInt(locationY)),
+          fill: 0,
           name: `${rowNumber}-${columnNumber}`, // Use formatted row and column numbers
-          type: "temp",
+          storageType: "상온",
           rotation: 0,
         });
       }
@@ -149,10 +147,10 @@ const Select = (props) => {
       maxY = 0;
 
     generatedLocations.forEach((location) => {
-      minX = Math.min(minX, location.x);
-      minY = Math.min(minY, location.y);
-      maxX = Math.max(maxX, location.x + location.width);
-      maxY = Math.max(maxY, location.y + location.height);
+      minX = Math.min(minX, location.xposition);
+      minY = Math.min(minY, location.yposition);
+      maxX = Math.max(maxX, location.xposition + location.xsize);
+      maxY = Math.max(maxY, location.yposition + location.ysize);
     });
 
     // 벽 데이터를 기록합니다.
@@ -166,8 +164,9 @@ const Select = (props) => {
     return wallData;
   };
 
-  // 수정된정보를 API를 통해 보냄
+  // 생성된 된정보를 API를 통해 보냄
   const editContainerAPI = async (warehouseData, warehousesId) => {
+
     console.log(warehouseData);
 
     try {
@@ -207,6 +206,7 @@ const Select = (props) => {
 
       if (response.ok) {
         const apiConnection = await response.json();
+        console.log(apiConnection)
         const warehouses = apiConnection.result;
 
         const warehouseCards = warehouses.map((warehouse) => ({

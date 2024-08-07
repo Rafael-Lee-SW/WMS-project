@@ -58,7 +58,7 @@ registerPlugin(Filters);
 registerPlugin(HiddenRows);
 
 // 재고를 엑셀 형식으로 보면서 관리하는 Component
-const MyContainerProduct = () => {
+const MyContainerProduct = ({ WHId }) => {
   //API를 통해 창고의 데이터를 가져오기 위한 State
   const [tableData, setTableData] = useState([]);
   const [detailedData, setDetailedData] = useState([]); // Store all import/export data
@@ -295,10 +295,12 @@ const MyContainerProduct = () => {
     try {
       // postData에 businessId와 warehouseId를 추가한다.
       const newPostData = {
-        warehouseId: 2,
-        businessId: 1,
+        warehouseId: WHId,
+        businessId: businessData.id,
         data: postData,
       };
+
+      console.log(newPostData)
 
       const response = await fetch(
         "https://i11a508.p.ssafy.io/api/products/import",
@@ -328,8 +330,8 @@ const MyContainerProduct = () => {
     try {
       // postData에 businessId와 warehouseId를 추가한다.
       const newPostData = {
-        warehouseId: 2,
-        businessId: 1,
+        warehouseId: WHId,
+        businessId: businessData.id,
         data: postData,
       };
       console.log(newPostData);
@@ -357,10 +359,10 @@ const MyContainerProduct = () => {
   };
 
   // 사장님이 갖고 있는 상품들을 가져오는 API
-  const productGetAPI = async () => {
+  const productGetAPI = async (businessId) => {
     try {
       const response = await fetch(
-        "https://i11a508.p.ssafy.io/api/products?bussinessId=1",
+        `https://i11a508.p.ssafy.io/api/products?businessId=${businessId}`,
         {
           method: "GET",
           headers: {
@@ -372,18 +374,19 @@ const MyContainerProduct = () => {
       if (response.ok) {
         const apiConnection = await response.json();
         const products = apiConnection.result;
-        console.log(apiConnection)
+        console.log(apiConnection);
         console.log(products); // 삭제해야 할 console.log (콘솔)
 
         // Extract only the required columns
         const formattedData = products.map((product) => ({
           hiddenId: product.id,
-          name: product.productDetail.name,
-          barcode: product.productDetail.barcode,
+          name: product.name,
+          barcode: product.barcode,
           quantity: product.quantity,
           locationName: product.locationName || "임시",
           floorLevel: product.floorLevel,
           expirationDate: product.expirationDate || "없음",
+          warehouseId : product.warehouseId,
         }));
 
         // Define the columns
@@ -395,6 +398,7 @@ const MyContainerProduct = () => {
           "적재함",
           "단(층)수",
           "유통기한",
+          "창고"
         ];
 
         const formattedColumns = [
@@ -405,6 +409,7 @@ const MyContainerProduct = () => {
           { name: "locationName", label: "적재함" },
           { name: "floorLevel", label: "층수" },
           { name: "expirationDate", label: "유통기한" },
+          { name: "warehouseId", label: "창고" },
         ];
 
         // Prepare the data for Handsontable
@@ -416,6 +421,7 @@ const MyContainerProduct = () => {
           product.locationName,
           product.floorLevel,
           product.expirationDate,
+          product.warehouseId,
         ]);
 
         setColumns(formattedColumns);
@@ -429,10 +435,12 @@ const MyContainerProduct = () => {
     }
   };
 
-  const getImportListAPI = async () => {
+  const getImportListAPI = async (businessId) => {
+    console.log("현재 아이디");
+    console.log(businessId)
     try {
       const response = await fetch(
-        "https://i11a508.p.ssafy.io/api/products/import?businessId=1",
+        `https://i11a508.p.ssafy.io/api/products/import?businessId=${businessId}`,
         {
           method: "GET",
           headers: {
@@ -454,10 +462,10 @@ const MyContainerProduct = () => {
     }
   };
 
-  const getExportListAPI = async () => {
+  const getExportListAPI = async (businessId) => {
     try {
       const response = await fetch(
-        "https://i11a508.p.ssafy.io/api/products/export?businessId=1",
+        `https://i11a508.p.ssafy.io/api/products/export?businessId=${businessId}`,
         {
           method: "GET",
           headers: {
@@ -483,8 +491,8 @@ const MyContainerProduct = () => {
   const getWholeChangesAPI = async () => {
     try {
       const [importList, exportList] = await Promise.all([
-        getImportListAPI(),
-        getExportListAPI(),
+        getImportListAPI(businessData.id),
+        getExportListAPI(businessData.id),
       ]);
 
       // Combine import and export lists
@@ -534,8 +542,8 @@ const MyContainerProduct = () => {
   const showUniqueDates = async () => {
     try {
       const [importList, exportList] = await Promise.all([
-        getImportListAPI(),
-        getExportListAPI(),
+        getImportListAPI(businessData.id),
+        getExportListAPI(businessData.id),
       ]);
 
       // Combine import and export lists
@@ -651,22 +659,14 @@ const MyContainerProduct = () => {
         locationName: row[4],
         floorLevel: row[5],
         expirationDate: row[6],
-        warehouseId: 2,
+        warehouseId: WHId,
       };
-      console.log(productData)
+      console.log(productData);
       productEditAPI(productData);
     });
 
     setOpenEditModal(false); // Close modal after saving
   };
-
-  /**
-   * UseEffect를 통해 새로고침 때마다 api로 사장님의 재고를 불러옴
-   */
-
-  useEffect(() => {
-    productGetAPI();
-  }, [openModal]);
 
   // 선택 시에 테이블이 바뀐다.
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -699,6 +699,65 @@ const MyContainerProduct = () => {
     setCurrentIndex(index);
   };
 
+  /**
+   * 유저를 부르는 Part
+   */
+
+  // 유저 및 비즈니스 정보를 담을 State
+  const [userData, setUserData] = useState(null);
+  const [businessData, setBusinessData] = useState(null);
+
+  // LocalStorage(로컬 스토레이지)를 바탕으로 비즈니스 정보를 받아온다.
+  const fetchBusinessData = async (userId) => {
+    try {
+      const response = await fetch(
+        `https://i11a508.p.ssafy.io/api/users/${userId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        const userData = await response.json();
+        const businessInfo = userData.result.business;
+        //Business Data를 추출한다.
+        setBusinessData(businessInfo);
+        console.log("Business data loaded:", businessInfo);
+
+        productGetAPI(businessInfo.id);
+      } else {
+        console.error("Error fetching user data");
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
+
+  /**
+   * UseEffect를 통해 새로고침 때마다 api로 사장님의 재고를 불러옴
+   * + 유저정보
+   */
+
+  useEffect(() => {
+    // Retrieve user data from localStorage
+    const user = localStorage.getItem("user");
+    if (user) {
+      try {
+        const parsedUser = JSON.parse(user);
+        setUserData(parsedUser);
+        console.log("User data loaded from localStorage:", parsedUser);
+
+        // Fetch business data using user ID
+        fetchBusinessData(parsedUser.id);
+      } catch (error) {
+        console.error("Error parsing user data from localStorage:", error);
+      }
+    }
+  }, [openModal]);
+
   return (
     <div style={{ marginBottom: "1%", margin: "1%", display: "flex" }}>
       <div
@@ -709,6 +768,7 @@ const MyContainerProduct = () => {
           marginRight: "5px",
         }}
       >
+        <br/>
         <Grid item xs={6} md={4}>
           <div>
             <label htmlFor="upload-import">
@@ -967,7 +1027,9 @@ const MyContainerProduct = () => {
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleSaveEdits} color="primary">저장하기</Button>
+            <Button onClick={handleSaveEdits} color="primary">
+              저장하기
+            </Button>
             <Button onClick={() => setOpenEditModal(false)} color="primary">
               닫기
             </Button>
