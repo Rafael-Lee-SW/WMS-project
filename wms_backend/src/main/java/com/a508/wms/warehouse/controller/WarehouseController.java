@@ -1,6 +1,10 @@
 package com.a508.wms.warehouse.controller;
 
 import com.a508.wms.util.BaseSuccessResponse;
+import com.a508.wms.warehouse.dto.LocationsAndWallsRequestDto;
+import com.a508.wms.warehouse.dto.WarehouseByBusinessDto;
+import com.a508.wms.warehouse.dto.WarehouseDetailResponseDto;
+import com.a508.wms.warehouse.dto.WarehouseDto;
 import com.a508.wms.warehouse.dto.*;
 import com.a508.wms.warehouse.exception.WarehouseException;
 import com.a508.wms.warehouse.service.WarehouseService;
@@ -31,7 +35,7 @@ public class WarehouseController {
      */
     @PostMapping
     public BaseSuccessResponse<WarehouseDto> save(
-        @RequestBody WarehouseDto warehouseDto) throws WarehouseException {
+        @RequestBody WarehouseDto warehouseDto) {
         log.info("[Controller] save Warehouse");
         return new BaseSuccessResponse<>(warehouseService.save(warehouseDto));
     }
