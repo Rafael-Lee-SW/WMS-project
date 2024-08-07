@@ -10,7 +10,8 @@ public enum ResponseEnum {
     // Request 오류
     BAD_REQUEST(false, 2000, HttpStatus.BAD_REQUEST.value(), "유효하지 않은 요청입니다."),
     URL_NOT_FOUND(false, 2001, HttpStatus.BAD_REQUEST.value(), "유효하지 않은 URL 입니다."),
-    METHOD_NOT_ALLOWED(false, 2002, HttpStatus.METHOD_NOT_ALLOWED.value(), "해당 URL에서는 지원하지 않는 HTTP Method 입니다."),
+    METHOD_NOT_ALLOWED(false, 2002, HttpStatus.METHOD_NOT_ALLOWED.value(),
+        "해당 URL에서는 지원하지 않는 HTTP Method 입니다."),
 
     // Server, Database 오류
     SERVER_ERROR(false, 3000, HttpStatus.INTERNAL_SERVER_ERROR.value(), "서버에서 오류가 발생하였습니다."),
@@ -24,8 +25,18 @@ public enum ResponseEnum {
     PASSWORD_NO_MATCH(false, 5003, HttpStatus.BAD_REQUEST.value(), "비밀번호가 일치하지 않습니다."),
     USER_DELETED(false, 5004, HttpStatus.BAD_REQUEST.value(), "삭제된 사용자입니다."),
     USER_NOT_LOGGED_IN(false, 5005, HttpStatus.UNAUTHORIZED.value(), "로그인하지 않은 사용자입니다."),
-    SAME_AS_OLD_PASSWORD(false, 5006, HttpStatus.BAD_REQUEST.value(), "새 비밀번호는 기존 비밀번호와 달라야 합니다.");
+    SAME_AS_OLD_PASSWORD(false, 5006, HttpStatus.BAD_REQUEST.value(), "새 비밀번호는 기존 비밀번호와 달라야 합니다."),
 
+    //Product 오류
+    PRODUCT_NOT_FOUND(false, 6000, HttpStatus.BAD_REQUEST.value(), "상품을 찾을수 없습니다."),
+    PRODUCT_DELETED(false, 6001, HttpStatus.BAD_REQUEST.value(), "삭제된 상품입니다."),
+    UNAVAILABLE_EXPORT_PRODUCT_SHORTAGE(false, 6002, HttpStatus.BAD_REQUEST.value(),
+        "상품의 수량부족으로 출고가 불가합니다."),
+    UNAVAILABLE_EXPORT_PRODUCT_MOVE(false, 6003, HttpStatus.BAD_REQUEST.value(),
+        "상품의 위치 이동 후 출고가 가능합니다."),
+    STORAGE_TYPE_NOT_MATCH(false, 6004, HttpStatus.BAD_REQUEST.value(),
+        "상품의 보관타입이 이동하려는 로케이션의 보관타입과 일치하지 않습니다.");
+    
     private final boolean success;  //성공여부
     private final int statusCode;
     private final int httpStatus; //HTTP 상태코드
