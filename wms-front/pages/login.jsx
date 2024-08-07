@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
-import { makeStyles, Button, TextField, Divider, Typography } from '@material-ui/core';
+import { makeStyles, Button, TextField } from '@material-ui/core';
 import { useAuth } from '../context/AuthContext';
 import GridContainer from '../components/Grid/GridContainer';
 import GridItem from '../components/Grid/GridItem';
 import Card from '../components/Card/Card';
-import CardHeader from '../components/Card/CardHeader';
 import CardBody from '../components/Card/CardBody';
 
 const useStyles = makeStyles((theme) => ({
@@ -20,10 +19,9 @@ const useStyles = makeStyles((theme) => ({
   },
   logo: {
     cursor: 'pointer',
-    width: '80px',
-    height: '80px',
-    marginBottom: theme.spacing(4),
-    border: '2px solid black',
+    width: '100%',
+    height: '300px',
+    marginBottom: theme.spacing(1),
   },
   snsButtons: {
     display: 'flex',
@@ -31,14 +29,23 @@ const useStyles = makeStyles((theme) => ({
     marginBottom: theme.spacing(2),
     '& button': {
       margin: theme.spacing(1),
+      border: 'none',
+      backgroundColor: 'transparent',
+      cursor: 'pointer',
     },
     '& img': {
-      width: '40px',
-      height: '40px',
+      width: '50px',
+      height: '50px',
     },
   },
   textField: {
     marginBottom: theme.spacing(2),
+    '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+      borderColor: '#7d4a1a', // 클릭 시 아웃라인 색상
+    },
+    '& .MuiInputLabel-root.Mui-focused': {
+      color: '#7d4a1a', // 클릭 시 레이블 색상
+    },
   },
   button: {
     margin: theme.spacing(1),
@@ -47,16 +54,13 @@ const useStyles = makeStyles((theme) => ({
   dividerContainer: {
     display: 'flex',
     alignItems: 'center',
-    width: '80%',
-    margin: theme.spacing(2, 0),
-  },
-  divider: {
-    flex: 1,
-    height: '1px',
-    backgroundColor: '#000',
+    justifyContent: 'center',
+    width: '100%',
+    marginBottom: theme.spacing(2),
   },
   snsText: {
     margin: theme.spacing(0, 2),
+    fontSize: "20px"
   },
   title: {
     marginBottom: theme.spacing(4),
@@ -113,26 +117,21 @@ export default function Login() {
 
   return (
     <GridContainer className={classes.container}>
-      <Typography variant="h2" className={classes.title}>
-        Web 재고 관리 시스템
-      </Typography>
       <GridItem xs={12} sm={6} md={4}>
         <Card>
-          <CardHeader>
+          <cardHeader>
             <img
-              src="/img/logo.png"
+              src="/img/loginLogo.jpg"
               alt="Logo"
               className={classes.logo}
               onClick={() => router.push('/')}
             />
-          </CardHeader>
+          </cardHeader>
           <CardBody>
             <div className={classes.dividerContainer}>
-              <div className={classes.divider} />
-              <Typography variant="body1" className={classes.snsText}>
-                SNS 로그인하기
-              </Typography>
-              <div className={classes.divider} />
+              <h3 variant="body1" className={classes.snsText}>
+                SNS 로그인
+              </h3>
             </div>
             <div className={classes.snsButtons}>
               <button className="sns-button" onClick={() => signInWithProvider('kakao')}>
@@ -142,10 +141,9 @@ export default function Login() {
                 <img src="/img/naver-sign-in.png" alt="Naver Sign In" />
               </button>
             </div>
-            <Divider className={classes.divider} /><br />
             <form onSubmit={handleLogin}>
               <TextField
-                label="이메일 ID"
+                label="이메일"
                 type="email"
                 variant="outlined"
                 fullWidth
@@ -165,10 +163,10 @@ export default function Login() {
                 required
               />
               <div>
-                <Button type="submit" variant="contained" color="primary" className={classes.button}>
+                <Button type="submit" variant="contained" style={{ backgroundColor:"#7D4A1A", color:"white" }} className={classes.button}>
                   로그인
                 </Button>
-                <Button variant="outlined" color="primary" className={classes.button} onClick={() => router.push('/signup')}>
+                <Button variant="outlined" style={{ borderColor:"#7D4A1A", color: "#7D4A1A" }} className={classes.button} onClick={() => router.push('/signup')}>
                   회원가입
                 </Button>
               </div>
