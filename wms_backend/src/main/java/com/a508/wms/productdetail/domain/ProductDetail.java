@@ -35,19 +35,19 @@ public class ProductDetail extends BaseTimeEntity {
     @Column(nullable = false)
     private String name;
     @Column
-    private Long size;
+    private Integer size;
     @Column
-    private Long unit;
+    private Integer unit;
     @Column
-    private int originalPrice;
+    private Integer originalPrice;
     @Column
-    private int sellingPrice;
+    private Integer sellingPrice;
     @Enumerated(EnumType.STRING)
     private StatusEnum statusEnum = StatusEnum.ACTIVE;
 
     @Builder
     public ProductDetail(Business business, ProductStorageTypeEnum productStorageType, Long barcode,
-                         String name, Long size, Long unit, int originalPrice, int sellingPrice) {
+                         String name, int size, int unit, int originalPrice, int sellingPrice) {
         this.business = business;
         this.productStorageType = productStorageType;
         this.barcode = barcode;
@@ -68,7 +68,7 @@ public class ProductDetail extends BaseTimeEntity {
     }
 
     public void updateData(ProductStorageTypeEnum productStorageType
-            , Long barcode, String name, Long size, Long unit
+            , Long barcode, String name, int size, int unit
             , int originalPrice, int sellingPrice) {
         this.productStorageType = productStorageType;
         this.barcode = barcode;
