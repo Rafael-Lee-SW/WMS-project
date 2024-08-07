@@ -43,8 +43,15 @@ public enum ResponseEnum {
 
     //ProductDetail 오류
     PRODUCT_DETAIL_NOT_FOUND(false, 8000, HttpStatus.BAD_REQUEST.value(), "상품 정보를 찾을수 없습니다."),
-    PRODUCT_DETAIL_DELETED(false, 8001, HttpStatus.BAD_REQUEST.value(), "삭제된 상품정보 입니다.");
+    PRODUCT_DETAIL_DELETED(false, 8001, HttpStatus.BAD_REQUEST.value(), "삭제된 상품정보 입니다."),
 
+    //Floor 오류
+    FLOOR_NOT_FOUND(false, 8000, HttpStatus.BAD_REQUEST.value(), "층을 찾을수 없습니다."),
+    FLOOR_DELETED(false, 8001, HttpStatus.BAD_REQUEST.value(), "삭제된 층 입니다."),
+    DEFAULT_FLOOR_NOT_FOUND(false, 8002, HttpStatus.BAD_REQUEST.value(),
+        "Default Floor를 찾을수 없습니다."),
+    INVALID_FLOOR_EXPORT_TYPE(false, 8003, HttpStatus.BAD_REQUEST.value(),
+        "해당되는 창고에 적합하지 않는 출고 타입으로 층을 변경할수 없습니다.");
 
     private final boolean success;  //성공여부
     private final int statusCode;
