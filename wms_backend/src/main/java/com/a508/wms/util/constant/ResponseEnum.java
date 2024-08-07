@@ -39,7 +39,11 @@ public enum ResponseEnum {
 
     //Business 오류
     BUSINESS_NOT_FOUND(false, 7000, HttpStatus.BAD_REQUEST.value(), "사업체를 찾을수 없습니다."),
-    BUSINESS_DELETED(false, 7001, HttpStatus.BAD_REQUEST.value(), "삭제된 사업체 입니다.");
+    BUSINESS_DELETED(false, 7001, HttpStatus.BAD_REQUEST.value(), "삭제된 사업체 입니다."),
+
+    //ProductDetail 오류
+    PRODUCT_DETAIL_NOT_FOUND(false, 8000, HttpStatus.BAD_REQUEST.value(), "상품 정보를 찾을수 없습니다."),
+    PRODUCT_DETAIL_DELETED(false, 8001, HttpStatus.BAD_REQUEST.value(), "삭제된 상품정보 입니다.");
 
 
     private final boolean success;  //성공여부
