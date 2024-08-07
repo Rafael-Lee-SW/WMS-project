@@ -35,8 +35,13 @@ public enum ResponseEnum {
     UNAVAILABLE_EXPORT_PRODUCT_MOVE(false, 6003, HttpStatus.BAD_REQUEST.value(),
         "상품의 위치 이동 후 출고가 가능합니다."),
     STORAGE_TYPE_NOT_MATCH(false, 6004, HttpStatus.BAD_REQUEST.value(),
-        "상품의 보관타입이 이동하려는 로케이션의 보관타입과 일치하지 않습니다.");
-    
+        "상품의 보관타입이 이동하려는 로케이션의 보관타입과 일치하지 않습니다."),
+
+    //Business 오류
+    BUSINESS_NOT_FOUND(false, 7000, HttpStatus.BAD_REQUEST.value(), "사업체를 찾을수 없습니다."),
+    BUSINESS_DELETED(false, 7001, HttpStatus.BAD_REQUEST.value(), "삭제된 사업체 입니다.");
+
+
     private final boolean success;  //성공여부
     private final int statusCode;
     private final int httpStatus; //HTTP 상태코드
