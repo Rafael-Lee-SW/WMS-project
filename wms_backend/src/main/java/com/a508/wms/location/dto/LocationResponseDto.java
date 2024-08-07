@@ -20,7 +20,7 @@ public class LocationResponseDto {
     private int xSize;
     private int ySize;
     private int zSize;
-    private int fill;
+    private int fill; //0~100까지의 범위로 표현,
     private String name;
     private ProductStorageTypeEnum storageType;
     private int rotation;
