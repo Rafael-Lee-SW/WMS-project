@@ -4,10 +4,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
-public class GlobalExceptionHandler {
+public class CommonExceptionHandler {
 
-    @ExceptionHandler(GlobalException.class)
-    public BaseExceptionResponse globalException(GlobalException e) {
+    @ExceptionHandler(CommonException.class)
+    public BaseExceptionResponse globalException(CommonException e) {
         return new BaseExceptionResponse(e.getResponseEnum(), e.getExceptionMessage());
     }
 }
