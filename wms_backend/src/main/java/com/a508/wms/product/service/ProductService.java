@@ -6,28 +6,41 @@ import com.a508.wms.floor.domain.Floor;
 import com.a508.wms.floor.service.FloorModuleService;
 import com.a508.wms.location.service.LocationModuleService;
 import com.a508.wms.product.domain.Product;
-import com.a508.wms.product.dto.*;
-import com.a508.wms.product.exception.ProductExportException;
-import com.a508.wms.product.exception.ProductInvalidDataException;
+import com.a508.wms.product.dto.ExpirationProductResponseDto;
+import com.a508.wms.product.dto.ExportResponseDto;
+import com.a508.wms.product.dto.ProductData;
+import com.a508.wms.product.dto.ProductExportRequestDto;
+import com.a508.wms.product.dto.ProductExportResponseDto;
+import com.a508.wms.product.dto.ProductImportRequestDto;
+import com.a508.wms.product.dto.ProductMainResponseDto;
+import com.a508.wms.product.dto.ProductPickingLocationDto;
+import com.a508.wms.product.dto.ProductQuantityDto;
+import com.a508.wms.product.dto.ProductResponseDto;
+import com.a508.wms.product.dto.ProductUpdateRequestDto;
 import com.a508.wms.product.exception.ProductInvalidRequestException;
 import com.a508.wms.product.mapper.ProductMapper;
 import com.a508.wms.product.repository.ProductRepository;
 import com.a508.wms.productdetail.domain.ProductDetail;
 import com.a508.wms.productdetail.mapper.ProductDetailMapper;
 import com.a508.wms.productdetail.service.ProductDetailModuleService;
-import com.a508.wms.util.constant.ProductStorageTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;
 import com.a508.wms.warehouse.domain.Warehouse;
 import com.a508.wms.warehouse.service.WarehouseModuleService;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.PriorityQueue;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -42,7 +55,7 @@ public class ProductService {
     private final ImportModuleService importModuleService;
     private final ProductRepository productRepository;
     private final ExportModuleService exportModuleService;
-    private final int LIMIT_DAY=1;
+    private final int LIMIT_DAY = 1;
     private final WarehouseModuleService warehouseModuleService;
     private final LocationModuleService locationModuleService;
 
@@ -72,8 +85,8 @@ public class ProductService {
         try {
             Product product = productModuleService.findById(id);
             return ProductMapper.fromProduct(product);
-        }catch (IllegalArgumentException e){
-            throw new ProductInvalidRequestException("id",id);
+        } catch (IllegalArgumentException e) {
+            throw new ProductInvalidRequestException("id", id);
         }
     }
 
@@ -86,11 +99,10 @@ public class ProductService {
     public List<ProductMainResponseDto> findByProductDetailId(Long productDetailId) {
         log.info("[Service] find Products by productDetailId: {}", productDetailId);
 
-        try{
+        try {
             productDetailModuleService.findById(productDetailId);
-        }
-        catch (IllegalArgumentException e){
-            throw new ProductInvalidRequestException("productDetailId",productDetailId);
+        } catch (IllegalArgumentException e) {
+            throw new ProductInvalidRequestException("productDetailId", productDetailId);
         }
         final List<Product> products = productModuleService.findByProductDetailId(productDetailId);
 
@@ -109,13 +121,11 @@ public class ProductService {
     public List<ProductMainResponseDto> findByBusinessId(Long businessId) {
         log.info("[Service] find Products by businessId: {}", businessId);
 
-        try{
+        try {
             businessModuleService.findById(businessId);
+        } catch (IllegalArgumentException e) {
+            throw new ProductInvalidRequestException("businessId", businessId);
         }
-        catch(IllegalArgumentException e){
-            throw new ProductInvalidRequestException("businessId",businessId);
-        }
-
 
         final List<Product> products = productModuleService.findByBusinessId(businessId);
 
@@ -134,8 +144,8 @@ public class ProductService {
     public List<ProductResponseDto.DetailedResponse> findByWarehouseId(Long warehouseId) {
         log.info("[Service] find Products by warehouseId: {}", warehouseId);
 
-        if(warehouseModuleService.notExist(warehouseId)){
-            throw new ProductInvalidRequestException("warehouseId",warehouseId);
+        if (warehouseModuleService.notExist(warehouseId)) {
+            throw new ProductInvalidRequestException("warehouseId", warehouseId);
         }
 
         final List<Product> products = productModuleService.findByWarehouseId(warehouseId);
@@ -155,8 +165,8 @@ public class ProductService {
     public List<ProductMainResponseDto> findByLocationId(Long locationId) {
         log.info("[Service] find Products by locationId: {}", locationId);
 
-        if(locationModuleService.notExist(locationId)){
-            throw new ProductInvalidRequestException("locationId",locationId);
+        if (locationModuleService.notExist(locationId)) {
+            throw new ProductInvalidRequestException("locationId", locationId);
         }
 
         final List<Product> products = productModuleService.findByLocationId(locationId);
@@ -175,10 +185,11 @@ public class ProductService {
 
     public void updateAll(List<ProductUpdateRequestDto> requestDtos) {
         log.info("[Service] update Products :");
-        for(ProductUpdateRequestDto productUpdateRequestDto : requestDtos) {
+        for (ProductUpdateRequestDto productUpdateRequestDto : requestDtos) {
             update(productUpdateRequestDto);
         }
     }
+
     /**
      * 기존 상품 데이터를 조회하여 수정하는 기능
      *
@@ -186,10 +197,10 @@ public class ProductService {
      */
     public void update(ProductUpdateRequestDto request) {
         log.info("[Service] update Product by id: {}", request.getProductId());
-        try{
+        try {
             productModuleService.update(request);
-        }catch(IllegalArgumentException e){
-            throw new ProductInvalidRequestException("request",request);
+        } catch (IllegalArgumentException e) {
+            throw new ProductInvalidRequestException("request", request);
         }
 
     }
@@ -206,9 +217,8 @@ public class ProductService {
             Product product = productModuleService.findById(id);
             product.updateStatus(StatusEnum.DELETED);
             productModuleService.save(product);
-        }
-        catch (IllegalArgumentException e){
-            throw new ProductInvalidRequestException("id",id);
+        } catch (IllegalArgumentException e) {
+            throw new ProductInvalidRequestException("id", id);
         }
     }
 
@@ -223,13 +233,9 @@ public class ProductService {
             productImportRequestDto);
         Long warehouseId = productImportRequestDto.getWarehouseId();
 
-        importValidate(productImportRequestDto.getBusinessId(),warehouseId);
+        importValidate(productImportRequestDto.getBusinessId(), warehouseId);
 
         Floor defaultFloor = floorModuleService.findDefaultFloorByWarehouse(warehouseId);
-
-        if(defaultFloor==null){
-            throw new ProductInvalidDataException("Default floor","null");
-        }
 
         productImportRequestDto.getData()
             .forEach(data -> {
@@ -245,8 +251,8 @@ public class ProductService {
             if (!Objects.equals(warehouse.getBusiness().getId(), businessId)) {
                 throw new ProductInvalidRequestException("businessId", businessId);
             }
-        } catch(IllegalArgumentException e){
-            throw new ProductInvalidRequestException("warehouseId",warehouseId);
+        } catch (IllegalArgumentException e) {
+            throw new ProductInvalidRequestException("warehouseId", warehouseId);
         }
 
     }
@@ -302,11 +308,10 @@ public class ProductService {
     public List<ProductExportResponseDto> exportProducts(ProductExportRequestDto request) {
         log.info("[Service] export Products by ProductExportRequestDto: {}", request);
 
-        try{
+        try {
             businessModuleService.findById(request.getBusinessId());
-        }
-        catch(IllegalArgumentException e){
-            throw new ProductInvalidRequestException("businessId",request.getBusinessId());
+        } catch (IllegalArgumentException e) {
+            throw new ProductInvalidRequestException("businessId", request.getBusinessId());
         }
 
         productQuantityCheck(request);
@@ -354,9 +359,11 @@ public class ProductService {
             List<ProductPickingLocationDto> candidates = productRepository.findPickingLocation(
                 exportResponseDto.getBarcode(), businessId);
             PriorityQueue<ProductPickingLocationDto> priorityQueue = new PriorityQueue<>(
-                    Comparator
-                            .comparing(ProductPickingLocationDto::getExpirationDate, Comparator.nullsLast(Comparator.naturalOrder()))
-                            .thenComparing(ProductPickingLocationDto::getQuantity, Comparator.reverseOrder())
+                Comparator
+                    .comparing(ProductPickingLocationDto::getExpirationDate,
+                        Comparator.nullsLast(Comparator.naturalOrder()))
+                    .thenComparing(ProductPickingLocationDto::getQuantity,
+                        Comparator.reverseOrder())
             );
 
             priorityQueue.addAll(candidates);
@@ -368,24 +375,24 @@ public class ProductService {
                 }
                 if (dto.getQuantity() >= remains) {
                     updateProductQuantity(dto.getProductId(),
-                            dto.getQuantity() - remains);
+                        dto.getQuantity() - remains);
 
                     List<ExportResponseDto> pickings = path.getOrDefault(
-                            dto.getWarehouseName(), new ArrayList<>());
+                        dto.getWarehouseName(), new ArrayList<>());
 
                     pickings.add(ExportResponseDto.builder()
-                            .expirationDate(dto.getExpirationDate())
-                            .trackingNumber(exportResponseDto.getTrackingNumber())
-                            .barcode(exportResponseDto.getBarcode())
-                            .locationName(dto.getLocationName())
-                            .floorLevel(dto.getFloorLevel())
-                            .productName(dto.getProductName())
-                            .quantity(remains)
-                            .date(LocalDate.now())
-                            .productStorageType(dto.getProductStorageType())
-                            .warehouseName(dto.getWarehouseName())
-                            .warehouseId(dto.getWarehouseId())
-                            .build());
+                        .expirationDate(dto.getExpirationDate())
+                        .trackingNumber(exportResponseDto.getTrackingNumber())
+                        .barcode(exportResponseDto.getBarcode())
+                        .locationName(dto.getLocationName())
+                        .floorLevel(dto.getFloorLevel())
+                        .productName(dto.getProductName())
+                        .quantity(remains)
+                        .date(LocalDate.now())
+                        .productStorageType(dto.getProductStorageType())
+                        .warehouseName(dto.getWarehouseName())
+                        .warehouseId(dto.getWarehouseId())
+                        .build());
                     path.put(dto.getWarehouseName(), pickings);
                     break;
                 }
@@ -395,21 +402,21 @@ public class ProductService {
                 updateProductQuantity(dto.getProductId(), 0);
 
                 List<ExportResponseDto> pickings = path.getOrDefault(
-                        dto.getWarehouseName(), new ArrayList<>());
+                    dto.getWarehouseName(), new ArrayList<>());
 
                 pickings.add(ExportResponseDto.builder()
-                        .expirationDate(dto.getExpirationDate())
-                        .trackingNumber(exportResponseDto.getTrackingNumber())
-                        .barcode(exportResponseDto.getBarcode())
-                        .locationName(dto.getLocationName())
-                        .floorLevel(dto.getFloorLevel())
-                        .productName(dto.getProductName())
-                        .quantity(dto.getQuantity())
-                        .date(LocalDate.now())
-                        .productStorageType(dto.getProductStorageType())
-                        .warehouseName(dto.getWarehouseName())
-                        .warehouseId(dto.getWarehouseId())
-                        .build());
+                    .expirationDate(dto.getExpirationDate())
+                    .trackingNumber(exportResponseDto.getTrackingNumber())
+                    .barcode(exportResponseDto.getBarcode())
+                    .locationName(dto.getLocationName())
+                    .floorLevel(dto.getFloorLevel())
+                    .productName(dto.getProductName())
+                    .quantity(dto.getQuantity())
+                    .date(LocalDate.now())
+                    .productStorageType(dto.getProductStorageType())
+                    .warehouseName(dto.getWarehouseName())
+                    .warehouseId(dto.getWarehouseId())
+                    .build());
                 path.put(dto.getWarehouseName(), pickings);
             }
 
@@ -455,7 +462,7 @@ public class ProductService {
                 entry -> calculateProductQuantity(entry.getKey(), entry.getValue(), businessId)));
 
         if (containsImpossibleExportProduct(productQuantityResult)) {
-            throw new ProductExportException("수량 부족");
+            //throw new ProductExportException("수량 부족");
         }
 
         List<Long> movingProductBarcodes = new ArrayList<>();
@@ -465,8 +472,9 @@ public class ProductService {
             .forEach(entry -> movingProductBarcodes.add(entry.getKey()));
 
         if (!movingProductBarcodes.isEmpty()) {
-            throw new ProductExportException(
-                "해당 물품들의 이동이 필요합니다." + movingProductBarcodes);
+//            throw new ProductExportException(
+//                "해당 물품들의 이동이 필요합니다." + movingProductBarcodes);
+            throw new IllegalArgumentException("해당 물품들의 이동이 필요합니다." + movingProductBarcodes);
         }
     }
 
@@ -508,64 +516,69 @@ public class ProductService {
 
     /**
      * 특정 사업자의 Product 중 유통기한이 머지 않았거나,이미 지난 상품을 반환하는 기능 .
+     *
      * @param businessId 사업자의 id
      * @return
      */
     @Transactional
-    public List<ExpirationProductResponseDto> findExpirationProducts(Long businessId){
+    public List<ExpirationProductResponseDto> findExpirationProducts(Long businessId) {
         log.info("[Service] find Expired Warning Product by businessId: {}", businessId);
         LocalDateTime currentTime = LocalDateTime.now();
 
-        List<Product> products=productModuleService.findByBusinessId(businessId)
+        List<Product> products = productModuleService.findByBusinessId(businessId)
             .stream()
-            .filter(product -> product.getExpirationDate()!=null)
+            .filter(product -> product.getExpirationDate() != null)
             .toList();
 
-        List<Product> expirationSoonProducts=products.stream()
-            .filter(product->isExpiredSoonProduct(product,currentTime))
+        List<Product> expirationSoonProducts = products.stream()
+            .filter(product -> isExpiredSoonProduct(product, currentTime))
             .toList();
 
-        List<Product> expirationExpiredProducts=products.stream()
-            .filter(product -> isAlreadyExpiredProduct(product,currentTime))
+        List<Product> expirationExpiredProducts = products.stream()
+            .filter(product -> isAlreadyExpiredProduct(product, currentTime))
             .toList();
 
-
-        return mergeAndConvertExpirationProducts(expirationSoonProducts,expirationExpiredProducts);
+        return mergeAndConvertExpirationProducts(expirationSoonProducts, expirationExpiredProducts);
     }
 
     /**
      * Product의 유통기한이 얼마 안남았는지 여부를 반환하는 기능.
-     * @param product 상품
+     *
+     * @param product     상품
      * @param currentTime 현재 시간
      * @return
      */
-    private boolean isExpiredSoonProduct(Product product,LocalDateTime currentTime) {
-        return product.getExpirationDate().isAfter(currentTime)&&product.getExpirationDate().isBefore(currentTime.plusDays(LIMIT_DAY));
+    private boolean isExpiredSoonProduct(Product product, LocalDateTime currentTime) {
+        return product.getExpirationDate().isAfter(currentTime) && product.getExpirationDate()
+            .isBefore(currentTime.plusDays(LIMIT_DAY));
     }
 
     /**
      * Product의 유통기한이 이미 지났는지 여부를 반환하는 기능.
+     *
      * @param product
      * @param currentTime
      * @return
      */
-    private boolean isAlreadyExpiredProduct(Product product,LocalDateTime currentTime) {
+    private boolean isAlreadyExpiredProduct(Product product, LocalDateTime currentTime) {
         return product.getExpirationDate().isBefore(currentTime);
     }
 
     /**
      * 유통기한에 관련된 두 리스트를 하나의 반환 리스트로 병합하여 반환하는 기능.
+     *
      * @param expirationSoonProducts
      * @param expirationExpiredProducts
      * @return
      */
-    private List<ExpirationProductResponseDto> mergeAndConvertExpirationProducts(List<Product> expirationSoonProducts, List<Product> expirationExpiredProducts){
+    private List<ExpirationProductResponseDto> mergeAndConvertExpirationProducts(
+        List<Product> expirationSoonProducts, List<Product> expirationExpiredProducts) {
         return Stream.concat(
             expirationSoonProducts.stream()
-                .map(product->ProductMapper.toExpirationProductResponseDto(product,false))
+                .map(product -> ProductMapper.toExpirationProductResponseDto(product, false))
             ,
             expirationExpiredProducts.stream()
-                .map(product->ProductMapper.toExpirationProductResponseDto(product,true))
+                .map(product -> ProductMapper.toExpirationProductResponseDto(product, true))
         ).toList();
     }
 }
