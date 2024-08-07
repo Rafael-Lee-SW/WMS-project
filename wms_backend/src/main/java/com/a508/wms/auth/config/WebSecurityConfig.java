@@ -59,7 +59,7 @@ public class WebSecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             .authorizeHttpRequests(request -> request
-                .requestMatchers("/api/oauth2/**", "/oauth2/code/**","").permitAll()
+                .requestMatchers("/api/oauth2/**", "/oauth2/code/**").permitAll()
                 .requestMatchers("/oauth2/authorization/**").permitAll()
                 .requestMatchers("/api/v1/social/**").authenticated()
                 .anyRequest().permitAll()
