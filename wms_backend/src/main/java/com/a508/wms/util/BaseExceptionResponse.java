@@ -2,6 +2,9 @@ package com.a508.wms.util;
 
 import com.a508.wms.util.constant.ResponseEnum;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
+import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import lombok.Getter;
 
@@ -12,7 +15,7 @@ import lombok.Getter;
  */
 @Getter
 @JsonPropertyOrder({"success", "statusCode", "httpStatus", "message", "timestamp"})
-public class BaseExceptionResponse extends Throwable{
+public class BaseExceptionResponse {
 
     private final boolean success;
     private final int statusCode;
@@ -28,8 +31,11 @@ public class BaseExceptionResponse extends Throwable{
         this.timestamp = LocalDateTime.now();
 
     }
-
-    @Override
-    public void printStackTrace() {
+    public BaseExceptionResponse(ResponseEnum responseEnum,String message) {
+        this.success = responseEnum.isSuccess();
+        this.statusCode = responseEnum.getStatusCode();
+        this.httpStatus = responseEnum.getHttpStatus();
+        this.message = message + responseEnum.getMessage();
+        this.timestamp = LocalDateTime.now();
     }
 }
