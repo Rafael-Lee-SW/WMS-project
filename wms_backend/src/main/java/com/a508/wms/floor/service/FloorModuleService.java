@@ -3,14 +3,13 @@ package com.a508.wms.floor.service;
 import com.a508.wms.floor.domain.Floor;
 import com.a508.wms.floor.exception.FloorException;
 import com.a508.wms.floor.repository.FloorRepository;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import com.a508.wms.location.domain.Location;
 import com.a508.wms.location.dto.LocationRequestDto;
+import com.a508.wms.product.domain.Product;
+import com.a508.wms.product.repository.ProductRepository;
 import com.a508.wms.util.constant.ExportTypeEnum;
-import com.a508.wms.util.constant.ResponseEnum;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,8 +19,10 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class FloorModuleService {
 
+    private static final int DEFAULT_FLOOR_LEVEL = -1;
+    private static final int CONVERT_SIZE = 50;
     private final FloorRepository floorRepository;
-    private final int defaultFloorLevel = -1;
+    private final ProductRepository productRepository;
 
     /**
      * location이 가지고 있는 층 전부 조회
@@ -57,7 +58,7 @@ public class FloorModuleService {
     }
 
     public Floor findDefaultFloorByWarehouse(Long warehouseId) {
-        return findByWarehouseIdAndLevel(warehouseId, defaultFloorLevel);
+        return findByWarehouseIdAndLevel(warehouseId, DEFAULT_FLOOR_LEVEL);
     }
 
     /**
@@ -82,21 +83,50 @@ public class FloorModuleService {
 
     /**
      * 매핑할 request의 zSize만큼 floor를 만들어서 각 floor를 location에 매핑한다..
+     *
      * @param request
      * @param location
      */
     public void saveAllByLocation(LocationRequestDto request, Location location) {
-        List <Floor> floors = new ArrayList<>();
-        for (int currentFloorLevel = 1; currentFloorLevel <= request.getZSize(); currentFloorLevel++) {
+        List<Floor> floors = new ArrayList<>();
+        for (int currentFloorLevel = 1; currentFloorLevel <= request.getZSize();
+            currentFloorLevel++) {
             Floor floor = Floor.builder()
-                    .exportTypeEnum((currentFloorLevel <= request.getTouchableFloor()) ? ExportTypeEnum.DISPLAY
-                            : ExportTypeEnum.KEEP)
-                            .floorLevel(currentFloorLevel)
-                    .location(location)
-                    .build();
+                .exportTypeEnum(
+                    (currentFloorLevel <= request.getTouchableFloor()) ? ExportTypeEnum.DISPLAY
+                        : ExportTypeEnum.KEEP)
+                .floorLevel(currentFloorLevel)
+                .location(location)
+                .build();
             floors.add(floor);
         }
         saveAll(floors);
         location.setFloors(floors);
+    }
+
+    /**
+     * 해당 floor의 점유율을 반환하는 로직
+     *
+     * @param floor
+     * @return
+     */
+
+    public int getCapacity(Floor floor) {
+        List<Product> products = productRepository.findByFloor(floor);
+
+        int floorSize = calculateFloorSize(floor);
+
+        int productTotalSize = products.stream()
+            .mapToInt(product -> product.getProductDetail().getSize() * product.getQuantity())
+            .sum();
+
+        return Math.min(100, productTotalSize * 100 / floorSize);
+    }
+
+    private int calculateFloorSize(Floor floor) {
+        int xSize = floor.getLocation().getXSize();
+        int ySize = floor.getLocation().getYSize();
+
+        return xSize * CONVERT_SIZE * ySize * CONVERT_SIZE;
     }
 }
