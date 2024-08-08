@@ -21,7 +21,7 @@ const useStyles = makeStyles(() => ({
   },
   card: {
     border: "1px solid #7D4A1A",
-    maxWidth: '350px',
+    maxWidth: '400px',
     marginLeft: '60px'
   },
   logo: {
@@ -84,8 +84,8 @@ const useStyles = makeStyles(() => ({
     padding: '0 10px'
   },
   snsText: {
-    margin: '0, 16px',
-    fontSize: '18px'
+    fontSize: '22px',
+    fontWeight: 'bold'
   },
   title: {
     marginBottom: '32px',
@@ -101,17 +101,15 @@ const useStyles = makeStyles(() => ({
     justifyContent: 'center',
     paddingBottom: '20px'
   },
-  form: {
-    marginTop: '60px'
-  },
   loginContainer: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingBottom: '10px'
+    paddingBottom: '10px',
+    paddingTop: '20px'
   },
   loginText: {
-    fontSize: '12px',
+    fontSize: '13px',
     margin: '0',
     padding: '0 5px'
   },
@@ -132,7 +130,6 @@ export default function SignUp() {
   const [showPasswordMessage, setShowPasswordMessage] = useState(false);
   const [certificationButtonLabel, setCertificationButtonLabel] = useState('인증 확인');
   const [certificationMessage, setCertificationMessage] = useState('');
-  const [showEmailSignUp, setShowEmailSignUp] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const [isEmailValid, setIsEmailValid] = useState(false);
   const [timer, setTimer] = useState(0);
@@ -276,28 +273,20 @@ export default function SignUp() {
     }
   };
 
-  const handleKakaoSignIn = () => {
-    window.location.href = 'https://i11a508.p.ssafy.io/api/oauth2/authorization/kakao';
-  };
-
-  const handleNaverSignIn = () => {
-    window.location.href = 'https://i11a508.p.ssafy.io/api/oauth2.0/authorization/naver';
-  };
-
   return (
     <GridContainer className={classes.container}>
       <GridItem xs={12} sm={6} md={4}>
-        {showEmailSignUp ? ( 
           <Card className={classes.card}>
-            <IconButton className={classes.backButton} onClick={() => setShowEmailSignUp(false)}>
-              <ArrowBackIcon />
-            </IconButton>
+            <div>
+              <img src="/img/loginLogo.png" alt="Logo" className={classes.logo} onClick={() => router.push('/')} />
+            </div>
             <CardBody>
+              <div className={classes.dividerContainer}>
+                <h3 variant="body1" className={classes.snsText}>
+                  회원가입
+                </h3>
+              </div>
               <form onSubmit={handleSubmit} className={classes.form}>
-                <div className={classes.signUpTitle}>
-                  <img style={{ width: '20px', height: '20px', marginRight: '10px' }} src="/img/mailIconBk.png" alt="mailIcon"/>
-                  <h4>이메일로 회원가입하기</h4>
-                </div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <TextField
                     label="이메일주소"
@@ -419,49 +408,14 @@ export default function SignUp() {
                 >
                   회원가입
                 </Button>
+                <div className={classes.loginContainer}>
+                  <p className={classes.loginText}>이미 fit-box 계정이 있으신가요?</p>
+                  <a className={classes.loginText} href="/signIn">로그인</a>
+                </div>
                 </div>
               </form>
             </CardBody>
           </Card>
-        ) : (
-          <Card className={classes.card}>
-            <div>
-              <img src="/img/loginLogo.png" alt="Logo" className={classes.logo} onClick={() => router.push('/')} />
-            </div>
-            <CardBody>
-              <div className={classes.dividerContainer}>
-                <h3 variant="body1" className={classes.snsText}>
-                  간편 회원가입
-                </h3>
-              </div>
-              <div className={classes.snsButtons}>
-                <button className="sns-button" onClick={handleKakaoSignIn}>
-                  <img src="/img/kakao-sign-in.png" alt="Kakao Sign In" />
-                </button>
-                <button className="sns-button" onClick={handleNaverSignIn}>
-                  <img src="/img/naver-sign-in.png" alt="Naver Sign In" />
-                </button>
-              </div>
-              <div className={classes.dividerContainer}>
-                <div className={classes.divider}></div>
-                <p className={classes.dividerText}>또는</p>
-                <div className={classes.divider}></div>
-              </div>
-              <Button
-                  variant="outlined"
-                  style={{ margin: '20px 0', borderColor: '#7D4A1A', color: '#7D4A1A' }}
-                  onClick={() => setShowEmailSignUp(true)}
-                >
-                  <img style={{ width: '20px', height: '20px', marginRight: '10px' }} src="/img/mailIcon.png" alt="mailIcon"/>
-                  이메일로 회원가입하기
-              </Button>
-              <div className={classes.loginContainer}>
-                <p className={classes.loginText}>fit-box계정이 있으신가요?</p>
-                <a className={classes.loginText} href="/login">로그인</a>
-              </div>
-              </CardBody>
-            </Card>
-          )}
       </GridItem>
     </GridContainer>
   );

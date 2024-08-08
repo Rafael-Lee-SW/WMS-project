@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
-import { Button, TextField, IconButton } from '@mui/material';
+import { Button, TextField } from '@mui/material';
 import { makeStyles } from "@material-ui/core/styles";
-import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import { useAuth } from '../context/AuthContext';
 import GridContainer from '../components/Grid/GridContainer';
 import GridItem from '../components/Grid/GridItem';
@@ -81,18 +80,14 @@ const useStyles = makeStyles(() => ({
   },
   snsText: {
     margin: '8px 16px',
-    fontSize: "18px",
+    fontSize: "22px",
+    fontWeight: 'bold'
   },
   title: {
     marginBottom: '32px',
   },
-  backButton: {
-    position: 'absolute',
-    top: '16px',
-    left: '16px',
-  },
   form: {
-    marginTop: '60px'
+    marginTop: '20px'
   },
   signUpContainer: {
     display: 'flex',
@@ -105,12 +100,6 @@ const useStyles = makeStyles(() => ({
     margin: '0',
     padding: '0 5px'
   },
-  loginTitle: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingBottom: '20px'
-  }
 }));
 
 
@@ -119,7 +108,6 @@ export default function Login() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showEmailLogin, setShowEmailLogin] = useState(false);
   const { login } = useAuth();
 
   const handleLogin = async (e) => {
@@ -166,46 +154,6 @@ export default function Login() {
   return (
     <GridContainer className={classes.container}>
       <GridItem xs={12} sm={6} md={4}>
-        {showEmailLogin ? (
-          <Card className={classes.card}>
-            <IconButton className={classes.backButton} onClick={() => setShowEmailLogin(false)}>
-              <ArrowBackIcon />
-            </IconButton>
-            <CardBody>
-              <form onSubmit={handleLogin} className={classes.form}>
-                <div className={classes.loginTitle}>
-                  <img style={{ width: '20px', height: '20px', marginRight: '10px' }} src="/img/mailIconBk.png" alt="mailIcon"/>
-                  <h4>이메일로 로그인하기</h4>
-                </div>
-                <TextField
-                  label="이메일주소"
-                  type="email"
-                  variant="outlined"
-                  fullWidth
-                  className={classes.textField}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-                <TextField
-                  label="비밀번호"
-                  type="password"
-                  variant="outlined"
-                  fullWidth
-                  className={classes.textField}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-                <div>
-                  <Button type="submit" variant="contained" style={{ backgroundColor: "#7D4A1A", color: "white" }} className={classes.button}>
-                    로그인
-                  </Button>
-                </div>
-              </form>
-            </CardBody>
-          </Card>
-        ) : (
           <Card className={classes.card}>
             <div>
               <img
@@ -234,21 +182,39 @@ export default function Login() {
                 <p className={classes.dividerText}>또는</p>
                 <div className={classes.divider}></div>
               </div>
-              <Button
+              <form onSubmit={handleLogin} className={classes.form}>
+                <TextField
+                  label="이메일주소"
+                  type="email"
                   variant="outlined"
-                  style={{ margin: '20px 0', borderColor: '#7D4A1A', color: '#7D4A1A' }}
-                  onClick={() => setShowEmailLogin(true)}
-                >
-                  <img style={{ width: '20px', height: '20px', marginRight: '10px' }} src="/img/mailIcon.png" alt="mailIcon"/>
-                  이메일로 로그인하기
-              </Button>
+                  fullWidth
+                  className={classes.textField}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+                <TextField
+                  label="비밀번호"
+                  type="password"
+                  variant="outlined"
+                  fullWidth
+                  className={classes.textField}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <div>
+                  <Button type="submit" variant="contained" style={{ backgroundColor: "#7D4A1A", color: "white" }} className={classes.button}>
+                    로그인
+                  </Button>
+                </div>
+              </form>
               <div className={classes.signUpContainer}>
                 <p className={classes.signUpText}>fit-box가 처음이신가요?</p>
                 <a className={classes.signUpText} href="/signup">회원가입</a>
               </div>
             </CardBody>
           </Card>
-        )}
       </GridItem>
     </GridContainer>
   );
