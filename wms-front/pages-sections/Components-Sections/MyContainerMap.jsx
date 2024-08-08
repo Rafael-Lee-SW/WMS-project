@@ -438,6 +438,8 @@ const MyContainerMap = ({ warehouseId }) => {
         const apiConnection = await response.json();
         const warehouseData = apiConnection.result; // 데이터 추출
 
+        console.log(warehouseData);
+
         // 받아온 데이터 중 로케이션 데이터 처리
         const locations = warehouseData.locations;
         if (!locations) {
@@ -451,8 +453,8 @@ const MyContainerMap = ({ warehouseId }) => {
             y: location.yposition,
             width: location.xsize || 50,
             height: location.ysize || 50,
-            z: 5,
-            fill: "blue",
+            z: location.zsize,
+            fill: `rgba(${location.fill}, 100, 100, 1)`,
             draggable: true,
             order: index,
             name: location.name || `적재함 ${index}`,
@@ -1567,6 +1569,7 @@ const MyContainerMap = ({ warehouseId }) => {
             <p>Name : {selectedLocation.name}</p>
             <p>Type : {selectedLocation.type}</p>
             <p>층수 : {selectedLocation.z}</p>
+            <p>현재 재고율 : {selectedLocation.fill} </p>
           </div>
         ) : (
           <p>No rectangle selected</p>
