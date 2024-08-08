@@ -160,7 +160,7 @@ export default function Payment() {
 
     if (!isLoggedIn) {
       alert('로그인이 필요합니다.');
-      router.push('/login');
+      router.push('/signIn');
       return;
     } else {
       const IMP = window.IMP;
