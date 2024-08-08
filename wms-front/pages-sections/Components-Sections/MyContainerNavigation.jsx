@@ -11,8 +11,8 @@ import ButtonIn from "@mui/material/Button";
 // 모달 페이지를 위한 Import
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
 
 // Import SheetJS xlsx for Excel operations
 import * as XLSX from "xlsx";
@@ -86,7 +86,7 @@ const useStyles = makeStyles(styles);
 // --- 창고 관련 끝
 
 // 복합체 시작
-const MyContainerNavigation = () => {
+const MyContainerNavigation = ({ WHId }) => {
   /**
    * 창고 관련 const 들 모음
    */
@@ -332,10 +332,10 @@ const MyContainerNavigation = () => {
         imExportData.map((item) => `${item.date}###${item.type}`)
       );
       const uniqueDates = Array.from(uniqueDateSet).map((key) => {
-        const [date, type] = key.split("###")
+        const [date, type] = key.split("###");
         return { date, type };
       });
-      
+
       setImExportList(uniqueDates);
       setDetailedData(imExportData);
     } catch (error) {
@@ -375,7 +375,7 @@ const MyContainerNavigation = () => {
   const getWarehouseAPI = async () => {
     try {
       const response = await fetch(
-        "https://i11a508.p.ssafy.io/api/warehouses/2",
+        `https://i11a508.p.ssafy.io/api/warehouses/${WHId}`,
         {
           method: "GET",
           headers: {
@@ -948,98 +948,113 @@ const MyContainerNavigation = () => {
       stage.off("mouseup", handleMouseUp);
     };
   }, [line, startPos, currentSetting, selectedLocation]);
-  
+
   //처음에 창고 정보를 불러온다.
   useEffect(() => {
     getWarehouseAPI();
   }, []);
 
+  const [showDetails, setShowDetails] = useState(true); // Default to showing details
   return (
-    <div style={{ marginBottom: "1%", margin: "0%" }}>
-      <div>
-        {/** Main 영역 시작 */}
-        <main style={{ display: "flex" }}>
-          
-          {/* Detail Modal */}
-          <Dialog
-            open={openDetailModal}
-            onClose={() => setOpenDetailModal(false)}
-            maxWidth="lg"
-            fullWidth
+    <div
+      style={{
+        position: "relative",
+        height: "100vh",
+        width: "100%",
+        overflow: "hidden",
+      }}
+    >
+      <Stage
+        width={window.innerWidth}
+        height={window.innerHeight}
+        scaleX={scale}
+        scaleY={scale}
+        draggable={true}
+        ref={stageRef}
+        onPointerMove={Pointer}
+        onMouseDown={checkDeselect}
+        onTouchStart={checkDeselect}
+        style={{ position: "absolute", top: 0, left: 0 }}
+      >
+        <Layer ref={layerRef}>
+          {generateGridLines()}
+          {locations.map((rect, i) => (
+            <RectangleTransformer
+              key={rect.id}
+              x={rect.x}
+              y={rect.y}
+              width={rect.width}
+              height={rect.height}
+              fill={rect.fill}
+              shapeProps={rect}
+              isSelected={rect.id === selectedLocationTransform}
+              onSelect={() => {
+                setSelectedLocationTransform(rect.id);
+                setSelectedLocation(rect);
+                setSelectedFloor(1);
+              }}
+              onChange={(newAttrs) => {
+                const rects = locations.slice();
+                rects[i] = newAttrs;
+                setLocations(rects);
+              }}
+            />
+          ))}
+        </Layer>
+      </Stage>
+      <div
+        style={{
+          position: "absolute",
+          top: "10vh",
+          left: "10px",
+          padding: "10px",
+          width: "220px",
+          height: "80vh",
+          overflowY: "auto",
+          backgroundColor: "rgba(247, 247, 247, 0.9)",
+          boxShadow: "2px 0 5px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        <h4>현재 창고는 1번 창고입니다.</h4>
+        <div>
+          <label htmlFor="upload-photo">
+            <input
+              required
+              style={{ display: "none" }}
+              id="upload-photo"
+              name="upload_photo"
+              type="file"
+              onChange={importExcel}
+            />
+            <Fab
+              color="primary"
+              size="small"
+              component="span"
+              aria-label="add"
+              variant="extended"
+            >
+              출고 업로드
+            </Fab>
+          </label>
+        </div>
+        <hr />
+        <div style={{ marginBottom: "10px" }}>
+          <ButtonIn onClick={() => setShowDetails(true)}>Show Details</ButtonIn>
+          <ButtonIn
+            onClick={() => setShowDetails(false)}
+            style={{ marginLeft: "5px" }}
           >
-            <DialogTitle>상세 데이터</DialogTitle>
-            <DialogContent>
-              {ModalTableData.length > 0 && (
-                <HotTable
-                  height={600}
-                  ref={hotTableRef}
-                  data={ModalTableData}
-                  colWidths={[100, 100, 100, 100, 100, 100]}
-                  colHeaders={["날짜", "유형", "바코드", "상품명", "수량", "송장번호"]}
-                  dropdownMenu={true}
-                  hiddenColumns={{
-                    indicators: true,
-                  }}
-                  contextMenu={true}
-                  multiColumnSorting={true}
-                  filters={true}
-                  rowHeaders={true}
-                  autoWrapCol={true}
-                  autoWrapRow={true}
-                  afterGetColHeader={alignHeaders}
-                  beforeRenderer={addClassesToRows}
-                  manualRowMove={true}
-                  navigableHeaders={true}
-                  licenseKey="non-commercial-and-evaluation"
-                />
-              )}
-            </DialogContent>
-            <DialogActions>
-              <ButtonIn onClick={() => setOpenDetailModal(false)} color="primary">
-                닫기
-              </ButtonIn>
-            </DialogActions>
-          </Dialog>
-          {/* 현재 창고와 적재함들을 보여주는 Sidebar  */}
-          <div
-            style={{
-              padding: "10px",
-              border: "1px solid black",
-              borderRadius: "10px",
-              width: "13%",
-              height: "80vh",
-              overflowY: "auto",
-            }}
-          >
-            <h4>현재 창고는 1번 창고입니다.</h4>
-            <div>
-              <label htmlFor="upload-photo">
-                <input
-                  required
-                  style={{ display: "none" }}
-                  id="upload-photo"
-                  name="upload_photo"
-                  type="file"
-                  onChange={importExcel}
-                />
-                <Fab
-                  color="primary"
-                  size="small"
-                  component="span"
-                  aria-label="add"
-                  variant="extended"
-                >
-                  출고 업로드
-                </Fab>
-              </label>
-            </div>
-            <hr />
+            Show Notifications
+          </ButtonIn>
+        </div>
+        {showDetails ? (
+          <div>
             <h4>현재 적재함 목록</h4>
             {locations.length !== 0 ? (
               <div>
                 <ul
                   style={{
-                    height: "100%",
+                    height: "42vh",
                     overflowY: "auto",
                   }}
                 >
@@ -1054,20 +1069,56 @@ const MyContainerNavigation = () => {
               <p>현재 재고함이 없습니다.</p>
             )}
           </div>
-          {/* 재고현황을 엑셀로 보여주는 bar */}
-          <div
-            style={{
-              marginLeft: "5px",
-              padding: "8px",
-              border: "2px solid black",
-              borderRadius: "10px",
-              width: "36%",
-              height: "80vh",
-              overflowY: "auto",
-            }}
-          >
-            <h3>현재 선택된 재고함</h3>
-            {selectedLocation ? (
+        ) : (
+          <div className="notification">
+            <h3>Im-Export Dates</h3>
+            <ul style={{ listStyle: "none", padding: 0 }}>
+              {imExportList.map(({ date, type }, index) => (
+                <li
+                  key={index}
+                  onClick={() => handleCellClick(date, type)}
+                  style={{
+                    cursor: "pointer",
+                    padding: "5px",
+                    borderBottom: "1px solid #ccc",
+                  }}
+                >
+                  {date.slice(0, 10)} / {type}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+      {/* Right Sidebar: Conditional rendering based on selection */}
+      {(selectedLocation || ModalTableData.length > 0) && (
+        <div
+          style={{
+            position: "absolute",
+            top: "10vh",
+            right: "10px",
+            padding: "10px",
+            border: "2px solid black",
+            borderRadius: "10px",
+            width: "36%",
+            height: "80vh",
+            overflowY: "auto",
+            backgroundColor: "rgba(255, 255, 255, 0.9)",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <ButtonIn
+              onClick={() => {
+                setSelectedLocation(null);
+                setModalTableData([]);
+              }}
+            >
+              Close
+            </ButtonIn>
+          </div>
+          {showDetails && selectedLocation ? (
+            <div>
+              <h3>현재 선택된 재고함</h3>
               <div>
                 <div
                   id="상자 정보"
@@ -1166,7 +1217,6 @@ const MyContainerNavigation = () => {
                       contextMenu={true}
                       multiColumnSorting={true}
                       filters={true}
-                      // rowHeaders={true}
                       autoWrapCol={true}
                       autoWrapRow={true}
                       afterGetColHeader={alignHeaders}
@@ -1179,119 +1229,50 @@ const MyContainerNavigation = () => {
                   </div>
                 )}
               </div>
-            ) : (
-              <p>재고함이 선택되지 않았습니다.</p>
-            )}
-          </div>
-          {/* Canvas and 알림창 영역 */}
-          <div
-            style={{
-              marginLeft: "5px",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              width: "50%",
-            }}
-          >
-            <div
-              style={{
-                border: "2px solid black",
-                borderRadius: 20,
-                width: "100%",
-                height: "60vh",
-                position: "relative",
-                overflow: "hidden",
-              }}
-            >
-              <Stage
-                width={CANVAS_SIZE}
-                height={CANVAS_SIZE}
-                scaleX={scale}
-                scaleY={scale}
-                draggable={true}
-                ref={stageRef}
-                onPointerMove={Pointer}
-                onMouseDown={checkDeselect}
-                onTouchStart={checkDeselect}
-              >
-                <Layer ref={layerRef}>
-                  {generateGridLines()}
-                  {locations.map((rect, i) => (
-                    <RectangleTransformer
-                      key={rect.id}
-                      x={rect.x}
-                      y={rect.y}
-                      width={rect.width}
-                      height={rect.height}
-                      fill={rect.fill}
-                      shapeProps={rect}
-                      isSelected={rect.id === selectedLocationTransform}
-                      onSelect={() => {
-                        setSelectedLocationTransform(rect.id);
-                        setSelectedLocation(rect);
-                        setSelectedFloor(1);
-                      }}
-                      onChange={(newAttrs) => {
-                        const rects = locations.slice();
-                        rects[i] = newAttrs;
-                        setLocations(rects);
-                      }}
-                    />
-                  ))}
-                </Layer>
-              </Stage>
-              <div
-                style={{
-                  position: "absolute",
-                  bottom: "10px",
-                  right: "10px",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "10px",
-                }}
-              >
-                <ButtonIn onClick={handleZoomIn}>Zoom In</ButtonIn>
-                <ButtonIn onClick={handleZoomOut}>Zoom Out</ButtonIn>
-                <ButtonIn onClick={getWarehouseAPI}>Load From Local</ButtonIn>
-              </div>
             </div>
-            <div
-              style={{
-                border: "2px solid black",
-                padding: "5px",
-                borderRadius: 20,
-                width: "100%",
-                height: "17vh",
-                marginTop: "20px",
-                overflowY: "auto",
-              }}
-            >
-              <div className="notification">
-                <h3>Im-Export Dates</h3>
-                <ul style={{ listStyle: "none", padding: 0 }}>
-                  {imExportList.map(({ date, type }, index) => (
-                    <li
-                      key={index}
-                      onClick={() => handleCellClick(date, type)}
-                      style={{
-                        cursor: "pointer",
-                        padding: "5px",
-                        borderBottom: "1px solid #ccc",
-                      }}
-                    >
-                      {date.slice(0,10)} / {type}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+          ) : (
+            <div>
+              <h3>Notification Details</h3>
+              {ModalTableData.length > 0 ? (
+                <HotTable
+                  height={600}
+                  ref={hotTableRef}
+                  data={ModalTableData}
+                  colWidths={[100, 100, 100, 100, 100, 100]}
+                  colHeaders={[
+                    "날짜",
+                    "유형",
+                    "바코드",
+                    "상품명",
+                    "수량",
+                    "송장번호",
+                  ]}
+                  dropdownMenu={true}
+                  hiddenColumns={{
+                    indicators: true,
+                  }}
+                  contextMenu={true}
+                  multiColumnSorting={true}
+                  filters={true}
+                  rowHeaders={true}
+                  autoWrapCol={true}
+                  autoWrapRow={true}
+                  afterGetColHeader={alignHeaders}
+                  beforeRenderer={addClassesToRows}
+                  manualRowMove={true}
+                  navigableHeaders={true}
+                  licenseKey="non-commercial-and-evaluation"
+                />
+              ) : (
+                <p>세부 정보가 없습니다.</p>
+              )}
             </div>
-          </div>
-        </main>
-      </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
-
 export default MyContainerNavigation;
 
 // -----   상자 설정 변경기 영역   ------
@@ -1324,8 +1305,17 @@ const RectangleTransformer = ({
         onDragEnd={(e) => {
           onChange({
             ...shapeProps,
-            x: Math.round(e.target.x()), //드래그 종료 후에 반올림한 위치로 이동함.
-            y: Math.round(e.target.y()),
+            x: Math.max(
+              0,
+              Math.min(Math.round(e.target.x()), CANVAS_SIZE - e.target.width())
+            ), //드래그 종료 후에 반올림한 위치로 이동함.
+            y: Math.max(
+              0,
+              Math.min(
+                Math.round(e.target.y()),
+                CANVAS_SIZE - e.target.height()
+              )
+            ),
           });
         }}
         // 변형 종료 이벤트 -- 사각형 크기 및 위치 업데이트
@@ -1338,8 +1328,14 @@ const RectangleTransformer = ({
           node.scaleY(1);
           onChange({
             ...shapeProps,
-            x: Math.round(node.x()), // 변형 후에 반올림한 위치로 이동
-            y: Math.round(node.y()),
+            x: Math.max(
+              0,
+              Math.min(Math.round(node.x()), CANVAS_SIZE - node.width())
+            ), // 변형 후에 반올림한 위치로 이동
+            y: Math.max(
+              0,
+              Math.min(Math.round(node.y()), CANVAS_SIZE - node.height())
+            ),
             width: Math.max(5, node.width() * scaleX), // 최소 너비 보장
             height: Math.max(5, node.height() * scaleY), // 최소 높이 보장
             rotation: Math.round(node.rotation()), // 반올림한 각도

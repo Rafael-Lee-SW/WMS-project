@@ -5,7 +5,6 @@ import Header from "/components/Header/HomeHeader.js";
 import HeaderLinks from "/components/Header/HomeHeaderLinks.js";
 import "/styles/scss/nextjs-material-kit.scss?v=1.2.0";
 import "../styles/globals.css";
-import { SessionProvider } from "next-auth/react";
 import { AuthProvider } from "../context/AuthContext";
 
 export default class MyApp extends App {
@@ -30,7 +29,7 @@ export default class MyApp extends App {
     const noHeaderRoutes = [
       "/user/[id]",
       "/user/select",
-      "/login",
+      "/signIn",
       "/mypage",
       "/subDetail",
       "/subscribe",
@@ -50,7 +49,6 @@ export default class MyApp extends App {
           />
           <title>Fit-Box</title>
         </Head>
-        <SessionProvider session={pageProps.session}>
           <AuthProvider>
             {shouldDisplayHeader && (
               <Header
@@ -63,7 +61,7 @@ export default class MyApp extends App {
             )}
             <Component {...pageProps} />
           </AuthProvider>
-        </SessionProvider>
+
       </React.Fragment>
     );
   }

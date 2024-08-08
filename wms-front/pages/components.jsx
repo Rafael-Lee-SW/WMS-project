@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useState } from "react";
 // nodejs library that concatenates classes
 import classNames from "classnames";
 // react components for routing our app without refresh
@@ -8,6 +8,7 @@ import { makeStyles } from "@material-ui/core/styles";
 // core components
 import Header from "/components/Header/HomeHeader.js";
 import HeaderLinks from "/components/Header/HomeHeaderLinks.js";
+import LoginHeaderLinks from "../components/Header/LogInHomeHeaderLinks";
 import Footer from "/components/Footer/Footer.js";
 import Slider from "react-slick"; 
 import ServiceInfo1 from '/components/Main/ServiceInfo1';
@@ -31,11 +32,21 @@ const useStyles = makeStyles(styles);
 const Components = (props) => {
   const classes = useStyles();
   const { ...rest } = props;
+  
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     AOS.init({
       duration: 1200,
     });
+
+    // Check for token in local storage
+    const token = localStorage.getItem("token");
+    if (token) {
+      setIsLoggedIn(true);
+    } else {
+      setIsLoggedIn(false);
+    }
   }, []);
 
   // 캐러셀 설정
@@ -53,7 +64,7 @@ const Components = (props) => {
     <div>
       <Header
         brand="FIT-BOX"
-        rightLinks={<HeaderLinks/>}
+        rightLinks={isLoggedIn ? <LoginHeaderLinks /> : <HeaderLinks />}
         fixed
         color="transparent"
         changeColorOnScroll={{

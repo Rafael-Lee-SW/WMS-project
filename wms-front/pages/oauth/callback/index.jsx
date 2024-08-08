@@ -1,14 +1,43 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
-import { useAuth } from '../../../context/AuthContext' // AuthContext를 import
+import { useAuth } from '../../../context/AuthContext'; // AuthContext를 import
 
 const OAuthCallback = () => {
   const router = useRouter();
   const { login } = useAuth();
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchUserInfo = async (token, email) => {
+      try {
+        const response = await axios.get('http://localhost:8080/api/oauth/social-sign-in', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params: {
+            email,
+          },
+        });
+
+        if (response.status === 200) {
+          const user = response.data;
+          // 로컬 스토리지에 사용자 정보 저장
+          localStorage.setItem('user', JSON.stringify(user));
+          localStorage.setItem('token', token);
+
+          // 전역 상태에 사용자 정보와 토큰 저장
+          login(user, token);
+          alert(`${user.name}님 환영합니다!`);
+          router.push('/'); // 메인 페이지로 이동
+        }
+      } catch (error) {
+        console.error('Error fetching user info:', error);
+        alert('사용자 정보를 가져오는 중 오류가 발생했습니다.');
+        router.push('/signIn');
+      }
+    };
+
+    const handleCallback = async () => {
       const { response } = router.query; // 리다이렉션 URL에서 'response' 쿼리 매개변수 가져오기
 
       if (response) {
@@ -18,26 +47,23 @@ const OAuthCallback = () => {
 
           // 상태 코드와 응답 코드가 성공인지 확인
           if (responseData.code === 'SU') {
-            const { user, token } = responseData;
+            const { userEmail, token } = responseData;
             
-            // 로그인 함수 호출하여 전역 상태에 저장
-            login(user, token);
-
-            alert(`${user.name}님 환영합니다!`);
-            router.push('/'); // 메인 페이지로 이동
+            // 이메일과 토큰을 사용하여 사용자 정보 가져오기
+            await fetchUserInfo(token, userEmail);
           } else {
             alert('로그인에 실패하였습니다.');
-            router.push('/login'); // 로그인 페이지로 이동
+            router.push('/signIn'); // 로그인 페이지로 이동
           }
         } catch (error) {
           console.error('Error processing OAuth response:', error);
           alert('인증 처리 중 오류가 발생했습니다.');
-          router.push('/login');
+          router.push('/signIn');
         }
       }
     };
 
-    fetchData();
+    handleCallback();
   }, [router, login]);
 
   return <div>OAuth 인증 처리 중...</div>;

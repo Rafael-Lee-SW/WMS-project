@@ -255,7 +255,7 @@ export default function SignUp() {
         alert(isSuccess ? '회원가입이 완료되었습니다. 로그인 후 이용해주세요.' : message);
 
         if (isSuccess) {
-          router.push('/login');
+          router.push('/signIn');
         }
       } catch (error) {
         alert('회원가입에 실패하였습니다. 다시 시도해주세요.');
@@ -264,11 +264,11 @@ export default function SignUp() {
   };
 
   const handleKakaoSignIn = () => {
-    window.location.href = 'https://i11a508.p.ssafy.io/oauth2/authorization/kakao';
+    window.location.href = 'https://i11a508.p.ssafy.io/api/oauth2/authorization/kakao';
   };
 
   const handleNaverSignIn = () => {
-    window.location.href = 'https://i11a508.p.ssafy.io/oauth2.0/authorization/naver';
+    window.location.href = 'https://i11a508.p.ssafy.io/api/oauth2.0/authorization/naver';
   };
 
   return (

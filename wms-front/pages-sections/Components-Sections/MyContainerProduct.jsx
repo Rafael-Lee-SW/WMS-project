@@ -1,4 +1,3 @@
-// Import React and required hooks
 import React, { useState, useRef, useEffect } from "react";
 
 // Import MUI components
@@ -34,7 +33,7 @@ import {
 
 // Import Handsontable and its styles
 import "@handsontable/react";
-import { HotTable, HotColumn } from "@handsontable/react";
+import { HotTable } from "@handsontable/react";
 import "pikaday/css/pikaday.css";
 import "handsontable/dist/handsontable.full.css";
 
@@ -58,8 +57,8 @@ registerPlugin(Filters);
 registerPlugin(HiddenRows);
 
 // 재고를 엑셀 형식으로 보면서 관리하는 Component
-const MyContainerProduct = () => {
-  //API를 통해 창고의 데이터를 가져오기 위한 State
+const MyContainerProduct = ({ WHId }) => {
+  // API를 통해 창고의 데이터를 가져오기 위한 State
   const [tableData, setTableData] = useState([]);
   const [detailedData, setDetailedData] = useState([]); // Store all import/export data
   const [ModalTableData, setModalTableData] = useState([]);
@@ -77,7 +76,7 @@ const MyContainerProduct = () => {
   const [openEditModal, setOpenEditModal] = useState(false); // 수정용 모달 열기/닫기
   const [editData, setEditData] = useState([]); // State to track edited data
 
-  //출고 데이터를 받기 위한 State
+  // 출고 데이터를 받기 위한 State
   const [ModalTableExportData, setModalTableExportData] = useState([]);
   const [exportColumns, setExportColumns] = useState([]);
   const hotExportTableRef = useRef(null); // HandsonTable 객체 참조
@@ -207,6 +206,7 @@ const MyContainerProduct = () => {
       setColumnSelectionStep(columnSelectionStep + 1);
     }
   };
+
   // 출고 열의 색상을 바꾸는 메서드
   const applyExportColumnColor = (columnIndex, color) => {
     const hotInstance = hotExportTableRef.current.hotInstance;
@@ -295,10 +295,12 @@ const MyContainerProduct = () => {
     try {
       // postData에 businessId와 warehouseId를 추가한다.
       const newPostData = {
-        warehouseId: 2,
-        businessId: 1,
+        warehouseId: WHId,
+        businessId: businessData.id,
         data: postData,
       };
+
+      console.log(newPostData);
 
       const response = await fetch(
         "https://i11a508.p.ssafy.io/api/products/import",
@@ -328,8 +330,8 @@ const MyContainerProduct = () => {
     try {
       // postData에 businessId와 warehouseId를 추가한다.
       const newPostData = {
-        warehouseId: 2,
-        businessId: 1,
+        warehouseId: WHId,
+        businessId: businessData.id,
         data: postData,
       };
       console.log(newPostData);
@@ -357,10 +359,10 @@ const MyContainerProduct = () => {
   };
 
   // 사장님이 갖고 있는 상품들을 가져오는 API
-  const productGetAPI = async () => {
+  const productGetAPI = async (businessId) => {
     try {
       const response = await fetch(
-        "https://i11a508.p.ssafy.io/api/products?bussinessId=1",
+        `https://i11a508.p.ssafy.io/api/products?businessId=${businessId}`,
         {
           method: "GET",
           headers: {
@@ -372,18 +374,19 @@ const MyContainerProduct = () => {
       if (response.ok) {
         const apiConnection = await response.json();
         const products = apiConnection.result;
-        console.log(apiConnection)
+        console.log(apiConnection);
         console.log(products); // 삭제해야 할 console.log (콘솔)
 
         // Extract only the required columns
         const formattedData = products.map((product) => ({
           hiddenId: product.id,
-          name: product.productDetail.name,
-          barcode: product.productDetail.barcode,
+          name: product.name,
+          barcode: product.barcode,
           quantity: product.quantity,
           locationName: product.locationName || "임시",
           floorLevel: product.floorLevel,
           expirationDate: product.expirationDate || "없음",
+          warehouseId: product.warehouseId,
         }));
 
         // Define the columns
@@ -395,6 +398,7 @@ const MyContainerProduct = () => {
           "적재함",
           "단(층)수",
           "유통기한",
+          "창고",
         ];
 
         const formattedColumns = [
@@ -405,6 +409,7 @@ const MyContainerProduct = () => {
           { name: "locationName", label: "적재함" },
           { name: "floorLevel", label: "층수" },
           { name: "expirationDate", label: "유통기한" },
+          { name: "warehouseId", label: "창고" },
         ];
 
         // Prepare the data for Handsontable
@@ -416,6 +421,7 @@ const MyContainerProduct = () => {
           product.locationName,
           product.floorLevel,
           product.expirationDate,
+          product.warehouseId,
         ]);
 
         setColumns(formattedColumns);
@@ -429,10 +435,12 @@ const MyContainerProduct = () => {
     }
   };
 
-  const getImportListAPI = async () => {
+  const getImportListAPI = async (businessId) => {
+    console.log("현재 아이디");
+    console.log(businessId);
     try {
       const response = await fetch(
-        "https://i11a508.p.ssafy.io/api/products/import?businessId=1",
+        `https://i11a508.p.ssafy.io/api/products/import?businessId=${businessId}`,
         {
           method: "GET",
           headers: {
@@ -444,7 +452,7 @@ const MyContainerProduct = () => {
       if (response.ok) {
         const apiConnection = await response.json();
         const importList = apiConnection.result;
-        //구분을 위한 입고표시
+        // 구분을 위한 입고표시
         return importList.map((item) => ({ ...item, type: "입고" }));
       } else {
         console.error("입고 목록을 불러오지 못했습니다.");
@@ -454,10 +462,10 @@ const MyContainerProduct = () => {
     }
   };
 
-  const getExportListAPI = async () => {
+  const getExportListAPI = async (businessId) => {
     try {
       const response = await fetch(
-        "https://i11a508.p.ssafy.io/api/products/export?businessId=1",
+        `https://i11a508.p.ssafy.io/api/products/export?businessId=${businessId}`,
         {
           method: "GET",
           headers: {
@@ -469,7 +477,7 @@ const MyContainerProduct = () => {
       if (response.ok) {
         const apiConnection = await response.json();
         const exportList = apiConnection.result;
-        //구분을 위한 출고 표시
+        // 구분을 위한 출고 표시
         return exportList.map((item) => ({ ...item, type: "출고" }));
       } else {
         console.error("입고 목록을 불러오지 못했습니다.");
@@ -483,8 +491,8 @@ const MyContainerProduct = () => {
   const getWholeChangesAPI = async () => {
     try {
       const [importList, exportList] = await Promise.all([
-        getImportListAPI(),
-        getExportListAPI(),
+        getImportListAPI(businessData.id),
+        getExportListAPI(businessData.id),
       ]);
 
       // Combine import and export lists
@@ -534,8 +542,8 @@ const MyContainerProduct = () => {
   const showUniqueDates = async () => {
     try {
       const [importList, exportList] = await Promise.all([
-        getImportListAPI(),
-        getExportListAPI(),
+        getImportListAPI(businessData.id),
+        getExportListAPI(businessData.id),
       ]);
 
       // Combine import and export lists
@@ -651,22 +659,14 @@ const MyContainerProduct = () => {
         locationName: row[4],
         floorLevel: row[5],
         expirationDate: row[6],
-        warehouseId: 2,
+        warehouseId: WHId,
       };
-      console.log(productData)
+      console.log(productData);
       productEditAPI(productData);
     });
 
     setOpenEditModal(false); // Close modal after saving
   };
-
-  /**
-   * UseEffect를 통해 새로고침 때마다 api로 사장님의 재고를 불러옴
-   */
-
-  useEffect(() => {
-    productGetAPI();
-  }, [openModal]);
 
   // 선택 시에 테이블이 바뀐다.
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -699,291 +699,333 @@ const MyContainerProduct = () => {
     setCurrentIndex(index);
   };
 
+  /**
+   * 유저를 부르는 Part
+   */
+
+  // 유저 및 비즈니스 정보를 담을 State
+  const [userData, setUserData] = useState(null);
+  const [businessData, setBusinessData] = useState(null);
+
+  // LocalStorage(로컬 스토레이지)를 바탕으로 비즈니스 정보를 받아온다.
+  const fetchBusinessData = async (userId) => {
+    try {
+      const response = await fetch(
+        `https://i11a508.p.ssafy.io/api/users/${userId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        const userData = await response.json();
+        const businessInfo = userData.result.business;
+        // Business Data를 추출한다.
+        setBusinessData(businessInfo);
+        console.log("Business data loaded:", businessInfo);
+
+        productGetAPI(businessInfo.id);
+      } else {
+        console.error("Error fetching user data");
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
+
+  /**
+   * UseEffect를 통해 새로고침 때마다 api로 사장님의 재고를 불러옴
+   * + 유저정보
+   */
+
+  useEffect(() => {
+    // Retrieve user data from localStorage
+    const user = localStorage.getItem("user");
+    if (user) {
+      try {
+        const parsedUser = JSON.parse(user);
+        setUserData(parsedUser);
+        console.log("User data loaded from localStorage:", parsedUser);
+
+        // Fetch business data using user ID
+        fetchBusinessData(parsedUser.id);
+      } catch (error) {
+        console.error("Error parsing user data from localStorage:", error);
+      }
+    }
+  }, [openModal]);
+
   return (
-    <div style={{ marginBottom: "1%", margin: "1%", display: "flex" }}>
+    <div style={{ marginTop: "3rem", display: "flex" }}>
       <div
-        className="button"
+        className="sidebar"
         style={{
-          width: "10%",
-          borderRight: "1px solid black",
+          width: "220px",
+          height:"93vh",
           marginRight: "5px",
+          padding: "15px",
+          boxShadow: "2px 0 5px rgba(0, 0, 0, 0.1)",
         }}
       >
-        <Grid item xs={6} md={4}>
-          <div>
-            <label htmlFor="upload-import">
-              <input
-                required
-                style={{ display: "none" }}
-                id="upload-import"
-                name="upload-import"
-                type="file"
-                onChange={importExcel}
-              />
-              <Fab
-                color="primary"
-                size="small"
-                component="span"
-                aria-label="add"
-                variant="extended"
-              >
-                입고하기
-              </Fab>
-            </label>
-          </div>
-          <div>
-            <label htmlFor="upload-export">
-              <input
-                required
-                style={{ display: "none" }}
-                id="upload-export"
-                name="upload-export"
-                type="file"
-                onChange={exportExcel}
-              />
-              <Fab
-                color="primary"
-                size="small"
-                component="span"
-                aria-label="add"
-                variant="extended"
-              >
-                출고하기
-              </Fab>
-            </label>
-          </div>
-          <div>
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={downloadExcel}
+        <div>
+          <label htmlFor="upload-import">
+            <input
+              required
+              style={{ display: "none" }}
+              id="upload-import"
+              name="upload-import"
+              type="file"
+              onChange={importExcel}
+            />
+            <Fab
+              color="primary"
+              size="small"
+              component="span"
+              aria-label="add"
+              variant="extended"
             >
-              다운로드
-            </Button>
-          </div>
+              입고하기
+            </Fab>
+          </label>
+        </div>
+        <div>
+          <label htmlFor="upload-export">
+            <input
+              required
+              style={{ display: "none" }}
+              id="upload-export"
+              name="upload-export"
+              type="file"
+              onChange={exportExcel}
+            />
+            <Fab
+              color="primary"
+              size="small"
+              component="span"
+              aria-label="add"
+              variant="extended"
+            >
+              출고하기
+            </Fab>
+          </label>
+        </div>
+        <div>
+          <Button variant="contained" color="secondary" onClick={downloadExcel}>
+            다운로드
+          </Button>
+        </div>
 
-          <div>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => setOpenEditModal(true)}
-            >
-              엑셀로 -수정하기
+        <div>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => setOpenEditModal(true)}
+          >
+            엑셀로 -수정하기
+          </Button>
+        </div>
+        <div>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              handleNextComponent(0);
+              getWholeChangesAPI();
+            }}
+          >
+            입-출고 내역보기
+          </Button>
+        </div>
+        <div>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              handleNextComponent(1);
+              showUniqueDates();
+            }}
+          >
+            Only See the Im-Export
+          </Button>
+        </div>
+      </div>
+      
+
+      {/* 입고 Modal */}
+      <Dialog
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+        maxWidth="lg"
+        fullWidth
+      >
+        <DialogTitle>
+          {columnSelectionStep === 0 && "바코드가 있는 열을 선택하세요."}
+          {columnSelectionStep === 1 && "상품 이름이 있는 열을 선택하세요."}
+          {columnSelectionStep === 2 && "수량이 있는 열을 선택하세요."}
+          {columnSelectionStep === 3 && "유통기한이 있는 상품들입니까?"}
+          {columnSelectionStep === 4 && "유통 기한 칼럼을 선택하세요."}
+          {columnSelectionStep === 5 && "최종적으로 선택된 데이터를 확인하세요."}
+        </DialogTitle>
+        <DialogContent>
+          {columnSelectionStep < 3 && (
+            <div>
+              <p>
+                {columnSelectionStep === 0 && "바코드가 있는 열을 선택하세요."}
+                {columnSelectionStep === 1 && "상품 이름이 있는 열을 선택하세요."}
+                {columnSelectionStep === 2 && "수량이 있는 열을 선택하세요."}
+              </p>
+            </div>
+          )}
+          {columnSelectionStep === 3 && (
+            <div>
+              <Button onClick={() => setColumnSelectionStep(4)} color="primary">
+                Yes
+              </Button>
+              <Button onClick={() => setColumnSelectionStep(5)} color="primary">
+                No
+              </Button>
+            </div>
+          )}
+          <HotTable
+            height={600}
+            ref={hotTableRef}
+            data={ModalTableData}
+            colHeaders={columns.map((col) => col.label)}
+            dropdownMenu={true}
+            hiddenColumns={{
+              indicators: true,
+            }}
+            contextMenu={true}
+            multiColumnSorting={true}
+            filters={true}
+            rowHeaders={true}
+            autoWrapCol={true}
+            autoWrapRow={true}
+            afterGetColHeader={alignHeaders}
+            beforeRenderer={addClassesToRows}
+            manualRowMove={true}
+            navigableHeaders={true}
+            licenseKey="non-commercial-and-evaluation"
+            afterOnCellMouseDown={handleColumnClick}
+          />
+        </DialogContent>
+        <DialogActions>
+          {columnSelectionStep === 5 && (
+            <Button onClick={finalizeSelectionImport} color="primary">
+              네
             </Button>
-          </div>
-          <div>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => {
-                handleNextComponent(0);
-                getWholeChangesAPI();
-              }}
-            >
-              입-출고 내역보기
+          )}
+          <Button onClick={() => setOpenModal(false)} color="primary">
+            닫기
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* 출고 Modal */}
+      <Dialog
+        open={openExportModal}
+        onClose={() => setOpenExportModal(false)}
+        maxWidth="lg"
+        fullWidth
+      >
+        <DialogTitle>
+          <h1>출고 데이터</h1>
+          {columnExportSelectionStep === 0 && "바코드가 있는 열을 선택하세요."}
+          {columnExportSelectionStep === 1 && "수량이 있는 열을 선택하세요."}
+          {columnExportSelectionStep === 2 && "최종적으로 선택된 데이터를 확인하세요."}
+        </DialogTitle>
+        <DialogContent>
+          {columnExportSelectionStep < 1 && (
+            <div>
+              <p>데이터가 충분하지 않습니다.</p>
+            </div>
+          )}
+          <HotTable
+            height={600}
+            ref={hotExportTableRef}
+            data={ModalTableExportData}
+            colHeaders={exportColumns.map((col) => col.label)}
+            dropdownMenu={true}
+            hiddenColumns={{
+              indicators: true,
+            }}
+            contextMenu={true}
+            multiColumnSorting={true}
+            filters={true}
+            rowHeaders={true}
+            autoWrapCol={true}
+            autoWrapRow={true}
+            afterGetColHeader={alignHeaders}
+            beforeRenderer={addClassesToRows}
+            manualRowMove={true}
+            navigableHeaders={true}
+            licenseKey="non-commercial-and-evaluation"
+            afterOnCellMouseDown={handleExportColumnClick}
+          />
+        </DialogContent>
+        <DialogActions>
+          {columnExportSelectionStep === 2 && (
+            <Button onClick={finalizeSelectionExport} color="primary">
+              네
             </Button>
-          </div>
-          <div>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => {
-                handleNextComponent(1);
-                showUniqueDates();
-              }}
-            >
-              Only See the Im-Export
-            </Button>
-          </div>
+          )}
+          <Button onClick={() => setOpenExportModal(false)} color="primary">
+            닫기
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* 상품 데이터 수정 Modal */}
+      <Dialog
+        open={openEditModal}
+        onClose={() => setOpenEditModal(false)}
+        maxWidth="lg"
+        fullWidth
+      >
+        <DialogTitle>데이터를 수정하고 저장하세요.</DialogTitle>
+        <DialogContent>
+          <HotTable
+            height={600}
+            ref={hotTableRef}
+            data={editData}
+            colWidths={[`120vw`, `130vw`, `50`, `100`, `100`, `100`, `100`]}
+            colHeaders={columns.map((col) => col.label)}
+            dropdownMenu={true}
+            hiddenColumns={{
+              columns: [0], // Hide the first column (hiddenId) during editing
+              indicators: true,
+            }}
+            contextMenu={true}
+            multiColumnSorting={true}
+            filters={true}
+            rowHeaders={true}
+            autoWrapCol={true}
+            autoWrapRow={true}
+            afterGetColHeader={alignHeaders}
+            beforeRenderer={addClassesToRows}
+            manualRowMove={true}
+            navigableHeaders={true}
+            licenseKey="non-commercial-and-evaluation"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleSaveEdits} color="primary">
+            저장하기
+          </Button>
+          <Button onClick={() => setOpenEditModal(false)} color="primary">
+            닫기
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <div style={{ width: "85%" }}>
+        <Grid item xs={12}>
+          {/* 메인 영역 */}
+          {componentsArray[currentIndex]}
         </Grid>
       </div>
-      <div>
-        {/* 입고 Modal */}
-        <Dialog
-          open={openModal}
-          onClose={() => setOpenModal(false)}
-          maxWidth="lg"
-          fullWidth
-        >
-          <DialogTitle>
-            {columnSelectionStep === 0 && "바코드가 있는 열을 선택하세요."}
-            {columnSelectionStep === 1 && "상품 이름이 있는 열을 선택하세요."}
-            {columnSelectionStep === 2 && "수량이 있는 열을 선택하세요."}
-            {columnSelectionStep === 3 && "유통기한이 있는 상품들입니까?"}
-            {columnSelectionStep === 4 && "유통 기한 칼럼을 선택하세요."}
-            {columnSelectionStep === 5 &&
-              "최종적으로 선택된 데이터를 확인하세요."}
-          </DialogTitle>
-          <DialogContent>
-            {columnSelectionStep < 3 && (
-              <div>
-                <p>
-                  {columnSelectionStep === 0 &&
-                    "바코드가 있는 열을 선택하세요."}
-                  {columnSelectionStep === 1 &&
-                    "상품 이름이 있는 열을 선택하세요."}
-                  {columnSelectionStep === 2 && "수량이 있는 열을 선택하세요."}
-                </p>
-              </div>
-            )}
-            {columnSelectionStep === 3 && (
-              <div>
-                <Button
-                  onClick={() => setColumnSelectionStep(4)}
-                  color="primary"
-                >
-                  Yes
-                </Button>
-                <Button
-                  onClick={() => setColumnSelectionStep(5)}
-                  color="primary"
-                >
-                  No
-                </Button>
-              </div>
-            )}
-            <HotTable
-              height={600}
-              ref={hotTableRef}
-              data={ModalTableData}
-              colHeaders={columns.map((col) => col.label)}
-              dropdownMenu={true}
-              hiddenColumns={{
-                indicators: true,
-              }}
-              contextMenu={true}
-              multiColumnSorting={true}
-              filters={true}
-              rowHeaders={true}
-              autoWrapCol={true}
-              autoWrapRow={true}
-              afterGetColHeader={alignHeaders}
-              beforeRenderer={addClassesToRows}
-              manualRowMove={true}
-              navigableHeaders={true}
-              licenseKey="non-commercial-and-evaluation"
-              afterOnCellMouseDown={handleColumnClick}
-            />
-          </DialogContent>
-          <DialogActions>
-            {columnSelectionStep === 5 && (
-              <Button onClick={finalizeSelectionImport} color="primary">
-                네
-              </Button>
-            )}
-            <Button onClick={() => setOpenModal(false)} color="primary">
-              닫기
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        {/* 출고 Modal */}
-        <Dialog
-          open={openExportModal}
-          onClose={() => setOpenExportModal(false)}
-          maxWidth="lg"
-          fullWidth
-        >
-          <DialogTitle>
-            <h1>출고 데이터</h1>
-            {columnExportSelectionStep === 0 &&
-              "바코드가 있는 열을 선택하세요."}
-            {columnExportSelectionStep === 1 && "수량이 있는 열을 선택하세요."}
-            {columnExportSelectionStep === 2 &&
-              "최종적으로 선택된 데이터를 확인하세요."}
-          </DialogTitle>
-          <DialogContent>
-            {columnExportSelectionStep < 1 && (
-              <div>
-                <p>데이터가 충분하지 않습니다.</p>
-              </div>
-            )}
-            <HotTable
-              height={600}
-              ref={hotExportTableRef}
-              data={ModalTableExportData}
-              colHeaders={exportColumns.map((col) => col.label)}
-              dropdownMenu={true}
-              hiddenColumns={{
-                indicators: true,
-              }}
-              contextMenu={true}
-              multiColumnSorting={true}
-              filters={true}
-              rowHeaders={true}
-              autoWrapCol={true}
-              autoWrapRow={true}
-              afterGetColHeader={alignHeaders}
-              beforeRenderer={addClassesToRows}
-              manualRowMove={true}
-              navigableHeaders={true}
-              licenseKey="non-commercial-and-evaluation"
-              afterOnCellMouseDown={handleExportColumnClick}
-            />
-          </DialogContent>
-          <DialogActions>
-            {columnExportSelectionStep === 2 && (
-              <Button onClick={finalizeSelectionExport} color="primary">
-                네
-              </Button>
-            )}
-            <Button onClick={() => setOpenExportModal(false)} color="primary">
-              닫기
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        {/* 상품 데이터 수정 Modal */}
-        <Dialog
-          open={openEditModal}
-          onClose={() => setOpenEditModal(false)}
-          maxWidth="lg"
-          fullWidth
-        >
-          <DialogTitle>데이터를 수정하고 저장하세요.</DialogTitle>
-          <DialogContent>
-            <HotTable
-              height={600}
-              ref={hotTableRef}
-              data={editData}
-              colWidths={[`120vw`, `130vw`, `50`, `100`, `100`, `100`, `100`]}
-              colHeaders={columns.map((col) => col.label)}
-              dropdownMenu={true}
-              hiddenColumns={{
-                columns: [0], // Hide the first column (hiddenId) during editing
-                indicators: true,
-              }}
-              contextMenu={true}
-              multiColumnSorting={true}
-              filters={true}
-              rowHeaders={true}
-              autoWrapCol={true}
-              autoWrapRow={true}
-              afterGetColHeader={alignHeaders}
-              beforeRenderer={addClassesToRows}
-              manualRowMove={true}
-              navigableHeaders={true}
-              licenseKey="non-commercial-and-evaluation"
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleSaveEdits} color="primary">저장하기</Button>
-            <Button onClick={() => setOpenEditModal(false)} color="primary">
-              닫기
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </div>
-      <Grid
-        item
-        xs={12}
-        style={{
-          width: "100%",
-        }}
-      >
-        {/* 메인 영역 */}
-        {componentsArray[currentIndex]}
-      </Grid>
     </div>
   );
 };
