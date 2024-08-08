@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProductData {
+public class ProductRequestDto {
 
     private String name;
     private Long barcode;

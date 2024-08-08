@@ -219,21 +219,22 @@ public class ProductService {
     /**
      * 상품들의 입고처리를 수행
      *
-     * @param productImportRequestDto : dto
+     * @param requests : dto
      */
     @Transactional
-    public void importProducts(ProductImportRequestDto productImportRequestDto) {
-        log.info("[Service] import Products by ProductImportRequestDto: {}",
-                productImportRequestDto);
-        Long warehouseId = productImportRequestDto.getWarehouseId();
+    public void importProducts(List<ProductRequestDto> requests) {
+        log.info("[Service] import Products ");
 
-        importValidate(productImportRequestDto.getBusinessId(), warehouseId);
+        Long warehouseId = requests.stream().map(
+                ProductRequestDto::getWarehouseId).findAny().orElse(null);
+        Long businessId = warehouseModuleService.findById(warehouseId).getBusiness().getId();
+        importValidate(businessId, warehouseId);
 
         Floor defaultFloor = floorModuleService.findDefaultFloorByWarehouse(warehouseId);
 
-        productImportRequestDto.getData()
+        requests
                 .forEach(data -> {
-                    importProduct(data, productImportRequestDto.getBusinessId(),
+                    importProduct(data, businessId,
                             defaultFloor);
                 });
     }
@@ -258,7 +259,7 @@ public class ProductService {
      * @param request
      * @param defaultFloor 입고 처리 된 상품이 들어가는 default 층
      */
-    private void importProduct(ProductData request, Long businessId,
+    private void importProduct(ProductRequestDto request, Long businessId,
                                Floor defaultFloor) {
         log.info("[Service] import Product by productData: {}", request);
 
@@ -276,7 +277,7 @@ public class ProductService {
      * @param request
      * @return
      */
-    private ProductDetail findOrCreateProductDetail(ProductData request,
+    private ProductDetail findOrCreateProductDetail(ProductRequestDto request,
                                                     Long businessId) {
         log.info("[Service] find or create Product by productData: {}", request);
         Optional<ProductDetail> optionalProductDetail = productDetailModuleService.findByBusinessIdAndBarcode(
@@ -302,7 +303,6 @@ public class ProductService {
     @Transactional
     public List<ProductExportResponseDto> exportProducts(ProductExportRequestDto request) {
         log.info("[Service] export Products by ProductExportRequestDto: {}", request);
-
         try {
             businessModuleService.findById(request.getBusinessId());
         } catch (IllegalArgumentException e) {

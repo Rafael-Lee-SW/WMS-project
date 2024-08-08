@@ -107,11 +107,10 @@ public class ProductController {
      */
     @PostMapping("/import")
     public BaseSuccessResponse<Void> importProducts(
-        @RequestBody ProductImportRequestDto productImportRequestDto
+        @RequestBody List<ProductRequestDto> requests
     ) {
-        log.info("[Controller] create Imports by productImportRequestDto: {}",
-            productImportRequestDto);
-        productService.importProducts(productImportRequestDto);
+        log.info("[Controller] create Imports ");
+        productService.importProducts(requests);
         return new BaseSuccessResponse<>(null);
     }
 
