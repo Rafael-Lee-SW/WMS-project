@@ -2,7 +2,6 @@ package com.a508.wms.location.service;
 
 import com.a508.wms.floor.domain.Floor;
 import com.a508.wms.floor.dto.FloorRequestDto;
-import com.a508.wms.floor.mapper.FloorMapper;
 import com.a508.wms.floor.exception.FloorException;
 import com.a508.wms.floor.service.FloorModuleService;
 import com.a508.wms.location.domain.Location;
@@ -10,7 +9,7 @@ import com.a508.wms.location.dto.LocationRequestDto;
 import com.a508.wms.location.dto.LocationResponseDto;
 import com.a508.wms.location.dto.LocationSaveRequestDto;
 import com.a508.wms.location.mapper.LocationMapper;
-import com.a508.wms.product.domain.Product;
+import com.a508.wms.location.repository.LocationRepository;
 import com.a508.wms.product.service.ProductModuleService;
 import com.a508.wms.util.constant.ExportTypeEnum;
 import com.a508.wms.util.constant.FacilityTypeEnum;
@@ -32,6 +31,7 @@ public class LocationService {
     private final WarehouseModuleService warehouseModuleService;
     private final FloorModuleService floorModuleService;
     private final ProductModuleService productModuleService;
+    private final LocationRepository locationRepository;
 
     /**
      * 특정 로케이션 조회
@@ -42,7 +42,7 @@ public class LocationService {
     public LocationResponseDto findById(Long id) throws FloorException {
         log.info("[Service] find Location by id: {}", id);
         Location location = locationModuleService.findById(id);
-        return LocationMapper.toLocationResponseDto(location, calculateFillRate(location));
+        return LocationMapper.toLocationResponseDto(location, getMaxFloorCapacity(location));
     }
 
     /**
@@ -58,7 +58,7 @@ public class LocationService {
 
         return locations.stream()
             .map(location -> LocationMapper.toLocationResponseDto(location,
-                calculateFillRate(location)))
+                getMaxFloorCapacity(location)))
             .toList();
     }
 
@@ -73,11 +73,11 @@ public class LocationService {
         log.info("[Service] save Location");
         Warehouse warehouse = warehouseModuleService.findById(saveRequest.getWarehouseId());
 
-        for(LocationRequestDto request : saveRequest.getRequests()) {
+        for (LocationRequestDto request : saveRequest.getRequests()) {
 
             Location location = LocationMapper.fromLocationRequestDto(request, warehouse);
             locationModuleService.save(location);
-            floorModuleService.saveAllByLocation(request,location);
+            floorModuleService.saveAllByLocation(request, location);
         }
     }
 
@@ -114,27 +114,16 @@ public class LocationService {
 
         Location savedLocation = locationModuleService.save(location);
         return LocationMapper.toLocationResponseDto(savedLocation,
-            calculateFillRate(savedLocation));
+            getMaxFloorCapacity(savedLocation));
     }
 
-    private int calculateFillRate(Location location)  {
+    private int getMaxFloorCapacity(Location location) {
         List<Floor> floors = floorModuleService.findAllByLocationId(location.getId());
 
-        int totalSize = 0;
-        int floorSize = location.getXSize() * location.getYSize() * 2500;
-
-        for (Floor floor : floors) {
-            List<Product> products = productModuleService.findByFloor(floor);
-            int productSize = 0;
-
-            for (Product product : products) {
-                productSize += product.getProductDetail().getSize() * product.getQuantity();
-            }
-
-            totalSize += Math.max(100, productSize * 100 / floorSize); //0~100단위의
-        }
-
-        return totalSize / floors.size();
+        return floors.stream()
+            .mapToInt(floorModuleService::getCapacity)
+            .max()
+            .orElse(0);
     }
 
     /**
@@ -159,4 +148,7 @@ public class LocationService {
         locationModuleService.delete(location);
     }
 
+    public Location findByNameAndWarehouseId(String locationName, Long warehouseId) {
+        return locationRepository.findByNameAndWarehouseId(locationName,warehouseId);
+    }
 }

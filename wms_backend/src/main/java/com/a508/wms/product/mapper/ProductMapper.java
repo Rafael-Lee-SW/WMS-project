@@ -9,6 +9,8 @@ import com.a508.wms.productdetail.mapper.ProductDetailMapper;
 import com.a508.wms.warehouse.domain.Warehouse;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+
 @Component
 public class ProductMapper {
 
@@ -103,6 +105,23 @@ public class ProductMapper {
                         : product.getProductDetail().getOriginalPrice())
                 .sellingPrice((product.getProductDetail().getSellingPrice() == null) ? 0
                         : product.getProductDetail().getSellingPrice())
+                .build();
+    }
+
+    /**
+     * 상품이동 후 반환하는 Dto
+     * warehouseName, warehouseId는 호출하는 곳에서 추가할것
+     * @param product
+     * @return
+     */
+    public static ProductMoveResponseDto toProductMoveResponseDto(Product product) {
+        return ProductMoveResponseDto.builder()
+                .name(product.getProductDetail().getName())
+                .barcode(product.getProductDetail().getBarcode())
+                .quantity(product.getQuantity())
+                .expirationDate(product.getExpirationDate())
+                .productStorageType(product.getProductDetail().getProductStorageType())
+                .date(LocalDateTime.now())
                 .build();
     }
 }
