@@ -110,14 +110,26 @@ public class ProductMapper {
 
     /**
      * 상품이동 후 반환하는 Dto
-     * warehouseName, warehouseId는 호출하는 곳에서 추가할것
+     *
      * @param product
      * @return
      */
-    public static ProductMoveResponseDto toProductMoveResponseDto(Product product) {
+    public static ProductMoveResponseDto toProductMoveResponseDto(Product product,
+                                                                  Long warehouseId,
+                                                                  String warehouseName,
+                                                                  String previousLocationName,
+                                                                  String currentLocationName,
+                                                                  Integer previousFloorLevel,
+                                                                  Integer currentFloorLevel) {
         return ProductMoveResponseDto.builder()
                 .name(product.getProductDetail().getName())
                 .barcode(product.getProductDetail().getBarcode())
+                .warehouseName(warehouseName)
+                .warehouseId(warehouseId)
+                .previousLocationName(previousLocationName)
+                .currentLocationName(currentLocationName)
+                .previousFloorLevel(previousFloorLevel)
+                .currentFloorLevel(currentFloorLevel)
                 .quantity(product.getQuantity())
                 .expirationDate(product.getExpirationDate())
                 .productStorageType(product.getProductDetail().getProductStorageType())
