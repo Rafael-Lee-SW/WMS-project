@@ -1,17 +1,23 @@
 package com.a508.wms.product.dto;
 
+import com.a508.wms.util.constant.ProductStorageTypeEnum;
+import lombok.*;
+
 import java.time.LocalDateTime;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.ToString;
 
 @Getter
 @Builder
 @ToString
+@AllArgsConstructor
+@NoArgsConstructor
 public class ProductRequestDto {
 
-    private Long productDetailId;
+    private String name;
+    private Long barcode;
     private int quantity;
     private LocalDateTime expirationDate;
-    private String comment;
+    private ProductStorageTypeEnum productStorageType;
+    private String warehouseName;
+    private Long warehouseId;
+
 }

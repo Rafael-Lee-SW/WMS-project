@@ -19,6 +19,7 @@ public class ProductFlowResponseDto {
     private String currentLocationName;
     private Integer previousFloorLevel;
     private Integer currentFloorLevel;
+    private String trackingNumber;
     private LocalDateTime expirationDate;
     private ProductStorageTypeEnum productStorageType;
     private String warehouseName;

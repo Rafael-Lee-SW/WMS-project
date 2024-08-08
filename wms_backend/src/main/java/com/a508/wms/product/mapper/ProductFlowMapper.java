@@ -12,10 +12,29 @@ import static com.a508.wms.util.constant.ProductConstant.*;
 
 @Component
 public class ProductFlowMapper {
+    public static ProductFlowResponseDto toProductFlowResponseDto(ProductFlow productFlow) {
+        return ProductFlowResponseDto.builder()
+                .name(productFlow.getProductName())
+                .barcode(productFlow.getBarcode())
+                .quantity(productFlow.getQuantity())
+                .trackingNumber(productFlow.getTrackingNumber() == null ? DEFAULT_TRACKING_NUMBER : productFlow.getTrackingNumber())
+                .previousLocationName(productFlow.getPreviousLocationName())
+                .currentLocationName(productFlow.getCurrentLocationName())
+                .previousFloorLevel(productFlow.getPreviousFloorLevel())
+                .currentFloorLevel(productFlow.getCurrentFloorLevel())
+                .expirationDate(productFlow.getExpirationDate())
+                .productStorageType(productFlow.getProductStorageType())
+                .warehouseName(productFlow.getWarehouseName())
+                .warehouseId(productFlow.getWarehouseId())
+                .date(productFlow.getDate())
+                .productFlowType(productFlow.getProductFlowType())
+                .build();
+    }
      public static ProductFlow fromExportProductResponseDto(ExportResponseDto exportResponseDto, Business business) {
          return ProductFlow.builder()
                  .business(business)
                  .warehouseId(exportResponseDto.getWarehouseId())
+                 .trackingNumber(exportResponseDto.getTrackingNumber())
                  .barcode(exportResponseDto.getBarcode())
                  .currentLocationName(exportResponseDto.getLocationName())
                  .currentFloorLevel(exportResponseDto.getFloorLevel())
@@ -29,7 +48,7 @@ public class ProductFlowMapper {
                  .productFlowType(ProductFlowTypeEnum.EXPORT)
                  .build();
      }
-     public static ProductFlow fromImportResponseDto(ProductData request, Business business) {
+     public static ProductFlow fromImportResponseDto(ProductRequestDto request, Business business) {
          return ProductFlow.builder()
                  .business(business)
                  .warehouseId(request.getWarehouseId())
@@ -46,23 +65,7 @@ public class ProductFlowMapper {
                  .productFlowType(ProductFlowTypeEnum.IMPORT)
                  .build();
      }
-     public static ProductFlow fromProductFlowRequestDto(ProductFlowRequestDto productFlowRequestDto, Business business) {
-         return ProductFlow.builder()
-                 .business(business)
-                 .warehouseId(productFlowRequestDto.getWarehouseId())
-                 .barcode(productFlowRequestDto.getBarcode())
-                 .currentLocationName(productFlowRequestDto.getLocationName())
-                 .currentFloorLevel(productFlowRequestDto.getFloorLevel())
-                 .productName(productFlowRequestDto.getProductName())
-                 .quantity(productFlowRequestDto.getQuantity())
-                 .trackingNumber(DEFAULT_TRACKING_NUMBER)
-                 .expirationDate(productFlowRequestDto.getExpirationDate())
-                 .date(productFlowRequestDto.getDate())
-                 .productStorageType(productFlowRequestDto.getProductStorageType())
-                 .warehouseName(productFlowRequestDto.getWarehouseName())
-                 .productFlowType(ProductFlowTypeEnum.FLOW)
-                 .build();
-     }
+
 public static ProductFlow fromProductMoveResponseDto(ProductMoveResponseDto productMoveResponseDto,
                                                      Business business) {
     return ProductFlow.builder()

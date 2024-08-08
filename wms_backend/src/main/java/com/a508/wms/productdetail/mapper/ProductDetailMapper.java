@@ -1,7 +1,7 @@
 package com.a508.wms.productdetail.mapper;
 
 import com.a508.wms.business.domain.Business;
-import com.a508.wms.product.dto.ProductData;
+import com.a508.wms.product.dto.ProductRequestDto;
 import com.a508.wms.productdetail.domain.ProductDetail;
 import com.a508.wms.productdetail.dto.ProductDetailRequestDto;
 import com.a508.wms.productdetail.dto.ProductDetailResponseDto;
@@ -30,9 +30,6 @@ public class ProductDetailMapper {
                 .productStorageType(productDetail.getProductStorageType())
                 .originalPrice(productDetail.getOriginalPrice())
                 .sellingPrice(productDetail.getSellingPrice())
-                .createdDate(productDetail.getCreatedDate())
-                .updatedDate(productDetail.getUpdatedDate())
-                .statusEnum(productDetail.getStatusEnum())
                 .build();
     }
 
@@ -62,7 +59,7 @@ public class ProductDetailMapper {
      * @return 변경된 ProductDetail
      */
     public static ProductDetail fromProductImportData(
-            ProductData productImportRequestData,
+            ProductRequestDto productImportRequestData,
             Business business) {
         return ProductDetail.builder()
                 .business(business)
