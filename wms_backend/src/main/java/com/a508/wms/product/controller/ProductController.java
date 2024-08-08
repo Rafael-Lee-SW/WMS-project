@@ -3,6 +3,7 @@ package com.a508.wms.product.controller;
 
 import com.a508.wms.notification.dto.NotificationResponseDto;
 import com.a508.wms.product.dto.*;
+import com.a508.wms.product.exception.ProductException;
 import com.a508.wms.product.exception.ProductInvalidRequestException;
 import com.a508.wms.product.service.ExportModuleService;
 import com.a508.wms.product.service.ImportModuleService;
@@ -196,4 +197,12 @@ public class ProductController {
             .build());
 
     }
+    @PostMapping("/move")
+    public BaseSuccessResponse<List<ProductMoveResponseDto>> moveProducts(
+            @RequestBody List<ProductMoveRequestDto> requests) throws ProductException {
+
+        log.info("[Controller] find ProductMoveRequestDtos: {}", requests);
+        return new BaseSuccessResponse<>(productService.moveProducts(requests));
+    }
+
 }

@@ -18,7 +18,7 @@ public class ProductException extends Throwable {
 
         private static final String MESSAGE_FORMAT = " 상품 id: %s";
 
-        NotFountException(Long id) {
+        public NotFountException(Long id) {
             super(ResponseEnum.PRODUCT_NOT_FOUND,
                 String.format(ResponseEnum.PRODUCT_NOT_FOUND.getMessage() + MESSAGE_FORMAT, id));
         }
