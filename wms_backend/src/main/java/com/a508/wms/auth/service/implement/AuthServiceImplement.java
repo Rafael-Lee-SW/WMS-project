@@ -183,7 +183,7 @@ public class AuthServiceImplement implements AuthService {
             }
 
             String email = dto.getEmail();
-            Certification certificationEntity = certificationRepository.findByEmail(userEmail);
+            Certification certificationEntity = certificationRepository.findTopByEmailOrderByCreatedDateDesc(userEmail);
 
             if (certificationEntity == null) {
                 log.info("No certification information found for email: {}", userEmail);
