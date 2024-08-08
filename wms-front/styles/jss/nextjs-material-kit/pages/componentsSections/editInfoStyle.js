@@ -1,19 +1,19 @@
+import { colors } from "@material-ui/core";
+
 const editInfoStyle = {
     container: {
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'flex-start',
+        alignItems: 'center',
         height: '100vh',
         textAlign: 'center',
         padding: "10px",
+        paddingRight: '140px',
         paddingTop: '50px',
         position: 'relative'
     },
     h3: {
-        position: 'absolute',
-        top: '10px',
-        left: '10px',
-        margin: '0'
+        margin: '0',
     },
     form: {
         padding: '40px',
@@ -39,8 +39,14 @@ const editInfoStyle = {
     button: {
         marginTop: '20px',
         width: '20%',
-        backgroundColor: "lightgray",
-        height: "30px"
+        backgroundColor: "#7D4A1A",
+        color: 'white',
+        height: "30px",
+        '&:hover': {
+        transform: 'scale(1.05)',
+        backgroundColor: '#7D4A1A',
+        color: 'white',
+    },
     }
 }
 
