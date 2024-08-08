@@ -48,7 +48,7 @@ export default function PaymentTest() {
             {
                 pg: 'html5_inicis', // 결제 대행사 시스템 ID
                 pay_method: 'card', // 결제 수단
-                merchant_uid: 'ORD20180131-0000012', // 주문 번호
+                merchant_uid: 'ORD20180131-0000013', // 주문 번호
                 name: 'Test Payment Information', // 결제 설명
                 amount: 10, // 결제 금액
                 buyer_email: 'kkk@naver.com', // 구매자 이메일
