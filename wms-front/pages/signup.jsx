@@ -85,7 +85,7 @@ const useStyles = makeStyles(() => ({
   },
   snsText: {
     margin: '0, 16px',
-    fontSize: '20px'
+    fontSize: '18px'
   },
   title: {
     marginBottom: '32px',

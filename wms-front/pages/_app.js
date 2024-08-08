@@ -30,9 +30,6 @@ export default class MyApp extends App {
       "/user/[id]",
       "/user/select",
       "/signIn",
-      "/mypage",
-      "/subDetail",
-      "/subscribe",
       "/signup",
       "/components",
     ]; // 새로운 페이지가 생기면 추가한다.
