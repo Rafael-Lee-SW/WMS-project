@@ -29,7 +29,7 @@ public class ProductFlowModuleService {
         productFlow.updateBusiness(business);
         productFlowRepository.save(productFlow);
     }
-    public void saveImport(ProductData request, Product product) {
+    public void saveImport(ProductRequestDto request, Product product) {
 
         Business business = product.getProductDetail().getBusiness();
         ProductFlow productFlow = ProductFlowMapper.fromImportResponseDto(request,business);

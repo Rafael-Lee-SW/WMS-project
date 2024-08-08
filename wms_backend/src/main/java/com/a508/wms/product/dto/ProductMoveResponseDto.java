@@ -15,16 +15,16 @@ import java.time.LocalDateTime;
 public class ProductMoveResponseDto {
     private String name;
     private Long barcode;
+    private Integer quantity;
     private String previousLocationName;
     private String currentLocationName;
     private Integer previousFloorLevel;
     private Integer currentFloorLevel;
-    private Integer quantity;
     private LocalDateTime expirationDate;
     private ProductStorageTypeEnum productStorageType;
-    private ProductFlowTypeEnum productFlowType;
     private String warehouseName;
     private Long warehouseId;
     private LocalDateTime date;
+    private ProductFlowTypeEnum productFlowType;
 
 }

@@ -1,5 +1,6 @@
 package com.a508.wms.product.dto;
 
+import com.a508.wms.util.constant.ProductStorageTypeEnum;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -9,13 +10,9 @@ import java.time.LocalDateTime;
 @Setter
 @ToString
 public class ProductUpdateRequestDto {
-    Long productId;
-    Long barcode;
-    Long warehouseId;
-    String name;
-    Integer quantity;
-    String locationName;
-    Integer floorLevel;
-    LocalDateTime expirationDate;
+    private Long productId;
+    private Integer floorLevel;
+    private String locationName;
+    private ProductRequestDto productRequestDto;
 
 }

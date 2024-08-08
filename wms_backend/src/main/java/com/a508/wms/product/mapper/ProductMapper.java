@@ -5,7 +5,6 @@ import com.a508.wms.location.domain.Location;
 import com.a508.wms.product.domain.Product;
 import com.a508.wms.product.dto.*;
 import com.a508.wms.productdetail.domain.ProductDetail;
-import com.a508.wms.productdetail.mapper.ProductDetailMapper;
 import com.a508.wms.warehouse.domain.Warehouse;
 import org.springframework.stereotype.Component;
 
@@ -32,9 +31,9 @@ public class ProductMapper {
                 .build();
     }
 
-    public static Product fromProductData(ProductData productImportRequestData,
-        ProductDetail productDetail,
-        Floor floor) {
+    public static Product fromProductData(ProductRequestDto productImportRequestData,
+                                          ProductDetail productDetail,
+                                          Floor floor) {
         return Product.builder()
             .productDetail(productDetail)
             .floor(floor)

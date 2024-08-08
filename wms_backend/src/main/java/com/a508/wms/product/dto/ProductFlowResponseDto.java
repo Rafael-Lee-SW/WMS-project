@@ -15,11 +15,11 @@ public class ProductFlowResponseDto {
     private String name;
     private Long barcode;
     private Integer quantity;
-    private String trackingNumber;
     private String previousLocationName;
     private String currentLocationName;
     private Integer previousFloorLevel;
     private Integer currentFloorLevel;
+    private String trackingNumber;
     private LocalDateTime expirationDate;
     private ProductStorageTypeEnum productStorageType;
     private String warehouseName;
