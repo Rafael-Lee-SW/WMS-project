@@ -30,9 +30,6 @@ public class ProductDetailMapper {
                 .productStorageType(productDetail.getProductStorageType())
                 .originalPrice(productDetail.getOriginalPrice())
                 .sellingPrice(productDetail.getSellingPrice())
-                .createdDate(productDetail.getCreatedDate())
-                .updatedDate(productDetail.getUpdatedDate())
-                .statusEnum(productDetail.getStatusEnum())
                 .build();
     }
 

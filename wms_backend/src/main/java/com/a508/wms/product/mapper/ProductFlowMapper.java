@@ -12,10 +12,29 @@ import static com.a508.wms.util.constant.ProductConstant.*;
 
 @Component
 public class ProductFlowMapper {
+    public static ProductFlowResponseDto toProductFlowResponseDto(ProductFlow productFlow) {
+        return ProductFlowResponseDto.builder()
+                .name(productFlow.getProductName())
+                .barcode(productFlow.getBarcode())
+                .quantity(productFlow.getQuantity())
+                .trackingNumber(productFlow.getTrackingNumber() == null ? DEFAULT_TRACKING_NUMBER : productFlow.getTrackingNumber())
+                .previousLocationName(productFlow.getPreviousLocationName())
+                .currentLocationName(productFlow.getCurrentLocationName())
+                .previousFloorLevel(productFlow.getPreviousFloorLevel())
+                .currentFloorLevel(productFlow.getCurrentFloorLevel())
+                .expirationDate(productFlow.getExpirationDate())
+                .productStorageType(productFlow.getProductStorageType())
+                .warehouseName(productFlow.getWarehouseName())
+                .warehouseId(productFlow.getWarehouseId())
+                .date(productFlow.getDate())
+                .productFlowType(productFlow.getProductFlowType())
+                .build();
+    }
      public static ProductFlow fromExportProductResponseDto(ExportResponseDto exportResponseDto, Business business) {
          return ProductFlow.builder()
                  .business(business)
                  .warehouseId(exportResponseDto.getWarehouseId())
+                 .trackingNumber(exportResponseDto.getTrackingNumber())
                  .barcode(exportResponseDto.getBarcode())
                  .currentLocationName(exportResponseDto.getLocationName())
                  .currentFloorLevel(exportResponseDto.getFloorLevel())
