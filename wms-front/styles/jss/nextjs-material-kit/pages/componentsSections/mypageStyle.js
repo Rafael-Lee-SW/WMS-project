@@ -7,11 +7,15 @@ const mypageStyle = {
   leftPanel: {
     display: 'flex',
     flexDirection: 'column',
-    alignItems: 'flex-start',
     paddingLeft: '50px',
     paddingTop: '70px',
-    flex: '2',
-    backgroundColor: '#ffffff', 
+    backgroundColor: '#D3C7B5', 
+  },
+  titleContainer: {
+    display: 'flex',
+    flexDirection: 'flex-start',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   rightPanel: {
     display: 'flex',
@@ -23,16 +27,14 @@ const mypageStyle = {
     textAlign: 'center',
   },
   divContainer: {
-    border: '1px solid #000',
-    borderRadius: '8px',
-    padding: '20px',
-    margin: '20px',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'flex-start',
   },
   h2: {
-    margin: '20px'
+    marginRight: '50px',
+    marginTop: '30px',
+    marginBottom: '30px'
   },
   divHr: {
     width: '90%',
