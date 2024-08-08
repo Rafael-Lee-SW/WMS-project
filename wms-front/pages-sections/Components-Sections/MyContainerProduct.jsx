@@ -4,12 +4,15 @@ import React, { useState, useRef, useEffect } from "react";
 import Grid from "@mui/material/Grid";
 import Fab from "@mui/material/Fab";
 import Button from "@mui/material/Button";
+import Typography from "@mui/material/Typography";
+import Checkbox from "@mui/material/Checkbox";
 
 // 모달 페이지를 위한 Import
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
+import TextField from "@mui/material/TextField";
 
 // Import SheetJS xlsx for Excel operations
 import * as XLSX from "xlsx";
@@ -43,7 +46,12 @@ import {
   alignHeaders,
 } from "/components/Test/hooksCallbacks.jsx";
 
-import MUIDataTable from "mui-datatables";
+import MUIDataTable, { TableFilterList } from "mui-datatables";
+import Chip from "@mui/material/Chip";
+import IconButton from "@mui/material/IconButton";
+import Tooltip from "@mui/material/Tooltip";
+import DeleteIcon from "@mui/icons-material/Delete";
+import MoveIcon from "@mui/icons-material/MoveUp";
 
 // Register cell types and plugins
 registerCellType(CheckboxCellType);
@@ -88,6 +96,33 @@ const MyContainerProduct = ({ WHId }) => {
     quantity: null,
     expiration_date: null,
   });
+
+  // State to track selected rows for moving products
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [openMoveModal, setOpenMoveModal] = useState(false); // State for move modal
+  const [moveData, setMoveData] = useState([]); // State to track data for moving products
+
+  // State to manage bulk move details
+  const [bulkMoveDetails, setBulkMoveDetails] = useState({
+    warehouseId: "",
+    locationName: "",
+    floorLevel: "",
+    quantity: "",
+  });
+
+  // Error messages and mode state
+  const [errors, setErrors] = useState([]);
+  const [isBulkMove, setIsBulkMove] = useState(true); // Default to Bulk Move mode
+
+  // State to manage product input section
+  const [showProductInputSection, setShowProductInputSection] = useState(false); // State for showing/hiding product input section
+  const [newProductData, setNewProductData] = useState({
+    barcode: "",
+    name: "",
+    quantity: "",
+    expirationDate: "",
+  });
+  const [expectedImportList, setExpectedImportList] = useState([]); // Store expected import list
 
   // 엑셀로 입고(import)데이터를 받았을 때 이를 변환하는 메서드
   const convertToArrayOfArraysModal = (data) => {
@@ -254,10 +289,9 @@ const MyContainerProduct = ({ WHId }) => {
       productStorageTypeEnum: "상온",
     }));
 
-    // 생성된 데이터를 DB에 전송한다.
-    importAPI(postData);
+    // Append to expected import list
+    setExpectedImportList((prevList) => [...prevList, ...postData]);
 
-    // 입고 시 발생하는 설정 변경 초기화
     setOpenModal(false);
     setColumnSelectionStep(0);
     setSelectedColumns({
@@ -358,6 +392,32 @@ const MyContainerProduct = ({ WHId }) => {
     }
   };
 
+  // 상품 이동 API
+  const productMoveAPI = async (moveDetails) => {
+    try {
+      const response = await fetch(
+        `https://i11a508.p.ssafy.io/api/products/move`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(moveDetails),
+        }
+      );
+
+      if (response.ok) {
+        console.log("Product moved successfully");
+        const result = await response.json();
+        console.log(result);
+      } else {
+        console.error("Failed to move product");
+      }
+    } catch (error) {
+      console.error("Failed to move product:", error);
+    }
+  };
+
   // 사장님이 갖고 있는 상품들을 가져오는 API
   const productGetAPI = async (businessId) => {
     try {
@@ -435,12 +495,12 @@ const MyContainerProduct = ({ WHId }) => {
     }
   };
 
-  const getImportListAPI = async (businessId) => {
-    console.log("현재 아이디");
-    console.log(businessId);
+  // 모든 알림을 가져오는 메서드
+  const getNotificationsAPI = async (businessId) => {
     try {
       const response = await fetch(
-        `https://i11a508.p.ssafy.io/api/products/import?businessId=${businessId}`,
+        // `https://i11a508.p.ssafy.io/api/products/notification?businessId=${businessId}`,
+        `https://i11a508.p.ssafy.io/api/products/notification?businessId=1`,
         {
           method: "GET",
           headers: {
@@ -451,135 +511,84 @@ const MyContainerProduct = ({ WHId }) => {
 
       if (response.ok) {
         const apiConnection = await response.json();
-        const importList = apiConnection.result;
-        // 구분을 위한 입고표시
-        return importList.map((item) => ({ ...item, type: "입고" }));
+        const { productFlowResponseDtos, expirationProductResponseDtos } =
+          apiConnection.result;
+
+        // Combine all notifications
+        const combinedData = [...productFlowResponseDtos];
+
+        // Sort combined data by date
+        const sortedData = combinedData.sort(
+          (a, b) => new Date(a.date) - new Date(b.date)
+        );
+
+        // Set the detailed data state
+        setDetailedData(sortedData);
+
+        // Map to formatted data for initial display
+        const formattedData = sortedData.map((item) => ({
+          date: new Date(item.date).toLocaleDateString(),
+          type: item.productFlowType,
+          barcode: item.barcode,
+          name: item.name,
+          quantity: item.quantity,
+          locationName: item.currentLocationName,
+          floorLevel: item.currentFloorLevel,
+          trackingNumber: item.trackingNumber,
+        }));
+
+        setTableData(formattedData);
+        setColumns([
+          { name: "date", label: "날짜" },
+          { name: "type", label: "유형" },
+          { name: "barcode", label: "바코드" },
+          { name: "name", label: "상품명" },
+          { name: "quantity", label: "수량" },
+          { name: "locationName", label: "적재함" },
+          { name: "floorLevel", label: "층수" },
+          { name: "trackingNumber", label: "송장번호" },
+        ]);
       } else {
-        console.error("입고 목록을 불러오지 못했습니다.");
+        console.error("Error fetching notifications");
       }
     } catch (error) {
-      console.error("입고 목록을 불러오지 못했습니다.", error);
-    }
-  };
-
-  const getExportListAPI = async (businessId) => {
-    try {
-      const response = await fetch(
-        `https://i11a508.p.ssafy.io/api/products/export?businessId=${businessId}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (response.ok) {
-        const apiConnection = await response.json();
-        const exportList = apiConnection.result;
-        // 구분을 위한 출고 표시
-        return exportList.map((item) => ({ ...item, type: "출고" }));
-      } else {
-        console.error("입고 목록을 불러오지 못했습니다.");
-      }
-    } catch (error) {
-      console.error("입고 목록을 불러오지 못했습니다.", error);
-    }
-  };
-
-  // Updated getWholeChangesAPI function
-  const getWholeChangesAPI = async () => {
-    try {
-      const [importList, exportList] = await Promise.all([
-        getImportListAPI(businessData.id),
-        getExportListAPI(businessData.id),
-      ]);
-
-      // Combine import and export lists
-      const combinedData = [...importList, ...exportList];
-
-      // Sort combined data by date (assuming 'date' is the key in both lists)
-      const sortedData = combinedData.sort(
-        (a, b) => new Date(a.date) - new Date(b.date)
-      );
-
-      // Define the columns for the combined data
-      const combinedColumns = [
-        { name: "date", label: "날짜" },
-        { name: "type", label: "유형" },
-        { name: "barcode", label: "바코드" },
-        { name: "name", label: "상품명" },
-        { name: "quantity", label: "수량" },
-        { name: "locationName", label: "적재함" },
-        { name: "floorLevel", label: "층수" },
-        { name: "trackingNumber", label: "송장번호" },
-      ];
-
-      // Map sorted data to the table format
-      const formattedData = sortedData.map((item) => ({
-        date: item.date || "2024-08-04",
-        type: item.type || (importList.includes(item) ? "입고" : "출고"), // Distinguish import/export
-        barcode: item.barcode,
-        name: item.name || item.productName, // Assuming name might not be available for export
-        quantity: item.quantity,
-        locationName: item.locationName || "임시",
-        floorLevel: item.floorLevel || "분류 전",
-        trackingNumber: item.trackingNumber || "입고 물품",
-      }));
-
-      // Set the formatted data to state (or directly render it)
-      setTableData(formattedData);
-      setColumns(combinedColumns);
-
-      // Store detailed data for later use
-      setDetailedData(sortedData);
-    } catch (error) {
-      console.error("Error fetching changes:", error);
+      console.error("Error fetching notifications:", error);
     }
   };
 
   // New function to show only unique import/export dates
-  const showUniqueDates = async () => {
-    try {
-      const [importList, exportList] = await Promise.all([
-        getImportListAPI(businessData.id),
-        getExportListAPI(businessData.id),
-      ]);
+  const showUniqueDates = () => {
+    // Group data by date and type
+    const groupedData = detailedData.reduce((acc, item) => {
+      const dateKey = new Date(item.date).toLocaleDateString();
+      const typeKey = item.productFlowType;
+      const key = `${dateKey}-${typeKey}`;
 
-      // Combine import and export lists
-      const combinedData = [...importList, ...exportList];
+      if (!acc[key]) {
+        acc[key] = {
+          date: dateKey,
+          type: typeKey,
+          count: 0,
+        };
+      }
 
-      // Extract unique dates and types
-      const dateSet = new Set();
-      const uniqueDateData = combinedData
-        .map((item) => ({
-          date: item.date,
-          type: item.type,
-        }))
-        .filter((item) => {
-          const key = `${item.date}-${item.type}`;
-          if (!dateSet.has(key)) {
-            dateSet.add(key);
-            return true;
-          }
-          return false;
-        });
+      acc[key].count += 1;
+      return acc;
+    }, {});
 
-      // Define columns for the date/type view
-      const dateColumns = [
-        { name: "date", label: "날짜" },
-        { name: "type", label: "유형" },
-      ];
+    // Format grouped data for table display
+    const formattedData = Object.values(groupedData).map((entry) => ({
+      date: entry.date,
+      type: entry.type,
+      count: entry.count,
+    }));
 
-      // Set the formatted data to state
-      setTableData(uniqueDateData);
-      setColumns(dateColumns);
-
-      // Store all data for future reference
-      setDetailedData(combinedData);
-    } catch (error) {
-      console.error("Error fetching unique dates:", error);
-    }
+    setTableData(formattedData);
+    setColumns([
+      { name: "date", label: "날짜" },
+      { name: "type", label: "유형" },
+      { name: "count", label: "수량" },
+    ]);
   };
 
   // Function to handle row click and display details
@@ -588,7 +597,9 @@ const MyContainerProduct = ({ WHId }) => {
 
     // Filter detailed data for the selected date and type
     const filteredData = detailedData.filter(
-      (item) => item.date === selectedDate && item.type === selectedType
+      (item) =>
+        new Date(item.date).toLocaleDateString() === selectedDate &&
+        item.productFlowType === selectedType
     );
 
     // Define columns for the detailed view
@@ -605,14 +616,14 @@ const MyContainerProduct = ({ WHId }) => {
 
     // Map filtered data to the table format
     const formattedData = filteredData.map((item) => ({
-      date: item.date || "2024-08-04",
-      type: item.type,
+      date: new Date(item.date).toLocaleDateString(),
+      type: item.productFlowType,
       barcode: item.barcode,
-      name: item.name || item.productName,
+      name: item.name,
       quantity: item.quantity,
-      locationName: item.locationName || "임시",
-      floorLevel: item.floorLevel || "분류 전",
-      trackingNumber: item.trackingNumber || "입고 물품",
+      locationName: item.currentLocationName,
+      floorLevel: item.currentFloorLevel,
+      trackingNumber: item.trackingNumber,
     }));
 
     // Update table with detailed data
@@ -621,18 +632,15 @@ const MyContainerProduct = ({ WHId }) => {
   };
 
   // 상품 정보를 수정하는 API 호출 메서드
-  const productEditAPI = async (productData) => {
+  const productEditAPI = async (productsArray) => {
     try {
-      const response = await fetch(
-        `https://i11a508.p.ssafy.io/api/products/${productData.id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(productData),
-        }
-      );
+      const response = await fetch(`https://i11a508.p.ssafy.io/api/products`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(productsArray),
+      });
 
       if (response.ok) {
         console.log("Product updated successfully");
@@ -649,32 +657,183 @@ const MyContainerProduct = ({ WHId }) => {
     const hotInstance = hotTableRef.current.hotInstance;
     const updatedData = hotInstance.getData();
 
-    // Loop through updated data and send PUT request for each product
-    updatedData.forEach((row) => {
-      const productData = {
-        id: row[0], // Ensure IDs are correctly mapped
-        name: row[1],
-        barcode: row[2],
-        quantity: row[3],
-        locationName: row[4],
-        floorLevel: row[5],
-        expirationDate: row[6],
-        warehouseId: WHId,
-      };
-      console.log(productData);
-      productEditAPI(productData);
-    });
+    // Map the updated data to an array of product objects
+    const productsArray = updatedData.map((row) => ({
+      productId: String(row[0]), // Get From HiddenId
+      name: row[1],
+      barcode: String(row[2]),
+      quantity: row[3],
+      locationName: row[4],
+      floorLevel: String(row[5]),
+      expirationDate: null,
+      warehouseId: parseInt(row[7]),
+    }));
+    console.log(productsArray);
+
+    // Send the array of products to the API
+    productEditAPI(productsArray);
 
     setOpenEditModal(false); // Close modal after saving
+  };
+
+  // Function to open move modal and set selected rows
+  const handleMoveButtonClick = () => {
+    const selectedData = selectedRows.map((rowIndex) => ({
+      productId: tableData[rowIndex][0],
+      name: tableData[rowIndex][1],
+      barcode: tableData[rowIndex][2],
+      quantityNow: tableData[rowIndex][3],
+      warehouseIdNow: tableData[rowIndex][7],
+      locationNameNow: tableData[rowIndex][4],
+      floorLevelNow: tableData[rowIndex][5],
+      //옮길 값들
+      warehouseId: bulkMoveDetails.warehouseId, // Default to bulk move values
+      locationName: bulkMoveDetails.locationName, // Default to bulk move values
+      floorLevel: bulkMoveDetails.floorLevel, // Default to bulk move values
+      quantity: bulkMoveDetails.quantity, // Default to bulk move values
+    }));
+
+    setMoveData(selectedData);
+    setOpenMoveModal(true);
+  };
+
+  // Function to handle bulk move input change
+  const handleBulkInputChange = (field, value) => {
+    setBulkMoveDetails((prevDetails) => ({
+      ...prevDetails,
+      [field]: value,
+    }));
+
+    if (field === "quantity") {
+      const minQuantity = Math.min(
+        ...selectedRows.map((rowIndex) => tableData[rowIndex][3])
+      );
+
+      // Check if entered quantity is greater than the minimum available
+      if (parseInt(value) > minQuantity) {
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          bulkQuantity:
+            "일부 상품들의 수량보다 많습니다 : 일부 상품은 모든 상품이 옮겨집니다.",
+        }));
+      } else {
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          bulkQuantity: "",
+        }));
+      }
+    }
+  };
+
+  // Function to handle change in new location details for detailed move
+  const handleNewLocationChange = (index, field, value) => {
+    setMoveData((prevMoveData) => {
+      const newData = [...prevMoveData];
+      const product = newData[index];
+      const errors = { ...newData[index].errors };
+
+      if (field === "quantity") {
+        if (!Number.isInteger(parseInt(value)) || parseInt(value) < 0) {
+          errors.quantity = "잘못된 수량입니다. 유효한 정수를 입력하세요.";
+        } else if (parseInt(value) > product.quantityNow) {
+          errors.quantity = `수량이 너무 큽니다. 최대 ${product.quantityNow}개 가능합니다.`;
+          value = product.quantityNow; // Auto-correct the value
+        } else {
+          errors.quantity = "";
+        }
+      }
+
+      product[field] = value;
+      product.errors = errors;
+
+      return newData;
+    });
+  };
+
+  // Function to finalize move in bulk mode
+  const handleFinalizeBulkMove = () => {
+    const quantity = parseInt(bulkMoveDetails.quantity);
+    const moveDetails = selectedRows.map((rowIndex) => {
+      const product = tableData[rowIndex];
+      return {
+        productId: product[0],
+        locationName: bulkMoveDetails.locationName,
+        floorLevel: bulkMoveDetails.floorLevel,
+        warehouseId: parseInt(bulkMoveDetails.warehouseId),
+        quantity: Math.min(quantity, product[3]), // Move max available if over
+      };
+    });
+
+    console.log("Bulk move details:", moveDetails);
+    productMoveAPI(moveDetails);
+    setOpenMoveModal(false);
+  };
+
+  // Function to finalize move in detailed mode
+  const handleFinalizeDetailMove = () => {
+    const isValid = moveData.every((product) => !product.errors.quantity);
+    if (!isValid) return;
+
+    const moveDetails = moveData.map((product) => ({
+      productId: product.productId,
+      locationName: product.locationName,
+      floorLevel: product.floorLevel,
+      warehouseId: parseInt(product.warehouseId),
+      quantity: parseInt(product.quantity),
+    }));
+
+    console.log("Detail move details:", moveDetails);
+    productMoveAPI(moveDetails);
+    setOpenMoveModal(false);
   };
 
   // 선택 시에 테이블이 바뀐다.
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // Separate options for each table view
-  const productOptions = {}; // No onRowClick for product list
+  const productOptions = {
+    selectableRows: "none", // Disable checkboxes by default
+    onRowClick: (rowData) => handleRowClick(rowData),
+  };
+
+  const moveOptions = {
+    selectableRows: "multiple", // Enable checkboxes for moving products
+    onRowSelectionChange: (currentRowsSelected, allRowsSelected) => {
+      setSelectedRows(allRowsSelected.map((row) => row.dataIndex));
+    },
+    customToolbarSelect: (selectedRows, displayData, setSelectedRows) => (
+      <div>
+        <Tooltip title="Move">
+          <IconButton onClick={handleMoveButtonClick}>
+            <MoveIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Delete">
+          <IconButton>
+            <DeleteIcon />
+          </IconButton>
+        </Tooltip>
+      </div>
+    ),
+  };
+
   const importExportOptions = {
     onRowClick: (rowData) => handleRowClick(rowData), // Handle row click
+  };
+
+  const CustomChip = ({ label, onDelete }) => {
+    return (
+      <Chip
+        variant="outlined"
+        color="secondary"
+        label={label}
+        onDelete={onDelete}
+      />
+    );
+  };
+
+  const CustomFilterList = (props) => {
+    return <TableFilterList {...props} ItemComponent={CustomChip} />;
   };
 
   // Define the componentsArray with separate options
@@ -685,6 +844,19 @@ const MyContainerProduct = ({ WHId }) => {
       data={tableData}
       columns={columns}
       options={productOptions}
+      components={{
+        TableFilterList: CustomFilterList,
+      }}
+    />,
+    <MUIDataTable
+      key="moveProductList"
+      title={"이동 상품 목록"}
+      data={tableData}
+      columns={columns}
+      options={moveOptions}
+      components={{
+        TableFilterList: CustomFilterList,
+      }}
     />,
     <MUIDataTable
       key="importExportList"
@@ -697,6 +869,32 @@ const MyContainerProduct = ({ WHId }) => {
 
   const handleNextComponent = (index) => {
     setCurrentIndex(index);
+  };
+
+  // Handle new product data input change
+  const handleNewProductInputChange = (field, value) => {
+    setNewProductData((prevData) => ({
+      ...prevData,
+      [field]: value,
+    }));
+  };
+
+  // Add new product to expected import list
+  const handleAddNewProduct = () => {
+    setExpectedImportList((prevList) => [...prevList, newProductData]);
+    setNewProductData({
+      barcode: "",
+      name: "",
+      quantity: "",
+      expirationDate: "",
+    });
+  };
+
+  // Finalize import from expected import list
+  const handleFinalImport = () => {
+    importAPI(expectedImportList);
+    setExpectedImportList([]); // Clear the list after import
+    setShowProductInputSection(false);
   };
 
   /**
@@ -764,79 +962,59 @@ const MyContainerProduct = ({ WHId }) => {
         className="sidebar"
         style={{
           width: "220px",
-          height:"93vh",
+          height: "93vh",
           marginRight: "5px",
           padding: "15px",
           boxShadow: "2px 0 5px rgba(0, 0, 0, 0.1)",
         }}
       >
         <div>
-          <label htmlFor="upload-import">
-            <input
-              required
-              style={{ display: "none" }}
-              id="upload-import"
-              name="upload-import"
-              type="file"
-              onChange={importExcel}
-            />
-            <Fab
-              color="primary"
-              size="small"
-              component="span"
-              aria-label="add"
-              variant="extended"
-            >
-              입고하기
-            </Fab>
-          </label>
-        </div>
-        <div>
-          <label htmlFor="upload-export">
-            <input
-              required
-              style={{ display: "none" }}
-              id="upload-export"
-              name="upload-export"
-              type="file"
-              onChange={exportExcel}
-            />
-            <Fab
-              color="primary"
-              size="small"
-              component="span"
-              aria-label="add"
-              variant="extended"
-            >
-              출고하기
-            </Fab>
-          </label>
-        </div>
-        <div>
-          <Button variant="contained" color="secondary" onClick={downloadExcel}>
-            다운로드
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              handleNextComponent(0);
+            }}
+          >
+            제품 목록
           </Button>
         </div>
-
+        <div>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              setShowProductInputSection(true);
+            }}
+          >
+            입고하기
+          </Button>
+        </div>
+        <div>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => handleNextComponent(2)}
+          >
+            출고하기
+          </Button>
+        </div>
         <div>
           <Button
             variant="contained"
             color="primary"
             onClick={() => setOpenEditModal(true)}
           >
-            엑셀로 -수정하기
+            수정하기
           </Button>
         </div>
         <div>
           <Button
             variant="contained"
             color="primary"
-            onClick={() => {
-              handleNextComponent(0);
-              getWholeChangesAPI();
-            }}
+            onClick={() => handleNextComponent(1)}
           >
-            입-출고 내역보기
+            이동하기
           </Button>
         </div>
         <div>
@@ -844,15 +1022,124 @@ const MyContainerProduct = ({ WHId }) => {
             variant="contained"
             color="primary"
             onClick={() => {
-              handleNextComponent(1);
+              handleNextComponent(2);
               showUniqueDates();
             }}
           >
-            Only See the Im-Export
+            변동내역
+          </Button>
+        </div>
+        <div>
+          <Button variant="contained" color="primary">
+            분석
+          </Button>
+        </div>
+        <div>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              handleNextComponent(2);
+              showUniqueDates();
+            }}
+          >
+            알림함
           </Button>
         </div>
       </div>
-      
+
+      {/* 입고하기 Section */}
+      {showProductInputSection && (
+        <div style={{ display: "flex", width: "100%" }}>
+          <div style={{ flex: 1, padding: "1rem" }}>
+            <Typography variant="h6">제품 데이터 입력</Typography>
+            <TextField
+              label="바코드"
+              value={newProductData.barcode}
+              onChange={(e) =>
+                handleNewProductInputChange("barcode", e.target.value)
+              }
+              fullWidth
+              margin="normal"
+            />
+            <TextField
+              label="상품명"
+              value={newProductData.name}
+              onChange={(e) =>
+                handleNewProductInputChange("name", e.target.value)
+              }
+              fullWidth
+              margin="normal"
+            />
+            <TextField
+              label="수량"
+              value={newProductData.quantity}
+              onChange={(e) =>
+                handleNewProductInputChange("quantity", e.target.value)
+              }
+              fullWidth
+              margin="normal"
+            />
+            <TextField
+              label="유통기한"
+              value={newProductData.expirationDate}
+              onChange={(e) =>
+                handleNewProductInputChange("expirationDate", e.target.value)
+              }
+              fullWidth
+              margin="normal"
+            />
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleAddNewProduct}
+            >
+              제품 추가
+            </Button>
+
+            <label htmlFor="upload-import">
+              <input
+                required
+                style={{ display: "none" }}
+                id="upload-import"
+                name="upload-import"
+                type="file"
+                onChange={importExcel}
+              />
+              <Fab
+                color="primary"
+                size="small"
+                component="span"
+                aria-label="add"
+                variant="extended"
+                style={{ marginTop: "10px" }}
+              >
+                엑셀로 입고하기
+              </Fab>
+            </label>
+
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={handleFinalImport}
+              style={{ marginTop: "10px" }}
+            >
+              Final Import
+            </Button>
+          </div>
+
+          <div style={{ flex: 1, padding: "1rem" }}>
+            <Typography variant="h6">Expected Import List</Typography>
+            <ul>
+              {expectedImportList.map((product, index) => (
+                <li key={index}>
+                  {product.name} - {product.quantity}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
 
       {/* 입고 Modal */}
       <Dialog
@@ -867,14 +1154,16 @@ const MyContainerProduct = ({ WHId }) => {
           {columnSelectionStep === 2 && "수량이 있는 열을 선택하세요."}
           {columnSelectionStep === 3 && "유통기한이 있는 상품들입니까?"}
           {columnSelectionStep === 4 && "유통 기한 칼럼을 선택하세요."}
-          {columnSelectionStep === 5 && "최종적으로 선택된 데이터를 확인하세요."}
+          {columnSelectionStep === 5 &&
+            "최종적으로 선택된 데이터를 확인하세요."}
         </DialogTitle>
         <DialogContent>
           {columnSelectionStep < 3 && (
             <div>
               <p>
                 {columnSelectionStep === 0 && "바코드가 있는 열을 선택하세요."}
-                {columnSelectionStep === 1 && "상품 이름이 있는 열을 선택하세요."}
+                {columnSelectionStep === 1 &&
+                  "상품 이름이 있는 열을 선택하세요."}
                 {columnSelectionStep === 2 && "수량이 있는 열을 선택하세요."}
               </p>
             </div>
@@ -935,7 +1224,8 @@ const MyContainerProduct = ({ WHId }) => {
           <h1>출고 데이터</h1>
           {columnExportSelectionStep === 0 && "바코드가 있는 열을 선택하세요."}
           {columnExportSelectionStep === 1 && "수량이 있는 열을 선택하세요."}
-          {columnExportSelectionStep === 2 && "최종적으로 선택된 데이터를 확인하세요."}
+          {columnExportSelectionStep === 2 &&
+            "최종적으로 선택된 데이터를 확인하세요."}
         </DialogTitle>
         <DialogContent>
           {columnExportSelectionStep < 1 && (
@@ -991,7 +1281,15 @@ const MyContainerProduct = ({ WHId }) => {
             height={600}
             ref={hotTableRef}
             data={editData}
-            colWidths={[`120vw`, `130vw`, `50`, `100`, `100`, `100`, `100`]}
+            colWidths={[
+              `120vw`,
+              `130vw`,
+              `130vw`,
+              `130vw`,
+              `130vw`,
+              `130vw`,
+              `130vw`,
+            ]}
             colHeaders={columns.map((col) => col.label)}
             dropdownMenu={true}
             hiddenColumns={{
@@ -1020,6 +1318,126 @@ const MyContainerProduct = ({ WHId }) => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* 상품 이동 Modal */}
+      <Dialog
+        open={openMoveModal}
+        onClose={() => setOpenMoveModal(false)}
+        maxWidth="lg"
+        fullWidth
+      >
+        <DialogTitle>Move Products to New Location</DialogTitle>
+        <DialogContent>
+          {isBulkMove ? (
+            <>
+              <TextField
+                label="창고 ID"
+                value={bulkMoveDetails.warehouseId}
+                onChange={(e) =>
+                  handleBulkInputChange("warehouseId", e.target.value)
+                }
+                fullWidth
+                margin="normal"
+              />
+              <TextField
+                label="적재함 이름"
+                value={bulkMoveDetails.locationName}
+                onChange={(e) =>
+                  handleBulkInputChange("locationName", e.target.value)
+                }
+                fullWidth
+                margin="normal"
+              />
+              <TextField
+                label="층수"
+                value={bulkMoveDetails.floorLevel}
+                onChange={(e) =>
+                  handleBulkInputChange("floorLevel", e.target.value)
+                }
+                fullWidth
+                margin="normal"
+              />
+              <TextField
+                label="수량"
+                value={bulkMoveDetails.quantity}
+                onChange={(e) => handleBulkInputChange("quantity", e.target.value)}
+                fullWidth
+                margin="normal"
+                error={!!errors.bulkQuantity}
+                helperText={errors.bulkQuantity}
+              />
+            </>
+          ) : (
+            moveData.map((product, index) => (
+              <div key={product.productId} style={{ marginBottom: "20px" }}>
+                <h3>
+                  {product.name} (Barcode: {product.barcode}) - 수량 :{" "}
+                  {product.quantityNow}개
+                </h3>
+                <TextField
+                  label="물건이 옮겨질 창고의 ID"
+                  value={product.warehouseId}
+                  onChange={(e) =>
+                    handleNewLocationChange(index, "warehouseId", e.target.value)
+                  }
+                  fullWidth
+                  margin="normal"
+                />
+                <TextField
+                  label="물건이 옮겨질 적재함 이름"
+                  value={product.locationName}
+                  onChange={(e) =>
+                    handleNewLocationChange(index, "locationName", e.target.value)
+                  }
+                  fullWidth
+                  margin="normal"
+                />
+                <TextField
+                  label="옮겨질 적재함의 층"
+                  value={product.floorLevel}
+                  onChange={(e) =>
+                    handleNewLocationChange(index, "floorLevel", e.target.value)
+                  }
+                  fullWidth
+                  margin="normal"
+                />
+                <TextField
+                  label="옮길 수량"
+                  value={product.quantity}
+                  onChange={(e) =>
+                    handleNewLocationChange(index, "quantity", e.target.value)
+                  }
+                  fullWidth
+                  margin="normal"
+                  error={!!product.errors.quantity}
+                  helperText={product.errors.quantity}
+                />
+              </div>
+            ))
+          )}
+        </DialogContent>
+        <DialogActions>
+          {isBulkMove ? (
+            <Button onClick={handleFinalizeBulkMove} color="primary">
+              Bulk Move
+            </Button>
+          ) : (
+            <Button onClick={handleFinalizeDetailMove} color="primary">
+              Detail Move
+            </Button>
+          )}
+          <Button
+            onClick={() => setIsBulkMove(!isBulkMove)}
+            color="secondary"
+          >
+            {isBulkMove ? "Switch to Detail Move" : "Switch to Bulk Move"}
+          </Button>
+          <Button onClick={() => setOpenMoveModal(false)} color="primary">
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <div style={{ width: "85%" }}>
         <Grid item xs={12}>
           {/* 메인 영역 */}
