@@ -8,7 +8,7 @@ import GridContainer from '../components/Grid/GridContainer';
 import GridItem from '../components/Grid/GridItem';
 import Card from '../components/Card/Card';
 import CardBody from '../components/Card/CardBody';
-import { handleResponse, ResponseCode } from '../utils/responseHandler';
+import { handleResponse } from '../utils/responseHandler';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -130,12 +130,13 @@ export default function SignUp() {
   const [emailCheckMessage, setEmailCheckMessage] = useState('');
   const [passwordMessage, setPasswordMessage] = useState('');
   const [showPasswordMessage, setShowPasswordMessage] = useState(false);
-  const [certificationButtonLabel, setCertificationButtonLabel] = useState('인증 메일 발송');
+  const [certificationButtonLabel, setCertificationButtonLabel] = useState('인증 확인');
   const [certificationMessage, setCertificationMessage] = useState('');
   const [showEmailSignUp, setShowEmailSignUp] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const [isEmailValid, setIsEmailValid] = useState(false);
-  const [timer, setTimer] = useState(180);
+  const [timer, setTimer] = useState(0);
+  const [isCertificationButtonEnabled, setIsCertificationButtonEnabled] = useState(false);
 
   useEffect(() => {
     const validatePassword = (password) => {
@@ -171,14 +172,14 @@ export default function SignUp() {
   }, [password, passwordCheck]);
 
   useEffect(() => {
-    if (timer > 0 && certificationButtonLabel === '인증 확인') {
+    if (timer > 0 && isCertificationButtonEnabled) {
       const intervalId = setInterval(() => {
         setTimer((prevTime) => prevTime - 1);
       }, 1000);
 
       return () => clearInterval(intervalId);
     }
-  }, [timer, certificationButtonLabel]);
+  }, [timer, isCertificationButtonEnabled]);
 
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
@@ -189,9 +190,15 @@ export default function SignUp() {
   const handleEmailCheck = async () => {
     try {
       const response = await axios.post('https://i11a508.p.ssafy.io/api/oauth/email-check', { email });
-      const { message, isSuccess } = handleResponse(response);
-      setEmailCheckMessage(isSuccess ? '사용 가능한 이메일입니다.' : message);
-      setIsEmailValid(isSuccess);
+      console.log('Email Check Response:', response.data); // 응답 데이터 출력
+      
+      if (response.data.code === 'SU') { 
+        setEmailCheckMessage('사용 가능한 이메일입니다.');
+        setIsEmailValid(true); // 이메일이 유효할 때만 true로 설정
+      } else {
+        setEmailCheckMessage(response.data.message);
+        setIsEmailValid(false);
+      }
     } catch (error) {
       setEmailCheckMessage('중복된 이메일입니다.');
       setIsEmailValid(false);
@@ -206,8 +213,8 @@ export default function SignUp() {
 
         if (certificationResult.isSuccess) {
           setCertificationMessage('인증번호 발송에 성공하였습니다.');
-          setCertificationButtonLabel('인증 확인');
-          setTimer(180); // Reset timer to 3 minutes
+          setIsCertificationButtonEnabled(true); // 인증 확인 버튼 활성화
+          setTimer(180); // 타이머를 3분으로 초기화
         } else {
           setCertificationMessage(certificationResult.message);
         }
@@ -220,7 +227,7 @@ export default function SignUp() {
   };
 
   const handleCertification = async () => {
-    if (certificationButtonLabel === '인증 확인') {
+    if (isCertificationButtonEnabled) {
       try {
         const response = await axios.post('https://i11a508.p.ssafy.io/api/oauth/check-certification', {
           email,
@@ -229,7 +236,9 @@ export default function SignUp() {
         const { code } = response.data;
 
         if (code === 'SU') {
-          setCertificationMessage('인증번호가 일치합니다.');
+          setCertificationMessage('이메일이 인증되었습니다.');
+          setIsCertificationButtonEnabled(false); // 인증 확인 버튼 비활성화
+          setTimer(0); // 타이머 초기화
         } else {
           setCertificationMessage('인증번호가 일치하지 않습니다.');
         }
@@ -317,12 +326,12 @@ export default function SignUp() {
                   <Button
                     variant="contained"
                     style={{
-                      backgroundColor: isEmailValid ? "#7D4A1A" : "#c0c0c0",
+                      backgroundColor: isEmailValid ? "#7D4A1A" : "#c0c0c0", // 이메일이 유효할 때만 활성화 색상
                       color: "white",
                     }} 
                     onClick={handleSendCertificationEmail}
                     className={classes.button}
-                    disabled={!isEmailValid}
+                    disabled={!isEmailValid} // 버튼 활성화 조건
                   >
                     인증 메일 발송
                   </Button>
@@ -331,18 +340,18 @@ export default function SignUp() {
                   <Button
                     variant="contained"
                     style={{
-                      backgroundColor: isEmailValid ? "#7D4A1A" : "#c0c0c0",
+                      backgroundColor: isCertificationButtonEnabled ? "#7D4A1A" : "#c0c0c0", // 인증 메일 발송 후에만 활성화
                       color: "white"
                     }} 
                     onClick={handleCertification}
                     className={classes.buttonSmall}
-                    disabled={!isEmailValid}
+                    disabled={!isCertificationButtonEnabled} // 버튼 활성화 조건
                   >
-                    인증 확인
+                    {certificationButtonLabel} {/* 현재 작업에 맞게 라벨 업데이트 */}
                   </Button>
                 </div>
                 <span style={{ color: 'blue' }}>{certificationMessage}</span>
-                {certificationButtonLabel === '인증 확인' && <span>{formatTime(timer)}</span>}
+                {isCertificationButtonEnabled && <span>{formatTime(timer)}</span>}
                 <br />
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingRight: '5px', paddingLeft: '5px' }}>
                 <TextField
