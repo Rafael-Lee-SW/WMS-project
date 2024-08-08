@@ -3,6 +3,8 @@ import { makeStyles } from '@material-ui/core/styles';
 import { Button, IconButton } from '@mui/material';
 import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
+import { useRouter } from 'next/router';
+import axios from 'axios';
 
 const useStyles = makeStyles({
   container: {
@@ -80,9 +82,23 @@ const useStyles = makeStyles({
   },
 });
 
-const PurchasePage = () => {
+// Iamport 로드
+const loadIamportScript = () => {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.iamport.kr/v1/iamport.js';
+    script.onload = resolve;
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+};
+
+export default function Payment() {
+
   const classes = useStyles();
+  const router = useRouter();
   const [quantity, setQuantity] = useState(1);
+  const pricePerItem = 10000;
 
   const handleIncrease = () => {
     setQuantity(quantity + 1);
@@ -94,50 +110,62 @@ const PurchasePage = () => {
     }
   };
 
-  // useEffect(() => {
-  //   const jqueryScript = document.createElement('script');
-  //   jqueryScript.src = 'https://code.jquery.com/jquery-3.6.0.min.js';
-  //   jqueryScript.async = true;
-  //   document.body.appendChild(jqueryScript);
+  useEffect(() => {
+    const initializeIamport = async () => {
+      try {
+        await loadIamportScript();
+        const IMP = window.IMP;
+        IMP.init('imp68513146');
+      } catch (error) {
+        router.push('/404');
+      }
+    };
 
-  //   jqueryScript.onload = () => {
-  //     const iamportScript = document.createElement('script');
-  //     iamportScript.src = 'https://cdn.iamport.kr/js/iamport.payment-1.1.5.js';
-  //     iamportScript.async = true;
-  //     document.body.appendChild(iamportScript);
-      
-  //     return () => {
-  //       document.body.removeChild(iamportScript);
-  //       document.body.removeChild(jqueryScript);
-  //     };
-  //   };
-  // }, []);
+    initializeIamport();
+  }, []);
 
-  // const handlePayment = () => {
-  //   if (!window.IMP) return; 
-  //   const { IMP } = window;
-  //   IMP.init('imp76481065'); 
-
-  //   const paymentData = {
-  //     pg: 'html5_inicis', 
-  //     pay_method: 'card', 
-  //     merchant_uid: `mid_${new Date().getTime()}`,
-  //     amount: quantity * pricePerItem,
-  //     name: 'FitBox 창고',
-  //     buyer_name: '구매자 이름',
-  //     buyer_email: 'example@example.com',
-  //   };
-
-  //   IMP.request_pay(paymentData, response => {
-  //     if (response.success) {
-  //       alert('결제가 완료되었습니다.');
-  //       console.log(response);
-  //     } else {
-  //       alert(`결제에 실패하였습니다. 에러 내용: ${response.error_msg}`);
-  //       console.log(response);
-  //     }
-  //   });
-  // };
+  // 결제 요청 전송
+  const requestPay = () => {
+    const IMP = window.IMP;
+    IMP.request_pay(
+      {
+        pg: 'html5_inicis',
+        pay_method: 'card',
+        merchant_uid: `mid_${new Date().getTime()}`,
+        name: '창고',
+        amount: quantity * pricePerItem,
+        buyer_email: localStorage.user.email,
+        buyer_name: localStorage.user.name,
+        buyer_tel: '010-1111-1111',
+        buyer_addr: '서울시 강남구 테헤란로',
+        buyer_postcode: '12345'
+      },
+      (rsp) => {
+        if (rsp.success) {
+        axios({
+          url: '{서버에서 결제 정보를 받을 엔드포인트}',
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          data: {
+            imp_uid: rsp.imp_uid,
+            merchant_uid: rsp.merchant_uid,
+          },
+        })
+          .then(() => {
+            router.push('/components');
+          })
+          .catch (() => {
+            router.push('/404');
+          });
+      } else {
+        console.log(`${rsp.error_msg}`)
+        router.push('/components');
+      }
+    }
+  );
+};
 
   return (
     <div className={classes.container}>
@@ -169,7 +197,7 @@ const PurchasePage = () => {
             <span className={classes.totalPrice}>{(quantity * pricePerItem).toLocaleString()} 원</span>
           </div>
         </div>
-        <Button onClick={handlePayment} variant="contained" className={classes.purchaseButton}>
+        <Button onClick={requestPay} variant="contained" className={classes.purchaseButton}>
           구매하기
         </Button>
       </div>
@@ -177,4 +205,4 @@ const PurchasePage = () => {
   );
 };
 
-export default PurchasePage;
+
