@@ -148,205 +148,15 @@ const MyContainerNavigation = ({ WHId }) => {
    * 창고 관련 Const 끝
    */
 
-  // API로 불러온 현재 상품 데이터 목록
-  const [tableData, setTableData] = useState([]);
 
   //모달을 위한 데이터 셋
   const [ModalTableData, setModalTableData] = useState([]);
   const [columns, setColumns] = useState([]);
   const hotTableRef = useRef(null);
 
-  const [openModal, setOpenModal] = useState(false);
-  const [columnSelectionStep, setColumnSelectionStep] = useState(0);
-  const [selectedColumns, setSelectedColumns] = useState({
-    barcode: null,
-    name: null,
-    quantity: null,
-    expiry: null,
-  });
-
-  // Convert data to array of arrays and set table data
-  const convertToArrayOfArraysModal = (data) => {
-    setModalTableData(data);
-    return data;
-  };
-
-  // Import Excel file and process it
-  const importExcel = (input) => {
-    let file;
-    if (input.target && input.target.files) {
-      file = input.target.files[0];
-    } else {
-      file = input;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const bstr = event.target.result;
-      const workBook = XLSX.read(bstr, { type: "binary" });
-      const workSheetName = workBook.SheetNames[0];
-      const workSheet = workBook.Sheets[workSheetName];
-      const fileData = XLSX.utils.sheet_to_json(workSheet, { header: 1 });
-      const headers = fileData[0];
-      const formattedColumns = headers.map((head) => ({
-        name: head,
-        label: head,
-      }));
-      setColumns(formattedColumns);
-      fileData.splice(0, 1);
-      convertToArrayOfArraysModal(fileData);
-      setOpenModal(true);
-    };
-    reader.readAsArrayBuffer(file);
-  };
-
-  // Apply color to the specified column
-  const applyColumnColor = (columnIndex) => {
-    const hotInstance = hotTableRef.current.hotInstance;
-
-    hotInstance.batch(() => {
-      tableData.forEach((row, rowIndex) => {
-        hotInstance.setCellMeta(
-          rowIndex,
-          columnIndex,
-          "className",
-          `background-color-${columnIndex}`
-        );
-      });
-    });
-
-    const styleElement = document.createElement("style");
-    styleElement.textContent = `.background-color-${columnIndex} { background-color: blue !important; }`;
-    document.head.append(styleElement);
-
-    hotInstance.render();
-  };
-
-  // Handle column click event to apply color
-  const handleColumnClick = (event, coords) => {
-    if (columnSelectionStep >= 0) {
-      const colorMap = ["blue", "green", "red", "orange"];
-      const columnKeys = ["barcode", "name", "quantity", "expiry"];
-      applyColumnColor(coords.col, colorMap[columnSelectionStep]);
-      setSelectedColumns((prevSelected) => ({
-        ...prevSelected,
-        [columnKeys[columnSelectionStep]]: coords.col,
-      }));
-      setColumnSelectionStep(columnSelectionStep + 1);
-    }
-  };
-
-  // 최종적으로 선택된 칼럼에 해당하는 데이터를 보낸다.
-  const finalizeSelection = () => {
-    const postData = ModalTableData.map((row) => ({
-      barcode: row[selectedColumns.barcode],
-      name: row[selectedColumns.name],
-      quantity: row[selectedColumns.quantity],
-      expiry:
-        selectedColumns.expiry !== null ? row[selectedColumns.expiry] : null,
-    }));
-
-    APIPOSTConnectionTest(postData);
-
-    setOpenModal(false);
-    setColumnSelectionStep(0);
-    setSelectedColumns({
-      barcode: null,
-      name: null,
-      quantity: null,
-      expiry: null,
-    });
-  };
-
-  // API POST 통신 테스트
-  const APIPOSTConnectionTest = async (postData) => {
-    try {
-      const response = await fetch(
-        "https://i11a508.p.ssafy.io/api/products/import",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(postData),
-        }
-      );
-
-      if (response.ok) {
-        console.log("Data posted successfully");
-      } else {
-        console.error("Error posting data");
-      }
-    } catch (error) {
-      console.error("Error posting data:", error);
-    }
-  };
-
-  // State to manage the list of import/export dates
-  const [imExportList, setImExportList] = useState([]);
-  // State to store the detailed data
-  const [detailedData, setDetailedData] = useState([]);
   // State to open the modal when a date is clicked
   const [openDetailModal, setOpenDetailModal] = useState(false);
 
-  // Function to fetch import/export data
-  const fetchImExportData = async () => {
-    try {
-      const importResponse = await fetch(
-        "https://i11a508.p.ssafy.io/api/products/import?businessId=1",
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      const exportResponse = await fetch(
-        "https://i11a508.p.ssafy.io/api/products/export?businessId=1",
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      const importData = await importResponse.json();
-      const exportData = await exportResponse.json();
-
-      const imExportData = [
-        ...importData.result.map((item) => ({
-          date: item.date,
-          type: "입고",
-          ...item,
-        })),
-        ...exportData.result.map((item) => ({
-          date: item.date,
-          type: "출고",
-          ...item,
-        })),
-      ];
-
-      // Extract unique dates
-      const uniqueDateSet = new Set(
-        imExportData.map((item) => `${item.date}###${item.type}`)
-      );
-      const uniqueDates = Array.from(uniqueDateSet).map((key) => {
-        const [date, type] = key.split("###");
-        return { date, type };
-      });
-
-      setImExportList(uniqueDates);
-      setDetailedData(imExportData);
-    } catch (error) {
-      console.error("Error fetching import/export data:", error);
-    }
-  };
-
-  // Fetch import/export data when component mounts
-  useEffect(() => {
-    fetchImExportData();
-  }, []);
 
   // Handle cell click to show details
   const handleCellClick = (date, type) => {
@@ -394,6 +204,7 @@ const MyContainerNavigation = ({ WHId }) => {
           console.error("Locations data not found");
           return;
         }
+        console.log(locations)
         const newLocations = locations.map((location, index) => {
           return {
             id: location.id.toString(),
@@ -402,7 +213,7 @@ const MyContainerNavigation = ({ WHId }) => {
             width: location.xsize || 50,
             height: location.ysize || 50,
             z: 5,
-            fill: "blue",
+            fill: `rgba(${location.fill}, 0, 0, 0.1)`,
             draggable: true,
             order: index,
             name: location.name || `적재함 ${index}`,
@@ -679,19 +490,6 @@ const MyContainerNavigation = ({ WHId }) => {
     updateLinesBetweenAnchors();
   };
 
-  //실시간 반응을 위해서 currentSetting에 대한 함수 작동을 메서드로 넘기기
-  const changeCurrentSetting = (value) => {
-    setCurrentSetting(value);
-
-    const newDraggable = value !== "wall";
-    anchorsRef.current.forEach(({ start, end }) => {
-      start.draggable(newDraggable);
-      end.draggable(newDraggable);
-    });
-
-    layerRef.current.batchDraw();
-  };
-
   const [lineData, setLineData] = useState({
     startX: "",
     startY: "",
@@ -879,11 +677,11 @@ const MyContainerNavigation = ({ WHId }) => {
           if (!existingAnchor) {
             const newId = anchorsRef.current.length
               ? Math.max(
-                  ...anchorsRef.current.flatMap(({ start, end }) => [
-                    parseInt(start.id(), 10),
-                    parseInt(end.id(), 10),
-                  ])
-                ) + 1
+                ...anchorsRef.current.flatMap(({ start, end }) => [
+                  parseInt(start.id(), 10),
+                  parseInt(end.id(), 10),
+                ])
+              ) + 1
               : 1;
             existingAnchor = buildAnchor(newId, x, y);
           } else {
@@ -949,12 +747,287 @@ const MyContainerNavigation = ({ WHId }) => {
     };
   }, [line, startPos, currentSetting, selectedLocation]);
 
+  const [showDetails, setShowDetails] = useState(true); // Default to showing details
   //처음에 창고 정보를 불러온다.
   useEffect(() => {
-    getWarehouseAPI();
+
   }, []);
 
-  const [showDetails, setShowDetails] = useState(true); // Default to showing details
+  /**
+   * 재고 목록과 알림 내역을 불러오는 메서드(Method) 정의
+   */
+
+  // 제품 목록 / 입고 / 출고 / 수정하기 / 이동하기에 쓰이는 data Table state
+  const [tableData, setTableData] = useState([]);
+  const [productColumns, setProductColumns] = useState([]);
+
+  // 사장님이 갖고 있는 상품들을 가져오는 API
+  const productGetAPI = async (businessId) => {
+    try {
+      const response = await fetch(
+        `https://i11a508.p.ssafy.io/api/products?businessId=${businessId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        const apiConnection = await response.json();
+        const products = apiConnection.result;
+        console.log(apiConnection);
+        console.log(products); // 삭제해야 할 console.log (콘솔)
+
+        // Extract only the required columns
+        const formattedData = products.map((product) => ({
+          hiddenId: product.id,
+          name: product.name,
+          barcode: product.barcode,
+          quantity: product.quantity,
+          locationName: product.locationName || "임시",
+          floorLevel: product.floorLevel,
+          expirationDate: product.expirationDate || "없음",
+          warehouseId: product.warehouseId,
+        }));
+
+        // Define the columns
+        const headers = [
+          "식별자",
+          "이름",
+          "바코드(식별번호)",
+          "수량",
+          "적재함",
+          "단(층)수",
+          "유통기한",
+          "창고",
+        ];
+
+        const formattedColumns = [
+          { name: "hiddenId", label: "식별자", options: { display: false } },
+          { name: "name", label: "상품명" },
+          { name: "barcode", label: "바코드" },
+          { name: "quantity", label: "수량" },
+          { name: "locationName", label: "적재함" },
+          { name: "floorLevel", label: "층수" },
+          { name: "expirationDate", label: "유통기한" },
+          { name: "warehouseId", label: "창고" },
+        ];
+
+        // Prepare the data for Handsontable
+        const data = formattedData.map((product) => [
+          product.hiddenId,
+          product.name,
+          product.barcode,
+          product.quantity,
+          product.locationName,
+          product.floorLevel,
+          product.expirationDate,
+          product.warehouseId,
+        ]);
+
+        setColumns(formattedColumns);
+        setTableData(data);
+      } else {
+        console.error("Error loading rectangles data");
+      }
+    } catch (error) {
+      console.error("Error loading rectangles data:", error);
+    }
+  };
+
+
+  // 변동 내역 / 알림함에서 쓰이는 data Table state
+  const [notificationTableData, setNotificationTableData] = useState([]);
+  const [detailedData, setDetailedData] = useState([]); // 모든 변동 사항을 기록한다.
+  const [notificationColumn, setNotificationColumn] = useState([]); // 알림 단위로 변동사항을 기록한다.
+
+  // 모든 알림(변동내역)을 가져오는 메서드
+  const getNotificationsAPI = async (businessId) => {
+    try {
+      const response = await fetch(
+        `https://i11a508.p.ssafy.io/api/products/notification?businessId=${businessId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        const apiConnection = await response.json();
+        const { productFlowResponseDtos, expirationProductResponseDtos } =
+          apiConnection.result;
+
+        // Combine all notifications
+        const combinedData = [...productFlowResponseDtos];
+
+        // Sort combined data by date
+        const sortedData = combinedData.sort(
+          (a, b) => new Date(a.date) - new Date(b.date)
+        );
+
+        // Set the detailed data state
+        setDetailedData(sortedData);
+
+        // Map to formatted data for initial display
+        const formattedData = sortedData.map((item) => ({
+          date: new Date(item.date).toLocaleDateString(),
+          type: item.productFlowType,
+          barcode: item.barcode,
+          name: item.name,
+          quantity: item.quantity,
+          locationName: item.currentLocationName,
+          floorLevel: item.currentFloorLevel,
+          trackingNumber: item.trackingNumber,
+        }));
+
+        setNotificationTableData(formattedData);
+
+        setNotificationColumn([
+          { name: "date", label: "날짜" },
+          { name: "type", label: "유형" },
+          { name: "barcode", label: "바코드" },
+          { name: "name", label: "상품명" },
+          { name: "quantity", label: "수량" },
+          { name: "locationName", label: "적재함" },
+          { name: "floorLevel", label: "층수" },
+          { name: "trackingNumber", label: "송장번호" },
+        ]);
+      } else {
+        console.error("Error fetching notifications");
+      }
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    }
+  };
+
+  // 모든 변동 내역을 날짜별로 묶어 알림으로 바꾸는 함수
+  const showUniqueDates = async () => {
+
+    // Group data by date and type
+    const groupedData = detailedData.reduce((acc, item) => {
+      const dateKey = new Date(item.date).toLocaleDateString();
+      const typeKey = item.productFlowType;
+      const key = `${dateKey}-${typeKey}`;
+
+      if (!acc[key]) {
+        acc[key] = {
+          date: dateKey,
+          type: typeKey,
+          count: 0,
+        };
+      }
+
+      acc[key].count += 1;
+      return acc;
+    }, {});
+
+    // Format grouped data for table display
+    const formattedData = Object.values(groupedData).map((entry) => ({
+      date: entry.date,
+      type: entry.type,
+      count: entry.count,
+    }));
+
+    setNotificationTableData(formattedData);
+    setColumns([
+      { name: "date", label: "날짜" },
+      { name: "type", label: "유형" },
+      { name: "count", label: "수량" },
+    ]);
+  };
+
+  // 현재 상자의 재고 목록을 불러오는 함수
+  const handleSelectedData = (rectName, selectedFloor) => {
+
+    console.log("잘 가니?")
+    console.log(rectName);
+    console.log(selectedFloor);
+
+    const selectedData = tableData
+      .filter(product => product[4] === rectName && product[5] === selectedFloor) // 같은 위치에 있는 상품만 출력
+      .map(product => ({
+        hiddenId: product[0],
+        name: product[1],
+        barcode: product[2],
+        quantity: product[3],
+        expirationDate: product[6] || "없음",
+      }));
+
+    // console.log(tableData)
+    setModalTableData(selectedData);
+    console.log(selectedData)
+  }
+
+
+  /**
+ * 유저를 부르는 Part
+ */
+
+  // 유저 및 비즈니스 정보를 담을 State
+  const [userData, setUserData] = useState(null);
+  const [businessData, setBusinessData] = useState(null);
+
+  // LocalStorage(로컬 스토레이지)를 바탕으로 비즈니스 정보를 받아온다.
+  const fetchBusinessData = async (userId) => {
+    try {
+      const response = await fetch(
+        `https://i11a508.p.ssafy.io/api/users/${userId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        const userData = await response.json();
+        const businessInfo = userData.result.business;
+        // Business Data를 추출한다.
+        setBusinessData(businessInfo);
+        console.log("Business data loaded:", businessInfo);
+
+        //재고 목록과 알림 내역을 불러온다.
+        productGetAPI(businessInfo.id);
+        getNotificationsAPI(businessInfo.id);
+      } else {
+        console.error("Error fetching user data");
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
+
+  /**
+   * UseEffect를 통해 새로고침 때마다 api로 사장님의 재고를 불러옴
+   * + 유저정보
+   */
+
+  useEffect(() => {
+
+    getWarehouseAPI(); // 창고 정보를 불러온다.
+    // Retrieve user data from localStorage
+    const user = localStorage.getItem("user");
+    if (user) {
+      try {
+        const parsedUser = JSON.parse(user);
+        setUserData(parsedUser);
+        console.log("User data loaded from localStorage:", parsedUser);
+
+        // Fetch business data using user ID
+        fetchBusinessData(parsedUser.id);
+
+      } catch (error) {
+        console.error("Error parsing user data from localStorage:", error);
+      }
+    }
+
+  }, []);
+
   return (
     <div
       style={{
@@ -992,6 +1065,7 @@ const MyContainerNavigation = ({ WHId }) => {
                 setSelectedLocationTransform(rect.id);
                 setSelectedLocation(rect);
                 setSelectedFloor(1);
+                handleSelectedData(rect.name, selectedFloor);
               }}
               onChange={(newAttrs) => {
                 const rects = locations.slice();
@@ -1015,33 +1089,15 @@ const MyContainerNavigation = ({ WHId }) => {
           boxShadow: "2px 0 5px rgba(0, 0, 0, 0.1)",
         }}
       >
-        <h4>현재 창고는 1번 창고입니다.</h4>
-        <div>
-          <label htmlFor="upload-photo">
-            <input
-              required
-              style={{ display: "none" }}
-              id="upload-photo"
-              name="upload_photo"
-              type="file"
-              onChange={importExcel}
-            />
-            <Fab
-              color="primary"
-              size="small"
-              component="span"
-              aria-label="add"
-              variant="extended"
-            >
-              출고 업로드
-            </Fab>
-          </label>
-        </div>
         <hr />
         <div style={{ marginBottom: "10px" }}>
           <ButtonIn onClick={() => setShowDetails(true)}>Show Details</ButtonIn>
           <ButtonIn
-            onClick={() => setShowDetails(false)}
+            onClick={() => {
+              setShowDetails(false)
+              showUniqueDates()
+            }
+            }
             style={{ marginLeft: "5px" }}
           >
             Show Notifications
@@ -1073,7 +1129,7 @@ const MyContainerNavigation = ({ WHId }) => {
           <div className="notification">
             <h3>Im-Export Dates</h3>
             <ul style={{ listStyle: "none", padding: 0 }}>
-              {imExportList.map(({ date, type }, index) => (
+              {notificationTableData.map(({ date, type }, index) => (
                 <li
                   key={index}
                   onClick={() => handleCellClick(date, type)}
@@ -1177,10 +1233,13 @@ const MyContainerNavigation = ({ WHId }) => {
                             marginRight: "auto",
                             cursor: "pointer",
                           }}
-                          onClick={() =>
+                          onClick={() => {
+                            console.log(index+1 + "층입니다.")
                             setSelectedFloor(
                               selectedFloor === index + 1 ? null : index + 1
                             )
+                            handleSelectedData(selectedLocation.name, index+1)
+                          }
                           }
                           onMouseEnter={(e) => {
                             e.target.style.backgroundColor =
@@ -1202,13 +1261,13 @@ const MyContainerNavigation = ({ WHId }) => {
                   </div>
                 </div>
                 <hr />
-                {rectangleData.length > 0 && (
+                {ModalTableData.length > 0 && (
                   <div>
                     <HotTable
                       height={400}
                       ref={hotTableRef}
-                      data={rectangleData}
-                      colWidths={[35, 110, 140, 35, 20, 20, 20]}
+                      data={ModalTableData}
+                      colWidths={[110, 110, 140, 110, 110, 110, 110]}
                       colHeaders={columns.map((col) => col.label)}
                       dropdownMenu={true}
                       hiddenColumns={{
@@ -1224,7 +1283,6 @@ const MyContainerNavigation = ({ WHId }) => {
                       manualRowMove={true}
                       navigableHeaders={true}
                       licenseKey="non-commercial-and-evaluation"
-                      afterOnCellMouseDown={handleColumnClick}
                     />
                   </div>
                 )}
@@ -1269,8 +1327,9 @@ const MyContainerNavigation = ({ WHId }) => {
             </div>
           )}
         </div>
-      )}
-    </div>
+      )
+      }
+    </div >
   );
 };
 export default MyContainerNavigation;
