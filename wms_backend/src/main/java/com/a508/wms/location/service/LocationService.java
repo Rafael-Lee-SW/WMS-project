@@ -9,6 +9,7 @@ import com.a508.wms.location.dto.LocationRequestDto;
 import com.a508.wms.location.dto.LocationResponseDto;
 import com.a508.wms.location.dto.LocationSaveRequestDto;
 import com.a508.wms.location.mapper.LocationMapper;
+import com.a508.wms.location.repository.LocationRepository;
 import com.a508.wms.product.service.ProductModuleService;
 import com.a508.wms.util.constant.ExportTypeEnum;
 import com.a508.wms.util.constant.FacilityTypeEnum;
@@ -30,6 +31,7 @@ public class LocationService {
     private final WarehouseModuleService warehouseModuleService;
     private final FloorModuleService floorModuleService;
     private final ProductModuleService productModuleService;
+    private final LocationRepository locationRepository;
 
     /**
      * 특정 로케이션 조회
@@ -146,4 +148,7 @@ public class LocationService {
         locationModuleService.delete(location);
     }
 
+    public Location findByNameAndWarehouseId(String locationName, Long warehouseId) {
+        return locationRepository.findByNameAndWarehouseId(locationName,warehouseId);
+    }
 }
