@@ -20,6 +20,7 @@ import com.a508.wms.user.repository.UserRepository;
 import com.a508.wms.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -35,6 +36,7 @@ import org.springframework.web.context.annotation.RequestScope;
 @RestController
 @RequestMapping("/oauth")
 @RequiredArgsConstructor
+@Slf4j
 public class AuthController {
 
     private final AuthService authService;
@@ -100,10 +102,12 @@ public class AuthController {
     @GetMapping("/social-sign-in")
     public ResponseEntity<UserResponseDto> getUserInfo(
         @RequestHeader("Authorization") String token,
-        @RequestParam String email
+        @RequestParam (name = "email")String email
     ) {
+        log.info("get user email {}",email);
         // 토큰과 이메일을 검증하여 사용자 정보 반환
         User user = userService.findByEmail(email);
+        log.info("selected user {}", user.toString());
         if (user == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
