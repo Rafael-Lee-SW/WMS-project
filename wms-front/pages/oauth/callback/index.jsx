@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import { useAuth } from '../../../context/AuthContext'; // AuthContext를 import
@@ -6,11 +6,12 @@ import { useAuth } from '../../../context/AuthContext'; // AuthContext를 import
 const OAuthCallback = () => {
   const router = useRouter();
   const { login } = useAuth();
+  const [loading, setLoading] = useState(true); // 로딩 상태 추가
 
   useEffect(() => {
     const fetchUserInfo = async (token, email) => {
       try {
-        const response = await axios.get('http://localhost:8080/api/oauth/social-sign-in', {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/oauth/social-sign-in`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -34,6 +35,8 @@ const OAuthCallback = () => {
         console.error('Error fetching user info:', error);
         alert('사용자 정보를 가져오는 중 오류가 발생했습니다.');
         router.push('/signIn');
+      } finally {
+        setLoading(false); // 로딩 상태 해제
       }
     };
 
@@ -59,14 +62,22 @@ const OAuthCallback = () => {
           console.error('Error processing OAuth response:', error);
           alert('인증 처리 중 오류가 발생했습니다.');
           router.push('/signIn');
+        } finally {
+          setLoading(false); // 로딩 상태 해제
         }
+      } else {
+        setLoading(false); // response가 없을 경우 로딩 상태 해제
       }
     };
 
     handleCallback();
   }, [router, login]);
 
-  return <div>OAuth 인증 처리 중...</div>;
+  if (loading) {
+    return <div>OAuth 인증 처리 중...</div>;
+  }
+
+  return null;
 };
 
 export default OAuthCallback;
