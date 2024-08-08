@@ -1569,6 +1569,7 @@ const MyContainerMap = ({ warehouseId }) => {
             <p>Name : {selectedLocation.name}</p>
             <p>Type : {selectedLocation.type}</p>
             <p>층수 : {selectedLocation.z}</p>
+            <p>현재 재고율 : {selectedLocation.fill} </p>
           </div>
         ) : (
           <p>No rectangle selected</p>
