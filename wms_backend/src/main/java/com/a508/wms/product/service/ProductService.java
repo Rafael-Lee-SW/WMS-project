@@ -45,13 +45,12 @@ public class ProductService {
     private final ProductDetailModuleService productDetailModuleService;
     private final FloorModuleService floorModuleService;
     private final BusinessModuleService businessModuleService;
-    private final ImportModuleService importModuleService;
     private final ProductRepository productRepository;
-    private final ExportModuleService exportModuleService;
     private final int LIMIT_DAY = 1;
     private final WarehouseModuleService warehouseModuleService;
     private final LocationModuleService locationModuleService;
     private final LocationService locationService;
+    private final ProductFlowModuleService productFlowModuleService;
 
     /**
      * 서비스의 모든 상품을 반환하는 기능
@@ -266,7 +265,8 @@ public class ProductService {
         Product product = ProductMapper.fromProductData(request, productDetail, defaultFloor);
 
         productModuleService.save(product);
-        importModuleService.save(request, product);
+//        importModuleService.save(request, product);
+        productFlowModuleService.saveImport(request, product);
     }
 
     /**
@@ -311,7 +311,6 @@ public class ProductService {
         productQuantityCheck(request);
 
         List<ExportResponseDto> datas = request.getData();
-
         Map<String, List<ExportResponseDto>> exports = datas.stream()
                 .collect(Collectors.groupingBy(ExportResponseDto::getTrackingNumber));
 
@@ -331,7 +330,7 @@ public class ProductService {
                 List<ExportResponseDto> dataLists = entry.getValue();
 
                 for (ExportResponseDto exportResponseDto : dataLists) {
-                    exportModuleService.save(exportResponseDto, business);
+                    productFlowModuleService.saveExport(exportResponseDto, business);
                 }
             }
         }
@@ -608,7 +607,7 @@ public class ProductService {
     public ProductMoveResponseDto moveProduct(ProductMoveRequestDto request) throws ProductException {
         try {
             Product originalProduct = productModuleService.findById(request.getProductId());
-            originalProduct.updateData(originalProduct.getQuantity() - request.getQuantity());
+            originalProduct.updateData(originalProduct.getQuantity()- request.getQuantity());
 
             Location location = locationService.findByNameAndWarehouseId(
                     request.getLocationName(),
@@ -630,9 +629,17 @@ public class ProductService {
                     .build();
             productModuleService.save(originalProduct);
             productModuleService.save(moveProduct);
-            ProductMoveResponseDto response = ProductMapper.toProductMoveResponseDto(moveProduct);
-            response.setWarehouseId(request.getWarehouseId());
-            response.setWarehouseName(location.getWarehouse().getName());
+
+            ProductMoveResponseDto response = ProductMapper.toProductMoveResponseDto(moveProduct,
+                    request.getWarehouseId(),
+                    location.getWarehouse().getName(),
+                    request.getLocationName(),
+                    location.getName(),
+                    request.getFloorLevel(),
+                    moveFloor.getFloorLevel());
+
+            productFlowModuleService.saveMove(response,
+                    moveProduct.getProductDetail().getBusiness());
             return response;
         } catch (NullPointerException e) {
             throw new ProductException.NotFountException(request.getProductId());

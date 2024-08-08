@@ -84,10 +84,10 @@ public class Product extends BaseTimeEntity {
                 : productUpdateRequestDto.getBarcode(),
                 (productUpdateRequestDto.getName() == null) ? productDetail.getName()
                         : productUpdateRequestDto.getName(),
-                productDetail.getSize(),  // 필요시 업데이트할 데이터
-                productDetail.getUnit(),  // 필요시 업데이트할 데이터
-                productDetail.getOriginalPrice(),  // 필요시 업데이트할 데이터
-                productDetail.getSellingPrice()  // 필요시 업데이트할 데이터
+                (productDetail.getSize() == null) ? 0 : productDetail.getSize(),  // 필요시 업데이트할 데이터
+                (productDetail.getUnit() == null) ? 0 : productDetail.getUnit(),  // 필요시 업데이트할 데이터
+                (productDetail.getOriginalPrice() == null) ? 0 : productDetail.getOriginalPrice(),  // 필요시 업데이트할 데이터
+                (productDetail.getSellingPrice() == null) ? 0 : productDetail.getSellingPrice()  // 필요시 업데이트할 데이터
         );
     }
     //삭제 상태 변경
