@@ -66,8 +66,10 @@ registerPlugin(HiddenRows);
 
 // 재고를 엑셀 형식으로 보면서 관리하는 Component
 const MyContainerProduct = ({ WHId }) => {
-  // API를 통해 창고의 데이터를 가져오기 위한 State
+  // 제품 목록 / 입고 / 출고 / 수정하기 / 이동하기에 쓰이는 data Table state
   const [tableData, setTableData] = useState([]);
+  // 변동 내역 / 알림함에서 쓰이는 data Table state
+  const [notificationTableData, setNotificationTableData] = useState([]);
   const [detailedData, setDetailedData] = useState([]); // Store all import/export data
   const [ModalTableData, setModalTableData] = useState([]);
   const [columns, setColumns] = useState([]);
@@ -97,12 +99,12 @@ const MyContainerProduct = ({ WHId }) => {
     expiration_date: null,
   });
 
-  // State to track selected rows for moving products
+  // 선택된 열을 추적하기 위한 State
   const [selectedRows, setSelectedRows] = useState([]);
   const [openMoveModal, setOpenMoveModal] = useState(false); // State for move modal
   const [moveData, setMoveData] = useState([]); // State to track data for moving products
 
-  // State to manage bulk move details
+  // '상품별로 선택 이동하기' 를 위한 State
   const [bulkMoveDetails, setBulkMoveDetails] = useState({
     warehouseId: "",
     locationName: "",
@@ -110,11 +112,13 @@ const MyContainerProduct = ({ WHId }) => {
     quantity: "",
   });
 
-  // Error messages and mode state
+  // 에러 메세지 출력을 위한 State
   const [errors, setErrors] = useState([]);
-  const [isBulkMove, setIsBulkMove] = useState(true); // Default to Bulk Move mode
 
-  // State to manage product input section
+ // '상품 한번에 이동하기' 를 위한 State
+  const [isBulkMove, setIsBulkMove] = useState(true);
+
+  // Input Section을 관리하기 위한 State
   const [showProductInputSection, setShowProductInputSection] = useState(false); // State for showing/hiding product input section
   const [newProductData, setNewProductData] = useState({
     barcode: "",
@@ -327,14 +331,20 @@ const MyContainerProduct = ({ WHId }) => {
   // 새로운 엑셀 상품들을 입고시키는 API 메서드
   const importAPI = async (postData) => {
     try {
-      // postData에 businessId와 warehouseId를 추가한다.
-      const newPostData = {
-        warehouseId: WHId,
-        businessId: businessData.id,
-        data: postData,
-      };
 
-      console.log(newPostData);
+      console.log(postData);
+
+      //  // 입고 시에 사용되는 데이터 양식
+      const ImportArray = postData.map((product) => ({
+        name: product.name,
+        barcode : product.barcode,
+        quantity : parseInt(product.quantity),
+        productStorageType : "상온",
+        expirationDate : product.expirationDate || null,
+        warehouseId: parseInt(WHId),
+      }));
+
+      console.log(ImportArray);
 
       const response = await fetch(
         "https://i11a508.p.ssafy.io/api/products/import",
@@ -343,7 +353,7 @@ const MyContainerProduct = ({ WHId }) => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(newPostData),
+          body: JSON.stringify(ImportArray),
         }
       );
 
@@ -495,12 +505,11 @@ const MyContainerProduct = ({ WHId }) => {
     }
   };
 
-  // 모든 알림을 가져오는 메서드
+  // 모든 알림(변동내역)을 가져오는 메서드
   const getNotificationsAPI = async (businessId) => {
     try {
       const response = await fetch(
-        // `https://i11a508.p.ssafy.io/api/products/notification?businessId=${businessId}`,
-        `https://i11a508.p.ssafy.io/api/products/notification?businessId=1`,
+        `https://i11a508.p.ssafy.io/api/products/notification?businessId=${businessId}`,
         {
           method: "GET",
           headers: {
@@ -537,7 +546,8 @@ const MyContainerProduct = ({ WHId }) => {
           trackingNumber: item.trackingNumber,
         }));
 
-        setTableData(formattedData);
+        setNotificationTableData(formattedData);
+
         setColumns([
           { name: "date", label: "날짜" },
           { name: "type", label: "유형" },
@@ -557,7 +567,8 @@ const MyContainerProduct = ({ WHId }) => {
   };
 
   // New function to show only unique import/export dates
-  const showUniqueDates = () => {
+  const showUniqueDates = async () => {
+
     // Group data by date and type
     const groupedData = detailedData.reduce((acc, item) => {
       const dateKey = new Date(item.date).toLocaleDateString();
@@ -583,7 +594,7 @@ const MyContainerProduct = ({ WHId }) => {
       count: entry.count,
     }));
 
-    setTableData(formattedData);
+    setNotificationTableData(formattedData);
     setColumns([
       { name: "date", label: "날짜" },
       { name: "type", label: "유형" },
@@ -627,12 +638,13 @@ const MyContainerProduct = ({ WHId }) => {
     }));
 
     // Update table with detailed data
-    setTableData(formattedData);
+    setNotificationTableData(formattedData);
     setColumns(detailedColumns);
   };
 
   // 상품 정보를 수정하는 API 호출 메서드
   const productEditAPI = async (productsArray) => {
+
     try {
       const response = await fetch(`https://i11a508.p.ssafy.io/api/products`, {
         method: "PUT",
@@ -657,18 +669,19 @@ const MyContainerProduct = ({ WHId }) => {
     const hotInstance = hotTableRef.current.hotInstance;
     const updatedData = hotInstance.getData();
 
-    // Map the updated data to an array of product objects
+    // 수정을 위한 데이터를 updatedData를 통해 가져온다.
     const productsArray = updatedData.map((row) => ({
       productId: String(row[0]), // Get From HiddenId
-      name: row[1],
-      barcode: String(row[2]),
-      quantity: row[3],
       locationName: row[4],
       floorLevel: String(row[5]),
-      expirationDate: null,
-      warehouseId: parseInt(row[7]),
+      productRequestDto : {
+        name: row[1],
+        barcode: String(row[2]),
+        quantity: row[3],
+        expirationDate: null,
+        warehouseId: parseInt(row[7]),
+      }
     }));
-    console.log(productsArray);
 
     // Send the array of products to the API
     productEditAPI(productsArray);
@@ -821,20 +834,6 @@ const MyContainerProduct = ({ WHId }) => {
     onRowClick: (rowData) => handleRowClick(rowData), // Handle row click
   };
 
-  const CustomChip = ({ label, onDelete }) => {
-    return (
-      <Chip
-        variant="outlined"
-        color="secondary"
-        label={label}
-        onDelete={onDelete}
-      />
-    );
-  };
-
-  const CustomFilterList = (props) => {
-    return <TableFilterList {...props} ItemComponent={CustomChip} />;
-  };
 
   // Define the componentsArray with separate options
   const componentsArray = [
@@ -844,9 +843,6 @@ const MyContainerProduct = ({ WHId }) => {
       data={tableData}
       columns={columns}
       options={productOptions}
-      components={{
-        TableFilterList: CustomFilterList,
-      }}
     />,
     <MUIDataTable
       key="moveProductList"
@@ -854,14 +850,11 @@ const MyContainerProduct = ({ WHId }) => {
       data={tableData}
       columns={columns}
       options={moveOptions}
-      components={{
-        TableFilterList: CustomFilterList,
-      }}
     />,
     <MUIDataTable
       key="importExportList"
       title={"입출고 목록"}
-      data={tableData}
+      data={notificationTableData}
       columns={columns}
       options={importExportOptions}
     />,
@@ -925,7 +918,9 @@ const MyContainerProduct = ({ WHId }) => {
         setBusinessData(businessInfo);
         console.log("Business data loaded:", businessInfo);
 
+        //재고 목록과 알림 내역을 불러온다.
         productGetAPI(businessInfo.id);
+        getNotificationsAPI(businessInfo.id);
       } else {
         console.error("Error fetching user data");
       }
@@ -950,6 +945,7 @@ const MyContainerProduct = ({ WHId }) => {
 
         // Fetch business data using user ID
         fetchBusinessData(parsedUser.id);
+
       } catch (error) {
         console.error("Error parsing user data from localStorage:", error);
       }
@@ -1022,8 +1018,8 @@ const MyContainerProduct = ({ WHId }) => {
             variant="contained"
             color="primary"
             onClick={() => {
+              getNotificationsAPI(businessData.id);
               handleNextComponent(2);
-              showUniqueDates();
             }}
           >
             변동내역
