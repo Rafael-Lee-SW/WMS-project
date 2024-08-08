@@ -66,8 +66,10 @@ registerPlugin(HiddenRows);
 
 // 재고를 엑셀 형식으로 보면서 관리하는 Component
 const MyContainerProduct = ({ WHId }) => {
-  // API를 통해 창고의 데이터를 가져오기 위한 State
+  // 제품 목록 / 입고 / 출고 / 수정하기 / 이동하기에 쓰이는 data Table state
   const [tableData, setTableData] = useState([]);
+  // 변동 내역 / 알림함에서 쓰이는 data Table state
+  const [notificationTableData, setNotificationTableData] = useState([]);
   const [detailedData, setDetailedData] = useState([]); // Store all import/export data
   const [ModalTableData, setModalTableData] = useState([]);
   const [columns, setColumns] = useState([]);
@@ -495,12 +497,11 @@ const MyContainerProduct = ({ WHId }) => {
     }
   };
 
-  // 모든 알림을 가져오는 메서드
+  // 모든 알림(변동내역)을 가져오는 메서드
   const getNotificationsAPI = async (businessId) => {
     try {
       const response = await fetch(
-        // `https://i11a508.p.ssafy.io/api/products/notification?businessId=${businessId}`,
-        `https://i11a508.p.ssafy.io/api/products/notification?businessId=1`,
+        `https://i11a508.p.ssafy.io/api/products/notification?businessId=${businessId}`,
         {
           method: "GET",
           headers: {
@@ -537,7 +538,8 @@ const MyContainerProduct = ({ WHId }) => {
           trackingNumber: item.trackingNumber,
         }));
 
-        setTableData(formattedData);
+        setNotificationTableData(formattedData);
+
         setColumns([
           { name: "date", label: "날짜" },
           { name: "type", label: "유형" },
@@ -557,38 +559,40 @@ const MyContainerProduct = ({ WHId }) => {
   };
 
   // New function to show only unique import/export dates
-  const showUniqueDates = () => {
-    // Group data by date and type
-    const groupedData = detailedData.reduce((acc, item) => {
-      const dateKey = new Date(item.date).toLocaleDateString();
-      const typeKey = item.productFlowType;
-      const key = `${dateKey}-${typeKey}`;
+  const showUniqueDates = async () => {
 
-      if (!acc[key]) {
-        acc[key] = {
-          date: dateKey,
-          type: typeKey,
-          count: 0,
-        };
-      }
 
-      acc[key].count += 1;
-      return acc;
-    }, {});
+      // Group data by date and type
+      const groupedData = detailedData.reduce((acc, item) => {
+        const dateKey = new Date(item.date).toLocaleDateString();
+        const typeKey = item.productFlowType;
+        const key = `${dateKey}-${typeKey}`;
 
-    // Format grouped data for table display
-    const formattedData = Object.values(groupedData).map((entry) => ({
-      date: entry.date,
-      type: entry.type,
-      count: entry.count,
-    }));
+        if (!acc[key]) {
+          acc[key] = {
+            date: dateKey,
+            type: typeKey,
+            count: 0,
+          };
+        }
 
-    setTableData(formattedData);
-    setColumns([
-      { name: "date", label: "날짜" },
-      { name: "type", label: "유형" },
-      { name: "count", label: "수량" },
-    ]);
+        acc[key].count += 1;
+        return acc;
+      }, {});
+
+      // Format grouped data for table display
+      const formattedData = Object.values(groupedData).map((entry) => ({
+        date: entry.date,
+        type: entry.type,
+        count: entry.count,
+      }));
+
+      setNotificationTableData(formattedData);
+      setColumns([
+        { name: "date", label: "날짜" },
+        { name: "type", label: "유형" },
+        { name: "count", label: "수량" },
+      ]);
   };
 
   // Function to handle row click and display details
@@ -627,7 +631,7 @@ const MyContainerProduct = ({ WHId }) => {
     }));
 
     // Update table with detailed data
-    setTableData(formattedData);
+    setNotificationTableData(formattedData);
     setColumns(detailedColumns);
   };
 
@@ -821,20 +825,6 @@ const MyContainerProduct = ({ WHId }) => {
     onRowClick: (rowData) => handleRowClick(rowData), // Handle row click
   };
 
-  const CustomChip = ({ label, onDelete }) => {
-    return (
-      <Chip
-        variant="outlined"
-        color="secondary"
-        label={label}
-        onDelete={onDelete}
-      />
-    );
-  };
-
-  const CustomFilterList = (props) => {
-    return <TableFilterList {...props} ItemComponent={CustomChip} />;
-  };
 
   // Define the componentsArray with separate options
   const componentsArray = [
@@ -844,9 +834,6 @@ const MyContainerProduct = ({ WHId }) => {
       data={tableData}
       columns={columns}
       options={productOptions}
-      components={{
-        TableFilterList: CustomFilterList,
-      }}
     />,
     <MUIDataTable
       key="moveProductList"
@@ -854,14 +841,11 @@ const MyContainerProduct = ({ WHId }) => {
       data={tableData}
       columns={columns}
       options={moveOptions}
-      components={{
-        TableFilterList: CustomFilterList,
-      }}
     />,
     <MUIDataTable
       key="importExportList"
       title={"입출고 목록"}
-      data={tableData}
+      data={notificationTableData}
       columns={columns}
       options={importExportOptions}
     />,
@@ -925,7 +909,9 @@ const MyContainerProduct = ({ WHId }) => {
         setBusinessData(businessInfo);
         console.log("Business data loaded:", businessInfo);
 
+        //재고 목록과 알림 내역을 불러온다.
         productGetAPI(businessInfo.id);
+        getNotificationsAPI(businessInfo.id);
       } else {
         console.error("Error fetching user data");
       }
@@ -950,6 +936,7 @@ const MyContainerProduct = ({ WHId }) => {
 
         // Fetch business data using user ID
         fetchBusinessData(parsedUser.id);
+
       } catch (error) {
         console.error("Error parsing user data from localStorage:", error);
       }
@@ -1022,8 +1009,8 @@ const MyContainerProduct = ({ WHId }) => {
             variant="contained"
             color="primary"
             onClick={() => {
+              getNotificationsAPI(businessData.id);
               handleNextComponent(2);
-              showUniqueDates();
             }}
           >
             변동내역
