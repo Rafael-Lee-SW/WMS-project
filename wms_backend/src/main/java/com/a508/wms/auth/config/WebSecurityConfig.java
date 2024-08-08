@@ -69,7 +69,7 @@ public class WebSecurityConfig {
             )
             .oauth2Login(oauth2 -> oauth2
                 //리다이렉트 엔드포인트 경로 인가코드로 엑세스 토큰 받기
-                .redirectionEndpoint(endpoint -> endpoint.baseUri("/oauth2/code/*"))
+                .redirectionEndpoint(endpoint -> endpoint.baseUri("/api/oauth2/code/*"))
                 //사용자 정보 받아오기
                 .userInfoEndpoint(endPoint -> endPoint.userService(oAuth2UserService))
                 .successHandler(customSuccessHandler)  // 성공 핸들러 설정
