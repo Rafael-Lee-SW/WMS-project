@@ -47,6 +47,7 @@
     "canvas": "^2.11.2",
     "classnames": "2.3.2",
     "handsontable": "^14.4.0",
+    "iamport-react-native": "^2.0.12",
     "konva": "^9.3.13",
     "lodash.debounce": "^4.0.8",
     "moment": "2.29.4",
