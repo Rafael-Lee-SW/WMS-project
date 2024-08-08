@@ -137,6 +137,7 @@ export default function SignUp() {
   const [isEmailValid, setIsEmailValid] = useState(false);
   const [timer, setTimer] = useState(0);
   const [isCertificationButtonEnabled, setIsCertificationButtonEnabled] = useState(false);
+  const [isCertificationSuccess, setIsCertificationSuccess] = useState(false); // 인증 성공 상태
 
   useEffect(() => {
     const validatePassword = (password) => {
@@ -209,14 +210,14 @@ export default function SignUp() {
     if (isEmailValid) {
       try {
         const certificationResponse = await axios.post('https://i11a508.p.ssafy.io/api/oauth/email-certification', { email });
-        const certificationResult = handleResponse(certificationResponse);
-
-        if (certificationResult.isSuccess) {
+        
+        // 응답을 직접 확인하여 처리
+        if (certificationResponse.data.code === 'SU') {
           setCertificationMessage('인증번호 발송에 성공하였습니다.');
           setIsCertificationButtonEnabled(true); // 인증 확인 버튼 활성화
           setTimer(180); // 타이머를 3분으로 초기화
         } else {
-          setCertificationMessage(certificationResult.message);
+          setCertificationMessage('메일 전송에 실패했습니다.');
         }
       } catch (error) {
         setCertificationMessage('네트워크 오류가 발생했습니다.');
@@ -238,12 +239,15 @@ export default function SignUp() {
         if (code === 'SU') {
           setCertificationMessage('이메일이 인증되었습니다.');
           setIsCertificationButtonEnabled(false); // 인증 확인 버튼 비활성화
+          setIsCertificationSuccess(true); // 인증 성공 상태 설정
           setTimer(0); // 타이머 초기화
         } else {
           setCertificationMessage('인증번호가 일치하지 않습니다.');
+          setIsCertificationSuccess(false); // 인증 실패 상태
         }
       } catch (error) {
         setCertificationMessage('네트워크 오류가 발생했습니다.');
+        setIsCertificationSuccess(false); // 인증 실패 상태
       }
     }
   };
@@ -350,7 +354,7 @@ export default function SignUp() {
                     {certificationButtonLabel} {/* 현재 작업에 맞게 라벨 업데이트 */}
                   </Button>
                 </div>
-                <span style={{ color: 'blue' }}>{certificationMessage}</span>
+                <span style={{ color: isCertificationSuccess ? 'blue' : 'red' }}>{certificationMessage}</span>
                 {isCertificationButtonEnabled && <span>{formatTime(timer)}</span>}
                 <br />
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingRight: '5px', paddingLeft: '5px' }}>
