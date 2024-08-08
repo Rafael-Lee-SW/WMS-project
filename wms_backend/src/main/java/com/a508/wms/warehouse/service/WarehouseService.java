@@ -8,17 +8,13 @@ import com.a508.wms.location.domain.Location;
 import com.a508.wms.location.dto.LocationResponseDto;
 import com.a508.wms.location.mapper.LocationMapper;
 import com.a508.wms.location.service.LocationModuleService;
-import com.a508.wms.product.domain.Product;
 import com.a508.wms.product.service.ProductModuleService;
 import com.a508.wms.util.constant.ExportTypeEnum;
 import com.a508.wms.util.constant.ProductStorageTypeEnum;
-import com.a508.wms.util.constant.ResponseEnum;
-import com.a508.wms.warehouse.domain.Wall;
 import com.a508.wms.warehouse.domain.Warehouse;
-import com.a508.wms.warehouse.dto.*;
-import com.a508.wms.warehouse.exception.WarehouseException;
 import com.a508.wms.warehouse.dto.LocationsAndWallsRequestDto;
 import com.a508.wms.warehouse.dto.WallDto;
+import com.a508.wms.warehouse.dto.WallRequestDto;
 import com.a508.wms.warehouse.dto.WarehouseByBusinessDto;
 import com.a508.wms.warehouse.dto.WarehouseDetailResponseDto;
 import com.a508.wms.warehouse.dto.WarehouseDto;
@@ -100,7 +96,7 @@ public class WarehouseService {
                 id)
             .stream()
             .map(location -> LocationMapper.toLocationResponseDto(location,
-                calculateFillRate(location)))
+                getMaxFloorCapacity(location)))
             .toList();
 
         List<WallDto> walls = wallModuleService.findByWarehouseId(id)
@@ -128,7 +124,7 @@ public class WarehouseService {
             .map(location -> LocationMapper.fromLocationUpdateDto(location, warehouse))
             .map(locationModuleService::save)
             .map(location -> LocationMapper.toLocationResponseDto(location,
-                calculateFillRate(location)))
+                getMaxFloorCapacity(location)))
             .toList();
 
         List<WallDto> walls = request.getWalls().stream()
@@ -140,27 +136,13 @@ public class WarehouseService {
         return WarehouseMapper.toWarehouseDetailResponseDto(warehouse, locations, walls);
     }
 
-    private int calculateFillRate(Location location) {
+    private int getMaxFloorCapacity(Location location) {
         List<Floor> floors = floorModuleService.findAllByLocationId(location.getId());
-
-        if (floors.isEmpty()) {
-            return 0;
-        }
-        int totalSize = 0;
-        int floorSize = location.getXSize() * location.getYSize() * 2500;
-
-        for (Floor floor : floors) {
-            List<Product> products = productModuleService.findByFloor(floor);
-            int productSize = 0;
-
-            for (Product product : products) {
-                productSize += product.getProductDetail().getSize() * product.getQuantity();
-            }
-
-            totalSize += Math.min(100, productSize * 100 / floorSize); //0~100단위의
-        }
-
-        return totalSize / floors.size();
+        
+        return floors.stream()
+            .mapToInt(floorModuleService::getCapacity)
+            .max()
+            .orElse(0);
     }
 
     /**
@@ -213,6 +195,7 @@ public class WarehouseService {
             .facilityTypeEnum(warehouseDto.getFacilityTypeEnum())
             .build();
     }
+
     public void saveAllWall(WallRequestDto saveRequest) {
         log.info("[Service] save All Wall");
         Warehouse warehouse = warehouseModuleService.findById(saveRequest.getWarehouseId());
