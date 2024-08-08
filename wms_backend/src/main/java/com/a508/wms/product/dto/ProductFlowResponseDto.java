@@ -15,6 +15,7 @@ public class ProductFlowResponseDto {
     private String name;
     private Long barcode;
     private Integer quantity;
+    private String trackingNumber;
     private String previousLocationName;
     private String currentLocationName;
     private Integer previousFloorLevel;

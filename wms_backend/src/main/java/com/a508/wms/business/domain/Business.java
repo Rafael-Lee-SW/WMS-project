@@ -1,6 +1,5 @@
 package com.a508.wms.business.domain;
 
-import com.a508.wms.product.domain.Export;
 import com.a508.wms.product.domain.ProductFlow;
 import com.a508.wms.productdetail.domain.ProductDetail;
 import com.a508.wms.subscription.domain.Subscription;
@@ -54,9 +53,6 @@ public class Business extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "business")
     private List<Warehouse> warehouses = new ArrayList<>();
-
-    @OneToMany(mappedBy = "business")
-    private List<Export> exports = new ArrayList<>();
 
     @OneToMany(mappedBy = "business")
     private List<ProductFlow> productFlows = new ArrayList<>();

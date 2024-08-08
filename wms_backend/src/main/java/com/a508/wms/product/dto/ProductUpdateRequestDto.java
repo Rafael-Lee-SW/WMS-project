@@ -13,9 +13,9 @@ public class ProductUpdateRequestDto {
     Long barcode;
     Long warehouseId;
     String name;
-    int quantity;
+    Integer quantity;
     String locationName;
-    int floorLevel;
+    Integer floorLevel;
     LocalDateTime expirationDate;
 
 }
