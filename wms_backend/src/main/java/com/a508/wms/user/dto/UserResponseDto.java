@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.time.LocalDate;
+
 @Setter
 @Getter
 @ToString
@@ -27,4 +29,5 @@ public class UserResponseDto {
     private LoginTypeEnum loginTypeEnum;
     private StatusEnum statusEnum;
     private long businessId;
+    private LocalDate businessAddDate;
 }
