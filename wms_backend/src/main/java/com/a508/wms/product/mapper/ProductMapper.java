@@ -109,7 +109,7 @@ public class ProductMapper {
                 .quantity(product.getQuantity())
                 .expirationDate(product.getExpirationDate())
                 .productStorageType(product.getProductDetail().getProductStorageType())
-                .date(LocalDateTime.now())
+                .date(LocalDateTime.now().withNano(0))
                 .build();
     }
 }

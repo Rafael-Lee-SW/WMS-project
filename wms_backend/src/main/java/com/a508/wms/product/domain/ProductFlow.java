@@ -53,7 +53,7 @@ public class ProductFlow {
     @Column(nullable = false)
     private String trackingNumber;
 
-    @Column
+    @Column(name = "expiration_date", columnDefinition = "DATETIME")
     private LocalDateTime expirationDate;
     @Column
     private LocalDateTime date;

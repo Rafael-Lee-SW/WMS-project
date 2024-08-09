@@ -1,9 +1,6 @@
 package com.a508.wms.product.dto;
 
-import com.a508.wms.util.constant.ProductStorageTypeEnum;
 import lombok.*;
-
-import java.time.LocalDateTime;
 
 @Builder
 @Getter

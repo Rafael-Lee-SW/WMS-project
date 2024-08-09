@@ -26,5 +26,5 @@ public class UserResponseDto {
     private RoleTypeEnum roleTypeEnum;
     private LoginTypeEnum loginTypeEnum;
     private StatusEnum statusEnum;
-    private BusinessResponseDto business; // BusinessDto와의 관계를 반영
+    private long businessId;
 }
