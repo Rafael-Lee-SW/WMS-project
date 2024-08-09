@@ -8,6 +8,8 @@ import com.a508.wms.user.dto.UserResponseDto;
 import com.a508.wms.user.mapper.UserMapper;
 import com.a508.wms.user.repository.UserRepository;
 import com.a508.wms.util.constant.StatusEnum;
+
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -90,10 +92,11 @@ public class UserService {
     public User findByEmail(String email) {
         return userRepository.findUserByEmail(email);
     }
-    @Transactional
+
     public void updateByBusinessId(Long businessId, Long userId) {
         User user = userModuleService.findById(userId);
         user.updateBusinessId(businessId);
+        user.updateBusinessAddDate(LocalDate.now());
         userRepository.save(user);
 
     }

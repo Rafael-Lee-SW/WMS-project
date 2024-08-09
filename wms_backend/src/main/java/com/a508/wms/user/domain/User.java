@@ -21,6 +21,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Entity
 @Getter
 @NoArgsConstructor
@@ -63,6 +65,9 @@ public class User extends BaseTimeEntity {
     @Column(nullable = true)
     private Long businessId;
 
+    @Column
+    private LocalDate businessAddDate;
+
     // 연관 관계 편의 메서드
     public void setBusiness(Business business) {
         this.business = business;
@@ -90,5 +95,9 @@ public class User extends BaseTimeEntity {
 
     public void updateBusinessId(Long businessId) {
         this.businessId = businessId;
+    }
+
+    public void updateBusinessAddDate(LocalDate businessAddDate) {
+        this.businessAddDate = businessAddDate;
     }
 }

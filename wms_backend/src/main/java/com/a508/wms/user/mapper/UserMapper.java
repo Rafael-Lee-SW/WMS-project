@@ -47,6 +47,7 @@ public class UserMapper {
             .loginTypeEnum(user.getLoginTypeEnum())
             .statusEnum(user.getStatusEnum())
             .businessId((user.getBusinessId() == null) ? DEFAULT_BUSINESS_ID : user.getBusinessId())
+            .businessAddDate(user.getBusinessAddDate())
             .build();
     }
 
