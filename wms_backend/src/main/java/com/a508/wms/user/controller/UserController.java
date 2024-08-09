@@ -2,20 +2,13 @@ package com.a508.wms.user.controller;
 
 import com.a508.wms.user.dto.UserRequestDto;
 import com.a508.wms.user.dto.UserResponseDto;
+import com.a508.wms.user.service.UserModuleService;
 import com.a508.wms.user.service.UserService;
 import com.a508.wms.util.BaseSuccessResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
@@ -25,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
     private final UserService userService;
+    private final UserModuleService userModuleService;
 
     /**
      * 특정 사업체의 전체 직원을 조회하는 메서드
@@ -32,13 +26,11 @@ public class UserController {
      * @param businessId : 특정 사업체의 전체 직원을 조회하는 경우 사업체 고유 번호 입력
      * @return List<UserDto> (전체 직원), List<UserDto> (특정 사업체의 전체 직원)
      */
-    @GetMapping
-    public BaseSuccessResponse<List<UserResponseDto>> findByBusinessId(
-        @RequestParam(value = "businessId") Long businessId) {
+    @GetMapping("/{businessId}")
+    public BaseSuccessResponse<?> findAllByBusinessId(@PathVariable("businessId") Long businessId) {
         log.info("[Controller] find User by businessId: {}", businessId);
         return new BaseSuccessResponse<>(userService.findByBusinessId(businessId));
     }
-
     /**
      * 특정 유저 1명을 조회하는 메서드
      *
@@ -50,7 +42,17 @@ public class UserController {
         log.info("[Controller] find User by id: {}", id);
         return new BaseSuccessResponse<>(userService.findById(id));
     }
-
+    @GetMapping
+    public BaseSuccessResponse<UserResponseDto> findByEmail(@RequestParam("email") String email) {
+        log.info("[Controller] find User by email: {}", email);
+        return new BaseSuccessResponse<>(userModuleService.findByEmail(email));
+    }
+    @PutMapping
+    public BaseSuccessResponse<Void> updateByBusinessId(@RequestParam("businessId") Long businessId,
+                                                        @RequestParam("id") Long id) {
+        userService.updateByBusinessId(businessId, id);
+        return new BaseSuccessResponse<>(null);
+    }
     /**
      * 직원 1명의 정보를 수정하는 메서드
      *

@@ -1,6 +1,7 @@
 package com.a508.wms.user.service;
 
 import com.a508.wms.user.domain.User;
+import com.a508.wms.user.dto.UserResponseDto;
 import com.a508.wms.user.repository.UserRepository;
 import com.a508.wms.util.constant.RoleTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;
@@ -60,5 +61,15 @@ public class UserModuleService {
     public User delete(User user) {
         user.setStatusEnum(StatusEnum.DELETED);
         return save(user);
+    }
+
+    public UserResponseDto findByEmail(String email) {
+        User user = userRepository.findUserByEmail(email);
+        return UserResponseDto.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .nickname(user.getNickname())
+                .build();
     }
 }

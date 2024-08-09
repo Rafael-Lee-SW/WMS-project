@@ -10,6 +10,8 @@ import com.a508.wms.util.constant.StatusEnum;
 import java.util.Map;
 import org.springframework.stereotype.Component;
 
+import static com.a508.wms.util.constant.ProductConstant.DEFAULT_BUSINESS_ID;
+
 @Component
 public class UserMapper {
 
@@ -41,7 +43,7 @@ public class UserMapper {
             .roleTypeEnum(user.getRoleTypeEnum())
             .loginTypeEnum(user.getLoginTypeEnum())
             .statusEnum(user.getStatusEnum())
-            .businessId((user.getBusinessId() == null) ? -1 : user.getBusinessId())
+            .businessId((user.getBusinessId() == null) ? DEFAULT_BUSINESS_ID : user.getBusinessId())
             .build();
     }
 
@@ -113,4 +115,5 @@ public class UserMapper {
         }
         return null;
     }
+    
 }
