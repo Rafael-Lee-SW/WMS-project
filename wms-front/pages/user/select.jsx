@@ -63,8 +63,9 @@ const Select = (props) => {
     const { locationX, locationY, locationZ, row, column } = formData;
 
     // Calculate spacing between locations
-    const xSpacing = postData.size / row;
-    const ySpacing = postData.size / column;
+
+    const xSpacing = postData.size / row / 2;
+    const ySpacing = postData.size / column / 2;
 
     // Location(적재함) 생성
     const locationData = [];
@@ -266,12 +267,12 @@ const Select = (props) => {
 
       if (response.ok) {
         const userData = await response.json();
-        const businessInfo = userData.result.business;
+        const businessInfo = userData.result;
         setBusinessData(businessInfo); // Store business data in state
         console.log("Business data loaded:", businessInfo);
 
         // Now call the warehouse info API with the business ID
-        getAllWarehouseInfoAPI(businessInfo.id);
+        getAllWarehouseInfoAPI(businessInfo.businessId);
       } else {
         console.error("Error fetching user data");
       }
