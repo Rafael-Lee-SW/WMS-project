@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { fetchBusiness } from './api';
+import { fetchBusiness, fetchUser } from './api';
 import EditInfo from '../components/MyPage/EditInfo';
 import SubInfo from '../components/MyPage/SubInfo';
 import ManageBusiness from '../components/MyPage/ManageBusiness';
@@ -19,43 +19,72 @@ export default function Mypage() {
   const router = useRouter();
   const [selectedComponent, setSelectedComponent] = useState('');
 
-  const [id, setId] = useState();
   const [userId, setUserId] = useState();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [businessNumber, setBusinessNumber] = useState('');
-  const [statusEnum, setStatusEnum] = useState('');
-  const [notifications, setNotifications] = useState([]);
-  const [subscriptions, setSubscriptions] = useState([]);
-  const [employees, setEmployees] = useState([]);
+  const [businessId, setBusinessId] = useState();
+  const [roleTypeEnum, setRoleTypeEnum] = useState('');
   const [nickname, setNickname] = useState('');
+  const [businessName, setBusinessName] = useState('');
+  const [businessNumber, setBusinessNumber] = useState('');
+  const [createdDate, setCreatedDate] = useState('');
   const [openModal, setOpenModal] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
 
-  const getBusinessInfo = async () => {
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    const token = localStorage.getItem('token');
+
+    if (user && token) {
+      setUserId(user.id); 
+    }
+  }, []);
+
+  useEffect(() => {
+    if (userId) {
+      getUserInfo();
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    if (businessId) {
+      getBusinessInfo();
+    }
+  }, [businessId]);
+
+  const getUserInfo = async () => {
+    
     try {
-      const response = await fetchBusiness(1);
-      const { id, userId, name, email, businessNumber, statusEnum, notificationDtoList, employeeDtoList, nickname, subscriptionDtoList } = response.data.result;
+      const Response = await fetchUser(userId);
+      const { id, name, email, nickname, roleTypeEnum, businessId } = Response.data.result;
       
-      setId(id);
-      setUserId(userId);
+      setUserId(id);
       setName(name);
       setEmail(email);
-      setBusinessNumber(businessNumber);
-      setStatusEnum(statusEnum);
-      setNotifications(notificationDtoList);
-      setSubscriptions(subscriptionDtoList);
-      setEmployees(employeeDtoList);
+      setBusinessId(businessId);
+      setRoleTypeEnum(roleTypeEnum);
       setNickname(nickname);
       
     } catch (error) {
-      router.push('404');
+      router.push('/404');
     }
   }
+  
+  const getBusinessInfo = async () => {
 
-  useEffect(() => {
-    getBusinessInfo();
-  }, []);
+    try {
+      const Response = await fetchBusiness(businessId);
+      const { name, businessNumber, createdDate } = Response.data.result;
+
+      setBusinessName(name);
+      setBusinessNumber(businessNumber);
+      setCreatedDate(createdDate);
+
+    } catch (error) {
+      console.log(error)
+      router.push('/404');
+    }
+  }
 
   const handleUpdate = () => {
     getBusinessInfo();
@@ -90,21 +119,21 @@ export default function Mypage() {
   const renderComponent = () => {
     switch (selectedComponent) {
       case 'alarm':
-        return <Alarm notifications={notifications}/>;
+        return <Alarm businessId={businessId}/>;
       case 'edit':
-        return <EditInfo id={id} name={name} email={email} nickname={nickname} statusEnum={statusEnum} onUpdateInfo={handleUpdateInfo}/>;
+        return <EditInfo name={name} email={email} nickname={nickname} businessId={businessId} businessName={businessName} businessNumber={businessNumber} roleTypeEnum={roleTypeEnum} onUpdateInfo={handleUpdateInfo}/>;
       case 'license':
-        return <ManageBusiness id={id} userId={userId} name={name} businessNumber={businessNumber} statusEnum={statusEnum} onUpdateBusiness={handleUpdateBusiness}/>;
+        return <ManageBusiness businessId={businessId} businessName={businessName} businessNumber={businessNumber} onUpdateBusiness={handleUpdateBusiness}/>;
       case 'subscriptions':
-        return <SubInfo subscriptions={subscriptions}/>;
+        return <SubInfo businessId={businessId}/>;
       case 'employees':
-        return <ManageEmployees employees={employees} onUpdateEmployees={handleUpdate}/>;
+        return <ManageEmployees businessId={businessId} onUpdateEmployees={handleUpdate}/>;
       case 'info':
-        return <Info name={name} email={email} businessNumber={businessNumber} statusEnum={statusEnum}/>;
+        return <Info name={name} email={email} nickname={nickname} businessId={businessId} businessName={businessName} businessNumber={businessNumber} createdDate={createdDate} roleTypeEnum={roleTypeEnum}/>;
       default:
         return (
           <div>
-            <Info name={name} email={email} businessNumber={businessNumber} />
+            <Info name={name} email={email} nickname={nickname} businessId={businessId} businessName={businessName} businessNumber={businessNumber} createdDate={createdDate} roleTypeEnum={roleTypeEnum}/>
           </div>
         );
     }

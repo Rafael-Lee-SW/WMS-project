@@ -5,6 +5,11 @@ import axios from 'axios';
 const instance = axios.create({
     baseURL: 'https://i11a508.p.ssafy.io/api/',
 });
+// 유저 조회
+function fetchUser(id) {
+    return instance.get(`/users/${id}`)
+}
+
 // 사업체 등록
 function createBusiness(id, data = {}) {
     return instance.post(`/businesses?userId=${id}`, data)
@@ -152,7 +157,7 @@ function fetchExport(businessId) {
 
 // 사업체의 입고, 출고 내역 조회
 function fetchNotifications(businessId) {
-    return instance.get(`products/notifications?businessId=${businessId}`)
+    return instance.get(`products/notification?businessId=${businessId}`)
 }
 
 // 특정 상품 정보 조회
@@ -212,6 +217,7 @@ function fetchLocationFloors(locationId) {
  
 export { 
     instance, 
+    fetchUser,
     createBusiness,
     fetchBusiness, 
     editBusiness,
