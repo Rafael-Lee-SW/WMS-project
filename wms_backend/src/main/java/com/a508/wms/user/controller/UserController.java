@@ -26,7 +26,7 @@ public class UserController {
      * @param businessId : 특정 사업체의 전체 직원을 조회하는 경우 사업체 고유 번호 입력
      * @return List<UserDto> (전체 직원), List<UserDto> (특정 사업체의 전체 직원)
      */
-    @GetMapping("/{businessId}")
+    @GetMapping("/employee/{businessId}")
     public BaseSuccessResponse<?> findAllByBusinessId(@PathVariable("businessId") Long businessId) {
         log.info("[Controller] find User by businessId: {}", businessId);
         return new BaseSuccessResponse<>(userService.findByBusinessId(businessId));
