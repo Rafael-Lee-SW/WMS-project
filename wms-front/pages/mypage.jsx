@@ -8,16 +8,18 @@ import ManageEmployees from '../components/MyPage/ManageEmployees';
 import Info from '../components/MyPage/Info';
 import Alarm from '../components/MyPage/Alarm';
 import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/mypageStyle.js";
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/router'; // useRouter import
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@material-ui/core';
-
 
 const useStyles = makeStyles(styles);
 
 export default function Mypage() {
   const classes = useStyles();
   const router = useRouter();
-  const [selectedComponent, setSelectedComponent] = useState('');
+  const { query } = router; // 쿼리 파라미터 가져오기
+
+  // URL 쿼리 파라미터를 통해 초기 상태 설정
+  const [selectedComponent, setSelectedComponent] = useState(query.component || '');
 
   const [id, setId] = useState();
   const [userId, setUserId] = useState();
@@ -49,7 +51,7 @@ export default function Mypage() {
       setNickname(nickname);
       
     } catch (error) {
-      router.push('404');
+      router.push('/404');
     }
   }
 
@@ -64,14 +66,14 @@ export default function Mypage() {
   const handleUpdateBusiness = (status) => {
     getBusinessInfo();
     setSelectedComponent('info');
-    const message = ''
-    if ( status === '수정' ) {
-      message = '사업체 수정이 완료되었습니다.'
-    } else if ( status === '등록' ) {
-      message = '사업체 등록이 완료되었습니다.'
+    let message = '';
+    if (status === '수정') {
+      message = '사업체 수정이 완료되었습니다.';
+    } else if (status === '등록') {
+      message = '사업체 등록이 완료되었습니다.';
     } else {
-      message = '사업체 삭제가 완료되었습니다.'
-    };
+      message = '사업체 삭제가 완료되었습니다.';
+    }
     setModalMessage(message);
     setOpenModal(true);
   }
@@ -126,7 +128,6 @@ export default function Mypage() {
         </div>
       </div>
       <div className={classes.rightPanel}>
-
         {/* 오른쪽 패널의 내용 */}
         <div className={classes.rendering}>
           {renderComponent()}
