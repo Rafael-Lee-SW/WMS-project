@@ -150,7 +150,8 @@ const MyContainerProduct = ({ WHId }) => {
   const [expectedImportList, setExpectedImportList] = useState([]); // Store expected import list
 
   // Export input section
-  const [showProductExportSection, setShowProductExportSection] = useState(false); // State for showing/hiding product export section
+  const [showProductExportSection, setShowProductExportSection] =
+    useState(false); // State for showing/hiding product export section
   const [newExportData, setNewExportData] = useState({
     barcode: "",
     quantity: "",
@@ -949,14 +950,14 @@ const MyContainerProduct = ({ WHId }) => {
     />,
     <MUIDataTable
       key="moveProductList"
-      title={"이동 상품 목록"}
+      title={"상품 이동하기"}
       data={tableData}
       columns={columns}
       options={moveOptions}
     />,
     <MUIDataTable
       key="importExportList"
-      title={"입출고 목록"}
+      title={"알림함"}
       data={notificationTableData}
       columns={columns}
       options={importExportOptions}
@@ -982,12 +983,11 @@ const MyContainerProduct = ({ WHId }) => {
                   tooltip: {
                     callbacks: {
                       label: (context) => {
-                        const total =
-                          flowByDateData.datasets.reduce(
-                            (sum, dataset) =>
-                              sum + dataset.data[context.dataIndex],
-                            0
-                          );
+                        const total = flowByDateData.datasets.reduce(
+                          (sum, dataset) =>
+                            sum + dataset.data[context.dataIndex],
+                          0
+                        );
                         const percentage = (
                           (context.raw / total) *
                           100
@@ -1133,16 +1133,22 @@ const MyContainerProduct = ({ WHId }) => {
   return (
     <div style={{ marginTop: "3rem", display: "flex" }}>
       <div
-        className="sidebar"
+        className="leftsidebar"
         style={{
-          width: "220px",
+          width: "200px",
           height: "93vh",
           marginRight: "5px",
           padding: "15px",
           boxShadow: "2px 0 5px rgba(0, 0, 0, 0.1)",
+          backgroundColor: "#f7f7f7", // Soft background color
+          borderRadius: "8px", // Rounded corners
+          top: "3vh", // Slight padding from the top of the viewport
+          left: "0", // Align it to the left of the viewport
+          overflowY: "auto", // Enable scrolling for overflow content
+          zIndex: 1000, // Ensure it stays above other content
         }}
       >
-        <div>
+        <div style={{ marginBottom: "10px" }}>
           <Button
             variant="contained"
             color="primary"
@@ -1151,46 +1157,53 @@ const MyContainerProduct = ({ WHId }) => {
               setShowProductInputSection(false);
               setShowProductExportSection(false);
             }}
+            style={{ width: "100%" }} // Button width matches the sidebar
           >
             제품 목록
           </Button>
         </div>
-        <div>
+        <div style={{ marginBottom: "10px" }}>
           <Button
             variant="contained"
             color="primary"
             onClick={() => {
               setShowProductInputSection(true);
               setShowProductExportSection(false);
-              handleNextComponent(-1); // Close other sections
+              handleNextComponent(0); // Close other sections
             }}
+            style={{ width: "100%" }}
           >
             입고하기
           </Button>
         </div>
-        <div>
+        <div style={{ marginBottom: "10px" }}>
           <Button
             variant="contained"
             color="primary"
             onClick={() => {
               setShowProductInputSection(false);
               setShowProductExportSection(true);
-              handleNextComponent(-1); // Close other sections
+              handleNextComponent(0); // Close other sections
             }}
+            style={{ width: "100%" }}
           >
             출고하기
           </Button>
         </div>
-        <div>
+        <div style={{ marginBottom: "10px" }}>
           <Button
             variant="contained"
             color="primary"
-            onClick={() => setOpenEditModal(true)}
+            onClick={() => {
+              setOpenEditModal(true)
+              handleNextComponent(0);
+            }}
+            style={{ width: "100%" }}
           >
             수정하기
           </Button>
         </div>
-        <div>
+        <div style={{ marginBottom: "10px" }}>
           <Button
             variant="contained"
             color="primary"
@@ -1199,11 +1212,12 @@ const MyContainerProduct = ({ WHId }) => {
               setShowProductInputSection(false);
               setShowProductExportSection(false);
             }}
+            style={{ width: "100%" }}
           >
             이동하기
           </Button>
         </div>
-        <div>
+        <div style={{ marginBottom: "10px" }}>
           <Button
             variant="contained"
             color="primary"
@@ -1213,11 +1227,12 @@ const MyContainerProduct = ({ WHId }) => {
               setShowProductInputSection(false);
               setShowProductExportSection(false);
             }}
+            style={{ width: "100%" }}
           >
             변동내역
           </Button>
         </div>
-        <div>
+        <div style={{ marginBottom: "10px" }}>
           <Button
             variant="contained"
             color="primary"
@@ -1226,6 +1241,7 @@ const MyContainerProduct = ({ WHId }) => {
               setShowProductInputSection(false);
               setShowProductExportSection(false);
             }}
+            style={{ width: "100%" }}
           >
             분석
           </Button>
@@ -1240,6 +1256,7 @@ const MyContainerProduct = ({ WHId }) => {
               setShowProductInputSection(false);
               setShowProductExportSection(false);
             }}
+            style={{ width: "100%" }}
           >
             알림함
           </Button>
@@ -1662,7 +1679,11 @@ const MyContainerProduct = ({ WHId }) => {
                   label="물건이 옮겨질 창고의 ID"
                   value={product.warehouseId}
                   onChange={(e) =>
-                    handleNewLocationChange(index, "warehouseId", e.target.value)
+                    handleNewLocationChange(
+                      index,
+                      "warehouseId",
+                      e.target.value
+                    )
                   }
                   fullWidth
                   margin="normal"
@@ -1671,7 +1692,11 @@ const MyContainerProduct = ({ WHId }) => {
                   label="물건이 옮겨질 적재함 이름"
                   value={product.locationName}
                   onChange={(e) =>
-                    handleNewLocationChange(index, "locationName", e.target.value)
+                    handleNewLocationChange(
+                      index,
+                      "locationName",
+                      e.target.value
+                    )
                   }
                   fullWidth
                   margin="normal"

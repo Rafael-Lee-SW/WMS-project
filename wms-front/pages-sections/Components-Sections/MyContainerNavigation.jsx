@@ -57,6 +57,10 @@ registerPlugin(CopyPaste);
 registerPlugin(DropdownMenu);
 registerPlugin(Filters);
 registerPlugin(HiddenRows);
+
+//MUIDataTable
+import MUIDataTable, { TableFilterList } from "mui-datatables";
+
 /**
  * 창고 시각화 Import
  */
@@ -1133,19 +1137,47 @@ const MyContainerNavigation = ({ WHId }) => {
         </div>
         {showDetails ? (
           <div>
-            <h4>현재 적재함 목록</h4>
+            <h3>재고함 목록</h3>
             {locations.length !== 0 ? (
-              <div>
+              <div
+                style={{
+                  width: "100%",
+                }}
+              >
                 <ul
                   style={{
-                    height: "42vh",
+                    height: "50vh",
                     overflowY: "auto",
+                    listStyle: "none",
+                    padding: 0,
                   }}
                 >
                   {locations
                     .filter((locations) => locations.type === "location")
                     .map((locations, index) => (
-                      <li key={index}>{locations.id}번</li>
+                      <li
+                        key={index}
+                        onClick={() => {
+                          setSelectedLocation(locations);
+                          setSelectedLocationTransform(locations.id);
+                          setSelectedFloor(1);
+                          handleSelectedData(locations.name, selectedFloor);
+                        }}
+                        style={{
+                          cursor: "pointer",
+                          padding: "5px",
+                          borderBottom: "1px solid #ccc",
+                          textAlign: "center",
+                          backgroundColor:
+                            selectedLocation &&
+                            selectedLocation.id === locations.id
+                              ? "#f0f0f0" // Highlight color for selected item
+                              : "transparent", // Default color for unselected items
+                          transition: "background-color 0.3s", // Smooth transition effect
+                        }}
+                      >
+                        {locations.name}
+                      </li>
                     ))}
                 </ul>
               </div>
@@ -1206,7 +1238,6 @@ const MyContainerNavigation = ({ WHId }) => {
           </div>
           {showDetails && selectedLocation ? (
             <div>
-              <h3>현재 선택된 재고함</h3>
               <div>
                 <div
                   id="상자 정보"
@@ -1220,26 +1251,23 @@ const MyContainerNavigation = ({ WHId }) => {
                       width: "45%",
                     }}
                   >
-                    <b>ID : {selectedLocation.id}</b>
+                    <h3>재고함 : {selectedLocation.name}</h3>
+                    {/* <b>ID : {selectedLocation.id}</b> */}
                     <br />
-                    <b>
-                      X : {selectedLocation.x} | Y : {selectedLocation.y}
-                    </b>
+                    <b>가로 : {selectedLocation.width}cm |</b>
                     <br />
-                    <b>Name : {selectedLocation.name}</b>
+                    <b>세로 : {selectedLocation.height}cm</b>
                     <br />
-                    <b>Type : {selectedLocation.type}</b>
-                    <br />
-                    <b>층수 : {selectedLocation.z}</b>
+                    <b>단수(층) : {selectedLocation.z}단/층</b>
                   </div>
                   <div
                     id="상자의 z Index를 시각화"
                     style={{
                       marginLeft: "10px",
-                      height: "130px",
+                      height: "200px",
                       width: "65%",
                       overflowY: "auto",
-                      border: "2px solid black",
+                      border: "1px solid gray",
                       borderRadius: "5px",
                       padding: "5px",
                       display: "flex",
@@ -1288,7 +1316,7 @@ const MyContainerNavigation = ({ WHId }) => {
                             e.target.style.border = "1px solid black";
                           }}
                         >
-                          {index + 1} 층
+                          {index + 1} 단
                         </ButtonIn>
                       )
                     )}
@@ -1297,7 +1325,12 @@ const MyContainerNavigation = ({ WHId }) => {
                 <hr />
                 {ModalTableData.length > 0 && (
                   <div>
-                    <HotTable
+                    <MUIDataTable
+                      data={ModalTableData}
+                      columns={columns}
+                    />
+
+                    {/* <HotTable
                       height={400}
                       ref={hotTableRef}
                       data={ModalTableData}
@@ -1317,7 +1350,7 @@ const MyContainerNavigation = ({ WHId }) => {
                       manualRowMove={true}
                       navigableHeaders={true}
                       licenseKey="non-commercial-and-evaluation"
-                    />
+                    /> */}
                   </div>
                 )}
               </div>

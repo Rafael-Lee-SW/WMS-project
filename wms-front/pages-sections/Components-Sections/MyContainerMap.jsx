@@ -1235,6 +1235,19 @@ const MyContainerMap = ({ warehouseId }) => {
     layerRef.current.batchDraw();
   };
 
+  // RGB 색깔로 % 뽑는 함수
+  const extractFillPercentage = (rgbaString) => {
+    const matches = rgbaString.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+
+    if (matches) {
+      const red = parseInt(matches[1], 10);
+      // Assuming the fill percentage was encoded in the red component
+      return ((red / 255) * 100).toFixed(1);
+    }
+
+    return "0.0"; // Default to 0% if unable to parse
+  };
+
   //--- 리턴 Part ---
 
   return (
@@ -1534,15 +1547,20 @@ const MyContainerMap = ({ warehouseId }) => {
         <h3>선택된 재고함</h3>
         {selectedLocation ? (
           <div>
-            <p>ID : {selectedLocation.id}</p>
-            <p>Number : {selectedLocation.order}</p>
-            <p>Name : {selectedLocation.name}</p>
-            <p>Type : {selectedLocation.type}</p>
+            <p>이름 : {selectedLocation.name}</p>
+            <p>타입 : {selectedLocation.type}</p>
             <p>층수 : {selectedLocation.z}</p>
-            <p>현재 재고율 : {selectedLocation.fill} </p>
+            <p>
+              현재 재고율 : {extractFillPercentage(selectedLocation.fill)}%{" "}
+              {/* Extract fill percentage from RGBA */}
+            </p>
+            <p>
+              가로 :{selectedLocation.width}cm | 세로 :{" "}
+              {selectedLocation.height}cm
+            </p>
           </div>
         ) : (
-          <p>No rectangle selected</p>
+          <p>재고함이 선택되지 않았습니다.</p>
         )}
       </div>
       <div
