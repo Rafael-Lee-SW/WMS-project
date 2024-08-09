@@ -7,7 +7,7 @@ import AddCircleOutline from "@material-ui/icons/AddCircleOutline";
 import GridContainer from "/components/Grid/GridContainer.js";
 import GridItem from "/components/Grid/GridItem.js";
 import Card from "/components/Card/Card.js";
-import { Modal, Fade, Button, TextField } from "@mui/material";
+import { Modal, Fade, Button, TextField, Typography } from "@mui/material";
 import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/selectStyle.js";
 
 const useStyles = makeStyles(styles);
@@ -31,6 +31,8 @@ const Select = (props) => {
   const [userData, setUserData] = useState(null); // State to store user data
   const [businessData, setBusinessData] = useState(null); // State to store business data
 
+  const [validationErrors, setValidationErrors] = useState({}); // Track validation errors
+
   const handleOpen = () => {
     setOpen(true);
   };
@@ -42,15 +44,70 @@ const Select = (props) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    validateForm({ ...formData, [name]: value });
+  };
+
+  // Validate form fields
+  const validateForm = (data) => {
+    const errors = {};
+
+    // 1. Validate containerName
+    if (data.containerName.length > 20) {
+      errors.containerName = "20글자를 초과했습니다.";
+    }
+
+    // 2. Validate containerSize
+    const containerSize = parseInt(data.containerSize, 10);
+    if (isNaN(containerSize) || containerSize < 300 || containerSize > 10000) {
+      errors.containerSize = "잘못된 입력입니다.";
+    }
+
+    // 3. Validate locationZ
+    const locationZ = parseInt(data.locationZ, 10);
+    if (isNaN(locationZ) || locationZ < 1 || locationZ > 10) {
+      errors.locationZ = "잘못된 입력입니다.";
+    }
+
+    // 4. Validate locationX, locationY, row, column
+    const locationX = parseInt(data.locationX, 10);
+    const locationY = parseInt(data.locationY, 10);
+    const row = parseInt(data.row, 10);
+    const column = parseInt(data.column, 10);
+
+    if (
+      isNaN(locationX) ||
+      isNaN(locationY) ||
+      isNaN(row) ||
+      isNaN(column) ||
+      locationX <= 0 ||
+      locationY <= 0 ||
+      row <= 0 ||
+      column <= 0
+    ) {
+      errors.locations = "잘못된 입력입니다.";
+    } else {
+      const totalWidth = column * locationX;
+      const totalHeight = row * locationY;
+      if (totalWidth > containerSize || totalHeight > containerSize) {
+        errors.locations = "적재함이 창고 크기를 초과합니다.";
+      }
+    }
+
+    setValidationErrors(errors);
   };
 
   // 입력된 창고 정보를 바탕으로 새로운 창고를 만드는 메서드 (클릭시 작용)
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (Object.keys(validationErrors).length > 0) {
+      // Prevent submission if there are validation errors
+      return;
+    }
+
     // 창고 생성을 위한 데이터
     const postData = {
-      businessId: businessData.id, // Use the stored business ID
+      businessId: businessData.businessId, // Use the stored business ID
       size: parseInt(formData.containerSize), // Ensure size is a number
       columnCount: parseInt(formData.column), // Ensure columnCount is a number
       rowCount: parseInt(formData.row), // Ensure rowCount is a number
@@ -84,7 +141,7 @@ const Select = (props) => {
           name: `${rowNumber}-${columnNumber}`, // Use formatted row and column numbers
           productStorageType: "상온",
           rotation: 0,
-          touchableFloor : 2,
+          touchableFloor: 2,
         });
       }
     }
@@ -164,10 +221,9 @@ const Select = (props) => {
 
   // 생성된 된정보를 API를 통해 보냄
   const postLocationAPI = async (requests, warehouseId) => {
-    
     console.log("로케이션");
 
-    const total = {requests, warehouseId};
+    const total = { requests, warehouseId };
     console.log(total);
 
     try {
@@ -193,9 +249,8 @@ const Select = (props) => {
   };
   // 생성된 된정보를 API를 통해 보냄
   const postWallAPI = async (wallDtos, warehouseId) => {
-
     console.log("벽");
-    const total = {wallDtos, warehouseId};
+    const total = { wallDtos, warehouseId };
     console.log(total);
 
     try {
@@ -235,7 +290,7 @@ const Select = (props) => {
 
       if (response.ok) {
         const apiConnection = await response.json();
-        console.log(apiConnection)
+        console.log(apiConnection);
         const warehouses = apiConnection.result;
 
         const warehouseCards = warehouses.map((warehouse) => ({
@@ -374,6 +429,18 @@ const Select = (props) => {
                     className={classes.formControl}
                     value={formData.containerName}
                     onChange={handleChange}
+                    error={Boolean(validationErrors.containerName)}
+                    helperText={
+                      validationErrors.containerName ||
+                      "20글자까지 가능합니다."
+                    }
+                    FormHelperTextProps={{
+                      style: {
+                        color: validationErrors.containerName
+                          ? "red"
+                          : "blue",
+                      },
+                    }}
                   />
                   <TextField
                     name="containerSize"
@@ -383,6 +450,19 @@ const Select = (props) => {
                     className={classes.formControl}
                     value={formData.containerSize}
                     onChange={handleChange}
+                    error={Boolean(validationErrors.containerSize)}
+                    helperText={
+                      validationErrors.containerSize ||
+                      `창고 부지의 크기: ${formData.containerSize} * ${formData.containerSize} = ${Math.pow(
+                        parseInt(formData.containerSize) || 0,
+                        2
+                      )}`
+                    }
+                    FormHelperTextProps={{
+                      style: {
+                        color: validationErrors.containerSize ? "red" : "blue",
+                      },
+                    }}
                   />
                   <TextField
                     name="locationX"
@@ -392,6 +472,7 @@ const Select = (props) => {
                     className={classes.formControl}
                     value={formData.locationX}
                     onChange={handleChange}
+                    error={Boolean(validationErrors.locations)}
                   />
                   <TextField
                     name="locationY"
@@ -401,6 +482,7 @@ const Select = (props) => {
                     className={classes.formControl}
                     value={formData.locationY}
                     onChange={handleChange}
+                    error={Boolean(validationErrors.locations)}
                   />
                   <TextField
                     name="locationZ"
@@ -410,6 +492,16 @@ const Select = (props) => {
                     className={classes.formControl}
                     value={formData.locationZ}
                     onChange={handleChange}
+                    error={Boolean(validationErrors.locationZ)}
+                    helperText={
+                      validationErrors.locationZ ||
+                      "1~10층까지 설정 가능합니다."
+                    }
+                    FormHelperTextProps={{
+                      style: {
+                        color: validationErrors.locationZ ? "red" : "blue",
+                      },
+                    }}
                   />
                   <TextField
                     name="row"
@@ -419,6 +511,16 @@ const Select = (props) => {
                     className={classes.formControl}
                     value={formData.row}
                     onChange={handleChange}
+                    error={Boolean(validationErrors.locations)}
+                    helperText={
+                      validationErrors.locations ||
+                      "적재함 크기와 개수가 창고 크기를 초과할 수 없습니다."
+                    }
+                    FormHelperTextProps={{
+                      style: {
+                        color: validationErrors.locations ? "red" : "blue",
+                      },
+                    }}
                   />
                   <TextField
                     name="column"
@@ -428,6 +530,7 @@ const Select = (props) => {
                     className={classes.formControl}
                     value={formData.column}
                     onChange={handleChange}
+                    error={Boolean(validationErrors.locations)}
                   />
 
                   <Button
@@ -435,6 +538,7 @@ const Select = (props) => {
                     variant="contained"
                     color="primary"
                     fullWidth
+                    disabled={Object.keys(validationErrors).length > 0} // Disable button if there are validation errors
                   >
                     Finish
                   </Button>
