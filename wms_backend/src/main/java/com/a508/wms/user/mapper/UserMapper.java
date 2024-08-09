@@ -41,7 +41,7 @@ public class UserMapper {
             .roleTypeEnum(user.getRoleTypeEnum())
             .loginTypeEnum(user.getLoginTypeEnum())
             .statusEnum(user.getStatusEnum())
-                .businessId(user.getBusinessId())
+            .businessId((user.getBusinessId() == null) ? -1 : user.getBusinessId())
             .build();
     }
 
