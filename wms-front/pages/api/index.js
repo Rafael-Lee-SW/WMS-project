@@ -10,6 +10,11 @@ function fetchUser(id) {
     return instance.get(`/users/${id}`)
 }
 
+// 유저 수정
+function editUser(id, data = {}) {
+    return instance.put(`users/${id}`, data)
+}
+
 // 사업체 등록
 function createBusiness(id, data = {}) {
     return instance.post(`/businesses?userId=${id}`, data)
@@ -218,6 +223,7 @@ function fetchLocationFloors(locationId) {
 export { 
     instance, 
     fetchUser,
+    editUser,
     createBusiness,
     fetchBusiness, 
     editBusiness,

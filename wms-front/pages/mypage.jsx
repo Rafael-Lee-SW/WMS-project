@@ -121,7 +121,7 @@ export default function Mypage() {
       case 'alarm':
         return <Alarm businessId={businessId}/>;
       case 'edit':
-        return <EditInfo name={name} email={email} nickname={nickname} businessId={businessId} businessName={businessName} businessNumber={businessNumber} roleTypeEnum={roleTypeEnum} onUpdateInfo={handleUpdateInfo}/>;
+        return <EditInfo userId={userId} name={name} email={email} nickname={nickname} businessId={businessId} businessName={businessName} businessNumber={businessNumber} roleTypeEnum={roleTypeEnum} onUpdateInfo={handleUpdateInfo}/>;
       case 'license':
         return <ManageBusiness businessId={businessId} businessName={businessName} businessNumber={businessNumber} onUpdateBusiness={handleUpdateBusiness}/>;
       case 'subscriptions':
