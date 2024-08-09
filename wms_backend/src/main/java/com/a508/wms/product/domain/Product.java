@@ -31,7 +31,7 @@ public class Product extends BaseTimeEntity {
     private Floor floor;
     @Column(nullable = false)
     private Integer quantity;
-    @Column
+    @Column(name = "expiration_date", columnDefinition = "DATETIME")
     private LocalDateTime expirationDate;
 
     @Enumerated(EnumType.STRING)
@@ -66,28 +66,28 @@ public class Product extends BaseTimeEntity {
     //데이터의 일괄 수정
     public void updateData(ProductUpdateRequestDto productUpdateRequestDto,
                            Floor floor) {
-        this.quantity = productUpdateRequestDto.getQuantity();
+        this.quantity = productUpdateRequestDto.getProductRequestDto().getQuantity();
         setFloor(floor);
-        this.expirationDate = productUpdateRequestDto.getExpirationDate();
+        this.expirationDate = productUpdateRequestDto.getProductRequestDto().getExpirationDate();
     }
     public void updateWithProductDetail(ProductUpdateRequestDto productUpdateRequestDto, Floor floor) {
         // 기존 Product 업데이트 로직
-        this.quantity = productUpdateRequestDto.getQuantity();
+        this.quantity = productUpdateRequestDto.getProductRequestDto().getQuantity();
         setFloor(floor);
-        this.expirationDate = productUpdateRequestDto.getExpirationDate();
+        this.expirationDate = productUpdateRequestDto.getProductRequestDto().getExpirationDate();
 
         // 관련된 ProductDetail도 업데이트
         ProductDetail productDetail = getProductDetail();
         productDetail.updateData(
                 productDetail.productStorageType, // 필요시 업데이트할 데이터
-                (productUpdateRequestDto.getBarcode() == null) ? productDetail.getBarcode()
-                : productUpdateRequestDto.getBarcode(),
-                (productUpdateRequestDto.getName() == null) ? productDetail.getName()
-                        : productUpdateRequestDto.getName(),
-                productDetail.getSize(),  // 필요시 업데이트할 데이터
-                productDetail.getUnit(),  // 필요시 업데이트할 데이터
-                productDetail.getOriginalPrice(),  // 필요시 업데이트할 데이터
-                productDetail.getSellingPrice()  // 필요시 업데이트할 데이터
+                (productUpdateRequestDto.getProductRequestDto().getBarcode() == null) ? productDetail.getBarcode()
+                : productUpdateRequestDto.getProductRequestDto().getBarcode(),
+                (productUpdateRequestDto.getProductRequestDto().getName() == null) ? productDetail.getName()
+                        : productUpdateRequestDto.getProductRequestDto().getName(),
+                (productDetail.getSize() == null) ? 0 : productDetail.getSize(),  // 필요시 업데이트할 데이터
+                (productDetail.getUnit() == null) ? 0 : productDetail.getUnit(),  // 필요시 업데이트할 데이터
+                (productDetail.getOriginalPrice() == null) ? 0 : productDetail.getOriginalPrice(),  // 필요시 업데이트할 데이터
+                (productDetail.getSellingPrice() == null) ? 0 : productDetail.getSellingPrice()  // 필요시 업데이트할 데이터
         );
     }
     //삭제 상태 변경

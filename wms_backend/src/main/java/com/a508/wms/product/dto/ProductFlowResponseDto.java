@@ -6,13 +6,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @Builder
-public class ProductMoveResponseDto {
+public class ProductFlowResponseDto {
     private String name;
     private Long barcode;
     private Integer quantity;
@@ -20,6 +19,7 @@ public class ProductMoveResponseDto {
     private String currentLocationName;
     private Integer previousFloorLevel;
     private Integer currentFloorLevel;
+    private String trackingNumber;
     private LocalDateTime expirationDate;
     private ProductStorageTypeEnum productStorageType;
     private String warehouseName;

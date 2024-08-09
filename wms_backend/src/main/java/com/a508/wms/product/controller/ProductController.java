@@ -5,15 +5,13 @@ import com.a508.wms.notification.dto.NotificationResponseDto;
 import com.a508.wms.product.dto.*;
 import com.a508.wms.product.exception.ProductException;
 import com.a508.wms.product.exception.ProductInvalidRequestException;
-import com.a508.wms.product.service.ExportModuleService;
-import com.a508.wms.product.service.ImportModuleService;
+import com.a508.wms.product.service.ProductFlowModuleService;
 import com.a508.wms.product.service.ProductService;
 import com.a508.wms.util.BaseSuccessResponse;
-import java.time.LocalDate;
+
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,8 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProductController {
 
     private final ProductService productService;
-    private final ImportModuleService importModuleService;
-    private final ExportModuleService exportModuleService;
+    private final ProductFlowModuleService productFlowModuleService;
 
     /**
      * (서비스 전체/창고 별/상품 정보별)로의 상품들을 반환하는 기능
@@ -53,7 +50,7 @@ public class ProductController {
             return new BaseSuccessResponse<>(productService.findByWarehouseId(warehouseId));
         } else if (productDetailId != null) {
             log.info("[Controller] find Products by productDetailId: {}", productDetailId);
-            return new BaseSuccessResponse<>(productService.findByProductDetailId(productDetailId));
+            return new BaseSuccessResponse<>(productService.findAll());
         } else if (locationId != null) {
             log.info("[Controller] find Products by LocationId: {}", locationId);
             return new BaseSuccessResponse<>(productService.findByLocationId(locationId));
@@ -72,7 +69,7 @@ public class ProductController {
      * @return
      */
     @GetMapping("/{id}")
-    public BaseSuccessResponse<ProductMainResponseDto> getProduct(@PathVariable Long id) {
+    public BaseSuccessResponse<ProductResponseDto> findById(@PathVariable Long id) {
         log.info("[Controller] find Product by id: {}", id);
         return new BaseSuccessResponse<>(productService.findById(id));
     }
@@ -103,48 +100,17 @@ public class ProductController {
     }
 
     /**
-     * 입고 명령을 처리하는 기능
-     * TODO: 입력 파라미터와 메서드의 파라미터가 일치하지 않아 차후수정 필요
-     * TODO: 입력 없을 때 리턴타입 정하기
-     *
-     * @param date
-     * @param businessId
-     * @return
-     */
-    @GetMapping("/import")
-    public BaseSuccessResponse<List<ImportResponseDto>> getImports(
-        @RequestParam(value = "date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-        @RequestParam Long businessId
-    ) {
-        if (businessId != null) {
-            log.info("[Controller] find Imports by businessId: {}", businessId);
-            if (date != null) {
-                log.info("[Controller] find Imports by businessId and date: {},{}", businessId,
-                    date);
-//                return new BaseSuccessResponse<>(importModuleService.findAllByBusinessIdAndDate(businessId, date));
-                return null;
-            } else {
-                return new BaseSuccessResponse<>(
-                    importModuleService.findAllByBusinessId(businessId));
-            }
-        } else {
-            throw new ProductInvalidRequestException("no Variable","null");
-        }
-    }
-
-    /**
      * 물품들의 입고처리를 수행하는 기능
      *
-     * @param productImportRequestDto 입고되는 상품의 정보(엑셀의 한 row)
+     * @param requests 입고되는 상품의 정보(엑셀의 한 row)
      * @return
      */
     @PostMapping("/import")
     public BaseSuccessResponse<Void> importProducts(
-        @RequestBody ProductImportRequestDto productImportRequestDto
+        @RequestBody List<ProductRequestDto> requests
     ) {
-        log.info("[Controller] create Imports by productImportRequestDto: {}",
-            productImportRequestDto);
-        productService.importProducts(productImportRequestDto);
+        log.info("[Controller] create Imports ");
+        productService.importProducts(requests);
         return new BaseSuccessResponse<>(null);
     }
 
@@ -164,20 +130,6 @@ public class ProductController {
         return new BaseSuccessResponse<>(productService.exportProducts(exportProduct));
     }
 
-    /**
-     * 사업체에 대한 출고 내역을 조회하는 기능
-     *
-     * @param businessId 사업체의 id
-     * @return
-     */
-    @GetMapping("/export")
-    public BaseSuccessResponse<List<ExportResponseDto>> findAllExportsByBusinessId(
-        @RequestParam Long businessId) {
-        log.info("[Controller] find Exports by businessId: {}", businessId);
-        return new BaseSuccessResponse<>(exportModuleService.findAllByBusinessId(businessId));
-
-    }
-
 
     /**
      * 사업체에 대한 입,출고,유통기한 경고 상품 내역을 하나로 묶어서 반환하는 기능
@@ -191,8 +143,7 @@ public class ProductController {
 
         log.info("[Controller] find Notifications by businessId: {}", businessId);
         return new BaseSuccessResponse<>(NotificationResponseDto.builder()
-            .importResponseDtos(importModuleService.findAllByBusinessId(businessId))
-            .exportResponseDtos(exportModuleService.findAllByBusinessId(businessId))
+                .productFlowResponseDtos(productFlowModuleService.findAllByBusinessId(businessId))
             .expirationProductResponseDtos(productService.findExpirationProducts(businessId))
             .build());
 

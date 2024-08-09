@@ -24,7 +24,4 @@ public class ProductDetailResponseDto {
     private int unit;
     private int originalPrice;
     private int sellingPrice;
-    private LocalDateTime createdDate;
-    private LocalDateTime updatedDate;
-    private StatusEnum statusEnum;
 }

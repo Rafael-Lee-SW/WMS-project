@@ -45,25 +45,24 @@ public class ProductService {
     private final ProductDetailModuleService productDetailModuleService;
     private final FloorModuleService floorModuleService;
     private final BusinessModuleService businessModuleService;
-    private final ImportModuleService importModuleService;
     private final ProductRepository productRepository;
-    private final ExportModuleService exportModuleService;
     private final int LIMIT_DAY = 1;
     private final WarehouseModuleService warehouseModuleService;
     private final LocationModuleService locationModuleService;
     private final LocationService locationService;
+    private final ProductFlowModuleService productFlowModuleService;
 
     /**
      * 서비스의 모든 상품을 반환하는 기능
      *
      * @return
      */
-    public List<ProductMainResponseDto> findAll() {
+    public List<ProductResponseDto> findAll() {
         log.info("[Service] find Products");
         final List<Product> products = productModuleService.findAll();
 
         return products.stream()
-                .map(ProductMapper::fromProduct)
+                .map(ProductMapper::toProductResponseDto)
                 .toList();
     }
 
@@ -74,36 +73,37 @@ public class ProductService {
      * @param id 상품(Product)의 id
      * @return
      */
-    public ProductMainResponseDto findById(Long id) {
+    public ProductResponseDto findById(Long id) {
         log.info("[Service] find Products by id: {}", id);
         try {
             Product product = productModuleService.findById(id);
-            return ProductMapper.fromProduct(product);
+
+            return ProductMapper.toProductResponseDto(product);
         } catch (IllegalArgumentException e) {
             throw new ProductInvalidRequestException("id", id);
         }
     }
 
-    /**
-     * 특정 상품정보에 해당하는 상품들을 반환하는 기능
-     *
-     * @param productDetailId 상품정보(ProductDetail) id
-     * @return
-     */
-    public List<ProductMainResponseDto> findByProductDetailId(Long productDetailId) {
-        log.info("[Service] find Products by productDetailId: {}", productDetailId);
-
-        try {
-            productDetailModuleService.findById(productDetailId);
-        } catch (IllegalArgumentException e) {
-            throw new ProductInvalidRequestException("productDetailId", productDetailId);
-        }
-        final List<Product> products = productModuleService.findByProductDetailId(productDetailId);
-
-        return products.stream()
-                .map(ProductMapper::fromProduct)
-                .toList();
-    }
+//    /**
+//     * 특정 상품정보에 해당하는 상품들을 반환하는 기능
+//     *
+//     * @param productDetailId 상품정보(ProductDetail) id
+//     * @return
+//     */
+//    public List<ProductResponseDto> findByProductDetailId(Long productDetailId) {
+//        log.info("[Service] find Products by productDetailId: {}", productDetailId);
+//
+//        try {
+//            productDetailModuleService.findById(productDetailId);
+//        } catch (IllegalArgumentException e) {
+//            throw new ProductInvalidRequestException("productDetailId", productDetailId);
+//        }
+//        final List<Product> products = productModuleService.findByProductDetailId(productDetailId);
+//
+//        return products.stream()
+//                .map(ProductMapper::toProductResponseDto)
+//                .toList();
+//    }
 
     /**
      * 특정 사업자에 해당하는 상품들을 반환하는 기능
@@ -112,7 +112,7 @@ public class ProductService {
      * @return
      */
 
-    public List<ProductMainResponseDto> findByBusinessId(Long businessId) {
+    public List<ProductResponseDto> findByBusinessId(Long businessId) {
         log.info("[Service] find Products by businessId: {}", businessId);
 
         try {
@@ -124,7 +124,7 @@ public class ProductService {
         final List<Product> products = productModuleService.findByBusinessId(businessId);
 
         return products.stream()
-                .map(ProductMapper::fromProduct)
+                .map(ProductMapper::toProductResponseDto)
                 .toList();
 
     }
@@ -135,7 +135,7 @@ public class ProductService {
      * @param warehouseId 창고(Warehouse)의 id
      * @return
      */
-    public List<ProductResponseDto.DetailedResponse> findByWarehouseId(Long warehouseId) {
+    public List<ProductResponseDto> findByWarehouseId(Long warehouseId) {
         log.info("[Service] find Products by warehouseId: {}", warehouseId);
 
         if (warehouseModuleService.notExist(warehouseId)) {
@@ -145,7 +145,7 @@ public class ProductService {
         final List<Product> products = productModuleService.findByWarehouseId(warehouseId);
 
         return products.stream()
-                .map(ProductMapper::toProductResponseDetailedResponseDto)
+                .map(ProductMapper::toProductResponseDto)
                 .toList();
     }
 
@@ -156,7 +156,7 @@ public class ProductService {
      * @return
      */
     @Transactional
-    public List<ProductMainResponseDto> findByLocationId(Long locationId) {
+    public List<ProductResponseDto> findByLocationId(Long locationId) {
         log.info("[Service] find Products by locationId: {}", locationId);
 
         if (locationModuleService.notExist(locationId)) {
@@ -167,11 +167,11 @@ public class ProductService {
         return products.stream()
                 .map((product) ->
                         {
-                            ProductMainResponseDto productMainResponseDto = ProductMapper.fromProduct(product);
-                            productMainResponseDto.setFloorLevel(product.getFloor().getFloorLevel());
-                            productMainResponseDto.setLocationName(product.getFloor().getLocation().getName());
+                            ProductResponseDto productResponseDto = ProductMapper.toProductResponseDto(product);
+                            productResponseDto.setFloorLevel(product.getFloor().getFloorLevel());
+                            productResponseDto.setLocationName(product.getFloor().getLocation().getName());
 
-                            return productMainResponseDto;
+                            return productResponseDto;
                         }
                 )
                 .toList();
@@ -219,21 +219,22 @@ public class ProductService {
     /**
      * 상품들의 입고처리를 수행
      *
-     * @param productImportRequestDto : dto
+     * @param requests : dto
      */
     @Transactional
-    public void importProducts(ProductImportRequestDto productImportRequestDto) {
-        log.info("[Service] import Products by ProductImportRequestDto: {}",
-                productImportRequestDto);
-        Long warehouseId = productImportRequestDto.getWarehouseId();
+    public void importProducts(List<ProductRequestDto> requests) {
+        log.info("[Service] import Products ");
 
-        importValidate(productImportRequestDto.getBusinessId(), warehouseId);
+        Long warehouseId = requests.stream().map(
+                ProductRequestDto::getWarehouseId).findAny().orElse(null);
+        Long businessId = warehouseModuleService.findById(warehouseId).getBusiness().getId();
+        importValidate(businessId, warehouseId);
 
         Floor defaultFloor = floorModuleService.findDefaultFloorByWarehouse(warehouseId);
 
-        productImportRequestDto.getData()
+        requests
                 .forEach(data -> {
-                    importProduct(data, productImportRequestDto.getBusinessId(),
+                    importProduct(data, businessId,
                             defaultFloor);
                 });
     }
@@ -258,7 +259,7 @@ public class ProductService {
      * @param request
      * @param defaultFloor 입고 처리 된 상품이 들어가는 default 층
      */
-    private void importProduct(ProductData request, Long businessId,
+    private void importProduct(ProductRequestDto request, Long businessId,
                                Floor defaultFloor) {
         log.info("[Service] import Product by productData: {}", request);
 
@@ -266,7 +267,8 @@ public class ProductService {
         Product product = ProductMapper.fromProductData(request, productDetail, defaultFloor);
 
         productModuleService.save(product);
-        importModuleService.save(request, product);
+//        importModuleService.save(request, product);
+        productFlowModuleService.saveImport(request, product);
     }
 
     /**
@@ -275,7 +277,7 @@ public class ProductService {
      * @param request
      * @return
      */
-    private ProductDetail findOrCreateProductDetail(ProductData request,
+    private ProductDetail findOrCreateProductDetail(ProductRequestDto request,
                                                     Long businessId) {
         log.info("[Service] find or create Product by productData: {}", request);
         Optional<ProductDetail> optionalProductDetail = productDetailModuleService.findByBusinessIdAndBarcode(
@@ -301,7 +303,6 @@ public class ProductService {
     @Transactional
     public List<ProductExportResponseDto> exportProducts(ProductExportRequestDto request) {
         log.info("[Service] export Products by ProductExportRequestDto: {}", request);
-
         try {
             businessModuleService.findById(request.getBusinessId());
         } catch (IllegalArgumentException e) {
@@ -311,7 +312,6 @@ public class ProductService {
         productQuantityCheck(request);
 
         List<ExportResponseDto> datas = request.getData();
-
         Map<String, List<ExportResponseDto>> exports = datas.stream()
                 .collect(Collectors.groupingBy(ExportResponseDto::getTrackingNumber));
 
@@ -331,7 +331,7 @@ public class ProductService {
                 List<ExportResponseDto> dataLists = entry.getValue();
 
                 for (ExportResponseDto exportResponseDto : dataLists) {
-                    exportModuleService.save(exportResponseDto, business);
+                    productFlowModuleService.saveExport(exportResponseDto, business);
                 }
             }
         }
@@ -382,7 +382,7 @@ public class ProductService {
                             .floorLevel(dto.getFloorLevel())
                             .productName(dto.getProductName())
                             .quantity(remains)
-                            .date(LocalDate.now())
+                            .date(LocalDateTime.now().withNano(0))
                             .productStorageType(dto.getProductStorageType())
                             .warehouseName(dto.getWarehouseName())
                             .warehouseId(dto.getWarehouseId())
@@ -406,7 +406,7 @@ public class ProductService {
                         .floorLevel(dto.getFloorLevel())
                         .productName(dto.getProductName())
                         .quantity(dto.getQuantity())
-                        .date(LocalDate.now())
+                        .date(LocalDateTime.now().withNano(0))
                         .productStorageType(dto.getProductStorageType())
                         .warehouseName(dto.getWarehouseName())
                         .warehouseId(dto.getWarehouseId())
@@ -517,7 +517,7 @@ public class ProductService {
     @Transactional
     public List<ExpirationProductResponseDto> findExpirationProducts(Long businessId) {
         log.info("[Service] find Expired Warning Product by businessId: {}", businessId);
-        LocalDateTime currentTime = LocalDateTime.now();
+        LocalDateTime currentTime = LocalDateTime.now().withNano(0);
 
         List<Product> products = productModuleService.findByBusinessId(businessId)
                 .stream()
@@ -608,7 +608,7 @@ public class ProductService {
     public ProductMoveResponseDto moveProduct(ProductMoveRequestDto request) throws ProductException {
         try {
             Product originalProduct = productModuleService.findById(request.getProductId());
-            originalProduct.updateData(originalProduct.getQuantity() - request.getQuantity());
+            originalProduct.updateData(originalProduct.getQuantity()- request.getQuantity());
 
             Location location = locationService.findByNameAndWarehouseId(
                     request.getLocationName(),
@@ -630,9 +630,17 @@ public class ProductService {
                     .build();
             productModuleService.save(originalProduct);
             productModuleService.save(moveProduct);
-            ProductMoveResponseDto response = ProductMapper.toProductMoveResponseDto(moveProduct);
-            response.setWarehouseId(request.getWarehouseId());
-            response.setWarehouseName(location.getWarehouse().getName());
+
+            ProductMoveResponseDto response = ProductMapper.toProductMoveResponseDto(moveProduct,
+                    request.getWarehouseId(),
+                    location.getWarehouse().getName(),
+                    request.getLocationName(),
+                    location.getName(),
+                    request.getFloorLevel(),
+                    moveFloor.getFloorLevel());
+
+            productFlowModuleService.saveMove(response,
+                    moveProduct.getProductDetail().getBusiness());
             return response;
         } catch (NullPointerException e) {
             throw new ProductException.NotFountException(request.getProductId());

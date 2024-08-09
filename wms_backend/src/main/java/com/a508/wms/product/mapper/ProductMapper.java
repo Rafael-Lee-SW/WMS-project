@@ -5,7 +5,6 @@ import com.a508.wms.location.domain.Location;
 import com.a508.wms.product.domain.Product;
 import com.a508.wms.product.dto.*;
 import com.a508.wms.productdetail.domain.ProductDetail;
-import com.a508.wms.productdetail.mapper.ProductDetailMapper;
 import com.a508.wms.warehouse.domain.Warehouse;
 import org.springframework.stereotype.Component;
 
@@ -20,44 +19,21 @@ public class ProductMapper {
      * @param product
      * @return
      */
-    public static ProductMainResponseDto fromProduct(Product product) {
-        return ProductMainResponseDto.builder()
-            .id(product.getId())
-            .floorLevel(product.getFloor().getFloorLevel())
-            .expirationDate(product.getExpirationDate())
-            .quantity(product.getQuantity())
-            .locationName(product.getFloor().getLocation().getName())
-            .createdDate(product.getCreatedDate())
-            .updatedDate(product.getUpdatedDate())
-            .statusEnum(product.getStatusEnum())
-            .productDetail(ProductDetailMapper.fromProductDetail(product.getProductDetail()))
-            .build();
+    public static ProductResponseDto toProductResponseDto(Product product) {
+        return ProductResponseDto.builder()
+                .id(product.getId())
+                .quantity(product.getQuantity())
+                .expirationDate(product.getExpirationDate())
+                .locationName(product.getFloor().getLocation().getName())
+                .floorLevel(product.getFloor().getFloorLevel())
+                .name(product.getProductDetail().getName())
+                .barcode(product.getProductDetail().getBarcode())
+                .build();
     }
 
-    public static ProductResponseDto.DetailedResponse toProductResponseDetailedResponseDto(
-        Product product) {
-        ProductDetail productDetail = product.getProductDetail();
-
-        return ProductResponseDto.DetailedResponse.builder()
-            .info(toProductResponseInfoDto(product))
-            .name(productDetail.getName())
-            .barcode(productDetail.getBarcode())
-            .build();
-    }
-
-    public static ProductResponseDto.Info toProductResponseInfoDto(Product product) {
-        return ProductResponseDto.Info.builder()
-            .id(product.getId())
-            .expirationDate(product.getExpirationDate())
-            .quantity(product.getQuantity())
-            .floorLevel(product.getFloor().getFloorLevel())
-            .locationName(product.getFloor().getLocation().getName())
-            .build();
-    }
-
-    public static Product fromProductData(ProductData productImportRequestData,
-        ProductDetail productDetail,
-        Floor floor) {
+    public static Product fromProductData(ProductRequestDto productImportRequestData,
+                                          ProductDetail productDetail,
+                                          Floor floor) {
         return Product.builder()
             .productDetail(productDetail)
             .floor(floor)
@@ -110,18 +86,30 @@ public class ProductMapper {
 
     /**
      * 상품이동 후 반환하는 Dto
-     * warehouseName, warehouseId는 호출하는 곳에서 추가할것
+     *
      * @param product
      * @return
      */
-    public static ProductMoveResponseDto toProductMoveResponseDto(Product product) {
+    public static ProductMoveResponseDto toProductMoveResponseDto(Product product,
+                                                                  Long warehouseId,
+                                                                  String warehouseName,
+                                                                  String previousLocationName,
+                                                                  String currentLocationName,
+                                                                  Integer previousFloorLevel,
+                                                                  Integer currentFloorLevel) {
         return ProductMoveResponseDto.builder()
                 .name(product.getProductDetail().getName())
                 .barcode(product.getProductDetail().getBarcode())
+                .warehouseName(warehouseName)
+                .warehouseId(warehouseId)
+                .previousLocationName(previousLocationName)
+                .currentLocationName(currentLocationName)
+                .previousFloorLevel(previousFloorLevel)
+                .currentFloorLevel(currentFloorLevel)
                 .quantity(product.getQuantity())
                 .expirationDate(product.getExpirationDate())
                 .productStorageType(product.getProductDetail().getProductStorageType())
-                .date(LocalDateTime.now())
+                .date(LocalDateTime.now().withNano(0))
                 .build();
     }
 }

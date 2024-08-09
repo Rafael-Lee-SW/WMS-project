@@ -167,7 +167,7 @@ public class ProductModuleService {
         Product product = productRepository.findById(request.getProductId())
             .orElseThrow(() -> new IllegalArgumentException("Invalid Product Id"));
         Location location = locationRepository.findByNameAndWarehouseId(request.getLocationName(),
-            request.getWarehouseId());
+            request.getProductRequestDto().getWarehouseId());
         Floor floor = floorRepository.findByLocationIdAndFloorLevel(location.getId(),
             request.getFloorLevel());
         if (floor == null) {
