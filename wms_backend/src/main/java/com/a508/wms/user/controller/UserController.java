@@ -42,14 +42,28 @@ public class UserController {
         log.info("[Controller] find User by id: {}", id);
         return new BaseSuccessResponse<>(userService.findById(id));
     }
+
+    /**
+     * email로 특정 user 조회
+     * @param email
+     * @return
+     */
     @GetMapping
     public BaseSuccessResponse<UserResponseDto> findByEmail(@RequestParam("email") String email) {
         log.info("[Controller] find User by email: {}", email);
         return new BaseSuccessResponse<>(userModuleService.findByEmail(email));
     }
+
+    /**
+     * userId, businessId로 해당 user의 businessId를 수정
+     * @param businessId
+     * @param id
+     * @return
+     */
     @PutMapping
     public BaseSuccessResponse<Void> updateByBusinessId(@RequestParam("businessId") Long businessId,
                                                         @RequestParam("id") Long id) {
+        log.info("[Controller] update User by businessId: {}", businessId);
         userService.updateByBusinessId(businessId, id);
         return new BaseSuccessResponse<>(null);
     }
