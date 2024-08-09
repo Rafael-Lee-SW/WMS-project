@@ -39,13 +39,13 @@ const useStyles = makeStyles((theme) => ({
   ...styles,
   // Add sidebar styles
   sidebar: {
-    width: "80px", // Set a consistent width
+    width: "90px", // Set a consistent width
     height: "100vh",
     position: "fixed",
     top: 0,
     left: 0,
     backgroundColor: "#f7f7f7",
-    padding: "5px 15px 20px 15px",
+    padding: "5px 5px 15px 5px",
     boxShadow: "2px 0 5px rgba(0, 0, 0, 0.1)",
     display: "flex",
     flexDirection: "column",
@@ -64,10 +64,33 @@ const useStyles = makeStyles((theme) => ({
     fontWeight: "bold",
   },
   mainContent: {
-    marginLeft: "80px", // Align with sidebar width
+    marginLeft: "90px", // Align with sidebar width
     width: "calc(100% - 80px)", // Take full width minus sidebar width
     height: "100vh", // Fill the screen height
     overflow: "auto", // Allow scrolling if needed
+  },
+  warehouseDropdown: {
+    margin: "10px 0",
+  },
+  warehouseSelect: {
+    width: "100%",
+    padding: "5px", // Increased padding for better visibility
+    fontSize: "12px", // Larger font size for emphasis
+    fontWeight: "bold", // Bold text to highlight the title
+    borderRadius: "4px",
+    border: "1px solid #ccc",
+    backgroundColor: "#fff", // Clean background color
+    cursor: "pointer", // Indicate interactiveness
+    appearance: "none", // Remove default styling
+    whiteSpace: "normal", // Enable text wrapping
+  },
+  warehouseOption: {
+    fontSize: "12px", // Ensure options also have larger font
+    fontWeight: "bold", // Consistent emphasis
+    lineHeight: "1.2", // Allow for multi-line text
+    whiteSpace: "normal", // Enable text wrapping
+    overflow: "hidden", // Prevent overflow of text
+    padding: "10px", // Consistent padding
   },
 }));
 
@@ -77,26 +100,129 @@ export default function Components(props) {
   const router = useRouter();
   const { id } = router.query; // Destructure id from router.query to get the current warehouse ID
 
+  const [cards, setCards] = useState([]);
+  const [userData, setUserData] = useState(null); // State to store user data
+  const [businessData, setBusinessData] = useState(null); // State to store business data
+
+  const [selectedWarehouse, setSelectedWarehouse] = useState(id || ""); // State for selected warehouse
+
+  /*
+   * 유저 정보와 창고 정보를 받아오는 UseEffect 및 함수 정의
+   */
+
+  // API call to fetch warehouse information // 해당 비즈니스 아이디의 창고 정보
+  const getAllWarehouseInfoAPI = async (businessId) => {
+    try {
+      const response = await fetch(
+        `https://i11a508.p.ssafy.io/api/warehouses?businessId=${businessId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        const apiConnection = await response.json();
+        console.log(apiConnection);
+        const warehouses = apiConnection.result;
+
+        const warehouseCards = warehouses.map((warehouse) => ({
+          id: warehouse.id,
+          title: warehouse.name,
+        }));
+
+        setCards(warehouseCards);
+      } else {
+        console.error("Error loading warehouse data");
+      }
+    } catch (error) {
+      console.error("Error loading warehouse data:", error);
+    }
+  };
+
+  const fetchBusinessData = async (userId) => {
+    try {
+      const response = await fetch(
+        `https://i11a508.p.ssafy.io/api/users/${userId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        const userData = await response.json();
+        const businessInfo = userData.result;
+        setBusinessData(businessInfo); // Store business data in state
+        console.log("Business data loaded:", businessInfo);
+
+        // Now call the warehouse info API with the business ID
+        getAllWarehouseInfoAPI(businessInfo.businessId);
+      } else {
+        console.error("Error fetching user data");
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
+
+  /**
+   * UseEffect Part
+   */
+
   useEffect(() => {
-    AOS.init({
-      duration: 100,
-    });
+    // Retrieve user data from localStorage
+    const user = localStorage.getItem("user");
+    if (user) {
+      try {
+        const parsedUser = JSON.parse(user);
+        setUserData(parsedUser);
+        console.log("User data loaded from localStorage:", parsedUser);
+
+        // Fetch business data using user ID
+        fetchBusinessData(parsedUser.id);
+      } catch (error) {
+        console.error("Error parsing user data from localStorage:", error);
+      }
+    }
   }, []);
 
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const componentsArray = [
-    <DynamicMyContainerMap key="DynamicMyContainerMap" warehouseId={id} />,
-    <DynamicMyContainerNavigation
-      key="DynamicMyContainerNavigation"
-      WHId={id}
+    <DynamicMyContainerMap
+      key={`map-${selectedWarehouse}`}
+      warehouseId={selectedWarehouse}
     />,
-    <DynamicMyContainerProduct key="DynamicMyContainerProduct" WHId={id} />,
+    <DynamicMyContainerNavigation
+      key={`nav-${selectedWarehouse}`}
+      WHId={selectedWarehouse}
+    />,
+    <DynamicMyContainerProduct
+      key={`product-${selectedWarehouse}`}
+      WHId={selectedWarehouse}
+    />,
   ];
 
   const handleNextComponent = (index) => {
     setCurrentIndex(index);
   };
+
+  const handleWarehouseChange = (event) => {
+    const warehouseId = event.target.value;
+    setSelectedWarehouse(warehouseId);
+    // Redirect to the new warehouse page with shallow routing
+    router.push(`/user/${warehouseId}`, undefined, { shallow: true });
+  };
+
+  useEffect(() => {
+    // Update effect when selectedWarehouse changes
+    console.log(`Current selected warehouse ID: ${selectedWarehouse}`);
+  }, [selectedWarehouse]);
 
   return (
     /** 헤더 영역 */
@@ -120,7 +246,26 @@ export default function Components(props) {
         </button>
         <br />
         <div className={classes.currentWarehouseIndex}>현재 창고</div>
-        <div className={classes.currentWarehouse}>{id}번</div>
+        <div className={classes.warehouseDropdown}>
+          <select
+            className={classes.warehouseSelect}
+            value={selectedWarehouse}
+            onChange={handleWarehouseChange}
+          >
+            <option value="" disabled>
+              창고를 선택하세요
+            </option>
+            {cards.map((warehouse) => (
+              <option
+                key={warehouse.id}
+                value={warehouse.id}
+                className={classes.warehouseOption}
+              >
+                {warehouse.title}
+              </option>
+            ))}
+          </select>
+        </div>
         <Button color="primary" round onClick={() => handleNextComponent(0)}>
           창고 관리
         </Button>
@@ -133,9 +278,7 @@ export default function Components(props) {
       </div>
 
       {/* Main Content Area */}
-      <div className={classes.mainContent}>
-        {componentsArray[currentIndex]}
-      </div>
+      <div className={classes.mainContent}>{componentsArray[currentIndex]}</div>
     </div>
   );
 }
