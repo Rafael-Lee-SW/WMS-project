@@ -382,7 +382,7 @@ public class ProductService {
                             .floorLevel(dto.getFloorLevel())
                             .productName(dto.getProductName())
                             .quantity(remains)
-                            .date(LocalDate.now())
+                            .date(LocalDateTime.now().withNano(0))
                             .productStorageType(dto.getProductStorageType())
                             .warehouseName(dto.getWarehouseName())
                             .warehouseId(dto.getWarehouseId())
@@ -406,7 +406,7 @@ public class ProductService {
                         .floorLevel(dto.getFloorLevel())
                         .productName(dto.getProductName())
                         .quantity(dto.getQuantity())
-                        .date(LocalDate.now())
+                        .date(LocalDateTime.now().withNano(0))
                         .productStorageType(dto.getProductStorageType())
                         .warehouseName(dto.getWarehouseName())
                         .warehouseId(dto.getWarehouseId())
@@ -517,7 +517,7 @@ public class ProductService {
     @Transactional
     public List<ExpirationProductResponseDto> findExpirationProducts(Long businessId) {
         log.info("[Service] find Expired Warning Product by businessId: {}", businessId);
-        LocalDateTime currentTime = LocalDateTime.now();
+        LocalDateTime currentTime = LocalDateTime.now().withNano(0);
 
         List<Product> products = productModuleService.findByBusinessId(businessId)
                 .stream()

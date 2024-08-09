@@ -28,7 +28,7 @@ public class BaseExceptionResponse extends Throwable {
         this.statusCode = statusCode;
         this.httpStatus = httpStatus;
         this.message = message;
-        this.timestamp = LocalDateTime.now();
+        this.timestamp = LocalDateTime.now().withNano(0);
 
     }
     public BaseExceptionResponse(ResponseEnum responseEnum,String message) {
@@ -36,6 +36,6 @@ public class BaseExceptionResponse extends Throwable {
         this.statusCode = responseEnum.getStatusCode();
         this.httpStatus = responseEnum.getHttpStatus();
         this.message = message + responseEnum.getMessage();
-        this.timestamp = LocalDateTime.now();
+        this.timestamp = LocalDateTime.now().withNano(0);
     }
 }

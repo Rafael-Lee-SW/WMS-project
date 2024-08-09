@@ -31,7 +31,7 @@ public class Product extends BaseTimeEntity {
     private Floor floor;
     @Column(nullable = false)
     private Integer quantity;
-    @Column
+    @Column(name = "expiration_date", columnDefinition = "DATETIME")
     private LocalDateTime expirationDate;
 
     @Enumerated(EnumType.STRING)
