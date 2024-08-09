@@ -17,13 +17,12 @@ import { makeStyles } from "@material-ui/core/styles";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import SaveIcon from "@mui/icons-material/Save";
-import UnarchiveIcon from "@mui/icons-material/Unarchive";
 // core components
 import Button from "/components/CustomButtons/Button.js";
 // CSS스타일
 import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/MyContainerStyle.jsx";
 //Material UI 창고 생성 테스트를 위한
-import { Modal, Fade, TextField } from "@mui/material";
+import { Typography, Slider, Box, Modal, Fade, TextField } from "@mui/material";
 
 // 상수 설정(그리드, 컨버스 등)
 const GRID_SIZE = 100;
@@ -51,7 +50,7 @@ const useStyles = makeStyles((theme) => ({
     flexDirection: "column",
     alignItems: "center",
     zIndex: 1100,
-    padding: "10px 0",
+    padding: "10px 5px 10px 15px",
     overflowY: "auto",
   },
   rightSidebar: {
@@ -70,7 +69,8 @@ const useStyles = makeStyles((theme) => ({
     overflowY: "auto",
   },
   buttonStyle: {
-    marginBottom: "10px",
+    marginBottom: "5px",
+    padding: "5px",
   },
   outOfCanvas: {
     position: "relative",
@@ -138,31 +138,20 @@ const MyContainerMap = ({ warehouseId }) => {
   // Check if position is within bounds
   const isPositionWithinBounds = (x, y, width, height) => {
     return (
-      x >= 0 &&
-      y >= 0 &&
-      x + width <= CANVAS_SIZE &&
-      y + height <= CANVAS_SIZE
+      x >= 0 && y >= 0 && x + width <= CANVAS_SIZE && y + height <= CANVAS_SIZE
     );
   };
   // Function to handle dragging
   const handleDragMove = (e, rect) => {
     const node = e.target;
-    const newX = Math.max(
-      Math.min(node.x(), CANVAS_SIZE - rect.width),
-      0
-    );
-    const newY = Math.max(
-      Math.min(node.y(), CANVAS_SIZE - rect.height),
-      0
-    );
+    const newX = Math.max(Math.min(node.x(), CANVAS_SIZE - rect.width), 0);
+    const newY = Math.max(Math.min(node.y(), CANVAS_SIZE - rect.height), 0);
 
     // Update location only if it's within bounds
     if (isPositionWithinBounds(newX, newY, rect.width, rect.height)) {
       setLocations((prevLocations) =>
         prevLocations.map((loc) =>
-          loc.id === rect.id
-            ? { ...loc, x: newX, y: newY }
-            : loc
+          loc.id === rect.id ? { ...loc, x: newX, y: newY } : loc
         )
       );
     }
@@ -307,7 +296,7 @@ const MyContainerMap = ({ warehouseId }) => {
     const locationData = locations.map((location) => ({
       id: parseInt(location.id),
       name: location.name,
-      fill: 0,
+      // fill: location.fill,
       xposition: location.x,
       yposition: location.y,
       xsize: location.width,
@@ -447,6 +436,10 @@ const MyContainerMap = ({ warehouseId }) => {
           return;
         }
         const newLocations = locations.map((location, index) => {
+          // Calculate the red and blue components based on the fill value
+          const red = Math.round((location.fill / 100) * 255); // Increase from 0 to 255
+          const blue = Math.round(((100 - location.fill) / 100) * 255); // Decrease from 255 to 0
+
           return {
             id: location.id.toString(),
             x: location.xposition,
@@ -454,7 +447,7 @@ const MyContainerMap = ({ warehouseId }) => {
             width: location.xsize || 50,
             height: location.ysize || 50,
             z: location.zsize,
-            fill: `rgba(${location.fill}, 100, 100, 1)`,
+            fill: `rgba(${red}, 0, ${blue}, 1)`, // Calculate RGB with alpha as 1
             draggable: true,
             order: index,
             name: location.name || `적재함 ${index}`,
@@ -1089,7 +1082,7 @@ const MyContainerMap = ({ warehouseId }) => {
 
       if (response.ok) {
         const userData = await response.json();
-        const businessInfo = userData.result.business;
+        const businessInfo = userData.result;
         //Business Data를 추출한다.
         setBusinessData(businessInfo);
         console.log("Business data loaded:", businessInfo);
@@ -1248,169 +1241,130 @@ const MyContainerMap = ({ warehouseId }) => {
     <div className={classes.canvasContainer}>
       {/* Left Sidebar */}
       <div className={classes.leftSidebar}>
-        <Button
-          className={classes.buttonStyle}
-          onClick={() => changeCurrentSetting("location")}
-        >
-          재고함
-        </Button>
-        <Button
-          className={classes.buttonStyle}
-          onClick={() => changeCurrentSetting("wall")}
-        >
-          벽
-        </Button>
-        <Button
-          className={classes.buttonStyle}
-          onClick={() => changeCurrentSetting("specialObject")}
-        >
-          특수 객체
-        </Button>
-        <Button className={classes.buttonCard} onClick={handleOpen}>
-          창고 생성
-        </Button>
+        <div>
+          <Button
+            className={classes.buttonStyle}
+            onClick={() => changeCurrentSetting("location")}
+            variant="contained"
+            color="primary"
+          >
+            재고함
+          </Button>
+          <Button
+            className={classes.buttonStyle}
+            onClick={() => changeCurrentSetting("wall")}
+            variant="contained"
+            color="primary"
+          >
+            벽 생성
+          </Button>
+          <Button
+            className={classes.buttonStyle}
+            onClick={() => changeCurrentSetting("specialObject")}
+            variant="contained"
+            color="primary"
+          >
+            특수 객체
+          </Button>
+          <Button
+            className={classes.buttonStyle}
+            onClick={handleOpen}
+            variant="contained"
+            color="primary"
+          >
+            자동 생성
+          </Button>
+        </div>
+        <br />
         {currentSetting && currentSetting !== "wall" && (
           <div>
-            <h3>{currentSetting} 설정</h3>
-            <div>
-              <label
-                style={{
-                  display: "flex",
-                }}
-              >
-                <div
-                  onClick={() => setShowColorPicker(!showColorPicker)}
-                  style={{
-                    width: "3vh",
-                    height: "3vh",
-                    background: newLocationColor,
-                    border: "1px solid #000",
-                    cursor: "pointer",
-                  }}
-                />
-                <div
-                  style={{
-                    marginLeft: "1vh",
-                  }}
-                >
-                  색상을 지정하세요
-                </div>
-                {showColorPicker && (
-                  <SketchPicker
-                    styles={{
-                      width: "1000px",
-                    }}
-                    color={newLocationColor}
-                    onChangeComplete={(color) =>
-                      setNewLocationColor(color.hex)
-                    }
-                  />
-                )}
-              </label>
-              <hr
-                style={{
-                  color: "#aaaaaa",
-                }}
-              />
-            </div>
-            <p
-              style={{
-                color: "#aaaaaa",
-              }}
-            >
+            <Typography variant="h6" gutterBottom>
+              {currentSetting === "location" ? "로케이션" : "입구-출구"} 설정
+            </Typography>
+
+            <Typography variant="body2" color="textSecondary" gutterBottom>
               단수와 크기를 정하세요
-            </p>
-            <div>
-              <div>
-                <label>
-                  Zndex :
-                  <input
-                    type="range"
-                    min="1"
-                    max="10"
-                    value={newLocationZIndex}
-                    onChange={(e) =>
-                      setNewLocationZIndex(Number(e.target.value))
-                    }
-                  />
-                  {newLocationZIndex}
-                </label>
-              </div>
-              <label>
-                Width:
-                <input
-                  type="range"
-                  min="10"
-                  max="500"
-                  value={newLocationWidth}
-                  onChange={(e) =>
-                    setNewLocationWidth(
-                      Math.round(Number(e.target.value) / 10) * 10
-                    )
-                  }
-                />
-                {newLocationWidth}
-              </label>
-            </div>
-            <div>
-              <label>
-                Height:
-                <input
-                  type="range"
-                  min="10"
-                  max="500"
-                  value={newLocationHeight}
-                  onChange={(e) =>
-                    setNewLocationHeight(
-                      Math.round(Number(e.target.value) / 10) * 10
-                    )
-                  }
-                />
-                {newLocationHeight}
-              </label>
-            </div>
+            </Typography>
+
+            <Box mb={2}>
+              <Typography gutterBottom>
+                단수(층): {newLocationZIndex}단/층
+              </Typography>
+              <Slider
+                value={newLocationZIndex}
+                onChange={(e, newValue) => setNewLocationZIndex(newValue)}
+                aria-labelledby="z-index-slider"
+                valueLabelDisplay="auto"
+                step={1}
+                marks
+                min={1}
+                max={10}
+              />
+            </Box>
+
+            <Box mb={2}>
+              <Typography gutterBottom>가로: {newLocationWidth}cm</Typography>
+              <Slider
+                value={newLocationWidth}
+                onChange={(e, newValue) => setNewLocationWidth(newValue)}
+                aria-labelledby="width-slider"
+                valueLabelDisplay="auto"
+                step={10}
+                marks
+                min={10}
+                max={500}
+              />
+            </Box>
+
+            <Box mb={2}>
+              <Typography gutterBottom>세로: {newLocationHeight}cm</Typography>
+              <Slider
+                value={newLocationHeight}
+                onChange={(e, newValue) => setNewLocationHeight(newValue)}
+                aria-labelledby="height-slider"
+                valueLabelDisplay="auto"
+                step={10}
+                marks
+                min={10}
+                max={500}
+              />
+            </Box>
+
             <hr />
-            <p
-              style={{
-                color: "#aaaaaa",
-              }}
-            >
+
+            <Typography variant="body2" color="textSecondary" gutterBottom>
               이름과 속성을 지정해주세요
-            </p>
-            <div>
-              <label>
-                Name :
-                <input
-                  type="text"
-                  value={newLocationName}
-                  onChange={(e) => setNewLocationName(e.target.value)}
-                  style={{
-                    marginLeft: "3px",
-                    width: "14vh",
-                  }}
-                />
-              </label>
-            </div>
-            <div>
-              <label>
-                속성 :
-                <input
-                  type="text"
-                  value={newLocationName}
-                  onChange={(e) => setNewLocationName(e.target.value)}
-                  style={{
-                    marginLeft: "3px",
-                    width: "15vh",
-                  }}
-                />
-              </label>
-            </div>
+            </Typography>
+
+            <Box mb={2}>
+              <TextField
+                label="Name"
+                value={newLocationName}
+                onChange={(e) => setNewLocationName(e.target.value)}
+                variant="outlined"
+                fullWidth
+                size="small"
+                margin="dense"
+              />
+            </Box>
+
+            <Box mb={2}>
+              <TextField
+                label="속성"
+                value={newLocationType} // Fixing the value to refer to the correct state
+                onChange={(e) => setNewLocationType(e.target.value)}
+                variant="outlined"
+                fullWidth
+                size="small"
+                margin="dense"
+              />
+            </Box>
+
             <Button
               onClick={() => handleAddLocation(currentSetting)}
-              style={{
-                width: "100%",
-                fontSize: "18px",
-              }}
+              variant="contained"
+              color="primary"
+              fullWidth
             >
               생성하기
             </Button>
@@ -1524,17 +1478,8 @@ const MyContainerMap = ({ warehouseId }) => {
           <Button justIcon round color="primary" onClick={handleZoomOut}>
             <ZoomOutIcon className={classes.icons} />
           </Button>
-          <Button justIcon round color="primary" onClick={handleSave}>
+          <Button justIcon round color="primary" onClick={editContainerAPI}>
             <SaveIcon className={classes.icons} />
-          </Button>
-          <Button justIcon round color="primary" onClick={loadMapFromLocal}>
-            <UnarchiveIcon className={classes.icons} />
-          </Button>
-          <Button color="primary" onClick={getWarehouseAPI}>
-            API 불러오기
-          </Button>
-          <Button color="primary" onClick={editContainerAPI}>
-            API 저장하기
           </Button>
         </div>
       </div>
@@ -1543,17 +1488,42 @@ const MyContainerMap = ({ warehouseId }) => {
       <div className={classes.rightSidebar}>
         <h3>재고함 목록</h3>
         {locations.length !== 0 ? (
-          <div>
+          <div
+            style={{
+              width: "100%",
+            }}
+          >
             <ul
               style={{
                 height: "30vh",
                 overflowY: "auto",
+                listStyle: "none",
+                padding: 0,
               }}
             >
               {locations
                 .filter((locations) => locations.type === "location")
                 .map((locations, index) => (
-                  <li key={index}>{locations.id}번</li>
+                  <li
+                    key={index}
+                    onClick={() => {
+                      setSelectedLocation(locations);
+                      setSelectedLocationTransform(locations.id);
+                    }}
+                    style={{
+                      cursor: "pointer",
+                      padding: "5px",
+                      borderBottom: "1px solid #ccc",
+                      textAlign: "center",
+                      backgroundColor:
+                        selectedLocation && selectedLocation.id === locations.id
+                          ? "#f0f0f0" // Highlight color for selected item
+                          : "transparent", // Default color for unselected items
+                      transition: "background-color 0.3s", // Smooth transition effect
+                    }}
+                  >
+                    {locations.name}
+                  </li>
                 ))}
             </ul>
           </div>

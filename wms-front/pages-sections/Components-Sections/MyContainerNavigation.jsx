@@ -148,7 +148,6 @@ const MyContainerNavigation = ({ WHId }) => {
    * 창고 관련 Const 끝
    */
 
-
   //모달을 위한 데이터 셋
   const [ModalTableData, setModalTableData] = useState([]);
   const [columns, setColumns] = useState([]);
@@ -157,14 +156,34 @@ const MyContainerNavigation = ({ WHId }) => {
   // State to open the modal when a date is clicked
   const [openDetailModal, setOpenDetailModal] = useState(false);
 
+  // Define state to hold detailed data for the selected notification
+  const [detailedNotificationData, setDetailedNotificationData] = useState([]);
+
+  // State to hold hovered location IDs
+  const [hoveredLocations, setHoveredLocations] = useState([]);
 
   // Handle cell click to show details
   const handleCellClick = (date, type) => {
+    // Filter the detailedData based on the selected date and type
     const filteredData = detailedData.filter(
-      (item) => item.date === date && item.type === type
+      (item) =>
+        new Date(item.date).toLocaleDateString() === date &&
+        item.productFlowType === type
     );
-    setModalTableData(filteredData);
-    setOpenDetailModal(true);
+
+    // Extract the location names from the filtered data
+    const locationNames = filteredData.map((item) => item.currentLocationName);
+
+    // Find the IDs of the locations that match the extracted location names
+    const matchedLocationIds = locations
+      .filter((location) => locationNames.includes(location.name))
+      .map((location) => location.id);
+    console.log(matchedLocationIds);
+
+    // Store the filtered data and matched location IDs in state
+    setDetailedNotificationData(filteredData);
+    setHoveredLocations(matchedLocationIds);
+    setOpenDetailModal(true); // Open the modal to display details
   };
 
   /**
@@ -204,16 +223,20 @@ const MyContainerNavigation = ({ WHId }) => {
           console.error("Locations data not found");
           return;
         }
-        console.log(locations)
+        console.log(locations);
         const newLocations = locations.map((location, index) => {
+          // Calculate the red and blue components based on the fill value
+          const red = Math.round((location.fill / 100) * 255); // Increase from 0 to 255
+          const blue = Math.round(((100 - location.fill) / 100) * 255); // Decrease from 255 to 0
+
           return {
             id: location.id.toString(),
             x: location.xposition,
             y: location.yposition,
             width: location.xsize || 50,
             height: location.ysize || 50,
-            z: 5,
-            fill: `rgba(${location.fill}, 0, 0, 0.1)`,
+            z: location.zsize,
+            fill: `rgba(${red}, 0, ${blue}, 1)`, // Calculate RGB with alpha as 1
             draggable: true,
             order: index,
             name: location.name || `적재함 ${index}`,
@@ -677,11 +700,11 @@ const MyContainerNavigation = ({ WHId }) => {
           if (!existingAnchor) {
             const newId = anchorsRef.current.length
               ? Math.max(
-                ...anchorsRef.current.flatMap(({ start, end }) => [
-                  parseInt(start.id(), 10),
-                  parseInt(end.id(), 10),
-                ])
-              ) + 1
+                  ...anchorsRef.current.flatMap(({ start, end }) => [
+                    parseInt(start.id(), 10),
+                    parseInt(end.id(), 10),
+                  ])
+                ) + 1
               : 1;
             existingAnchor = buildAnchor(newId, x, y);
           } else {
@@ -749,9 +772,7 @@ const MyContainerNavigation = ({ WHId }) => {
 
   const [showDetails, setShowDetails] = useState(true); // Default to showing details
   //처음에 창고 정보를 불러온다.
-  useEffect(() => {
-
-  }, []);
+  useEffect(() => {}, []);
 
   /**
    * 재고 목록과 알림 내역을 불러오는 메서드(Method) 정의
@@ -837,7 +858,6 @@ const MyContainerNavigation = ({ WHId }) => {
     }
   };
 
-
   // 변동 내역 / 알림함에서 쓰이는 data Table state
   const [notificationTableData, setNotificationTableData] = useState([]);
   const [detailedData, setDetailedData] = useState([]); // 모든 변동 사항을 기록한다.
@@ -906,7 +926,6 @@ const MyContainerNavigation = ({ WHId }) => {
 
   // 모든 변동 내역을 날짜별로 묶어 알림으로 바꾸는 함수
   const showUniqueDates = async () => {
-
     // Group data by date and type
     const groupedData = detailedData.reduce((acc, item) => {
       const dateKey = new Date(item.date).toLocaleDateString();
@@ -942,14 +961,15 @@ const MyContainerNavigation = ({ WHId }) => {
 
   // 현재 상자의 재고 목록을 불러오는 함수
   const handleSelectedData = (rectName, selectedFloor) => {
-
-    console.log("잘 가니?")
+    console.log("잘 가니?");
     console.log(rectName);
     console.log(selectedFloor);
 
     const selectedData = tableData
-      .filter(product => product[4] === rectName && product[5] === selectedFloor) // 같은 위치에 있는 상품만 출력
-      .map(product => ({
+      .filter(
+        (product) => product[4] === rectName && product[5] === selectedFloor
+      ) // 같은 위치에 있는 상품만 출력
+      .map((product) => ({
         hiddenId: product[0],
         name: product[1],
         barcode: product[2],
@@ -959,13 +979,12 @@ const MyContainerNavigation = ({ WHId }) => {
 
     // console.log(tableData)
     setModalTableData(selectedData);
-    console.log(selectedData)
-  }
-
+    console.log(selectedData);
+  };
 
   /**
- * 유저를 부르는 Part
- */
+   * 유저를 부르는 Part
+   */
 
   // 유저 및 비즈니스 정보를 담을 State
   const [userData, setUserData] = useState(null);
@@ -986,14 +1005,14 @@ const MyContainerNavigation = ({ WHId }) => {
 
       if (response.ok) {
         const userData = await response.json();
-        const businessInfo = userData.result.business;
+        const businessInfo = userData.result;
         // Business Data를 추출한다.
         setBusinessData(businessInfo);
         console.log("Business data loaded:", businessInfo);
 
         //재고 목록과 알림 내역을 불러온다.
-        productGetAPI(businessInfo.id);
-        getNotificationsAPI(businessInfo.id);
+        productGetAPI(businessInfo.businessId);
+        getNotificationsAPI(businessInfo.businessId);
       } else {
         console.error("Error fetching user data");
       }
@@ -1008,7 +1027,6 @@ const MyContainerNavigation = ({ WHId }) => {
    */
 
   useEffect(() => {
-
     getWarehouseAPI(); // 창고 정보를 불러온다.
     // Retrieve user data from localStorage
     const user = localStorage.getItem("user");
@@ -1020,12 +1038,10 @@ const MyContainerNavigation = ({ WHId }) => {
 
         // Fetch business data using user ID
         fetchBusinessData(parsedUser.id);
-
       } catch (error) {
         console.error("Error parsing user data from localStorage:", error);
       }
     }
-
   }, []);
 
   return (
@@ -1060,6 +1076,7 @@ const MyContainerNavigation = ({ WHId }) => {
               height={rect.height}
               fill={rect.fill}
               shapeProps={rect}
+              isHovered={hoveredLocations.includes(rect.id)} // Pass hover state
               isSelected={rect.id === selectedLocationTransform}
               onSelect={() => {
                 setSelectedLocationTransform(rect.id);
@@ -1079,6 +1096,18 @@ const MyContainerNavigation = ({ WHId }) => {
       <div
         style={{
           position: "absolute",
+          bottom: "10px",
+          right: "10px",
+          display: "flex",
+          gap: "10px",
+        }}
+      >
+        <button onClick={handleZoomIn}>zoomIn</button>
+        <button onClick={handleZoomOut}>zoomOut</button>
+      </div>
+      <div
+        style={{
+          position: "absolute",
           top: "10vh",
           left: "10px",
           padding: "10px",
@@ -1094,10 +1123,9 @@ const MyContainerNavigation = ({ WHId }) => {
           <ButtonIn onClick={() => setShowDetails(true)}>Show Details</ButtonIn>
           <ButtonIn
             onClick={() => {
-              setShowDetails(false)
-              showUniqueDates()
-            }
-            }
+              setShowDetails(false);
+              showUniqueDates();
+            }}
             style={{ marginLeft: "5px" }}
           >
             Show Notifications
@@ -1127,7 +1155,7 @@ const MyContainerNavigation = ({ WHId }) => {
           </div>
         ) : (
           <div className="notification">
-            <h3>Im-Export Dates</h3>
+            <h3>알림함</h3>
             <ul style={{ listStyle: "none", padding: 0 }}>
               {notificationTableData.map(({ date, type }, index) => (
                 <li
@@ -1147,7 +1175,9 @@ const MyContainerNavigation = ({ WHId }) => {
         )}
       </div>
       {/* Right Sidebar: Conditional rendering based on selection */}
-      {(selectedLocation || ModalTableData.length > 0) && (
+      {(selectedLocation ||
+        ModalTableData.length > 0 ||
+        detailedNotificationData.length > 0) && (
         <div
           style={{
             position: "absolute",
@@ -1167,6 +1197,8 @@ const MyContainerNavigation = ({ WHId }) => {
               onClick={() => {
                 setSelectedLocation(null);
                 setModalTableData([]);
+                setDetailedNotificationData([]);
+                setHoveredLocations([]); // Reset hovered locations
               }}
             >
               Close
@@ -1234,13 +1266,15 @@ const MyContainerNavigation = ({ WHId }) => {
                             cursor: "pointer",
                           }}
                           onClick={() => {
-                            console.log(index+1 + "층입니다.")
+                            console.log(index + 1 + "층입니다.");
                             setSelectedFloor(
                               selectedFloor === index + 1 ? null : index + 1
-                            )
-                            handleSelectedData(selectedLocation.name, index+1)
-                          }
-                          }
+                            );
+                            handleSelectedData(
+                              selectedLocation.name,
+                              index + 1
+                            );
+                          }}
                           onMouseEnter={(e) => {
                             e.target.style.backgroundColor =
                               selectedFloor === index + 1
@@ -1291,18 +1325,29 @@ const MyContainerNavigation = ({ WHId }) => {
           ) : (
             <div>
               <h3>Notification Details</h3>
-              {ModalTableData.length > 0 ? (
+              {detailedNotificationData.length > 0 ? (
                 <HotTable
                   height={600}
                   ref={hotTableRef}
-                  data={ModalTableData}
-                  colWidths={[100, 100, 100, 100, 100, 100]}
+                  data={detailedNotificationData.map((item) => [
+                    item.date,
+                    item.productFlowType,
+                    item.barcode,
+                    item.name,
+                    item.quantity,
+                    item.currentLocationName,
+                    item.currentFloorLevel,
+                    item.trackingNumber,
+                  ])}
+                  colWidths={[100, 100, 100, 100, 100, 100, 100]}
                   colHeaders={[
                     "날짜",
                     "유형",
                     "바코드",
                     "상품명",
                     "수량",
+                    "적재함",
+                    "층수",
                     "송장번호",
                   ]}
                   dropdownMenu={true}
@@ -1327,9 +1372,8 @@ const MyContainerNavigation = ({ WHId }) => {
             </div>
           )}
         </div>
-      )
-      }
-    </div >
+      )}
+    </div>
   );
 };
 export default MyContainerNavigation;
@@ -1340,6 +1384,7 @@ const RectangleTransformer = ({
   isSelected,
   onSelect,
   onChange,
+  isHovered, // Add this prop
 }) => {
   const shapeRef = useRef();
   const trRef = useRef();
@@ -1360,6 +1405,9 @@ const RectangleTransformer = ({
         ref={shapeRef}
         {...shapeProps}
         draggable // 사각형을 드래그 가능하게 함
+        stroke={isHovered ? "blue" : "black"}
+        strokeWidth={isHovered ? 3 : 1}
+        fill={isHovered ? "lightblue" : shapeProps.fill} // Change fill if hovered
         // 드래그 종료 이벤트 -- 사각형 위치 업데이트
         onDragEnd={(e) => {
           onChange({
