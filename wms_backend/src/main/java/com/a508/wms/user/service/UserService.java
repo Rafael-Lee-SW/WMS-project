@@ -87,7 +87,7 @@ public class UserService {
         return UserMapper.toUserResponseDto(deletedUser);
     }
 
-    public  User findByEmail(String email) {
+    public User findByEmail(String email) {
         return userRepository.findUserByEmail(email);
     }
     @Transactional

@@ -8,6 +8,9 @@ import com.a508.wms.util.constant.LoginTypeEnum;
 import com.a508.wms.util.constant.RoleTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;
 import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import static com.a508.wms.util.constant.ProductConstant.DEFAULT_BUSINESS_ID;

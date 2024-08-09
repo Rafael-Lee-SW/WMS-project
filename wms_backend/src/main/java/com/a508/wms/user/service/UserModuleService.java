@@ -70,6 +70,7 @@ public class UserModuleService {
                 .name(user.getName())
                 .email(user.getEmail())
                 .nickname(user.getNickname())
+                .businessId(user.getBusinessId())
                 .build();
     }
 }
