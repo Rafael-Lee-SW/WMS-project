@@ -43,7 +43,7 @@ export default function Info({ name, email, nickname, roleTypeEnum, businessId, 
                 </tr>
                 <tr>
                   <td className={classes.labelCell}>
-                    <strong className={classes.text}>생성 일자</strong>
+                    <strong className={classes.text}>가입 일자</strong>
                   </td>
                   <td className={classes.valueCell}>{initialUserInfo.createdDate}</td>
                 </tr>
