@@ -16,10 +16,10 @@ const useStyles = makeStyles(styles);
 export default function Mypage() {
   const classes = useStyles();
   const router = useRouter();
-  const { query } = router; // 쿼리 파라미터 가져오기
+  const { query } = router;
 
   // URL 쿼리 파라미터를 통해 초기 상태 설정
-  const [selectedComponent, setSelectedComponent] = useState(query.component || '');
+  const [selectedComponent, setSelectedComponent] = useState(query.component || 'info');
 
   const [userId, setUserId] = useState();
   const [name, setName] = useState('');
@@ -38,9 +38,13 @@ export default function Mypage() {
     const token = localStorage.getItem('token');
 
     if (user && token) {
-      setUserId(user.id); 
+      console.log("User found in localStorage:", user);
+      setUserId(user.id);
+    } else {
+      alert("로그인이 필요합니다.");
+      router.push('/signin');
     }
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (userId) {
@@ -55,35 +59,45 @@ export default function Mypage() {
   }, [businessId]);
 
   const getUserInfo = async () => {
-    
     try {
-      const Response = await fetchUser(userId);
-      const { id, name, email, nickname, roleTypeEnum, businessId } = Response.data.result;
-      
+      const response = await fetchUser(userId);
+      const { id, name, email, nickname, roleTypeEnum, businessId } = response.data.result;
+
+      console.log("Fetched user info:", response.data.result);
+
       setUserId(id);
       setName(name);
       setEmail(email);
       setBusinessId(businessId);
       setRoleTypeEnum(roleTypeEnum);
       setNickname(nickname);
-      
+
     } catch (error) {
+      console.error("Error fetching user info:", error);
       router.push('/404');
     }
   }
-  
+
   const getBusinessInfo = async () => {
-
+    if (!businessId || businessId === -1) { // 비즈니스 ID가 null이거나 -1일 경우
+      setBusinessName('');
+      setBusinessNumber('');
+      setCreatedDate('');
+      return; // 함수 종료
+    }
+  
     try {
-      const Response = await fetchBusiness(businessId);
-      const { name, businessNumber, createdDate } = Response.data.result;
-
+      const response = await fetchBusiness(businessId);
+      const { name, businessNumber, createdDate } = response.data.result;
+  
+      console.log("Fetched business info:", response.data.result);
+  
       setBusinessName(name);
       setBusinessNumber(businessNumber);
       setCreatedDate(createdDate);
-
+  
     } catch (error) {
-      console.log(error)
+      console.error("Error fetching business info:", error);
       router.push('/404');
     }
   }
@@ -121,21 +135,21 @@ export default function Mypage() {
   const renderComponent = () => {
     switch (selectedComponent) {
       case 'alarm':
-        return <Alarm businessId={businessId}/>;
+        return <Alarm businessId={businessId} />;
       case 'edit':
-        return <EditInfo userId={userId} name={name} email={email} nickname={nickname} businessId={businessId} businessName={businessName} businessNumber={businessNumber} roleTypeEnum={roleTypeEnum} onUpdateInfo={handleUpdateInfo}/>;
+        return <EditInfo userId={userId} name={name} email={email} nickname={nickname} businessId={businessId} businessName={businessName} businessNumber={businessNumber} roleTypeEnum={roleTypeEnum} onUpdateInfo={handleUpdateInfo} />;
       case 'license':
-        return <ManageBusiness businessId={businessId} businessName={businessName} businessNumber={businessNumber} onUpdateBusiness={handleUpdateBusiness}/>;
+        return <ManageBusiness businessId={businessId} businessName={businessName} businessNumber={businessNumber} onUpdateBusiness={handleUpdateBusiness} />;
       case 'subscriptions':
-        return <SubInfo businessId={businessId}/>;
+        return <SubInfo businessId={businessId} />;
       case 'employees':
-        return <ManageEmployees businessId={businessId} onUpdateEmployees={handleUpdate}/>;
+        return <ManageEmployees businessId={businessId} onUpdateEmployees={handleUpdate} />;
       case 'info':
-        return <Info name={name} email={email} nickname={nickname} businessId={businessId} businessName={businessName} businessNumber={businessNumber} createdDate={createdDate} roleTypeEnum={roleTypeEnum}/>;
+        return <Info name={name} email={email} nickname={nickname} businessId={businessId} businessName={businessName} businessNumber={businessNumber} createdDate={createdDate} roleTypeEnum={roleTypeEnum} />;
       default:
         return (
           <div>
-            <Info name={name} email={email} nickname={nickname} businessId={businessId} businessName={businessName} businessNumber={businessNumber} createdDate={createdDate} roleTypeEnum={roleTypeEnum}/>
+            <Info name={name} email={email} nickname={nickname} businessId={businessId} businessName={businessName} businessNumber={businessNumber} createdDate={createdDate} roleTypeEnum={roleTypeEnum} />
           </div>
         );
     }
@@ -144,7 +158,6 @@ export default function Mypage() {
   return (
     <div className={classes.container}>
       <div className={classes.leftPanel}>
-        {/* 왼쪽 패널의 내용 */}
         <div className={classes.titleContainer}>
           <h2 className={classes.h2} onClick={() => setSelectedComponent('info')}>마이페이지</h2>
         </div>
@@ -157,13 +170,11 @@ export default function Mypage() {
         </div>
       </div>
       <div className={classes.rightPanel}>
-        {/* 오른쪽 패널의 내용 */}
         <div className={classes.rendering}>
           {renderComponent()}
         </div>
       </div>
 
-      {/* 모달 컴포넌트 */}
       <Dialog open={openModal} onClose={handleCloseModal}>
         <DialogTitle>정보 수정</DialogTitle>
         <DialogContent>

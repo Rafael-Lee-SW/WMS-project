@@ -4,6 +4,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import { List, ListItem } from "@mui/material"; // Correct casing for ListItem
 import Button from "/components/CustomButtons/Button.js";
 import { Link as ScrollLink } from "react-scroll"; // react-scroll import 추가
+import axios from "axios"; // Axios import 추가
 
 import styles from "/styles/jss/nextjs-material-kit/components/headerLinksStyle.js";
 
@@ -20,27 +21,32 @@ export default function HeaderLinks(props) {
     router.push("/");
   };
 
-  const handleWarehouseManagement = () => {
-    // 로컬 스토리지에서 user 정보를 가져옵니다.
+  const handleWarehouseManagement = async () => {
     const user = localStorage.getItem("user");
     if (user) {
       const userInfo = JSON.parse(user);
+      const userId = userInfo.id;
 
-      // 사용자 역할에 따라 Mypage로 이동할 때 초기 컴포넌트를 설정합니다.
-      if (userInfo.roleTypeEnum === "GENERAL") {
-        // roleTypeEnum이 "GENERAL"인 경우 쿼리 파라미터로 전달
-        router.push({
-          pathname: "/mypage",
-          query: { component: "license" },
-        });
-      } else {
-        // 다른 역할일 경우 기본 창고 관리 페이지로 이동
-        router.push("/user/select");
+      try {
+        const response = await axios.get(`https://i11a508.p.ssafy.io/api/users/${userId}`);
+        const userData = response.data.result;
+
+        if (userData.roleTypeEnum === "GENERAL") {
+          alert("사업자 등록 후 이용해 주세요")
+          router.push({
+            pathname: "/mypage",
+            query: { component: "license" },
+          });
+        } else {
+          router.push("/user/select");
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        alert("사용자 정보를 불러오는 중 오류가 발생했습니다.");
       }
     } else {
-      // 사용자가 로그인되어 있지 않으면 로그인 페이지로 이동하도록 할 수도 있습니다.
       alert("로그인이 필요합니다.");
-      router.push("/login");
+      router.push("/signIn");
     }
   };
 
