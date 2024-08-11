@@ -10,7 +10,6 @@ public interface WarehouseRepository extends JpaRepository<Warehouse, Long> {
 
     List<Warehouse> findByBusinessId(Long businessId);
 
-
     @Query("SELECT w FROM Warehouse w " +
         "JOIN FETCH w.business b " +
         "WHERE b.id = :businessId " +
@@ -22,4 +21,7 @@ public interface WarehouseRepository extends JpaRepository<Warehouse, Long> {
         "w.priority ASC")
     List<Warehouse> findExportOrderWarehouse(
         @Param("businessId") Long businessId);
+
+    int countByBusinessId(Long businessId);
+
 }
