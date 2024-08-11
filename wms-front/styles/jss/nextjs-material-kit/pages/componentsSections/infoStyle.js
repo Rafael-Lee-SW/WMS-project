@@ -35,6 +35,11 @@ const infoStyle = {
     paddingLeft: '10px',
     width: '70%'
   },
+  button: {
+    margin: "10px",
+    backgroundColor: "lightgray",
+    height: "30px"
+}
 }
 
 export default infoStyle;

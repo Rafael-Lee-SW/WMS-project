@@ -111,7 +111,7 @@ export default function Payment() {
 
   const [openModal, setOpenModal] = useState(false);
   const [user, setUser] = useState(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const handleIncrease = () => {
     setQuantity(quantity + 1);
@@ -123,9 +123,33 @@ export default function Payment() {
     }
   };
 
-  const handleSuccess = () => {
+  const handleSuccess = async () => {
     setOpenModal(true);
-  }
+
+    try {
+      // 유저 정보 요청
+      const userResponse = await axios.get(`https://i11a508.p.ssafy.io/api/users/${user.id}`);
+      const businessId = userResponse.data.result.businessId;
+
+      // 현재 구독 정보 요청
+      const subscriptionResponse = await axios.get(`https://i11a508.p.ssafy.io/api/subscriptions?businessId=${businessId}`);
+      const subscription = subscriptionResponse.data.result[0];
+      
+      // 현재 창고 수와 결제한 창고 수 합산
+      const newWarehouseCount = subscription.warehouseCount + quantity;
+
+      // 구독 정보 업데이트
+      await axios.put(`https://i11a508.p.ssafy.io/api/subscriptions/${subscription.id}`, {
+        subscriptionTypeId: 1,
+        paidTypeEnum: "TOSSPAY",
+        warehouseCount: newWarehouseCount
+      });
+
+      console.log("구독 정보 업데이트 성공");
+    } catch (error) {
+      console.error("구독 정보 업데이트 실패", error);
+    }
+  };
 
   const handleCloseModal = () => {
     setOpenModal(false);
@@ -170,41 +194,25 @@ export default function Payment() {
           pay_method: 'card',
           merchant_uid: `mid_${new Date().getTime()}`,
           name: '창고',
-          amount: 100,
+          amount: quantity * 100, // 총 결제 금액 반영
           buyer_email: user.email,
           buyer_name: user.name,
           buyer_tel: '010-1111-1111',
           buyer_addr: '서울시 강남구 테헤란로',
-          buyer_postcode: '12345'
+          buyer_postcode: '12345',
+          custom_data: { quantity } // 구매 수량을 custom_data로 포함
         },
         (rsp) => {
           if (rsp.success) {
             handleSuccess();
-            // axios({
-            //   url: '{서버에서 결제 정보를 받을 엔드포인트}',
-            //   method: 'post',
-            //   headers: {
-            //     'Content-Type': 'application/json'
-            //   },
-            //   data: {
-            //     imp_uid: rsp.imp_uid,
-            //     merchant_uid: rsp.merchant_uid,
-            //   },
-            // })
-            // .then((data) => {
-            //   handleSuccess(data);
-            // })
-            // .catch (() => {
-            //   router.push('/404');
-            // });
           } else {
-            console.log(`${rsp.error_msg}`)
+            console.log(`${rsp.error_msg}`);
             router.push('/components');
+          }
         }
-      }
-    );
-  }
-};
+      );
+    }
+  };
 
   return (
     <div className={classes.container}>
@@ -256,6 +264,4 @@ export default function Payment() {
       </Dialog>
     </div>
   );
-};
-
-
+}

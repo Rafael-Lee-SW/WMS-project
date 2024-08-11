@@ -96,7 +96,7 @@ const Select = (props) => {
 
     await fetchWarehouseCounts();
 
-    if (currentWarehouseCount >= allowedWarehouseCount) {
+    if (currentWarehouseCount > allowedWarehouseCount) {
       alert("추가 생성을 위한 결제가 필요합니다.");
       router.push("/payment"); // router.push로 페이지 이동
       return;
