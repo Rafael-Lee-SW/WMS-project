@@ -970,11 +970,11 @@ const MyContainerMap = ({ warehouseId }) => {
           if (!existingAnchor) {
             const newId = anchorsRef.current.length
               ? Math.max(
-                  ...anchorsRef.current.flatMap(({ start, end }) => [
-                    parseInt(start.id(), 10),
-                    parseInt(end.id(), 10),
-                  ])
-                ) + 1
+                ...anchorsRef.current.flatMap(({ start, end }) => [
+                  parseInt(start.id(), 10),
+                  parseInt(end.id(), 10),
+                ])
+              ) + 1
               : 1;
             existingAnchor = buildAnchor(newId, x, y);
           } else {
@@ -1235,7 +1235,7 @@ const MyContainerMap = ({ warehouseId }) => {
     layerRef.current.batchDraw();
   };
 
-  // RGB 색깔로 % 뽑는 함수
+  // RGB 색깔로 재고율 퍼센트(%)를 추출하는 함수
   const extractFillPercentage = (rgbaString) => {
     const matches = rgbaString.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
 
@@ -1721,6 +1721,26 @@ const RectangleTransformer = ({
   const shapeRef = useRef();
   const trRef = useRef();
 
+  // 폰트사이즈 계산
+  const fontSize = Math.min(shapeProps.width, shapeProps.height) / 4;
+
+  // 재고함의 행렬과 높이를 나타내도록 설정한 MainText
+  const mainText = `${shapeProps.name}-${shapeProps.z < 10 ? '0' + shapeProps.z : shapeProps.z}`;
+
+  // RGB 색깔로 재고율 퍼센트(%)를 추출하는 함수
+  const extractFillPercentage = (rgbaString) => {
+    const matches = rgbaString.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+
+    if (matches) {
+      const red = parseInt(matches[1], 10);
+      // Assuming the fill percentage was encoded in the red component
+      return ((red / 255) * 100).toFixed(1);
+    }
+
+    return "0.0"; // Default to 0% if unable to parse
+  };
+
+
   // 사각형이 선택되었을 때 변형기를 연결하기 위한 Effect 훅
   useEffect(() => {
     if (isSelected) {
@@ -1765,12 +1785,26 @@ const RectangleTransformer = ({
         }}
       />
       <Text
-        text={shapeProps.name}
+        text={mainText}
         x={shapeProps.x}
         y={shapeProps.y}
         z={shapeProps.z}
         width={shapeProps.width}
-        height={shapeProps.height}
+        height={shapeProps.height - fontSize}
+        fontSize={Math.min(shapeProps.width, shapeProps.height) / 5}
+        fontFamily="Arial"
+        fill="white"
+        align="center"
+        verticalAlign="middle"
+        listening={false} // 텍스트를 클릭할 수 없도록 비활성화
+      />
+      <Text
+        text={`${extractFillPercentage(shapeProps.fill)}%`}
+        x={shapeProps.x}
+        y={shapeProps.y}
+        z={shapeProps.z}
+        width={shapeProps.width}
+        height={shapeProps.height + fontSize}
         fontSize={Math.min(shapeProps.width, shapeProps.height) / 5}
         fontFamily="Arial"
         fill="white"
