@@ -8,6 +8,7 @@ import GridContainer from "/components/Grid/GridContainer.js";
 import GridItem from "/components/Grid/GridItem.js";
 import Card from "/components/Card/Card.js";
 import { Modal, Fade, Button, TextField } from "@mui/material";
+import { useRouter } from "next/router"; // useRouter 훅 임포트
 import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/selectStyle.js";
 
 const useStyles = makeStyles(styles);
@@ -15,6 +16,7 @@ const useStyles = makeStyles(styles);
 const Select = (props) => {
   const { ...rest } = props;
   const classes = useStyles();
+  const router = useRouter(); // useRouter 훅으로 라우터 객체 초기화
 
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -30,6 +32,9 @@ const Select = (props) => {
   const [cards, setCards] = useState([]);
   const [userData, setUserData] = useState(null); // State to store user data
   const [businessData, setBusinessData] = useState(null); // State to store business data
+  const [businessId, setBusinessId] = useState(null); // State to store business ID
+  const [currentWarehouseCount, setCurrentWarehouseCount] = useState(0);
+  const [allowedWarehouseCount, setAllowedWarehouseCount] = useState(0);
 
   const handleOpen = () => {
     setOpen(true);
@@ -44,13 +49,62 @@ const Select = (props) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const fetchWarehouseCounts = async () => {
+    try {
+      const warehouseCountResponse = await fetch(
+        `https://i11a508.p.ssafy.io/api/warehouses/cnt/${businessId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const subscriptionResponse = await fetch(
+        `https://i11a508.p.ssafy.io/api/subscriptions?businessId=${businessId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (warehouseCountResponse.ok && subscriptionResponse.ok) {
+        const warehouseCountData = await warehouseCountResponse.json();
+        const subscriptionData = await subscriptionResponse.json();
+
+        setCurrentWarehouseCount(warehouseCountData.result);
+        setAllowedWarehouseCount(subscriptionData.result[0].warehouseCount);
+      } else {
+        console.error("Error fetching warehouse or subscription data");
+      }
+    } catch (error) {
+      console.error("Error fetching warehouse or subscription data:", error);
+    }
+  };
+
   // 입력된 창고 정보를 바탕으로 새로운 창고를 만드는 메서드 (클릭시 작용)
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!businessId) {
+      console.error("Business ID is missing");
+      return;
+    }
+
+    await fetchWarehouseCounts();
+
+    if (currentWarehouseCount >= allowedWarehouseCount) {
+      alert("추가 생성을 위한 결제가 필요합니다.");
+      router.push("/payment"); // router.push로 페이지 이동
+      return;
+    }
+
     // 창고 생성을 위한 데이터
     const postData = {
-      businessId: businessData.id, // Use the stored business ID
+      businessId, // Use the stored business ID
       size: parseInt(formData.containerSize), // Ensure size is a number
       columnCount: parseInt(formData.column), // Ensure columnCount is a number
       rowCount: parseInt(formData.row), // Ensure rowCount is a number
@@ -269,6 +323,7 @@ const Select = (props) => {
         const userData = await response.json();
         const businessInfo = userData.result;
         setBusinessData(businessInfo); // Store business data in state
+        setBusinessId(businessInfo.businessId); // Store business ID
         console.log("Business data loaded:", businessInfo);
 
         // Now call the warehouse info API with the business ID

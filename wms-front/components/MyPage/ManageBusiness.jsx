@@ -44,7 +44,7 @@ export default function ManageBusiness() {
           }
         } else {
           alert("로그인이 필요합니다.");
-          router.push('/login');
+          router.push('/signIn');
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -85,14 +85,29 @@ export default function ManageBusiness() {
 
         if (userId) {
           // axios로 POST 요청 보내기
-          await axios.post(`http://localhost:8080/api/businesses?userId=${userId}`, data);
+          const businessResponse = await axios.post(`http://localhost:8080/api/businesses?userId=${userId}`, data);
           alert("사업체가 등록되었습니다.");
+
+          // 새로 생성된 businessId 가져오기
+          const newBusinessId = businessResponse.data.result.id; 
+
+          // 구독 등록 요청
+          const subscriptionData = {
+            businessId: newBusinessId,
+            paidTypeEnum: "KAKAOPAY", // 기본값 설정
+            statusEnum: "ACTIVE", // 기본값 설정
+            warehouseCount: 1, // 기본값 설정
+          };
+
+          await axios.post("http://localhost:8080/api/subscriptions", subscriptionData);
+          alert("창고 1개를 무료 등록 할 수 있습니다.");
+          router.push('/user/select');
         } else {
           console.error("User ID is missing");
         }
       }
     } catch (error) {
-      console.error(error);
+      console.error("Error during registration:", error);
       router.push('/404');
     }
   };
