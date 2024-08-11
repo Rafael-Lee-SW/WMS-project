@@ -85,7 +85,7 @@ export default function ManageBusiness() {
 
         if (userId) {
           // axios로 POST 요청 보내기
-          const businessResponse = await axios.post(`http://localhost:8080/api/businesses?userId=${userId}`, data);
+          const businessResponse = await axios.post(`https://i11a508.p.ssafy.io/api/businesses?userId=${userId}`, data);
           alert("사업체가 등록되었습니다.");
 
           // 새로 생성된 businessId 가져오기
@@ -99,7 +99,7 @@ export default function ManageBusiness() {
             warehouseCount: 1, // 기본값 설정
           };
 
-          await axios.post("http://localhost:8080/api/subscriptions", subscriptionData);
+          await axios.post("https://i11a508.p.ssafy.io/api/subscriptions", subscriptionData);
           alert("창고 1개를 무료 등록 할 수 있습니다.");
           router.push('/user/select');
         } else {
@@ -115,7 +115,7 @@ export default function ManageBusiness() {
   const handleDelete = async () => {
     try {
       // 사업체 비활성화 로직
-      await axios.patch(`http://localhost:8080/api/businesses/${businessId}`, { statusEnum: "INACTIVE" });
+      await axios.patch(`https://i11a508.p.ssafy.io/api/businesses/${businessId}`, { statusEnum: "INACTIVE" });
       alert("사업체가 삭제되었습니다.");
       router.push('/');
     } catch (error) {
