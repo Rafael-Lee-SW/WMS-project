@@ -65,7 +65,7 @@ public class SubscriptionService {
         subscription.setBusiness(business);
 
         // 창고 개수를 기본값 1로 설정합니다.
-        subscription.setWarehouseCount(1);
+        subscription.setWarehouseCount(subscriptionDto.getWarehouseCount());
 
         // 새로운 Subscription을 데이터베이스에 저장하고 저장된 엔티티를 DTO로 변환하여 반환합니다.
         return SubscriptionMapper.fromSubscription(subscriptionRepository.save(subscription));
@@ -74,18 +74,18 @@ public class SubscriptionService {
     /**
      * 특정 사업체의 구독 정보를 수정하는 메서드
      *
-     * @param id : 구독 고유 번호, subscriptionDto: 수정할 구독 정보
+     * @param subScriptionId : 구독 고유 번호, subscriptionDto: 수정할 구독 정보
      * @return SubscriptionDto
      */
     @Transactional
-    public SubscriptionDto update(Long id, SubscriptionDto subscriptionDto) {
+    public SubscriptionDto update(Long subScriptionId, SubscriptionDto subscriptionDto) {
         // 주어진 ID로 구독을 조회
-        Subscription subscription = subscriptionRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid subscription Id:" + id));
+        Subscription subscription = subscriptionRepository.findById(subScriptionId)
+            .orElseThrow(() -> new IllegalArgumentException("Invalid subscription Id:" + subScriptionId));
 
         // DTO에 제공된 필드가 있는 경우 기존 구독의 필드를 업데이트
-        if (subscriptionDto.getSubscriptionTypeEnum() != null) {
-            subscription.setSubscriptionTypeEnum(subscriptionDto.getSubscriptionTypeEnum());
+        if (subscriptionDto.getWarehouseCount() != 0) { // 기본값 0을 체크하여 업데이트
+            subscription.setWarehouseCount(subscriptionDto.getWarehouseCount());
         }
         if (subscriptionDto.getStartDate() != null) {
             subscription.setStartDate(subscriptionDto.getStartDate());
@@ -100,13 +100,9 @@ public class SubscriptionService {
             subscription.setStatusEnum(subscriptionDto.getStatusEnum());
         }
 
-        // 선택 사항: 창고 개수 업데이트 로직이 필요할 경우 추가
-        // if (subscriptionDto.getWarehouseCount() != null) {
-        //     subscription.setWarehouseCount(subscriptionDto.getWarehouseCount());
-        // }
-
         // 업데이트된 구독을 저장하고 DTO로 반환
         return SubscriptionMapper.fromSubscription(subscriptionRepository.save(subscription));
+    }
 
     /**
      * 특정 사업체의 구독 정보를 삭제하는 메서드

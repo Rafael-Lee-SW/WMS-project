@@ -16,14 +16,11 @@ public class SubscriptionDto {
     private Long id;
     private Long businessId;
     @Builder.Default
-    private SubscriptionTypeEnum subscriptionTypeEnum = SubscriptionTypeEnum.BASIC;
+    private int warehouseCount = 1;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     @Builder.Default
     private PaidTypeEnum paidTypeEnum = PaidTypeEnum.CARD;
     private StatusEnum statusEnum;
-
-
-
 
 }

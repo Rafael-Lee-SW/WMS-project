@@ -4,7 +4,6 @@ import com.a508.wms.business.domain.Business;
 import com.a508.wms.util.BaseTimeEntity;
 import com.a508.wms.util.constant.PaidTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;
-import com.a508.wms.util.constant.SubscriptionTypeEnum;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -59,7 +58,6 @@ public class Subscription extends BaseTimeEntity {
         this.statusEnum = statusEnum;
     }
 
-
     public void setPaidTypeEnum(PaidTypeEnum paidTypeEnum) {
         this.paidTypeEnum = paidTypeEnum;
     }
@@ -71,8 +69,16 @@ public class Subscription extends BaseTimeEntity {
     public void setWarehouseCount(int count) {
         this.warehouseCount = count;
     }
-    // 창고 수 관리 메서드
 
+    public void setStartDate(LocalDateTime startDate) {
+        this.startDate = startDate;
+    }
+
+    public void setEndDate(LocalDateTime endDate) {
+        this.endDate = endDate;
+    }
+
+    // 창고 수 관리 메서드
     public void incrementWarehouseCount() {
         this.warehouseCount++;
     }
