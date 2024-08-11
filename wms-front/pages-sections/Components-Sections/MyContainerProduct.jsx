@@ -1135,15 +1135,16 @@ const MyContainerProduct = ({ WHId }) => {
       <div
         className="leftsidebar"
         style={{
+          position: "absolute",
           width: "200px",
-          height: "93vh",
+          height: "90vh",
           marginRight: "5px",
           padding: "15px",
           boxShadow: "2px 0 5px rgba(0, 0, 0, 0.1)",
           backgroundColor: "#f7f7f7", // Soft background color
           borderRadius: "8px", // Rounded corners
-          top: "3vh", // Slight padding from the top of the viewport
-          left: "0", // Align it to the left of the viewport
+          top: "10vh", // Slight padding from the top of the viewport
+          left: "90px", // Align it to the left of the viewport
           overflowY: "auto", // Enable scrolling for overflow content
           zIndex: 1000, // Ensure it stays above other content
         }}
@@ -1263,182 +1264,7 @@ const MyContainerProduct = ({ WHId }) => {
         </div>
       </div>
 
-      {/* 입고하기 Section */}
-      {showProductInputSection && (
-        <div style={{ display: "flex", width: "100%" }}>
-          <div style={{ flex: 1, padding: "1rem" }}>
-            <Typography variant="h6">제품 데이터 입력</Typography>
-            <TextField
-              label="바코드"
-              value={newProductData.barcode}
-              onChange={(e) =>
-                handleNewProductInputChange("barcode", e.target.value)
-              }
-              fullWidth
-              margin="normal"
-            />
-            <TextField
-              label="상품명"
-              value={newProductData.name}
-              onChange={(e) =>
-                handleNewProductInputChange("name", e.target.value)
-              }
-              fullWidth
-              margin="normal"
-            />
-            <TextField
-              label="수량"
-              value={newProductData.quantity}
-              onChange={(e) =>
-                handleNewProductInputChange("quantity", e.target.value)
-              }
-              fullWidth
-              margin="normal"
-            />
-            <TextField
-              label="유통기한"
-              value={newProductData.expirationDate}
-              onChange={(e) =>
-                handleNewProductInputChange("expirationDate", e.target.value)
-              }
-              fullWidth
-              margin="normal"
-            />
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleAddNewProduct}
-            >
-              제품 추가
-            </Button>
-
-            <label htmlFor="upload-import">
-              <input
-                required
-                style={{ display: "none" }}
-                id="upload-import"
-                name="upload-import"
-                type="file"
-                onChange={importExcel}
-              />
-              <Fab
-                color="primary"
-                size="small"
-                component="span"
-                aria-label="add"
-                variant="extended"
-                style={{ marginTop: "10px" }}
-              >
-                엑셀로 입고하기
-              </Fab>
-            </label>
-
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={handleFinalImport}
-              style={{ marginTop: "10px" }}
-            >
-              Final Import
-            </Button>
-          </div>
-
-          <div style={{ flex: 1, padding: "1rem" }}>
-            <Typography variant="h6">Expected Import List</Typography>
-            <ul>
-              {expectedImportList.map((product, index) => (
-                <li key={index}>
-                  {product.name} - {product.quantity}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      )}
-
-      {/* 출고하기 Section */}
-      {showProductExportSection && (
-        <div style={{ display: "flex", width: "100%" }}>
-          <div style={{ flex: 1, padding: "1rem" }}>
-            <Typography variant="h6">출고 데이터 입력</Typography>
-            <TextField
-              label="바코드"
-              value={newExportData.barcode}
-              onChange={(e) =>
-                handleNewExportInputChange("barcode", e.target.value)
-              }
-              fullWidth
-              margin="normal"
-            />
-            <TextField
-              label="수량"
-              value={newExportData.quantity}
-              onChange={(e) =>
-                handleNewExportInputChange("quantity", e.target.value)
-              }
-              fullWidth
-              margin="normal"
-            />
-            <TextField
-              label="날짜"
-              value={newExportData.date}
-              onChange={(e) =>
-                handleNewExportInputChange("date", e.target.value)
-              }
-              fullWidth
-              margin="normal"
-            />
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleAddNewExport}
-            >
-              출고 추가
-            </Button>
-
-            <label htmlFor="upload-export">
-              <input
-                required
-                style={{ display: "none" }}
-                id="upload-export"
-                name="upload-export"
-                type="file"
-                onChange={exportExcel}
-              />
-              <Fab
-                color="primary"
-                size="small"
-                component="span"
-                aria-label="add"
-                variant="extended"
-                style={{ marginTop: "10px" }}
-              >
-                엑셀로 출고하기
-              </Fab>
-            </label>
-
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={handleFinalExport}
-              style={{ marginTop: "10px" }}
-            >
-              Final Export
-            </Button>
-          </div>
-
-          <div style={{ flex: 1, padding: "1rem" }}>
-            <Typography variant="h6">Expected Export List</Typography>
-            <ul>
-              {expectedExportList.map((product, index) => (
-                <li key={index}>
-                  {product.barcode} - {product.quantity} - {product.date}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      )}
+      {/* 모달들 */}
 
       {/* 입고 Modal */}
       <Dialog
@@ -1744,8 +1570,184 @@ const MyContainerProduct = ({ WHId }) => {
         </DialogActions>
       </Dialog>
 
-      <div style={{ width: "85%" }}>
-        <Grid item xs={12}>
+      <div style={{display:"flex", width: "100%", margin: "0 0 0 200px" }}>
+        {/* 입고하기 Section */}
+        {showProductInputSection && (
+          <div style={{ width: "30%"}}>
+            <div style={{ flex: 1, padding: "1rem" }}>
+              <Typography variant="h6">제품 데이터 입력</Typography>
+              <TextField
+                label="바코드"
+                value={newProductData.barcode}
+                onChange={(e) =>
+                  handleNewProductInputChange("barcode", e.target.value)
+                }
+                fullWidth
+                margin="normal"
+              />
+              <TextField
+                label="상품명"
+                value={newProductData.name}
+                onChange={(e) =>
+                  handleNewProductInputChange("name", e.target.value)
+                }
+                fullWidth
+                margin="normal"
+              />
+              <TextField
+                label="수량"
+                value={newProductData.quantity}
+                onChange={(e) =>
+                  handleNewProductInputChange("quantity", e.target.value)
+                }
+                fullWidth
+                margin="normal"
+              />
+              <TextField
+                label="유통기한"
+                value={newProductData.expirationDate}
+                onChange={(e) =>
+                  handleNewProductInputChange("expirationDate", e.target.value)
+                }
+                fullWidth
+                margin="normal"
+              />
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleAddNewProduct}
+              >
+                제품 추가
+              </Button>
+
+              <label htmlFor="upload-import">
+                <input
+                  required
+                  style={{ display: "none" }}
+                  id="upload-import"
+                  name="upload-import"
+                  type="file"
+                  onChange={importExcel}
+                />
+                <Fab
+                  color="primary"
+                  size="small"
+                  component="span"
+                  aria-label="add"
+                  variant="extended"
+                  style={{ marginTop: "10px" }}
+                >
+                  엑셀로 입고하기
+                </Fab>
+              </label>
+
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={handleFinalImport}
+                style={{ marginTop: "10px" }}
+              >
+                Final Import
+              </Button>
+            </div>
+
+            <div style={{ flex: 1, padding: "1rem" }}>
+              <Typography variant="h6">Expected Import List</Typography>
+              <ul>
+                {expectedImportList.map((product, index) => (
+                  <li key={index}>
+                    {product.name} - {product.barcode} - {product.quantity}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+
+        {/* 출고하기 Section */}
+        {showProductExportSection && (
+          <div style={{width: "30%" }}>
+            <div style={{ flex: 1, padding: "1rem" }}>
+              <Typography variant="h6">출고 데이터 입력</Typography>
+              <TextField
+                label="바코드"
+                value={newExportData.barcode}
+                onChange={(e) =>
+                  handleNewExportInputChange("barcode", e.target.value)
+                }
+                fullWidth
+                margin="normal"
+              />
+              <TextField
+                label="수량"
+                value={newExportData.quantity}
+                onChange={(e) =>
+                  handleNewExportInputChange("quantity", e.target.value)
+                }
+                fullWidth
+                margin="normal"
+              />
+              <TextField
+                label="날짜"
+                value={newExportData.date}
+                onChange={(e) =>
+                  handleNewExportInputChange("date", e.target.value)
+                }
+                fullWidth
+                margin="normal"
+              />
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleAddNewExport}
+              >
+                출고 추가
+              </Button>
+
+              <label htmlFor="upload-export">
+                <input
+                  required
+                  style={{ display: "none" }}
+                  id="upload-export"
+                  name="upload-export"
+                  type="file"
+                  onChange={exportExcel}
+                />
+                <Fab
+                  color="primary"
+                  size="small"
+                  component="span"
+                  aria-label="add"
+                  variant="extended"
+                  style={{ marginTop: "10px" }}
+                >
+                  엑셀로 출고하기
+                </Fab>
+              </label>
+
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={handleFinalExport}
+                style={{ marginTop: "10px" }}
+              >
+                Final Export
+              </Button>
+            </div>
+
+            <div style={{ flex: 1, padding: "1rem" }}>
+              <Typography variant="h6">Expected Export List</Typography>
+              <ul>
+                {expectedExportList.map((product, index) => (
+                  <li key={index}>
+                    {product.barcode} - {product.quantity} - {product.date}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+        <Grid item xs={12} style={{ width:"100%"}}>
           {/* 메인 영역 */}
           {currentIndex >= 0 && componentsArray[currentIndex]}
         </Grid>

@@ -270,10 +270,10 @@ export default function Components(props) {
           창고 관리
         </Button>
         <Button color="info" round onClick={() => handleNextComponent(1)}>
-          재고 관리
+          재고 현황
         </Button>
         <Button color="success" round onClick={() => handleNextComponent(2)}>
-          재고 현황
+          재고 관리
         </Button>
       </div>
 
