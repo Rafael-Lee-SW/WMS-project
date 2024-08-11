@@ -6,11 +6,13 @@ import axios from 'axios';
 
 const useStyles = makeStyles(styles);
 
+// 사업자 관리 Component
 export default function ManageBusiness() {
   const classes = useStyles();
   const router = useRouter();
 
   const [businessInfo, setBusinessInfo] = useState({ name: '', businessNumber: '' });
+  const [isRegistered, setIsRegistered] = useState(false);
   const [roleType, setRoleType] = useState('');
   const [businessName, setBusinessName] = useState('');
   const [businessId, setBusinessId] = useState(null);
@@ -20,34 +22,34 @@ export default function ManageBusiness() {
       try {
         const storedUser = JSON.parse(localStorage.getItem('user'));
         const userId = storedUser ? storedUser.id : null;
-
+        
         if (userId) {
           const response = await axios.get(`https://i11a508.p.ssafy.io/api/users/${userId}`);
           const userData = response.data.result;
-
+          
           setRoleType(userData.roleTypeEnum);
           setBusinessId(userData.businessId);
 
-          if (userData.roleTypeEnum === 'BUSINESS') {
-            // BUSINESS role이면 비즈니스 정보를 가져옴
+          if (userData.roleTypeEnum === 'BUSINESS' && userData.businessId !== -1) {
             const businessResponse = await axios.get(`https://i11a508.p.ssafy.io/api/businesses/${userData.businessId}`);
             const businessData = businessResponse.data.result;
             setBusinessInfo({
               name: businessData.name,
               businessNumber: businessData.businessNumber
             });
-          } else if (userData.roleTypeEnum === 'EMPLOYEE') {
-            // EMPLOYEE role이면 사업체명을 가져옴
+            setIsRegistered(true);
+          } else if (userData.roleTypeEnum === 'EMPLOYEE' && userData.businessId !== -1) {
             const businessResponse = await axios.get(`https://i11a508.p.ssafy.io/api/businesses/${userData.businessId}`);
             setBusinessName(businessResponse.data.result.name);
           }
         } else {
           alert("로그인이 필요합니다.");
-          router.push('/signin');
+          router.push('/signIn');
         }
       } catch (error) {
         console.error("Error fetching data:", error);
         alert("데이터를 불러오는 중 오류가 발생했습니다.");
+        router.push('/404');
       }
     };
 
@@ -66,44 +68,59 @@ export default function ManageBusiness() {
     e.preventDefault();
     try {
       const data = {
+        id: businessId,
         name: businessInfo.name,
-        businessNumber: businessInfo.businessNumber
+        businessNumber: businessInfo.businessNumber,
+        statusEnum: "ACTIVE"
       };
 
-      if (roleType === 'BUSINESS') {
-        // BUSINESS 역할로 수정 로직
+      if (isRegistered) {
+        // 수정 로직
         await axios.put(`https://i11a508.p.ssafy.io/api/businesses/${businessId}`, data);
         alert("사업체 정보가 수정되었습니다.");
-      } else if (roleType === 'GENERAL') {
-        // GENERAL 역할로 등록 로직
+      } else {
+        // 등록 로직
         const storedUser = JSON.parse(localStorage.getItem('user')); // 유저 정보를 다시 가져오기
         const userId = storedUser ? storedUser.id : null; // 유저 ID 가져오기
 
         if (userId) {
           // axios로 POST 요청 보내기
-          await axios.post(`http://localhost:8080/api/businesses?userId=${userId}`, data);
+          const businessResponse = await axios.post(`https://i11a508.p.ssafy.io/api/businesses?userId=${userId}`, data);
           alert("사업체가 등록되었습니다.");
+
+          // 새로 생성된 businessId 가져오기
+          const newBusinessId = businessResponse.data.result.id; 
+
+          // 구독 등록 요청
+          const subscriptionData = {
+            businessId: newBusinessId,
+            paidTypeEnum: "KAKAOPAY", // 기본값 설정
+            statusEnum: "ACTIVE", // 기본값 설정
+            warehouseCount: 1, // 기본값 설정
+          };
+
+          await axios.post("https://i11a508.p.ssafy.io/api/subscriptions", subscriptionData);
+          alert("창고 1개를 무료 등록 할 수 있습니다.");
+          router.push('/user/select');
         } else {
           console.error("User ID is missing");
         }
-      } else {
-        alert("등록할 수 없는 상태입니다.");
       }
     } catch (error) {
-      console.error(error);
-      alert("오류가 발생했습니다.");
+      console.error("Error during registration:", error);
+      router.push('/404');
     }
   };
 
   const handleDelete = async () => {
     try {
       // 사업체 비활성화 로직
-      await axios.patch(`http://localhost:8080/api/businesses/${businessId}`, { statusEnum: "INACTIVE" });
+      await axios.patch(`https://i11a508.p.ssafy.io/api/businesses/${businessId}`, { statusEnum: "INACTIVE" });
       alert("사업체가 삭제되었습니다.");
       router.push('/');
     } catch (error) {
       console.error(error);
-      alert("삭제 중 오류가 발생했습니다.");
+      router.push('/404');
     }
   };
 
