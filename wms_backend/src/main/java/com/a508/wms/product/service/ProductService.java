@@ -816,6 +816,7 @@ public class ProductService {
                         "remainQuantity가 totalQuantityOfWarehouse보다 큰 경우 남은 remainQuantity= "
                             + remainQuantity);
                 } else {
+                    System.out.println("remainQuantity가 totalQuantityOfWarehouse보다 작음!!");
                     //출고타입으로 분류
                     Map<ExportTypeEnum, List<Product>> exportTypeProducts = products.stream()
                         .collect(groupingBy((product -> product.getFloor().getExportTypeEnum())));
@@ -831,7 +832,7 @@ public class ProductService {
                         int exportTotalQuantity = exportProducts.stream()
                             .mapToInt(Product::getQuantity)
                             .sum();
-
+                        System.out.println("출고타입 우선 조회시 상황: exportTotalQuantity = " + exportTotalQuantity + ", remainQuantity = " + remainQuantity);
                         if (exportTotalQuantity <= remainQuantity) {
                             exportProducts.stream()
                                 .forEach(product -> {
@@ -848,9 +849,33 @@ public class ProductService {
                                 });
                             remainQuantity -= exportTotalQuantity;
                             System.out.println(
-                                "remainQuantity가 totalQuantityOfWarehouse보다 작으면서 ExportType으로 돌았을 때 가능한 경우 남은 remainQuantity= "
+                                "remainQuantity가 totalQuantityOfWarehouse보다 큰 경우 ExportType으로 돌았을 때 남은 상품의 remainQuantity= "
                                     + remainQuantity);
                         } else {
+                            //
+                            for (Product product : exportProducts) {
+
+                                Map<Location, List<Pair<Product, Integer>>> locations = essentialVisitPoint.getOrDefault(
+                                    warehouse, new HashMap<>());
+
+                                Location productLocation = product.getFloor().getLocation();
+                                List<Pair<Product, Integer>> locationProducts = locations.getOrDefault(
+                                    productLocation, new ArrayList<>());
+
+                                if(product.getQuantity()>=remainQuantity){
+                                    locationProducts.add(Pair.of(product, remainQuantity));
+                                    locations.put(productLocation, locationProducts);
+                                    essentialVisitPoint.put(warehouse, locations);
+                                    remainQuantity = 0;
+                                    break;
+                                }
+                                locationProducts.add(Pair.of(product, product.getQuantity()));
+                                locations.put(productLocation, locationProducts);
+                                essentialVisitPoint.put(warehouse, locations);
+                                remainQuantity -= product.getQuantity();
+                            }
+                            //
+                            System.out.println("ExportType으로 돌았을 때 가능한 경우! 이전에 방문해야한다고 확정난 로케이션 개수=" + essentialVisitPoint.size());
                             if (essentialVisitPoint.get(warehouse) != null) {
                                 //이전 로직에서 방문을 해야한다고 확정이 난 로케이션
                                 Set<Location> essentialLocations = essentialVisitPoint.get(
@@ -914,6 +939,7 @@ public class ProductService {
                                     break;
                                 }
                             }
+                            //여기에 path 추가해줘야함
                         }
                     }
                 }
@@ -1151,7 +1177,9 @@ public class ProductService {
         return totalPath.entrySet().stream()
             .collect(Collectors.toMap(
                 entry -> entry.getKey().getName(), // 키 변환
-                Map.Entry::getValue // 값 유지
+                entry -> entry.getValue().stream()
+                    .filter(dto -> dto.getQuantity() > 0) // quantity가 0이 아닌 경우만 필터링
+                    .collect(Collectors.toList()) // 필터링된 리스트로 변환
             ));
     }
 
