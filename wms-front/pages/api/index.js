@@ -45,9 +45,19 @@ function fetchBusinessEmployees(id) {
     return instance.get(`/users?businessId=${id}`);
 }
 
+// 특정 사업체에 직원 추가
+function addEmployeeToBusiness(businessId, employeeId) {
+    return instance.put(`/users?id=${employeeId}&businessId=${businessId}`);
+}
+
 // 특정 직원 조회
 function fetchEmployee(id) {
     return instance.get(`/users/${id}`);
+}
+
+// 이메일로 특정 직원 조회
+function fetchEmployeeByEmail(email) {
+    return instance.get(`/users?email=${email}`);
 }
 
 // 특정 직원 정보 수정
@@ -230,7 +240,9 @@ export {
     deleteBusiness,
     fetchEmployees, 
     fetchBusinessEmployees,
+    addEmployeeToBusiness,
     fetchEmployee,
+    fetchEmployeeByEmail,
     editEmployee,
     deleteEmployee,
     createWarehouses,
