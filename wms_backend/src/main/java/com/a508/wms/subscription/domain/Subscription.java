@@ -4,7 +4,6 @@ import com.a508.wms.business.domain.Business;
 import com.a508.wms.util.BaseTimeEntity;
 import com.a508.wms.util.constant.PaidTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;
-import com.a508.wms.util.constant.SubscriptionTypeEnum;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -29,8 +28,8 @@ public class Subscription extends BaseTimeEntity {
     private Business business;
 
     @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private SubscriptionTypeEnum subscriptionTypeEnum;
+    @Builder.Default // Builder 패턴을 사용할 때 기본값을 설정
+    private int warehouseCount = 1; // 처음에 1로 설정
 
     @CreatedDate
     @Column(updatable = false, nullable = false)
@@ -59,10 +58,6 @@ public class Subscription extends BaseTimeEntity {
         this.statusEnum = statusEnum;
     }
 
-    public void setSubscriptionTypeEnum(SubscriptionTypeEnum subscriptionTypeEnum) {
-        this.subscriptionTypeEnum = subscriptionTypeEnum;
-    }
-
     public void setPaidTypeEnum(PaidTypeEnum paidTypeEnum) {
         this.paidTypeEnum = paidTypeEnum;
     }
@@ -71,5 +66,26 @@ public class Subscription extends BaseTimeEntity {
         this.id = id;
     }
 
+    public void setWarehouseCount(int count) {
+        this.warehouseCount = count;
+    }
 
+    public void setStartDate(LocalDateTime startDate) {
+        this.startDate = startDate;
+    }
+
+    public void setEndDate(LocalDateTime endDate) {
+        this.endDate = endDate;
+    }
+
+    // 창고 수 관리 메서드
+    public void incrementWarehouseCount() {
+        this.warehouseCount++;
+    }
+
+    public void decrementWarehouseCount() {
+        if (this.warehouseCount > 0) {
+            this.warehouseCount--;
+        }
+    }
 }

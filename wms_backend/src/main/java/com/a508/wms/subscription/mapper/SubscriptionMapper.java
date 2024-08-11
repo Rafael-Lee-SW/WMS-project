@@ -15,6 +15,7 @@ public class SubscriptionMapper {
     public static Subscription fromDto(SubscriptionDto subscriptionDto) {
            return Subscription.builder()
                    .id(subscriptionDto.getId())
+                   .warehouseCount(subscriptionDto.getWarehouseCount())
                    .startDate(subscriptionDto.getStartDate())
                    .endDate(subscriptionDto.getEndDate())
                    .statusEnum(subscriptionDto.getStatusEnum())
@@ -31,7 +32,7 @@ public class SubscriptionMapper {
        return SubscriptionDto.builder()
                .id(subscription.getId())
                .businessId(subscription.getBusiness().getId())
-               .subscriptionTypeEnum(subscription.getSubscriptionTypeEnum())
+               .warehouseCount(subscription.getWarehouseCount())
                .startDate(subscription.getStartDate())
                .endDate(subscription.getEndDate())
                .statusEnum(subscription.getStatusEnum())
