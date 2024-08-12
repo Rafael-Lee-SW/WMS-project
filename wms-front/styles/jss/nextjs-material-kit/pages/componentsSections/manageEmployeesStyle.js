@@ -26,7 +26,7 @@ const manageEmployeesStyle = {
         height: "30px"
     },
     card: {
-        width: '40%',
+        width: '30%',
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -37,6 +37,31 @@ const manageEmployeesStyle = {
         borderRadius: '4px',
         boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
     },
+    listTitle: {
+        paddingTop: '30px',
+        fontWeight: 'bold'
+    },
+    listContainer: {
+        width: '30%',
+        display: 'flex',
+        alignItems: 'center',
+        flexDirection: 'row'
+    },
+    listCard: {
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'row',
+        paddingRight: '10px',
+        marginTop: '10px',
+        width: '100%',
+        border: 'solid 1px #7D4A1A',
+        justifyContent: 'space-between'
+    },
+    nameDiv: {
+        margin: '10px',
+        marginLeft: '20px'
+    },
     email: {
         flexGrow: 1, 
     },
@@ -44,7 +69,7 @@ const manageEmployeesStyle = {
         padding: 0,
         paddingBottom: '6px'
     },
-    addButton: {        
+    button: {        
         backgroundColor: "#7D4A1A",
         width: '100px',
         color: 'white',
@@ -54,6 +79,11 @@ const manageEmployeesStyle = {
             backgroundColor: '#7D4A1A',
             color: 'white',
         },
+    },
+    modalTitle: {
+        display: 'flex',
+        justifyContent: 'center',
+        textAlign: 'center'
     },
 }
 export default manageEmployeesStyle;

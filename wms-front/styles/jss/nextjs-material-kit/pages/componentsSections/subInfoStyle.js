@@ -2,7 +2,7 @@
 
 const subInfoStyle = {
     container: {
-      padding: "20px",
+      paddingTop: '20px',
       textAlign: "center",
     },
     card: {
@@ -36,8 +36,8 @@ const subInfoStyle = {
       },
     },
     title: {
-      fontWeight: "bold",
       marginBottom: "20px",
+      margin: 0
     },
     loadingText: {
       fontSize: "18px",

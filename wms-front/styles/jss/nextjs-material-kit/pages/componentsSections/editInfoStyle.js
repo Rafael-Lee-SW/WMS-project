@@ -1,5 +1,3 @@
-import { colors } from "@material-ui/core";
-
 const editInfoStyle = {
     container: {
         display: 'flex',

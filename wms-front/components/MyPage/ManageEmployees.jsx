@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Input, Card, InputAdornment } from '@material-ui/core';
-import { deleteEmployee, addEmployeeToBusiness, fetchEmployeeByEmail, fetchBusinessEmployees } from '../../pages/api';
+import { deleteBusinessEmployee, addEmployeeToBusiness, fetchEmployeeByEmail, fetchBusinessEmployees } from '../../pages/api';
 import { makeStyles } from '@material-ui/core';
 import style from '/styles/jss/nextjs-material-kit/pages/componentsSections/manageEmployeesStyle.js';
 import { useRouter } from 'next/router';
@@ -8,37 +8,46 @@ import Image from 'next/image';
 
 const useStyles = makeStyles(style);
 
-export default function ManageEmployees({ businessId, onUpdateEmployees }) {
+export default function ManageEmployees({ businessId }) {
     const classes = useStyles();
     const router = useRouter();
     const [open, setOpen] = useState(false);
     const [currentEmployee, setCurrentEmployee] = useState(null);
-    const [employees, setEmployees] = useState([]);
+    const [employees, setEmployees] = useState(null);
     const [searchResults, setSearchResults] = useState(null);
     const [searchEmail, setSearchEmail] = useState('');
 
     useEffect(() => {
-        console.log(searchResults);
+        fetchEmployees();
+        console.log(employees);
     }, [searchResults]);
 
-    // // 현재 직원 목록 
-    // const fetchEmployees = async () => {
-    //     try {
-    //         const response = await fetchBusinessEmployees(businessId); 
-    //         setEmployees(response.data.result);
-    //     } catch (error) {
-    //         console.error("Error fetching employees:", error);
-    //         router.push('/404')
-    //     }
-    // };
+    // 현재 직원 목록 
+    const fetchEmployees = async () => {
+        try {
+            const response = await fetchBusinessEmployees(businessId); 
+            const result = response.data.result;
+
+            const filteredEmployees = result.filter(employee => employee.roleTypeEnum === 'EMPLOYEE');
+            setEmployees(filteredEmployees)
+
+        } catch (error) {
+            console.error("Error fetching employees:", error);
+            router.push('/404')
+        }
+    };
 
     const handleSearch = async () => {
         try {
             const response = await fetchEmployeeByEmail(searchEmail);
             const result = response.data.result;
 
-            // 단일 객체로 설정
-            setSearchResults(result || null);
+            if ( result && result.businessId !== businessId ) {
+                setSearchResults(result);
+            } else {
+                setSearchResults(null);
+            }
+
         } catch (error) {
             console.error("Error searching employees:", error);
             setSearchResults(null);
@@ -48,23 +57,24 @@ export default function ManageEmployees({ businessId, onUpdateEmployees }) {
     const handleAddEmployee = async (employeeId) => {
         try {
             await addEmployeeToBusiness(businessId, employeeId);
-            // onUpdateEmployees();
-            setSearchResults([]);
-            // fetchEmployees(); // 직원 추가 후 목록 갱신
+            setSearchResults(null);
+            setSearchEmail('');
+            alert('직원이 추가되었습니다.');
+            fetchEmployees();
         } catch (error) {
             router.push('/404');
         }
     };
 
-    const handleDelete = async (employeeId) => {
-        try {
-            await deleteEmployee(employeeId);
-            // onUpdateEmployees();
-            // fetchEmployees(); // 직원 삭제 후 목록 갱신
-        } catch (error) {
-            router.push('/404');
-        }
-    };
+    const handleDelete = async (employeeId, event) => {
+    event.stopPropagation();
+    try {
+        await deleteBusinessEmployee(employeeId, businessId);
+        fetchEmployees(); 
+    } catch (error) {
+        router.push('/404');
+    }
+};
 
     const handleOpen = (employee) => {
         setCurrentEmployee(employee);
@@ -104,7 +114,7 @@ export default function ManageEmployees({ businessId, onUpdateEmployees }) {
                 {searchResults ? (
                     <card className={classes.card}>
                         <div>{searchResults.email}</div>
-                        <Button onClick={() => handleAddEmployee(searchResults.id)} className={classes.addButton}>
+                        <Button onClick={() => handleAddEmployee(searchResults.id)} className={classes.button}>
                             추가
                         </Button>
                     </card>
@@ -113,12 +123,13 @@ export default function ManageEmployees({ businessId, onUpdateEmployees }) {
                 )}
             </div>
             {/* 현재 직원 목록 */}
-            <div>
-                {employees.length > 0 ? (
+            <h4 className={classes.listTitle}>직원 목록</h4>
+            <div className={classes.listContainer}>
+                {employees ? (
                     employees.map((employee) => (
-                        <Card key={employee.id} onClick={() => handleOpen(employee)} className={classes.card}>
-                            {employee.name}
-                            <Button onClick={() => handleDelete(employee.id)} className={classes.deleteButton}>
+                        <Card key={employee.id} className={classes.listCard}>
+                            <div className={classes.nameDiv} onClick={() => handleOpen(employee)}>{employee.name}</div>
+                            <Button onClick={(e) => handleDelete(employee.id, e)} className={classes.button}>
                                 삭제
                             </Button>
                         </Card>
@@ -132,17 +143,17 @@ export default function ManageEmployees({ businessId, onUpdateEmployees }) {
 
             {/* 직원 상세 정보 모달 */}
             <Dialog open={open} onClose={handleClose}>
-                <DialogTitle>직원 상세 정보</DialogTitle>
+                <div className={classes.modalTitle}><DialogTitle>직원 상세 정보</DialogTitle></div>
                 <DialogContent>
                     {currentEmployee && (
                         <>
                             <p>이름: {currentEmployee.name}</p>
-                            <p>등록일: {currentEmployee.createDate}</p>
+                            <p>이메일: {currentEmployee.email}</p>
+                            <p>등록일: {currentEmployee.businessAddDate}</p>
                         </>
                     )}
                 </DialogContent>
-                <DialogActions style={{ justifyContent: 'space-between' }}>
-                    <Button onClick={() => handleDelete(currentEmployee.id)}>삭제</Button>
+                <DialogActions style={{ justifyContent: 'flex-end' }}>
                     <Button className={classes.modalCloseButton} onClick={handleClose} color="primary">
                         X
                     </Button>
