@@ -11,8 +11,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @Slf4j
 @RestController
 @RequestMapping("/users")
@@ -43,19 +41,7 @@ public class UserController {
         }
         return new BaseSuccessResponse<>(null);
     }
-    /**
-     * userId, businessId로 해당 user의 businessId를 수정
-     * @param businessId
-     * @param id
-     * @return
-     */
-    @PutMapping
-    public BaseSuccessResponse<Void> updateByBusinessId(@RequestParam("businessId") Long businessId,
-                                                        @RequestParam("id") Long id) throws UserException {
-        log.info("[Controller] update User by businessId: {}", businessId);
-        userService.updateByBusinessId(businessId, id);
-        return new BaseSuccessResponse<>(null);
-    }
+
     /**
      * 직원 1명의 정보를 수정하는 메서드
      *
@@ -81,5 +67,24 @@ public class UserController {
         log.info("[Controller] delete user by id: {}", id);
         return new BaseSuccessResponse<>(userService.delete(id));
     }
-
+    /**
+     * userId, businessId로 해당 user의 businessId를 수정
+     * @param businessId
+     * @param id
+     * @return
+     */
+    @PutMapping
+    public BaseSuccessResponse<Void> updateByBusinessIdAndId(@RequestParam("businessId") Long businessId,
+                                                             @RequestParam("id") Long id) throws UserException {
+        log.info("[Controller] update User by businessId: {}", businessId);
+        userService.updateByBusinessIdAndId(businessId, id);
+        return new BaseSuccessResponse<>(null);
+    }
+    @PatchMapping
+    public BaseSuccessResponse<Void> deleteByBusinessIdAndId(@RequestParam("businessId") Long businessId,
+                                                             @RequestParam("id") Long id) throws UserException{
+        log.info("[Controller] delete User by businessId and id: {}", businessId);
+        userService.deleteByBusinessIdAndId(businessId, id);
+        return new BaseSuccessResponse<>(null);
+    }
 }

@@ -8,7 +8,6 @@ import com.a508.wms.user.dto.UserResponseDto;
 import com.a508.wms.user.exception.UserException;
 import com.a508.wms.user.mapper.UserMapper;
 import com.a508.wms.user.repository.UserRepository;
-import com.a508.wms.util.constant.ResponseEnum;
 import com.a508.wms.util.constant.RoleTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;
 
@@ -19,6 +18,8 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import static com.a508.wms.util.constant.ProductConstant.DEFAULT_BUSINESS_ID;
 
 @Slf4j
 @Service
@@ -95,18 +96,30 @@ public class UserService {
         return userRepository.findUserByEmail(email);
     }
 
-    public void updateByBusinessId(Long businessId, Long userId) throws UserException {
+    public void updateByBusinessIdAndId(Long businessId, Long id) throws UserException {
         try {
-            User user = userModuleService.findById(userId);
-            user.updateBusinessId(businessId);
-            user.updateBusinessAddDate(LocalDate.now());
-            if (user.getRoleTypeEnum().equals(RoleTypeEnum.GENERAL))
+            User user = userModuleService.findById(id);
+            if (user.getRoleTypeEnum().equals(RoleTypeEnum.GENERAL)) {
+                user.updateBusinessId(businessId);
+                user.updateBusinessAddDate(LocalDate.now());
                 user.updateRoleTypeEnum(RoleTypeEnum.EMPLOYEE);
+            }
             else throw new IllegalArgumentException();
             userRepository.save(user);
         } catch (IllegalArgumentException e) {
-             throw new UserException.NotGeneralUserException();
+             throw new UserException.InvalidRoleTypeException();
         }
-
+    }
+    public void deleteByBusinessIdAndId(Long businessId, Long id) throws UserException {
+        try {
+            User user = userModuleService.findById(id);
+            if (user.getRoleTypeEnum().equals(RoleTypeEnum.EMPLOYEE)) {
+                user.updateBusinessId(DEFAULT_BUSINESS_ID.longValue());
+                user.updateRoleTypeEnum(RoleTypeEnum.GENERAL);
+            } else throw new IllegalArgumentException();
+            userRepository.save(user);
+        } catch (IllegalArgumentException e) {
+            throw new UserException.InvalidRoleTypeException();
+        }
     }
 }

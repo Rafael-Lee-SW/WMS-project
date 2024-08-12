@@ -67,7 +67,5 @@ public class UserModuleService {
 
     public UserResponseDto findByEmail(String email) {
         return UserMapper.toUserResponseDto(userRepository.findUserByEmail(email));
-
-
     }
 }
