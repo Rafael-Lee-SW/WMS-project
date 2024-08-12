@@ -45,7 +45,7 @@ export default function SubInfo() {
         if (userData.result.roleTypeEnum === "BUSINESS") {
           const businessId = userData.result.businessId;
           const subscriptionResponse = await fetch(
-            `http://localhost:8080/api/subscriptions?businessId=${businessId}`
+            `https://i11a508.p.ssafy.io/api/subscriptions?businessId=${businessId}`
           );
 
           if (!subscriptionResponse.ok) {
