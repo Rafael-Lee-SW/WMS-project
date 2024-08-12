@@ -102,7 +102,7 @@ export const listOptions = {
   rowsPerPage: 10,
   pagination: true,
   rowsPerPageOptions: [10, 30, 60, 100, 10000],
-  textLabels: { body: { noMatch: "Change to Please wait..." } },
+  textLabels: { body: { noMatch: "데이터를 불러오는 중입니다." } },
 
   // Override the print behavior to ensure all data is included
   onTableChange: (action, tableState) => {
@@ -463,7 +463,7 @@ const MyContainerProduct = ({ WHId, businessId }) => {
       //  // 입고 시에 사용되는 데이터 양식
       const ImportArray = postData.map((product) => ({
         name: product.name,
-        barcode: product.barcode,
+        barcode: parseInt(product.barcode),
         quantity: parseInt(product.quantity),
         productStorageType: "상온",
         expirationDate: product.expirationDate || null,
