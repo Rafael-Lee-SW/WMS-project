@@ -482,7 +482,7 @@ const MyContainerProduct = ({ WHId, businessId }) => {
       if (response.ok) {
         const apiConnection = await response.json();
         const products = apiConnection.result;
-        console.log(apiConnection);
+        console.log("상품데이터를 성공적으로 불러왔습니다.");
         console.log(products); // 삭제해야 할 console.log (콘솔)
 
         // Extract only the required columns
@@ -566,7 +566,14 @@ const MyContainerProduct = ({ WHId, businessId }) => {
     }
   };
 
-  const [notificationColumns, setNotificationColumns] = useState([])
+  const [notificationColumns, setNotificationColumns] = useState([]);
+
+  // 영어-한글 변환 - 입고-출고-이동
+  const translationMap = {
+    IMPORT: "입고",
+    EXPORT: "출고",
+    FLOW: "이동",
+  };
 
   // 모든 알림(변동내역)을 가져오는 메서드
   const getNotificationsAPI = async (businessId) => {
@@ -598,16 +605,28 @@ const MyContainerProduct = ({ WHId, businessId }) => {
         setDetailedData(sortedData);
 
         // Map to formatted data for initial display
-        const formattedData = sortedData.map((item) => ({
-          date: new Date(item.date).toLocaleDateString(),
-          type: item.productFlowType,
-          barcode: item.barcode,
-          name: item.name,
-          quantity: item.quantity,
-          locationName: item.currentLocationName,
-          floorLevel: item.currentFloorLevel,
-          trackingNumber: item.trackingNumber,
-        }));
+        const formattedData = sortedData.map((item) => {
+          // Determine the content for the 'trackingNumber' field based on 'productFlowType'
+          let trackingOrNote = "";
+          if (item.productFlowType === "EXPORT") {
+            trackingOrNote = item.trackingNumber || "N/A";
+          } else if (item.productFlowType === "IMPORT") {
+            trackingOrNote = "입고품목";
+          } else if (item.productFlowType === "FLOW") {
+            trackingOrNote = "이동품목";
+          }
+
+          return {
+            date: new Date(item.date).toLocaleDateString(),
+            type: translationMap[item.productFlowType] || item.productFlowType, // Translate type
+            barcode: item.barcode,
+            name: item.name,
+            quantity: item.quantity,
+            locationName: item.currentLocationName,
+            floorLevel: item.currentFloorLevel,
+            trackingOrNote, // Use the new variable here
+          };
+        });
 
         setNotificationTableData(formattedData);
 
@@ -619,7 +638,7 @@ const MyContainerProduct = ({ WHId, businessId }) => {
           { name: "quantity", label: "수량" },
           { name: "locationName", label: "적재함" },
           { name: "floorLevel", label: "층수" },
-          { name: "trackingNumber", label: "송장번호" },
+          { name: "trackingOrNote", label: "송장번호/비고" },
         ]);
 
         // Precompute flow by date data
@@ -647,21 +666,21 @@ const MyContainerProduct = ({ WHId, businessId }) => {
           labels: flowLabels,
           datasets: [
             {
-              label: "Import",
+              label: translationMap["IMPORT"],
               data: importData,
               backgroundColor: "rgba(54, 162, 235, 0.2)",
               borderColor: "rgba(54, 162, 235, 1)",
               borderWidth: 1,
             },
             {
-              label: "Export",
+              label: translationMap["EXPORT"],
               data: exportData,
               backgroundColor: "rgba(255, 99, 132, 0.2)",
               borderColor: "rgba(255, 99, 132, 1)",
               borderWidth: 1,
             },
             {
-              label: "Flow",
+              label: translationMap["FLOW"],
               data: flowDataValues,
               backgroundColor: "rgba(153, 102, 255, 0.2)",
               borderColor: "rgba(153, 102, 255, 1)",
@@ -669,6 +688,7 @@ const MyContainerProduct = ({ WHId, businessId }) => {
             },
           ],
         });
+        console.log("알림데이터를 성공적으로 불러왔습니다.");
       } else {
         console.error("Error fetching notifications");
       }
@@ -677,12 +697,13 @@ const MyContainerProduct = ({ WHId, businessId }) => {
     }
   };
 
-  // New function to show only unique import/export dates
+  // 날짜와 입고-출고-타입
   const showUniqueDates = async () => {
     // Group data by date and type
     const groupedData = detailedData.reduce((acc, item) => {
       const dateKey = new Date(item.date).toLocaleDateString();
-      const typeKey = item.productFlowType;
+      const typeKey =
+        translationMap[item.productFlowType] || item.productFlowType;
       const key = `${dateKey}-${typeKey}`;
 
       if (!acc[key]) {
@@ -712,15 +733,25 @@ const MyContainerProduct = ({ WHId, businessId }) => {
     ]);
   };
 
+  const [transType, setTransType] = useState();
   // Function to handle row click and display details
   const handleRowClick = (rowData) => {
     const [selectedDate, selectedType] = rowData;
 
+    if (selectedType === "입고") {
+      setTransType("IMPORT");
+    } else if (selectedType === "출고") {
+      setTransType("EXPORT");
+    } else if (selectedType === "이동") {
+      setTransType("FLOW");
+    } else {
+      setTransType(selectedType);
+    }
     // Filter detailed data for the selected date and type
     const filteredData = detailedData.filter(
       (item) =>
         new Date(item.date).toLocaleDateString() === selectedDate &&
-        item.productFlowType === selectedType
+        item.productFlowType === transType
     );
 
     // Define columns for the detailed view
@@ -960,8 +991,22 @@ const MyContainerProduct = ({ WHId, businessId }) => {
       options={moveOptions}
     />,
     <MUIDataTable
-      key="importExportList"
+      key="notificationList"
+      title={"모든 변동 내역"}
+      data={notificationTableData}
+      columns={notificationColumns}
+      options={importExportOptions}
+    />,
+    <MUIDataTable
+      key="dateTypeList"
       title={"알림함"}
+      data={notificationTableData}
+      columns={notificationColumns}
+      options={importExportOptions}
+    />,
+    <MUIDataTable
+      key="selectedNotificationList"
+      title={"알림 상세 내역"}
       data={notificationTableData}
       columns={notificationColumns}
       options={importExportOptions}
@@ -1197,7 +1242,7 @@ const MyContainerProduct = ({ WHId, businessId }) => {
             variant="contained"
             color="primary"
             onClick={() => {
-              handleNextComponent(3);
+              handleNextComponent(5);
               setShowProductInputSection(false);
               setShowProductExportSection(false);
             }}
@@ -1211,7 +1256,7 @@ const MyContainerProduct = ({ WHId, businessId }) => {
             variant="contained"
             color="primary"
             onClick={() => {
-              handleNextComponent(2);
+              handleNextComponent(3);
               showUniqueDates();
               setShowProductInputSection(false);
               setShowProductExportSection(false);
