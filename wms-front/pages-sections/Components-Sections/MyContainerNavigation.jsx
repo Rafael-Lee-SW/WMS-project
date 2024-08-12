@@ -7,7 +7,7 @@ import React, { useState, useEffect, useRef } from "react";
 
 // Import MUI components
 import Fab from "@mui/material/Fab";
-import ButtonIn from "@mui/material/Button";
+import Button from "@mui/material/Button";
 // 모달 페이지를 위한 Import
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -90,7 +90,7 @@ const useStyles = makeStyles(styles);
 // --- 창고 관련 끝
 
 // 복합체 시작
-const MyContainerNavigation = ({ WHId }) => {
+const MyContainerNavigation = ({ WHId, businessId }) => {
   /**
    * 창고 관련 const 들 모음
    */
@@ -205,7 +205,7 @@ const MyContainerNavigation = ({ WHId }) => {
   };
 
   // API를 통해 해당하는 창고(번호)의 모든 location(적재함)과 wall(벽)을 가져오는 메서드
-  const getWarehouseAPI = async () => {
+  const getWarehouseAPI = async (WHId) => {
     try {
       const response = await fetch(
         `https://i11a508.p.ssafy.io/api/warehouses/${WHId}`,
@@ -704,11 +704,11 @@ const MyContainerNavigation = ({ WHId }) => {
           if (!existingAnchor) {
             const newId = anchorsRef.current.length
               ? Math.max(
-                ...anchorsRef.current.flatMap(({ start, end }) => [
-                  parseInt(start.id(), 10),
-                  parseInt(end.id(), 10),
-                ])
-              ) + 1
+                  ...anchorsRef.current.flatMap(({ start, end }) => [
+                    parseInt(start.id(), 10),
+                    parseInt(end.id(), 10),
+                  ])
+                ) + 1
               : 1;
             existingAnchor = buildAnchor(newId, x, y);
           } else {
@@ -776,7 +776,7 @@ const MyContainerNavigation = ({ WHId }) => {
 
   const [showDetails, setShowDetails] = useState(true); // Default to showing details
   //처음에 창고 정보를 불러온다.
-  useEffect(() => { }, []);
+  useEffect(() => {}, []);
 
   /**
    * 재고 목록과 알림 내역을 불러오는 메서드(Method) 정의
@@ -986,44 +986,6 @@ const MyContainerNavigation = ({ WHId }) => {
     console.log(selectedData);
   };
 
-  /**
-   * 유저를 부르는 Part
-   */
-
-  // 유저 및 비즈니스 정보를 담을 State
-  const [userData, setUserData] = useState(null);
-  const [businessData, setBusinessData] = useState(null);
-
-  // LocalStorage(로컬 스토레이지)를 바탕으로 비즈니스 정보를 받아온다.
-  const fetchBusinessData = async (userId) => {
-    try {
-      const response = await fetch(
-        `https://i11a508.p.ssafy.io/api/users/${userId}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (response.ok) {
-        const userData = await response.json();
-        const businessInfo = userData.result;
-        // Business Data를 추출한다.
-        setBusinessData(businessInfo);
-        console.log("Business data loaded:", businessInfo);
-
-        //재고 목록과 알림 내역을 불러온다.
-        productGetAPI(businessInfo.businessId);
-        getNotificationsAPI(businessInfo.businessId);
-      } else {
-        console.error("Error fetching user data");
-      }
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-    }
-  };
 
   // RGB 색깔로 재고율 퍼센트(%)를 추출하는 함수
   const extractFillPercentage = (rgbaString) => {
@@ -1044,21 +1006,11 @@ const MyContainerNavigation = ({ WHId }) => {
    */
 
   useEffect(() => {
-    getWarehouseAPI(); // 창고 정보를 불러온다.
-    // Retrieve user data from localStorage
-    const user = localStorage.getItem("user");
-    if (user) {
-      try {
-        const parsedUser = JSON.parse(user);
-        setUserData(parsedUser);
-        console.log("User data loaded from localStorage:", parsedUser);
+    getWarehouseAPI(WHId); // 창고 정보를 불러온다.
+    //재고 목록과 알림 내역을 불러온다.
+    productGetAPI(businessId);
+    getNotificationsAPI(businessId);
 
-        // Fetch business data using user ID
-        fetchBusinessData(parsedUser.id);
-      } catch (error) {
-        console.error("Error parsing user data from localStorage:", error);
-      }
-    }
   }, []);
 
   return (
@@ -1119,16 +1071,17 @@ const MyContainerNavigation = ({ WHId }) => {
           gap: "10px",
         }}
       >
-        <button onClick={handleZoomIn}>zoomIn</button>
-        <button onClick={handleZoomOut}>zoomOut</button>
+        <Button round onClick={handleZoomIn}>
+          zoomIn
+        </Button>
+        <Button onClick={handleZoomOut}>zoomOut</Button>
       </div>
       <div
         style={{
           position: "absolute",
           top: "10vh",
-          left: "10px",
           padding: "10px",
-          width: "220px",
+          width: "200px",
           height: "80vh",
           overflowY: "auto",
           backgroundColor: "rgba(247, 247, 247, 0.9)",
@@ -1137,16 +1090,17 @@ const MyContainerNavigation = ({ WHId }) => {
       >
         <hr />
         <div style={{ marginBottom: "10px" }}>
-          <ButtonIn onClick={() => setShowDetails(true)}>Show Details</ButtonIn>
-          <ButtonIn
+          <Button onClick={() => setShowDetails(true)}>Show Details</Button>
+          <Button
             onClick={() => {
               setShowDetails(false);
               showUniqueDates();
             }}
-            style={{ marginLeft: "5px" }}
+            color="primary"
+            round
           >
             Show Notifications
-          </ButtonIn>
+          </Button>
         </div>
         {showDetails ? (
           <div>
@@ -1183,7 +1137,7 @@ const MyContainerNavigation = ({ WHId }) => {
                           textAlign: "center",
                           backgroundColor:
                             selectedLocation &&
-                              selectedLocation.id === locations.id
+                            selectedLocation.id === locations.id
                               ? "#f0f0f0" // Highlight color for selected item
                               : "transparent", // Default color for unselected items
                           transition: "background-color 0.3s", // Smooth transition effect
@@ -1223,130 +1177,128 @@ const MyContainerNavigation = ({ WHId }) => {
       {(selectedLocation ||
         ModalTableData.length > 0 ||
         detailedNotificationData.length > 0) && (
-          <div
-            style={{
-              position: "absolute",
-              top: "10vh",
-              right: "10px",
-              padding: "10px",
-              border: "2px solid black",
-              borderRadius: "10px",
-              width: "36%",
-              height: "80vh",
-              overflowY: "auto",
-              backgroundColor: "rgba(255, 255, 255, 0.9)",
-            }}
-          >
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              <ButtonIn
-                onClick={() => {
-                  setSelectedLocation(null);
-                  setModalTableData([]);
-                  setDetailedNotificationData([]);
-                  setHoveredLocations([]); // Reset hovered locations
-                }}
-              >
-                Close
-              </ButtonIn>
-            </div>
-            {showDetails && selectedLocation ? (
+        <div
+          style={{
+            position: "absolute",
+            top: "10vh",
+            right: "10px",
+            padding: "10px",
+            border: "2px solid black",
+            borderRadius: "10px",
+            width: "36%",
+            height: "80vh",
+            overflowY: "auto",
+            backgroundColor: "rgba(255, 255, 255, 0.9)",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <Button
+              onClick={() => {
+                setSelectedLocation(null);
+                setModalTableData([]);
+                setDetailedNotificationData([]);
+                setHoveredLocations([]); // Reset hovered locations
+              }}
+            >
+              Close
+            </Button>
+          </div>
+          {showDetails && selectedLocation ? (
+            <div>
               <div>
-                <div>
+                <div
+                  id="상자 정보"
+                  style={{
+                    display: "flex",
+                  }}
+                >
                   <div
-                    id="상자 정보"
+                    id="상자 숫자 정보"
                     style={{
-                      display: "flex",
+                      width: "45%",
                     }}
                   >
-                    <div
-                      id="상자 숫자 정보"
-                      style={{
-                        width: "45%",
-                      }}
-                    >
-                      <h3>재고함 : {selectedLocation.name}</h3>
-                      {/* <b>ID : {selectedLocation.id}</b> */}
-                      <br />
-                      <b>가로 : {selectedLocation.width}cm |</b>
-                      <br />
-                      <b>세로 : {selectedLocation.height}cm</b>
-                      <br />
-                      <b>단수(층) : {selectedLocation.z}단/층</b>
-                      <b>
-                        현재 재고율 : {extractFillPercentage(selectedLocation.fill)}%{" "}
-                      </b>
-                    </div>
-                    <div
-                      id="상자의 z Index를 시각화"
-                      style={{
-                        marginLeft: "10px",
-                        height: "200px",
-                        width: "65%",
-                        overflowY: "auto",
-                        border: "1px solid gray",
-                        borderRadius: "5px",
-                        padding: "5px",
-                        display: "flex",
-                        flexDirection: "column-reverse",
-                      }}
-                    >
-                      {Array.from({ length: selectedLocation.z }).map(
-                        (_, index) => (
-                          <ButtonIn
-                            key={index + 1}
-                            style={{
-                              display: "block",
-                              width: "90%",
-                              height: "30px",
-                              backgroundColor:
-                                selectedFloor === index + 1 ? "blue" : "white",
-                              marginBottom: "5px",
-                              borderRadius: "5px",
-                              border: "1px solid black",
-                              textAlign: "center",
-                              lineHeight: "30px",
-                              marginLeft: "auto",
-                              marginRight: "auto",
-                              cursor: "pointer",
-                            }}
-                            onClick={() => {
-                              console.log(index + 1 + "층입니다.");
-                              setSelectedFloor(
-                                selectedFloor === index + 1 ? null : index + 1
-                              );
-                              handleSelectedData(
-                                selectedLocation.name,
-                                index + 1
-                              );
-                            }}
-                            onMouseEnter={(e) => {
-                              e.target.style.backgroundColor =
-                                selectedFloor === index + 1
-                                  ? "blue"
-                                  : "lightgray";
-                              e.target.style.border = "2px solid red";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.target.style.backgroundColor =
-                                selectedFloor === index + 1 ? "blue" : "white";
-                              e.target.style.border = "1px solid black";
-                            }}
-                          >
-                            {index + 1} 단
-                          </ButtonIn>
-                        )
-                      )}
-                    </div>
+                    <h3>재고함 : {selectedLocation.name}</h3>
+                    {/* <b>ID : {selectedLocation.id}</b> */}
+                    <br />
+                    <b>가로 : {selectedLocation.width}cm |</b>
+                    <br />
+                    <b>세로 : {selectedLocation.height}cm</b>
+                    <br />
+                    <b>단수(층) : {selectedLocation.z}단/층</b>
+                    <b>
+                      현재 재고율 :{" "}
+                      {extractFillPercentage(selectedLocation.fill)}%{" "}
+                    </b>
                   </div>
-                  <hr />
-                  {ModalTableData.length > 0 && (
-                    <div>
-                      <MUIDataTable
-                        data={ModalTableData}
-                        columns={columns}
-                      />
+                  <div
+                    id="상자의 z Index를 시각화"
+                    style={{
+                      marginLeft: "10px",
+                      height: "200px",
+                      width: "65%",
+                      overflowY: "auto",
+                      border: "1px solid gray",
+                      borderRadius: "5px",
+                      padding: "5px",
+                      display: "flex",
+                      flexDirection: "column-reverse",
+                    }}
+                  >
+                    {Array.from({ length: selectedLocation.z }).map(
+                      (_, index) => (
+                        <Button
+                          key={index + 1}
+                          style={{
+                            display: "block",
+                            width: "90%",
+                            height: "30px",
+                            backgroundColor:
+                              selectedFloor === index + 1 ? "blue" : "white",
+                            marginBottom: "5px",
+                            borderRadius: "5px",
+                            border: "1px solid black",
+                            textAlign: "center",
+                            lineHeight: "30px",
+                            marginLeft: "auto",
+                            marginRight: "auto",
+                            cursor: "pointer",
+                          }}
+                          onClick={() => {
+                            console.log(index + 1 + "층입니다.");
+                            setSelectedFloor(
+                              selectedFloor === index + 1 ? null : index + 1
+                            );
+                            handleSelectedData(
+                              selectedLocation.name,
+                              index + 1
+                            );
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor =
+                              selectedFloor === index + 1
+                                ? "blue"
+                                : "lightgray";
+                            e.target.style.border = "2px solid red";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor =
+                              selectedFloor === index + 1 ? "blue" : "white";
+                            e.target.style.border = "1px solid black";
+                          }}
+                        >
+                          {index + 1} 단
+                        </Button>
+                      )
+                    )}
+                  </div>
+                </div>
+                <hr />
+                {ModalTableData.length > 0 && (
+                  <div>
+                    <MUIDataTable data={ModalTableData} columns={columns} />
 
-                      {/* <HotTable
+                    {/* <HotTable
                       height={400}
                       ref={hotTableRef}
                       data={ModalTableData}
@@ -1367,61 +1319,61 @@ const MyContainerNavigation = ({ WHId }) => {
                       navigableHeaders={true}
                       licenseKey="non-commercial-and-evaluation"
                     /> */}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div>
-                <h3>Notification Details</h3>
-                {detailedNotificationData.length > 0 ? (
-                  <HotTable
-                    height={600}
-                    ref={hotTableRef}
-                    data={detailedNotificationData.map((item) => [
-                      item.date,
-                      item.productFlowType,
-                      item.barcode,
-                      item.name,
-                      item.quantity,
-                      item.currentLocationName,
-                      item.currentFloorLevel,
-                      item.trackingNumber,
-                    ])}
-                    colWidths={[100, 100, 100, 100, 100, 100, 100]}
-                    colHeaders={[
-                      "날짜",
-                      "유형",
-                      "바코드",
-                      "상품명",
-                      "수량",
-                      "적재함",
-                      "층수",
-                      "송장번호",
-                    ]}
-                    dropdownMenu={true}
-                    hiddenColumns={{
-                      indicators: true,
-                    }}
-                    contextMenu={true}
-                    multiColumnSorting={true}
-                    filters={true}
-                    rowHeaders={true}
-                    autoWrapCol={true}
-                    autoWrapRow={true}
-                    afterGetColHeader={alignHeaders}
-                    beforeRenderer={addClassesToRows}
-                    manualRowMove={true}
-                    navigableHeaders={true}
-                    licenseKey="non-commercial-and-evaluation"
-                  />
-                ) : (
-                  <p>세부 정보가 없습니다.</p>
+                  </div>
                 )}
               </div>
-            )}
-          </div>
-        )}
+            </div>
+          ) : (
+            <div>
+              <h3>Notification Details</h3>
+              {detailedNotificationData.length > 0 ? (
+                <HotTable
+                  height={600}
+                  ref={hotTableRef}
+                  data={detailedNotificationData.map((item) => [
+                    item.date,
+                    item.productFlowType,
+                    item.barcode,
+                    item.name,
+                    item.quantity,
+                    item.currentLocationName,
+                    item.currentFloorLevel,
+                    item.trackingNumber,
+                  ])}
+                  colWidths={[100, 100, 100, 100, 100, 100, 100]}
+                  colHeaders={[
+                    "날짜",
+                    "유형",
+                    "바코드",
+                    "상품명",
+                    "수량",
+                    "적재함",
+                    "층수",
+                    "송장번호",
+                  ]}
+                  dropdownMenu={true}
+                  hiddenColumns={{
+                    indicators: true,
+                  }}
+                  contextMenu={true}
+                  multiColumnSorting={true}
+                  filters={true}
+                  rowHeaders={true}
+                  autoWrapCol={true}
+                  autoWrapRow={true}
+                  afterGetColHeader={alignHeaders}
+                  beforeRenderer={addClassesToRows}
+                  manualRowMove={true}
+                  navigableHeaders={true}
+                  licenseKey="non-commercial-and-evaluation"
+                />
+              ) : (
+                <p>세부 정보가 없습니다.</p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
