@@ -2,6 +2,7 @@ package com.a508.wms.user.controller;
 
 import com.a508.wms.user.dto.UserRequestDto;
 import com.a508.wms.user.dto.UserResponseDto;
+import com.a508.wms.user.exception.UserException;
 import com.a508.wms.user.service.UserModuleService;
 import com.a508.wms.user.service.UserService;
 import com.a508.wms.util.BaseSuccessResponse;
@@ -50,7 +51,7 @@ public class UserController {
      */
     @PutMapping
     public BaseSuccessResponse<Void> updateByBusinessId(@RequestParam("businessId") Long businessId,
-                                                        @RequestParam("id") Long id) {
+                                                        @RequestParam("id") Long id) throws UserException {
         log.info("[Controller] update User by businessId: {}", businessId);
         userService.updateByBusinessId(businessId, id);
         return new BaseSuccessResponse<>(null);

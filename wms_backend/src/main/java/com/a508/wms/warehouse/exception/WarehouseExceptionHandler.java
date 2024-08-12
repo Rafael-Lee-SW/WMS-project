@@ -9,6 +9,6 @@ public class WarehouseExceptionHandler {
 
     @ExceptionHandler(WarehouseException.class)
     public BaseExceptionResponse warehouseException(WarehouseException e) {
-        return new BaseExceptionResponse(e.getResponseEnum(), e.getExceptionMessage());
+        return new BaseExceptionResponse(e.getResponseEnum());
     }
 }

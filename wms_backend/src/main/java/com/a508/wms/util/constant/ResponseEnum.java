@@ -26,7 +26,7 @@ public enum ResponseEnum {
     USER_DELETED(false, 5004, HttpStatus.BAD_REQUEST.value(), "삭제된 사용자입니다."),
     USER_NOT_LOGGED_IN(false, 5005, HttpStatus.UNAUTHORIZED.value(), "로그인하지 않은 사용자입니다."),
     SAME_AS_OLD_PASSWORD(false, 5006, HttpStatus.BAD_REQUEST.value(), "새 비밀번호는 기존 비밀번호와 달라야 합니다."),
-
+    NOT_GENERAL_USER(false, 5007, HttpStatus.BAD_REQUEST.value(), "해당 사용자는 이미 직원이거나 사장입니다."),
     //Product 오류
     PRODUCT_NOT_FOUND(false, 6000, HttpStatus.BAD_REQUEST.value(), "상품을 찾을수 없습니다."),
     PRODUCT_DELETED(false, 6001, HttpStatus.BAD_REQUEST.value(), "삭제된 상품입니다."),

@@ -77,4 +77,11 @@ public class UserException extends Throwable {
                 ResponseEnum.SAME_AS_OLD_PASSWORD.getMessage());
         }
     }
+    public static class NotGeneralUserException extends UserException {
+
+        public NotGeneralUserException() {
+         super(ResponseEnum.NOT_GENERAL_USER,
+                 ResponseEnum.NOT_GENERAL_USER.getMessage());
+        }
+    }
 }

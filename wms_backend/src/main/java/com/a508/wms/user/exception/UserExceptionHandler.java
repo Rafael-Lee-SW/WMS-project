@@ -9,7 +9,7 @@ public class UserExceptionHandler {
 
     @ExceptionHandler(UserException.class)
     public BaseExceptionResponse userException(UserException e) {
-        return new BaseExceptionResponse(e.getResponseEnum(), e.getExceptionMessage());
+        return new BaseExceptionResponse(e.getResponseEnum());
 
     }
 }
