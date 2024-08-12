@@ -67,6 +67,10 @@ public class WebSecurityConfig {
                 .requestMatchers("/api/oauth/**").permitAll()
                 .requestMatchers("/api/v1/social/**").authenticated()
                 .anyRequest().permitAll()
+            ).oauth2Login(oauth2 -> oauth2
+                .loginPage("/api/oauth2/authorization/kakao")
+                .redirectionEndpoint(endpoint -> endpoint.baseUri("/api/oauth/code/kakao"))
+                .userInfoEndpoint(endPoint -> endPoint.userService(oAuth2UserService))
             )
             .exceptionHandling(exceptionHandling -> exceptionHandling
                 .authenticationEntryPoint(new FailedAuthenticationEntryPoint())
