@@ -42,7 +42,7 @@ const useStyles = makeStyles((theme) => ({
     position: "absolute",
     top: "10vh",
     left: 0,
-    width: "220px",
+    width: "200px",
     height: "80vh",
     backgroundColor: "rgba(247, 247, 247, 0.9)",
     boxShadow: "2px 0 5px rgba(0, 0, 0, 0.1)",
@@ -100,7 +100,7 @@ const useStyles = makeStyles((theme) => ({
 /**
  * 창고 관리 Component
  */
-const MyContainerMap = ({ warehouseId }) => {
+const MyContainerMap = ({ warehouseId, businessId }) => {
   const classes = useStyles();
   const stageRef = useRef(null);
   const layerRef = useRef(null);
@@ -1063,61 +1063,17 @@ const MyContainerMap = ({ warehouseId }) => {
     };
   }, [line, startPos, currentSetting, hoveredAnchor]);
 
-  // 유저 및 비즈니스 정보를 담을 State
-  const [userData, setUserData] = useState(null);
-  const [businessData, setBusinessData] = useState(null);
-
-  // LocalStorage(로컬 스토레이지)를 바탕으로 비즈니스 정보를 받아온다.
-  const fetchBusinessData = async (userId) => {
-    try {
-      const response = await fetch(
-        `https://i11a508.p.ssafy.io/api/users/${userId}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (response.ok) {
-        const userData = await response.json();
-        const businessInfo = userData.result;
-        //Business Data를 추출한다.
-        setBusinessData(businessInfo);
-        console.log("Business data loaded:", businessInfo);
-      } else {
-        console.error("Error fetching user data");
-      }
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-    }
-  };
-
+  // 최초 한번 실행된다.
   useEffect(() => {
-    // Retrieve user data from localStorage
-    const user = localStorage.getItem("user");
-    if (user) {
-      try {
-        const parsedUser = JSON.parse(user);
-        setUserData(parsedUser);
-        console.log("User data loaded from localStorage:", parsedUser);
 
-        // Fetch business data using user ID
-        fetchBusinessData(parsedUser.id);
-      } catch (error) {
-        console.error("Error parsing user data from localStorage:", error);
-      }
-    }
     // 현재 param값을 통해 불러온다.
     getWarehouseAPI(warehouseId);
+
   }, []);
 
   /**
    * 창고 자동 생성 로직을 위한 부분
    */
-
-  const [cards, setCards] = useState([]);
 
   const [openContainerCreation, setOpenContainerCreation] = useState(false);
   const [formData, setFormData] = useState({
@@ -1154,7 +1110,7 @@ const MyContainerMap = ({ warehouseId }) => {
     const xSpacing = CANVAS_SIZE / row;
     const ySpacing = CANVAS_SIZE / column;
 
-    // Generate new locations based on input
+    // 위치 자동 생성을 위한 부분
     const newLocations = [];
     for (let i = 0; i < row; i++) {
       for (let j = 0; j < column; j++) {
@@ -1188,8 +1144,7 @@ const MyContainerMap = ({ warehouseId }) => {
     handleClose();
   };
 
-  // Function to generate walls around locations
-  // Function to generate a perimeter wall around all locations
+  // 벽 자동생성을 위한 것
   const generateWalls = (generatedLocations) => {
     if (generatedLocations.length === 0) return;
 
@@ -1515,7 +1470,7 @@ const MyContainerMap = ({ warehouseId }) => {
               }}
             >
               {locations
-                .filter((locations) => locations.type === "location")
+                .filter((locations) => locations.type === "location" && locations.name !== "00-00" )
                 .map((locations, index) => (
                   <li
                     key={index}
