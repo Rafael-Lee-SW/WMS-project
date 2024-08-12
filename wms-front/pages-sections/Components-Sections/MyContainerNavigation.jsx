@@ -154,7 +154,7 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
 
   //모달을 위한 데이터 셋
   const [ModalTableData, setModalTableData] = useState([]);
-  const [columns, setColumns] = useState([]);
+  const [columns, setColumns] = useState([]); // 각 상자 속 데이터를 위한 칼럼
   const hotTableRef = useRef(null);
 
   // State to open the modal when a date is clicked
@@ -865,7 +865,7 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
   // 변동 내역 / 알림함에서 쓰이는 data Table state
   const [notificationTableData, setNotificationTableData] = useState([]);
   const [detailedData, setDetailedData] = useState([]); // 모든 변동 사항을 기록한다.
-  const [notificationColumn, setNotificationColumn] = useState([]); // 알림 단위로 변동사항을 기록한다.
+  const [notificationColumn, setNotificationColumn] = useState([]); // 알림 단위로 변동사항에 대한 칼럼
 
   // 모든 알림(변동내역)을 가져오는 메서드
   const getNotificationsAPI = async (businessId) => {
@@ -928,6 +928,8 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
     }
   };
 
+  const [dateColumns, setDateColumns] = useState([]); // 일자별로
+
   // 모든 변동 내역을 날짜별로 묶어 알림으로 바꾸는 함수
   const showUniqueDates = async () => {
     // Group data by date and type
@@ -956,7 +958,7 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
     }));
 
     setNotificationTableData(formattedData);
-    setColumns([
+    setDateColumns([
       { name: "date", label: "날짜" },
       { name: "type", label: "유형" },
       { name: "count", label: "수량" },
@@ -986,7 +988,6 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
     console.log(selectedData);
   };
 
-
   // RGB 색깔로 재고율 퍼센트(%)를 추출하는 함수
   const extractFillPercentage = (rgbaString) => {
     const matches = rgbaString.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
@@ -1010,7 +1011,6 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
     //재고 목록과 알림 내역을 불러온다.
     productGetAPI(businessId);
     getNotificationsAPI(businessId);
-
   }, []);
 
   return (
@@ -1219,13 +1219,12 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
                     }}
                   >
                     <h3>재고함 : {selectedLocation.name}</h3>
-                    {/* <b>ID : {selectedLocation.id}</b> */}
-                    <br />
-                    <b>가로 : {selectedLocation.width}cm |</b>
+                    <b>가로 : {selectedLocation.width}cm</b>
                     <br />
                     <b>세로 : {selectedLocation.height}cm</b>
                     <br />
                     <b>단수(층) : {selectedLocation.z}단/층</b>
+                    <br />
                     <b>
                       현재 재고율 :{" "}
                       {extractFillPercentage(selectedLocation.fill)}%{" "}
@@ -1297,28 +1296,6 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
                 {ModalTableData.length > 0 && (
                   <div>
                     <MUIDataTable data={ModalTableData} columns={columns} />
-
-                    {/* <HotTable
-                      height={400}
-                      ref={hotTableRef}
-                      data={ModalTableData}
-                      colWidths={[110, 110, 140, 110, 110, 110, 110]}
-                      colHeaders={columns.map((col) => col.label)}
-                      dropdownMenu={true}
-                      hiddenColumns={{
-                        indicators: true,
-                      }}
-                      contextMenu={true}
-                      multiColumnSorting={true}
-                      filters={true}
-                      autoWrapCol={true}
-                      autoWrapRow={true}
-                      afterGetColHeader={alignHeaders}
-                      beforeRenderer={addClassesToRows}
-                      manualRowMove={true}
-                      navigableHeaders={true}
-                      licenseKey="non-commercial-and-evaluation"
-                    /> */}
                   </div>
                 )}
               </div>
@@ -1327,9 +1304,7 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
             <div>
               <h3>Notification Details</h3>
               {detailedNotificationData.length > 0 ? (
-                <HotTable
-                  height={600}
-                  ref={hotTableRef}
+                <MUIDataTable
                   data={detailedNotificationData.map((item) => [
                     item.date,
                     item.productFlowType,
@@ -1340,32 +1315,7 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
                     item.currentFloorLevel,
                     item.trackingNumber,
                   ])}
-                  colWidths={[100, 100, 100, 100, 100, 100, 100]}
-                  colHeaders={[
-                    "날짜",
-                    "유형",
-                    "바코드",
-                    "상품명",
-                    "수량",
-                    "적재함",
-                    "층수",
-                    "송장번호",
-                  ]}
-                  dropdownMenu={true}
-                  hiddenColumns={{
-                    indicators: true,
-                  }}
-                  contextMenu={true}
-                  multiColumnSorting={true}
-                  filters={true}
-                  rowHeaders={true}
-                  autoWrapCol={true}
-                  autoWrapRow={true}
-                  afterGetColHeader={alignHeaders}
-                  beforeRenderer={addClassesToRows}
-                  manualRowMove={true}
-                  navigableHeaders={true}
-                  licenseKey="non-commercial-and-evaluation"
+                  columns={notificationColumn}
                 />
               ) : (
                 <p>세부 정보가 없습니다.</p>
@@ -1385,98 +1335,70 @@ const RectangleTransformer = ({
   isSelected,
   onSelect,
   onChange,
-  isHovered, // Add this prop
 }) => {
   const shapeRef = useRef();
-  const trRef = useRef();
-  // 사각형이 선택되었을 때 변형기를 연결하기 위한 Effect 훅
-  useEffect(() => {
-    if (isSelected) {
-      trRef.current.nodes([shapeRef.current]);
-      trRef.current.getLayer().batchDraw();
+
+  // Calculate font size for the text inside the rectangle
+  const fontSize = Math.min(shapeProps.width, shapeProps.height) / 4;
+
+  // Text to display on the rectangle
+  const mainText = `${shapeProps.name}-${
+    shapeProps.z < 10 ? "0" + shapeProps.z : shapeProps.z
+  }`;
+
+  // Function to extract fill percentage from RGBA color
+  const extractFillPercentage = (rgbaString) => {
+    const matches = rgbaString.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+
+    if (matches) {
+      const red = parseInt(matches[1], 10);
+      // Assuming the fill percentage was encoded in the red component
+      return ((red / 255) * 100).toFixed(1);
     }
-  }, [isSelected]);
+
+    return "0.0"; // Default to 0% if unable to parse
+  };
 
   return (
     <React.Fragment>
-      {/* 사각형 모양 */}
+      {/* Rectangle shape */}
       <Rect
-        onClick={onSelect} // 사각형 선택을 위한 클릭 이벤트 처리
-        onTap={onSelect} // 터치 디바이스를 위한 탭 이벤트 처리
+        onClick={onSelect} // Handle click to select rectangle
+        onTap={onSelect} // Handle tap for touch devices
         ref={shapeRef}
         {...shapeProps}
-        draggable // 사각형을 드래그 가능하게 함
-        stroke={isHovered ? "blue" : "black"}
-        strokeWidth={isHovered ? 3 : 1}
-        fill={isHovered ? "lightblue" : shapeProps.fill} // Change fill if hovered
-        // 드래그 종료 이벤트 -- 사각형 위치 업데이트
-        onDragEnd={(e) => {
-          onChange({
-            ...shapeProps,
-            x: Math.max(
-              0,
-              Math.min(Math.round(e.target.x()), CANVAS_SIZE - e.target.width())
-            ), //드래그 종료 후에 반올림한 위치로 이동함.
-            y: Math.max(
-              0,
-              Math.min(
-                Math.round(e.target.y()),
-                CANVAS_SIZE - e.target.height()
-              )
-            ),
-          });
-        }}
-        // 변형 종료 이벤트 -- 사각형 크기 및 위치 업데이트
-        onTransformEnd={(e) => {
-          const node = shapeRef.current; // 현재 도형에 대한 정보를 업데이트 받는다.
-          const scaleX = node.scaleX();
-          const scaleY = node.scaleY();
-
-          node.scaleX(1);
-          node.scaleY(1);
-          onChange({
-            ...shapeProps,
-            x: Math.max(
-              0,
-              Math.min(Math.round(node.x()), CANVAS_SIZE - node.width())
-            ), // 변형 후에 반올림한 위치로 이동
-            y: Math.max(
-              0,
-              Math.min(Math.round(node.y()), CANVAS_SIZE - node.height())
-            ),
-            width: Math.max(5, node.width() * scaleX), // 최소 너비 보장
-            height: Math.max(5, node.height() * scaleY), // 최소 높이 보장
-            rotation: Math.round(node.rotation()), // 반올림한 각도
-          });
-        }}
+        draggable={false} // Disable dragging
+        stroke={isSelected ? "red" : "transparent"} // Border color when selected
+        strokeWidth={isSelected ? 2 : 0} // Border width when selected
       />
       <Text
-        text={shapeProps.name}
+        text={mainText}
         x={shapeProps.x}
         y={shapeProps.y}
+        z={shapeProps.z}
         width={shapeProps.width}
-        height={shapeProps.height}
+        height={shapeProps.height - fontSize}
         fontSize={Math.min(shapeProps.width, shapeProps.height) / 5}
         fontFamily="Arial"
         fill="white"
         align="center"
         verticalAlign="middle"
-        listening={false} // 텍스트를 클릭할 수 없도록 비활성화
+        listening={false} // Disable interactions with the text
       />
-      {isSelected && (
-        // 사각형을 크기 조정 및 회전하는 변형 도구
-        <Transformer
-          ref={trRef}
-          flipEnabled={false} // 뒤집기 비활성화
-          boundBoxFunc={(oldBox, newBox) => {
-            // 최소 크기로 크기 조정 제한
-            if (Math.abs(newBox.width) < 5 || Math.abs(newBox.height) < 5) {
-              return oldBox;
-            }
-            return newBox;
-          }}
-        />
-      )}
+      <Text
+        text={`${extractFillPercentage(shapeProps.fill)}%`}
+        x={shapeProps.x}
+        y={shapeProps.y}
+        z={shapeProps.z}
+        width={shapeProps.width}
+        height={shapeProps.height + fontSize}
+        fontSize={Math.min(shapeProps.width, shapeProps.height) / 5}
+        fontFamily="Arial"
+        fill="white"
+        align="center"
+        verticalAlign="middle"
+        listening={false} // Disable interactions with the text
+      />
     </React.Fragment>
   );
 };
