@@ -12,18 +12,27 @@ import com.a508.wms.auth.dto.response.auth.EmailCertificationResponseDto;
 import com.a508.wms.auth.dto.response.auth.IdCheckResponseDto;
 import com.a508.wms.auth.dto.response.auth.SignInResponseDto;
 import com.a508.wms.auth.dto.response.auth.SignUpResponseDto;
+import com.a508.wms.auth.provider.JwtProvider;
 import com.a508.wms.auth.service.AuthService;
 import com.a508.wms.user.domain.User;
 import com.a508.wms.user.dto.UserResponseDto;
 import com.a508.wms.user.mapper.UserMapper;
 import com.a508.wms.user.repository.UserRepository;
 import com.a508.wms.user.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -43,6 +52,7 @@ public class AuthController {
     private final DefaultOAuth2UserService defaultOAuth2UserService;
     private final UserService userService;
     private final UserRepository userRepository;
+    private final JwtProvider jwtProvider;
 
     /**
      * 중복 이메일 체크하는 메서드
@@ -113,5 +123,25 @@ public class AuthController {
         }
         UserResponseDto userResponseDto = UserMapper.toUserResponseDto(user);
         return ResponseEntity.ok(userResponseDto);
+    }
+
+    @GetMapping("/code/kakao")
+    public void handleKakaoLogin(HttpServletRequest request, HttpServletResponse response, Authentication authentication)
+        throws IOException, IOException {
+        OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
+
+        Map<String, Object> attributes = oAuth2User.getAttributes();
+        Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
+        String userEmail = (String) kakaoAccount.get("email");
+        log.info("kakao login userEmail = {} ", userEmail);
+
+        // JWT 생성
+        String token = jwtProvider.create(userEmail);
+        response.addHeader("Authorization", "Bearer " + token);
+
+        // 리다이렉트 URL 생성
+        String jsonResponse = URLEncoder.encode("{\"code\":\"SU\", \"token\":\"" + token + "\", \"userEmail\":\"" + userEmail + "\"}", "UTF-8");
+        log.info("jsonResponse: {}", jsonResponse);
+        response.sendRedirect("https://i11a508.p.ssafy.io/oauth/callback?token=" + jsonResponse);
     }
 }
