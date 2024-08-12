@@ -47,6 +47,8 @@ import {
   alignHeaders,
 } from "/components/Test/hooksCallbacks.jsx";
 
+// MUI-DataTable 관련 import
+import { createMuiTheme, MuiThemeProvider } from "@material-ui/core/styles";
 import MUIDataTable from "mui-datatables";
 import Chip from "@mui/material/Chip";
 import IconButton from "@mui/material/IconButton";
@@ -85,6 +87,92 @@ registerPlugin(CopyPaste);
 registerPlugin(DropdownMenu);
 registerPlugin(Filters);
 registerPlugin(HiddenRows);
+
+// Define the table options
+export const listOptions = {
+  fixedHeader: true,
+  filterType: "multiselect",
+  responsive: "scrollMaxHeight",
+  download: true,
+  print: true,
+  viewColumns: true,
+  filter: true,
+  selectableRows: "none",
+  elevation: 0,
+  rowsPerPage: 10,
+  pagination: true,
+  rowsPerPageOptions: [10, 30, 60, 100, 10000],
+  textLabels: { body: { noMatch: "Change to Please wait..." } },
+
+  // Override the print behavior to ensure all data is included
+  onTableChange: (action, tableState) => {
+    if (action === "print") {
+      // Ensure all data is visible for printing
+      document
+        .querySelectorAll(
+          ".MUIDataTableToolbar-root, .MUIDataTablePagination-root"
+        )
+        .forEach((elem) => (elem.style.display = "none"));
+
+      // Restore the pagination and toolbar after print
+      window.onafterprint = () => {
+        document
+          .querySelectorAll(
+            ".MUIDataTableToolbar-root, .MUIDataTablePagination-root"
+          )
+          .forEach((elem) => (elem.style.display = ""));
+      };
+    }
+  },
+};
+
+// Customize theme
+const myTheme = createMuiTheme({
+  overrides: {
+    MUIDataTable: {
+      root: {
+        overflow: "scroll",
+        backgroundImage: "none !important",
+      },
+      responsive: {
+        overflow: "scroll",
+        maxWidth: "none !important",
+        msMaxWidth: "none !important",
+      },
+      responsiveStacked: {
+        overflow: "scroll",
+      },
+      responsiveScroll: {
+        overflow: "scroll",
+        maxHeight: "none !important",
+        maxWidth: "none !important",
+      },
+      responsiveScrollMaxHeight: {
+        overflow: "scroll",
+        maxHeight: "none !important",
+      },
+      responsiveScrollFullHeight: {
+        overflowX: "scroll",
+      },
+    },
+    MuiTableCell: {
+      root: {
+        "@media print": {
+          borderBottom: "1px solid #ccc",
+          padding: "8px",
+          fontSize: "12px",
+        },
+      },
+    },
+    MuiTableRow: {
+      root: {
+        "@media print": {
+          pageBreakInside: "avoid",
+        },
+      },
+    },
+  },
+});
 
 const MyContainerProduct = ({ WHId, businessId }) => {
   const [tableData, setTableData] = useState([]);
@@ -773,7 +861,7 @@ const MyContainerProduct = ({ WHId, businessId }) => {
     } else {
       transType = selectedType;
     }
-    
+
     // Filter detailed data for the selected date and type
     const filteredData = detailedData.filter(
       (item) =>
@@ -971,12 +1059,6 @@ const MyContainerProduct = ({ WHId, businessId }) => {
   // 선택 시에 테이블이 바뀐다.
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Separate options for each table view
-  const productOptions = {
-    selectableRows: "none", // Disable checkboxes by default
-    onRowClick: (rowData) => handleRowClick(rowData),
-  };
-
   const moveOptions = {
     selectableRows: "multiple", // Enable checkboxes for moving products
     onRowSelectionChange: (currentRowsSelected, allRowsSelected) => {
@@ -1004,13 +1086,15 @@ const MyContainerProduct = ({ WHId, businessId }) => {
 
   // Define the componentsArray with separate options
   const componentsArray = [
-    <MUIDataTable
-      key="productList"
-      title={"상품 목록"}
-      data={tableData}
-      columns={productColumns}
-      options={productOptions}
-    />,
+    <MuiThemeProvider theme={myTheme}>
+      <MUIDataTable
+        key="productList"
+        title={"상품 목록"}
+        data={tableData}
+        columns={productColumns}
+        options={listOptions}
+      />
+    </MuiThemeProvider>,
     <MUIDataTable
       key="moveProductList"
       title={"상품 이동하기"}
@@ -1316,9 +1400,7 @@ const MyContainerProduct = ({ WHId, businessId }) => {
           </Button>
         </div>
       </div>
-
       {/* 모달들 */}
-
       {/* 입고 Modal */}
       <Dialog
         open={openModal}
@@ -1390,7 +1472,6 @@ const MyContainerProduct = ({ WHId, businessId }) => {
           </Button>
         </DialogActions>
       </Dialog>
-
       {/* 출고 Modal */}
       <Dialog
         open={openExportModal}
@@ -1445,7 +1526,6 @@ const MyContainerProduct = ({ WHId, businessId }) => {
           </Button>
         </DialogActions>
       </Dialog>
-
       {/* 상품 데이터 수정 Modal */}
       <Dialog
         open={openEditModal}
@@ -1496,7 +1576,6 @@ const MyContainerProduct = ({ WHId, businessId }) => {
           </Button>
         </DialogActions>
       </Dialog>
-
       {/* 상품 이동 Modal */}
       <Dialog
         open={openMoveModal}
@@ -1622,7 +1701,6 @@ const MyContainerProduct = ({ WHId, businessId }) => {
           </Button>
         </DialogActions>
       </Dialog>
-
       {loading && (
         <div
           style={{
@@ -1641,7 +1719,6 @@ const MyContainerProduct = ({ WHId, businessId }) => {
           <CircularProgress />
         </div>
       )}
-
       <div style={{ display: "flex", width: "100%", margin: "0 0 0 200px" }}>
         {/* 입고하기 Section */}
         {showProductInputSection && (
@@ -1835,7 +1912,7 @@ const MyContainerProduct = ({ WHId, businessId }) => {
             </div>
           </div>
         )}
-        <Grid item xs={12} style={{ width: "100%" }}>
+        <Grid item xs={12} style={{ width: "100%", height: "80vh" }}>
           {/* 메인 영역 */}
           {currentIndex >= 0 && componentsArray[currentIndex]}
         </Grid>
