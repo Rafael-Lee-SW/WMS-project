@@ -9,7 +9,7 @@ public class FloorExceptionHandler {
 
     @ExceptionHandler(FloorException.class)
     public BaseExceptionResponse floorException(FloorException e) {
-        return new BaseExceptionResponse(e.getResponseEnum(), e.getExceptionMessage());
+        return new BaseExceptionResponse(e.getResponseEnum());
     }
 
 }

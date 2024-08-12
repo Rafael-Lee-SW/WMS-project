@@ -9,6 +9,6 @@ public class BusinessExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
     public BaseExceptionResponse baseExceptionResponse(BusinessException e) {
-        return new BaseExceptionResponse(e.getResponseEnum(), e.getExceptionMessage());
+        return new BaseExceptionResponse(e.getResponseEnum());
     }
 }

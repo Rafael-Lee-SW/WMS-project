@@ -9,6 +9,6 @@ public class LocationExceptionHandler {
 
     @ExceptionHandler(LocationException.class)
     public BaseExceptionResponse locationException(LocationException e) {
-        return new BaseExceptionResponse(e.getResponseEnum(), e.getExceptionMessage());
+        return new BaseExceptionResponse(e.getResponseEnum());
     }
 }

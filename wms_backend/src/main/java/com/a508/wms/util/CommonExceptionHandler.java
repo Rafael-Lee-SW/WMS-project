@@ -8,6 +8,6 @@ public class CommonExceptionHandler {
 
     @ExceptionHandler(CommonException.class)
     public BaseExceptionResponse globalException(CommonException e) {
-        return new BaseExceptionResponse(e.getResponseEnum(), e.getExceptionMessage());
+        return new BaseExceptionResponse(e.getResponseEnum());
     }
 }

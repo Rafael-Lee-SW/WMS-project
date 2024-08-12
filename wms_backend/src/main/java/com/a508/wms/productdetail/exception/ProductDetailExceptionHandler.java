@@ -9,6 +9,6 @@ public class ProductDetailExceptionHandler {
 
     @ExceptionHandler(ProductDetailException.class)
     public BaseExceptionResponse productDetailException(ProductDetailException e) {
-        return new BaseExceptionResponse(e.getResponseEnum(), e.getExceptionMessage());
+        return new BaseExceptionResponse(e.getResponseEnum());
     }
 }

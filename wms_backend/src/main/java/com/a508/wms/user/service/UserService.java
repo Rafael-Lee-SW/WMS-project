@@ -5,8 +5,11 @@ import com.a508.wms.business.service.BusinessModuleService;
 import com.a508.wms.user.domain.User;
 import com.a508.wms.user.dto.UserRequestDto;
 import com.a508.wms.user.dto.UserResponseDto;
+import com.a508.wms.user.exception.UserException;
 import com.a508.wms.user.mapper.UserMapper;
 import com.a508.wms.user.repository.UserRepository;
+import com.a508.wms.util.constant.ResponseEnum;
+import com.a508.wms.util.constant.RoleTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;
 
 import java.time.LocalDate;
@@ -92,11 +95,18 @@ public class UserService {
         return userRepository.findUserByEmail(email);
     }
 
-    public void updateByBusinessId(Long businessId, Long userId) {
-        User user = userModuleService.findById(userId);
-        user.updateBusinessId(businessId);
-        user.updateBusinessAddDate(LocalDate.now());
-        userRepository.save(user);
+    public void updateByBusinessId(Long businessId, Long userId) throws UserException {
+        try {
+            User user = userModuleService.findById(userId);
+            user.updateBusinessId(businessId);
+            user.updateBusinessAddDate(LocalDate.now());
+            if (user.getRoleTypeEnum().equals(RoleTypeEnum.GENERAL))
+                user.updateRoleTypeEnum(RoleTypeEnum.EMPLOYEE);
+            else throw new IllegalArgumentException();
+            userRepository.save(user);
+        } catch (IllegalArgumentException e) {
+             throw new UserException.NotGeneralUserException();
+        }
 
     }
 }

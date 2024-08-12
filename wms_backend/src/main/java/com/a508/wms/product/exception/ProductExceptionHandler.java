@@ -11,6 +11,6 @@ public class ProductExceptionHandler {
 
     @ExceptionHandler(ProductException.class)
     public BaseExceptionResponse productException(ProductException e) {
-        return new BaseExceptionResponse(e.getResponseEnum(), e.getExceptionMessage());
+        return new BaseExceptionResponse(e.getResponseEnum());
     }
 }

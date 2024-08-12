@@ -9,6 +9,6 @@ public class SubscriptionExceptionHandler {
 
     @ExceptionHandler(SubscriptionException.class)
     public BaseExceptionResponse subscriptionException(SubscriptionException e) {
-        return new BaseExceptionResponse(e.getResponseEnum(), e.getExceptionMessage());
+        return new BaseExceptionResponse(e.getResponseEnum());
     }
 }
