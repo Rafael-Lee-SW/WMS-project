@@ -6,6 +6,7 @@ import Fab from "@mui/material/Fab";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Checkbox from "@mui/material/Checkbox";
+import CircularProgress from "@mui/material/CircularProgress";
 
 // 모달 페이지를 위한 Import
 import Dialog from "@mui/material/Dialog";
@@ -13,7 +14,6 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import TextField from "@mui/material/TextField";
-import CircularProgress from "@mui/material/CircularProgress"; // Import CircularProgress for loading spinner
 
 // Import SheetJS xlsx for Excel operations
 import * as XLSX from "xlsx";
@@ -47,7 +47,7 @@ import {
   alignHeaders,
 } from "/components/Test/hooksCallbacks.jsx";
 
-import MUIDataTable, { TableFilterList } from "mui-datatables";
+import MUIDataTable from "mui-datatables";
 import Chip from "@mui/material/Chip";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
@@ -86,9 +86,7 @@ registerPlugin(DropdownMenu);
 registerPlugin(Filters);
 registerPlugin(HiddenRows);
 
-// 재고를 엑셀 형식으로 보면서 관리하는 Component
 const MyContainerProduct = ({ WHId, businessId }) => {
-  // 제품 목록 / 입고 / 출고 / 수정하기 / 이동하기에 쓰이는 data Table state
   const [tableData, setTableData] = useState([]);
   const [detailedData, setDetailedData] = useState([]); // Store all import/export data
   const [ModalTableData, setModalTableData] = useState([]);
@@ -164,6 +162,11 @@ const MyContainerProduct = ({ WHId, businessId }) => {
   // Precomputed data for analytics
   const [quantityByLocationData, setQuantityByLocationData] = useState(null);
   const [flowByDateData, setFlowByDateData] = useState(null);
+
+  // Loading states
+  const [loading, setLoading] = useState(true); // Overall loading state
+  const [notificationsFetched, setNotificationsFetched] = useState(false);
+  const [analyticsFetched, setAnalyticsFetched] = useState(false);
 
   // 엑셀로 입고(import)데이터를 받았을 때 이를 변환하는 메서드
   const convertToArrayOfArraysModal = (data) => {
@@ -468,7 +471,6 @@ const MyContainerProduct = ({ WHId, businessId }) => {
   // 사장님이 갖고 있는 상품들을 가져오는 API
   const productGetAPI = async (businessId) => {
     try {
-      setLoading(true); // Start loading
       const response = await fetch(
         `https://i11a508.p.ssafy.io/api/products?businessId=${businessId}`,
         {
@@ -558,13 +560,14 @@ const MyContainerProduct = ({ WHId, businessId }) => {
             },
           ],
         });
+        setLoading(false);
       } else {
         console.error("Error loading rectangles data");
+        setLoading(false);
       }
     } catch (error) {
       console.error("Error loading rectangles data:", error);
-    } finally {
-      setLoading(false); // Stop loading
+      setLoading(false);
     }
   };
 
@@ -581,7 +584,6 @@ const MyContainerProduct = ({ WHId, businessId }) => {
   // 모든 알림(변동내역)을 가져오는 메서드
   const getNotificationsAPI = async (businessId) => {
     try {
-      setLoading(true); // Start loading
       const response = await fetch(
         `https://i11a508.p.ssafy.io/api/products/notification?businessId=${businessId}`,
         {
@@ -692,14 +694,57 @@ const MyContainerProduct = ({ WHId, businessId }) => {
             },
           ],
         });
+        setNotificationsFetched(true);
+        setAnalyticsFetched(true);
         console.log("알림데이터를 성공적으로 불러왔습니다.");
+
+        /**
+         * 알림을 정리하는 부분
+         */
+
+        // Group data by date and type
+        const groupedData = sortedData.reduce((acc, item) => {
+          const dateKey = new Date(item.date).toLocaleDateString();
+          const typeKey =
+            translationMap[item.productFlowType] || item.productFlowType;
+          const key = `${dateKey}-${typeKey}`;
+
+          if (!acc[key]) {
+            acc[key] = {
+              date: dateKey,
+              type: typeKey,
+              count: 0,
+            };
+          }
+
+          acc[key].count += 1;
+          return acc;
+        }, {});
+
+        // Format grouped data for table display
+        const SameformattedData = Object.values(groupedData).map((entry) => ({
+          date: entry.date,
+          type: entry.type,
+          count: entry.count,
+        }));
+
+        setNotificationTableData(SameformattedData);
+        setNotificationTableColumns([
+          { name: "date", label: "날짜" },
+          { name: "type", label: "유형" },
+          { name: "count", label: "수량" },
+        ]);
+
+        console.log("알림을 성공적으로 정리했습니다.");
       } else {
         console.error("Error fetching notifications");
+        setNotificationsFetched(true);
+        setAnalyticsFetched(true);
       }
     } catch (error) {
       console.error("Error fetching notifications:", error);
-    } finally {
-      setLoading(false); // Stop loading
+      setNotificationsFetched(true);
+      setAnalyticsFetched(true);
     }
   };
 
@@ -707,63 +752,28 @@ const MyContainerProduct = ({ WHId, businessId }) => {
   const [notificationTableColumns, setNotificationTableColumns] = useState([]);
   const [notificationTableData, setNotificationTableData] = useState([]);
 
-  // 날짜와 입고-출고-타입
-  const showUniqueDates = async () => {
-    // Group data by date and type
-    const groupedData = detailedData.reduce((acc, item) => {
-      const dateKey = new Date(item.date).toLocaleDateString();
-      const typeKey =
-        translationMap[item.productFlowType] || item.productFlowType;
-      const key = `${dateKey}-${typeKey}`;
-
-      if (!acc[key]) {
-        acc[key] = {
-          date: dateKey,
-          type: typeKey,
-          count: 0,
-        };
-      }
-
-      acc[key].count += 1;
-      return acc;
-    }, {});
-
-    // Format grouped data for table display
-    const formattedData = Object.values(groupedData).map((entry) => ({
-      date: entry.date,
-      type: entry.type,
-      count: entry.count,
-    }));
-
-    setNotificationTableData(formattedData);
-    setNotificationTableColumns([
-      { name: "date", label: "날짜" },
-      { name: "type", label: "유형" },
-      { name: "count", label: "수량" },
-    ]);
-  };
-
   // 알림 상세에 쓰이는 것들
   const [notificationDetailTableColumns, setNotificationDetailTableColumns] =
     useState([]);
   const [notificationDetailTableData, setNotificationDetailTableData] =
     useState([]);
 
-  const [transType, setTransType] = useState();
   // 알림함에서 상세 내역을 보기 위해 해당 열을 클릭했을 시에 작동하는 메서드
   const handleRowClick = (rowData) => {
     console.log("클릭되었습니다.");
     const [selectedDate, selectedType] = rowData;
 
+    let transType;
     if (selectedType === "입고") {
-      setTransType("IMPORT");
+      transType = "IMPORT";
     } else if (selectedType === "출고") {
-      setTransType("EXPORT");
+      transType = "EXPORT";
     } else if (selectedType === "이동") {
-      setTransType("FLOW");
+      transType = "FLOW";
     } else {
-      setTransType(selectedType);
+      transType = selectedType;
     }
+    
     // Filter detailed data for the selected date and type
     const filteredData = detailedData.filter(
       (item) =>
@@ -1078,9 +1088,36 @@ const MyContainerProduct = ({ WHId, businessId }) => {
     ),
   ];
 
-  const handleNextComponent = (index) => {
-    setCurrentIndex(index);
-    setShowAnalytics(index === 5); // Show analytics when index is 3
+  // 해당하는 Section Table을 보여준다.
+  const handleNextComponent = async (index) => {
+    if (index === 2 && !notificationsFetched) {
+      // Show loading if notifications not yet fetched and user enters '변동내역'
+      setLoading(true);
+      try {
+        await getNotificationsAPI(businessId);
+        setNotificationsFetched(true);
+      } catch (error) {
+        console.error("Failed to fetch notifications:", error);
+      } finally {
+        setLoading(false);
+        setCurrentIndex(index);
+      }
+    } else if ((index === 3 || index === 5) && !analyticsFetched) {
+      // Show loading if analytics not yet fetched and user enters '알림함' or '분석'
+      setLoading(true);
+      try {
+        await getNotificationsAPI(businessId);
+        setAnalyticsFetched(true);
+      } catch (error) {
+        console.error("Failed to fetch analytics:", error);
+      } finally {
+        setLoading(false);
+        setCurrentIndex(index);
+      }
+    } else {
+      setCurrentIndex(index);
+      setShowAnalytics(index === 5);
+    }
   };
 
   // Handle new product data input change
@@ -1143,41 +1180,13 @@ const MyContainerProduct = ({ WHId, businessId }) => {
    * + 유저정보
    */
 
-  const [loading, setLoading] = useState(true); // Add a loading state
-
   useEffect(() => {
     //재고 목록과 알림 내역을 불러온다.
-
     productGetAPI(businessId);
-
-    getNotificationsAPI(businessId);
-    
   }, [openModal]);
 
   return (
     <div style={{ marginTop: "3rem", display: "flex" }}>
-      {loading && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(255, 255, 255, 0.8)",
-            zIndex: 9999,
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            flexDirection: "column",
-          }}
-        >
-          <CircularProgress size={60} />
-          <Typography variant="h6" style={{ marginTop: "20px" }}>
-            Loading data, please wait...
-          </Typography>
-        </div>
-      )}
       <div
         className="leftsidebar"
         style={{
@@ -1269,7 +1278,6 @@ const MyContainerProduct = ({ WHId, businessId }) => {
             variant="contained"
             color="primary"
             onClick={() => {
-              getNotificationsAPI(businessId);
               handleNextComponent(2);
               setShowProductInputSection(false);
               setShowProductExportSection(false);
@@ -1299,7 +1307,6 @@ const MyContainerProduct = ({ WHId, businessId }) => {
             color="primary"
             onClick={() => {
               handleNextComponent(3);
-              showUniqueDates();
               setShowProductInputSection(false);
               setShowProductExportSection(false);
             }}
@@ -1616,6 +1623,25 @@ const MyContainerProduct = ({ WHId, businessId }) => {
         </DialogActions>
       </Dialog>
 
+      {loading && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(255, 255, 255, 0.8)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 2000,
+          }}
+        >
+          <CircularProgress />
+        </div>
+      )}
+
       <div style={{ display: "flex", width: "100%", margin: "0 0 0 200px" }}>
         {/* 입고하기 Section */}
         {showProductInputSection && (
@@ -1809,7 +1835,7 @@ const MyContainerProduct = ({ WHId, businessId }) => {
             </div>
           </div>
         )}
-        <Grid item xs={12} style={{ width: "100%", position: "relative" }}>
+        <Grid item xs={12} style={{ width: "100%" }}>
           {/* 메인 영역 */}
           {currentIndex >= 0 && componentsArray[currentIndex]}
         </Grid>
