@@ -92,6 +92,8 @@ public class WebSecurityConfig {
                     String userEmail = (String) kakaoAccount.get("email");
 
                     String token = jwtProvider.create(userEmail);
+                    System.out.println("kakaoAccount = " + kakaoAccount);
+                    System.out.println("userEmail = " + userEmail);
                     System.out.println(token);
                     response.addHeader("Authorization", "Bearer " + token);
                     String jsonResponse = URLEncoder.encode("{\"code\":\"SU\", \"token\":\"" + token + "\", \"userEmail\":\"" + userEmail + "\"}", "UTF-8");
