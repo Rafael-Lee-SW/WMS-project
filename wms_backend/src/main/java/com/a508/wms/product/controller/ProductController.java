@@ -155,5 +155,10 @@ public class ProductController {
         log.info("[Controller] find ProductMoveRequestDtos: {}", requests);
         return new BaseSuccessResponse<>(productService.moveProducts(requests));
     }
-
+    @GetMapping("/compress")
+    public BaseSuccessResponse<Void> compressProducts(@RequestParam(value = "businessId") Long businessId) {
+        log.info("[Controller] compress Products");
+        productService.compress(businessId);
+        return new BaseSuccessResponse<>(null);
+    }
 }

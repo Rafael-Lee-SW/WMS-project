@@ -8,6 +8,7 @@ import com.a508.wms.location.domain.Location;
 import com.a508.wms.location.dto.LocationRequestDto;
 import com.a508.wms.location.dto.LocationResponseDto;
 import com.a508.wms.location.dto.LocationSaveRequestDto;
+import com.a508.wms.location.dto.LocationStorageResponseDto;
 import com.a508.wms.location.mapper.LocationMapper;
 import com.a508.wms.location.repository.LocationRepository;
 import com.a508.wms.product.service.ProductModuleService;
@@ -17,6 +18,8 @@ import com.a508.wms.util.constant.StatusEnum;
 import com.a508.wms.warehouse.domain.Warehouse;
 import com.a508.wms.warehouse.service.WarehouseModuleService;
 import jakarta.transaction.Transactional;
+
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -150,5 +153,15 @@ public class LocationService {
 
     public Location findByNameAndWarehouseId(String locationName, Long warehouseId) {
         return locationRepository.findByNameAndWarehouseId(locationName,warehouseId);
+    }
+
+    /**
+     * 모든 로케이션의 최대 적재 가능 수량 찾기
+     * @return
+     */
+    public List<LocationStorageResponseDto> findAllMaxStorage() {
+        return locationRepository.findAllMaxStorage().stream()
+                .map(LocationMapper::toLocationStorageResponseDto)
+                .toList();
     }
 }

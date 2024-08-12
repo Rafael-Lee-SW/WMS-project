@@ -112,4 +112,14 @@ public class ProductMapper {
                 .date(LocalDateTime.now().withNano(0))
                 .build();
     }
+    public static ProductCompressDto toProductCompressDto(Product product) {
+        return ProductCompressDto.builder()
+                .id(product.getId())
+                .quantity(product.getQuantity())
+                .productDetailId(product.getProductDetail().getId())
+                .locationId(product.getFloor().getLocation().getId())
+                .floorId(product.getFloor().getId())
+                .locationName(product.getFloor().getLocation().getName())
+                .build();
+    }
 }

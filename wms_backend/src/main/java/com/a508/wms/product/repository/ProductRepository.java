@@ -102,16 +102,16 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 //    List<ProductPickingDto> findAllPicking(@Param("barcode") Long barcode,
 //                                           @Param("businessId") Long businessId);
     Optional<Product> findByIdAndExpirationDate(Long id, LocalDateTime expirationDate);
+
+    @Query(value =
+            "SELECT p.quantity, p.created_date, p.expiration_date, p.floor_id, p.id, p.product_detail_id, p.updated_date, p.status_enum " +
+            "FROM product p " +
+            "JOIN floor f ON p.floor_id = f.id " +
+            "JOIN product_detail pd ON p.product_detail_id = pd.id " +
+            "AND f.floor_level = :floorLevel " +
+            "AND p.quantity > 0 " +
+            "AND pd.business_id = :businessId " +
+            "ORDER BY p.quantity DESC", nativeQuery = true)
+    List<Product> findAllMultipleProductByFloorLevel(@Param("floorLevel") Integer floorLevel, @Param("businessId") Long businessId);
 }
 
-/**
- * @Query(value = "select SUM(p.quantity) as quantity, p.id as id, l.name as locationName, " + "
- * f.floor_level as floorLevel, p.expiration_date as expiration_date, " + " l.warehouse_id as
- * warehouseId, pd.product_storage_type as productStorageType, " + " pd.barcode as barcode, pd.name
- * as productName, pd.size as size,pd.unit as unit, " + " pd.original_price as originalPrice,
- * pd.selling_price as sellingPrice, " + " p.created_date, p.updated_date, p.status_enum,
- * p.floor_id, p.product_detail_id " + "from product p " + "join product_detail pd on pd.id =
- * p.product_detail_id " + "join floor f on p.floor_id = f.id " + "join location l on f.location_id
- * = l.id " + "where pd.business_id = :businessId " + "group by floor_id, expiration_date,
- * product_detail_id ", nativeQuery = true)
- */

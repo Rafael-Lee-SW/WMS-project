@@ -2,6 +2,8 @@ package com.a508.wms.location.repository;
 
 import com.a508.wms.location.domain.Location;
 import java.util.List;
+
+import com.a508.wms.location.dto.LocationStorageResponseDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,5 +16,8 @@ public interface LocationRepository extends JpaRepository<Location, Long> {
     @Query("SELECT l from Location l where l.name = :name " +
         "AND l.warehouse.id = :warehouseId ")
     Location findByNameAndWarehouseId(@Param("name") String name, Long warehouseId);
+    @Query("SELECT l FROM Location l WHERE l.zSize > 0 ")
+    List<Location> findAllMaxStorage();
+
 }
 
