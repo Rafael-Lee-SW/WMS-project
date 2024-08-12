@@ -9,11 +9,11 @@ const useStyles = makeStyles(styles);
 export default function EditInfo({ userId, name, email, nickname, onUpdateInfo }) {
     const classes = useStyles();
     const router = useRouter();
-    const [userInfo, setUserInfo] = useState({ userId, name, email, nickname });
+    const [userInfo, setUserInfo] = useState({ userId, name, nickname });
 
     useEffect(() => {
-        setUserInfo({ userId, name, email, nickname });
-    }, [userId, name, email, nickname]);
+        setUserInfo({ userId, name, nickname });
+    }, [userId, name, nickname]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -28,11 +28,11 @@ export default function EditInfo({ userId, name, email, nickname, onUpdateInfo }
         try {
             const data = {
                 "name" : userInfo.name,
-                "email" : userInfo.email,
                 "nickname" : userInfo.nickname
             };
             await editUser(userInfo.userId, data);
             alert('회원정보 수정이 완료되었습니다.')
+            setUserInfo(data);
         } catch (error) {
             router.push('/404');
         }
@@ -51,18 +51,6 @@ export default function EditInfo({ userId, name, email, nickname, onUpdateInfo }
                                     type="text"
                                     name="name"
                                     value={userInfo.name}
-                                    onChange={handleChange}
-                                    className={classes.input}
-                                />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td className={classes.labelCell}><strong className={classes.text}>이메일</strong></td>
-                            <td className={classes.valueCell}>
-                                <Input
-                                    type="email"
-                                    name="email"
-                                    value={userInfo.email}
                                     onChange={handleChange}
                                     className={classes.input}
                                 />

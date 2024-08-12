@@ -9,6 +9,8 @@ export default function Info({ name, email, nickname, roleTypeEnum, businessId, 
     const classes = useStyles();
     const initialUserInfo = { name, email, nickname, roleTypeEnum, businessId, businessName, businessNumber, createdDate } 
 
+    const formattedDate = initialUserInfo.createdDate ? initialUserInfo.createdDate.substring(0, 10) : '';
+
     return (
       <div>
         <h3>{name}님, 반갑습니다.</h3>
@@ -26,6 +28,12 @@ export default function Info({ name, email, nickname, roleTypeEnum, businessId, 
                 <tr>
                   <td className={classes.labelCell}><strong className={classes.text}>이메일</strong></td>
                   <td className={classes.valueCell}>{initialUserInfo.email}</td>
+                </tr>
+                <tr>
+                  <td className={classes.labelCell}>
+                    <strong className={classes.text}>가입 일자</strong>
+                  </td>
+                  <td className={classes.valueCell}>{formattedDate}</td>
                 </tr>
                 {roleTypeEnum === 'BUSINESS' && (
                 <>
@@ -45,7 +53,7 @@ export default function Info({ name, email, nickname, roleTypeEnum, businessId, 
                   <td className={classes.labelCell}>
                     <strong className={classes.text}>가입 일자</strong>
                   </td>
-                  <td className={classes.valueCell}>{initialUserInfo.createdDate}</td>
+                  <td className={classes.valueCell}>{formattedDate}</td>
                 </tr>
                 </>
               )}

@@ -7,7 +7,7 @@ import axios from 'axios';
 const useStyles = makeStyles(styles);
 
 // 사업자 관리 Component
-export default function ManageBusiness() {
+export default function ManageBusiness({ updateBusinessInfo }) {
   const classes = useStyles();
   const router = useRouter();
 
@@ -18,7 +18,10 @@ export default function ManageBusiness() {
   const [businessId, setBusinessId] = useState(null);
 
   useEffect(() => {
-    const fetchUserData = async () => {
+    fetchUserData();
+  }, [router]);
+
+  const fetchUserData = async () => {
       try {
         const storedUser = JSON.parse(localStorage.getItem('user'));
         const userId = storedUser ? storedUser.id : null;
@@ -53,9 +56,6 @@ export default function ManageBusiness() {
       }
     };
 
-    fetchUserData();
-  }, [router]);
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setBusinessInfo((prevInfo) => ({
@@ -78,6 +78,8 @@ export default function ManageBusiness() {
         // 수정 로직
         await axios.put(`https://i11a508.p.ssafy.io/api/businesses/${businessId}`, data);
         alert("사업체 정보가 수정되었습니다.");
+        
+        updateBusinessInfo(data);
       } else {
         // 등록 로직
         const storedUser = JSON.parse(localStorage.getItem('user')); // 유저 정보를 다시 가져오기
@@ -87,6 +89,8 @@ export default function ManageBusiness() {
           // axios로 POST 요청 보내기
           const businessResponse = await axios.post(`https://i11a508.p.ssafy.io/api/businesses?userId=${userId}`, data);
           alert("사업체가 등록되었습니다.");
+          updateBusinessInfo(data);
+          fetchUserData(data)
 
           // 새로 생성된 businessId 가져오기
           const newBusinessId = businessResponse.data.result.id; 
@@ -153,41 +157,56 @@ export default function ManageBusiness() {
   return (
     <div className={classes.container}>
       {roleType === 'GENERAL' && (
-        <div>
-          <h2>사업자 등록</h2>
-          <form onSubmit={handleSubmit}>
-            <div className={classes.div}>
-              <Input
-                type="text"
-                name="name"
-                value={businessInfo.name || ''}
-                onChange={handleChange}
-                placeholder="사업자 이름"
-                required
-              />
+        <div className={classes.renderContainer}>
+          <h3 className={classes.h3}>사업자 등록</h3>
+          <div className={classes.tableContainer}>
+            <table className={classes.table}>
+              <tbody>
+                <tr>
+                  <td className={classes.labelCell}><strong className={classes.text}>이름</strong></td>
+                  <td className={classes.valueCell}>
+                    <Input
+                      type="text"
+                      name="name"
+                      className={classes.input}
+                      value={businessInfo.name || ''}
+                      onChange={handleChange}
+                      placeholder="사업자 이름"
+                      required
+                    />
+                  </td>
+                </tr>
+                <tr>
+                  <td className={classes.labelCell}><strong className={classes.text}>사업자 번호</strong></td>
+                  <td className={classes.valueCell}>
+                    <Input
+                      type="text"
+                      name="businessNumber"
+                      className={classes.input}
+                      value={businessInfo.businessNumber || ''}
+                      onChange={handleChange}
+                      placeholder="사업자 번호"
+                      required
+                    />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div className={classes.buttonContainer}>
+              <Button 
+                type="submit"
+                className={classes.button}
+                onClick={handleSubmit}
+              >
+                등록
+              </Button>
             </div>
-            <div className={classes.div}>
-              <Input
-                type="text"
-                name="businessNumber"
-                value={businessInfo.businessNumber || ''}
-                onChange={handleChange}
-                placeholder="사업자 번호"
-                required
-              />
-            </div>
-            <Button 
-              type="submit"
-              className={classes.button}
-            >
-              등록
-            </Button>
-          </form>
+          </div>
         </div>
       )}
       {roleType === 'EMPLOYEE' && (
         <div>
-          <h2>현재 소속된 창고</h2>
+          <h3 className={classes.h3}>현재 소속된 창고</h3>
           <p>사업체명: {businessName}</p>
           <Button onClick={handleLeave} className={classes.button}>
             탈퇴하기
@@ -195,39 +214,54 @@ export default function ManageBusiness() {
         </div>
       )}
       {roleType === 'BUSINESS' && (
-        <div>
-          <h2>사업자 수정</h2>
-          <form onSubmit={handleSubmit}>
-            <div className={classes.div}>
-              <Input
-                type="text"
-                name="name"
-                value={businessInfo.name || ''}
-                onChange={handleChange}
-                placeholder="사업자 이름"
-                required
-              />
+        <div className={classes.renderContainer}>
+          <h3 className={classes.h3}>사업자 수정</h3>
+          <div className={classes.tableContainer}>
+            <table className={classes.table}>
+              <tbody>
+                <tr>
+                  <td className={classes.labelCell}><strong className={classes.text}>이름</strong></td>
+                  <td className={classes.valueCell}>
+                    <Input
+                      type="text"
+                      name="name"
+                      className={classes.input}
+                      value={businessInfo.name || ''}
+                      onChange={handleChange}
+                      placeholder="사업자 이름"
+                      required
+                    />
+                  </td>
+                </tr>
+                <tr>
+                  <td className={classes.labelCell}><strong className={classes.text}>사업자 번호</strong></td>
+                  <td className={classes.valueCell}>
+                    <Input
+                      type="text"
+                      name="businessNumber"
+                      className={classes.input}
+                      value={businessInfo.businessNumber || ''}
+                      onChange={handleChange}
+                      placeholder="사업자 번호"
+                      required
+                    />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div className={classes.buttonContainer}>
+              <Button 
+                type="submit"
+                className={classes.button}
+                onClick={handleSubmit}
+              >
+                수정
+              </Button>
+              <Button onClick={handleDelete} className={classes.button}>
+                삭제
+              </Button>
             </div>
-            <div className={classes.div}>
-              <Input
-                type="text"
-                name="businessNumber"
-                value={businessInfo.businessNumber || ''}
-                onChange={handleChange}
-                placeholder="사업자 번호"
-                required
-              />
-            </div>
-            <Button 
-              type="submit"
-              className={classes.button}
-            >
-              수정
-            </Button>
-            <Button onClick={handleDelete} className={classes.button}>
-              삭제
-            </Button>
-          </form>
+          </div>
         </div>
       )}
     </div>

@@ -6,6 +6,7 @@ import Fab from "@mui/material/Fab";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Checkbox from "@mui/material/Checkbox";
+import CircularProgress from "@mui/material/CircularProgress";
 
 // 모달 페이지를 위한 Import
 import Dialog from "@mui/material/Dialog";
@@ -46,7 +47,9 @@ import {
   alignHeaders,
 } from "/components/Test/hooksCallbacks.jsx";
 
-import MUIDataTable, { TableFilterList } from "mui-datatables";
+// MUI-DataTable 관련 import
+import { createMuiTheme, MuiThemeProvider } from "@material-ui/core/styles";
+import MUIDataTable from "mui-datatables";
 import Chip from "@mui/material/Chip";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
@@ -85,12 +88,94 @@ registerPlugin(DropdownMenu);
 registerPlugin(Filters);
 registerPlugin(HiddenRows);
 
-// 재고를 엑셀 형식으로 보면서 관리하는 Component
+// Define the table options
+export const listOptions = {
+  fixedHeader: true,
+  filterType: "multiselect",
+  responsive: "scrollMaxHeight",
+  download: true,
+  print: true,
+  viewColumns: true,
+  filter: true,
+  selectableRows: "none",
+  elevation: 0,
+  rowsPerPage: 10,
+  pagination: true,
+  rowsPerPageOptions: [10, 30, 60, 100, 10000],
+  textLabels: { body: { noMatch: "Change to Please wait..." } },
+
+  // Override the print behavior to ensure all data is included
+  onTableChange: (action, tableState) => {
+    if (action === "print") {
+      // Ensure all data is visible for printing
+      document
+        .querySelectorAll(
+          ".MUIDataTableToolbar-root, .MUIDataTablePagination-root"
+        )
+        .forEach((elem) => (elem.style.display = "none"));
+
+      // Restore the pagination and toolbar after print
+      window.onafterprint = () => {
+        document
+          .querySelectorAll(
+            ".MUIDataTableToolbar-root, .MUIDataTablePagination-root"
+          )
+          .forEach((elem) => (elem.style.display = ""));
+      };
+    }
+  },
+};
+
+// Customize theme
+const myTheme = createMuiTheme({
+  overrides: {
+    MUIDataTable: {
+      root: {
+        overflow: "scroll",
+        backgroundImage: "none !important",
+      },
+      responsive: {
+        overflow: "scroll",
+        maxWidth: "none !important",
+        msMaxWidth: "none !important",
+      },
+      responsiveStacked: {
+        overflow: "scroll",
+      },
+      responsiveScroll: {
+        overflow: "scroll",
+        maxHeight: "none !important",
+        maxWidth: "none !important",
+      },
+      responsiveScrollMaxHeight: {
+        overflow: "scroll",
+        maxHeight: "none !important",
+      },
+      responsiveScrollFullHeight: {
+        overflowX: "scroll",
+      },
+    },
+    MuiTableCell: {
+      root: {
+        "@media print": {
+          borderBottom: "1px solid #ccc",
+          padding: "8px",
+          fontSize: "12px",
+        },
+      },
+    },
+    MuiTableRow: {
+      root: {
+        "@media print": {
+          pageBreakInside: "avoid",
+        },
+      },
+    },
+  },
+});
+
 const MyContainerProduct = ({ WHId, businessId }) => {
-  // 제품 목록 / 입고 / 출고 / 수정하기 / 이동하기에 쓰이는 data Table state
   const [tableData, setTableData] = useState([]);
-  // 변동 내역 / 알림함에서 쓰이는 data Table state
-  const [notificationTableData, setNotificationTableData] = useState([]);
   const [detailedData, setDetailedData] = useState([]); // Store all import/export data
   const [ModalTableData, setModalTableData] = useState([]);
   const [columns, setColumns] = useState([]);
@@ -165,6 +250,11 @@ const MyContainerProduct = ({ WHId, businessId }) => {
   // Precomputed data for analytics
   const [quantityByLocationData, setQuantityByLocationData] = useState(null);
   const [flowByDateData, setFlowByDateData] = useState(null);
+
+  // Loading states
+  const [loading, setLoading] = useState(true); // Overall loading state
+  const [notificationsFetched, setNotificationsFetched] = useState(false);
+  const [analyticsFetched, setAnalyticsFetched] = useState(false);
 
   // 엑셀로 입고(import)데이터를 받았을 때 이를 변환하는 메서드
   const convertToArrayOfArraysModal = (data) => {
@@ -464,6 +554,8 @@ const MyContainerProduct = ({ WHId, businessId }) => {
     }
   };
 
+  const [productColumns, setProductColumns] = useState([]);
+
   // 사장님이 갖고 있는 상품들을 가져오는 API
   const productGetAPI = async (businessId) => {
     try {
@@ -480,7 +572,7 @@ const MyContainerProduct = ({ WHId, businessId }) => {
       if (response.ok) {
         const apiConnection = await response.json();
         const products = apiConnection.result;
-        console.log(apiConnection);
+        console.log("상품데이터를 성공적으로 불러왔습니다.");
         console.log(products); // 삭제해야 할 console.log (콘솔)
 
         // Extract only the required columns
@@ -530,7 +622,7 @@ const MyContainerProduct = ({ WHId, businessId }) => {
           product.warehouseId,
         ]);
 
-        setColumns(formattedColumns);
+        setProductColumns(formattedColumns);
         setTableData(data);
         setEditData(data); // Initialize editData with the current table data
 
@@ -556,12 +648,25 @@ const MyContainerProduct = ({ WHId, businessId }) => {
             },
           ],
         });
+        setLoading(false);
       } else {
         console.error("Error loading rectangles data");
+        setLoading(false);
       }
     } catch (error) {
       console.error("Error loading rectangles data:", error);
+      setLoading(false);
     }
+  };
+
+  const [allChangingTableData, setAllChangingTableData] = useState([]);
+  const [allChangingTableColumns, setAllChangingTableColumns] = useState([]);
+
+  // 영어-한글 변환 - 입고-출고-이동
+  const translationMap = {
+    IMPORT: "입고",
+    EXPORT: "출고",
+    FLOW: "이동",
   };
 
   // 모든 알림(변동내역)을 가져오는 메서드
@@ -594,20 +699,32 @@ const MyContainerProduct = ({ WHId, businessId }) => {
         setDetailedData(sortedData);
 
         // Map to formatted data for initial display
-        const formattedData = sortedData.map((item) => ({
-          date: new Date(item.date).toLocaleDateString(),
-          type: item.productFlowType,
-          barcode: item.barcode,
-          name: item.name,
-          quantity: item.quantity,
-          locationName: item.currentLocationName,
-          floorLevel: item.currentFloorLevel,
-          trackingNumber: item.trackingNumber,
-        }));
+        const formattedData = sortedData.map((item) => {
+          // Determine the content for the 'trackingNumber' field based on 'productFlowType'
+          let trackingOrNote = "";
+          if (item.productFlowType === "EXPORT") {
+            trackingOrNote = item.trackingNumber || "송장없음";
+          } else if (item.productFlowType === "IMPORT") {
+            trackingOrNote = "입고품목";
+          } else if (item.productFlowType === "FLOW") {
+            trackingOrNote = "이동품목";
+          }
 
-        setNotificationTableData(formattedData);
+          return {
+            date: new Date(item.date).toLocaleDateString(),
+            type: translationMap[item.productFlowType] || item.productFlowType, // Translate type
+            barcode: item.barcode,
+            name: item.name,
+            quantity: item.quantity,
+            locationName: item.currentLocationName,
+            floorLevel: item.currentFloorLevel,
+            trackingOrNote, // Use the new variable here
+          };
+        });
 
-        setColumns([
+        setAllChangingTableData(formattedData);
+
+        setAllChangingTableColumns([
           { name: "date", label: "날짜" },
           { name: "type", label: "유형" },
           { name: "barcode", label: "바코드" },
@@ -615,7 +732,7 @@ const MyContainerProduct = ({ WHId, businessId }) => {
           { name: "quantity", label: "수량" },
           { name: "locationName", label: "적재함" },
           { name: "floorLevel", label: "층수" },
-          { name: "trackingNumber", label: "송장번호" },
+          { name: "trackingOrNote", label: "송장번호/비고" },
         ]);
 
         // Precompute flow by date data
@@ -643,21 +760,21 @@ const MyContainerProduct = ({ WHId, businessId }) => {
           labels: flowLabels,
           datasets: [
             {
-              label: "Import",
+              label: translationMap["IMPORT"],
               data: importData,
               backgroundColor: "rgba(54, 162, 235, 0.2)",
               borderColor: "rgba(54, 162, 235, 1)",
               borderWidth: 1,
             },
             {
-              label: "Export",
+              label: translationMap["EXPORT"],
               data: exportData,
               backgroundColor: "rgba(255, 99, 132, 0.2)",
               borderColor: "rgba(255, 99, 132, 1)",
               borderWidth: 1,
             },
             {
-              label: "Flow",
+              label: translationMap["FLOW"],
               data: flowDataValues,
               backgroundColor: "rgba(153, 102, 255, 0.2)",
               borderColor: "rgba(153, 102, 255, 1)",
@@ -665,58 +782,91 @@ const MyContainerProduct = ({ WHId, businessId }) => {
             },
           ],
         });
+        setNotificationsFetched(true);
+        setAnalyticsFetched(true);
+        console.log("알림데이터를 성공적으로 불러왔습니다.");
+
+        /**
+         * 알림을 정리하는 부분
+         */
+
+        // Group data by date and type
+        const groupedData = sortedData.reduce((acc, item) => {
+          const dateKey = new Date(item.date).toLocaleDateString();
+          const typeKey =
+            translationMap[item.productFlowType] || item.productFlowType;
+          const key = `${dateKey}-${typeKey}`;
+
+          if (!acc[key]) {
+            acc[key] = {
+              date: dateKey,
+              type: typeKey,
+              count: 0,
+            };
+          }
+
+          acc[key].count += 1;
+          return acc;
+        }, {});
+
+        // Format grouped data for table display
+        const SameformattedData = Object.values(groupedData).map((entry) => ({
+          date: entry.date,
+          type: entry.type,
+          count: entry.count,
+        }));
+
+        setNotificationTableData(SameformattedData);
+        setNotificationTableColumns([
+          { name: "date", label: "날짜" },
+          { name: "type", label: "유형" },
+          { name: "count", label: "수량" },
+        ]);
+
+        console.log("알림을 성공적으로 정리했습니다.");
       } else {
         console.error("Error fetching notifications");
+        setNotificationsFetched(true);
+        setAnalyticsFetched(true);
       }
     } catch (error) {
       console.error("Error fetching notifications:", error);
+      setNotificationsFetched(true);
+      setAnalyticsFetched(true);
     }
   };
 
-  // New function to show only unique import/export dates
-  const showUniqueDates = async () => {
-    // Group data by date and type
-    const groupedData = detailedData.reduce((acc, item) => {
-      const dateKey = new Date(item.date).toLocaleDateString();
-      const typeKey = item.productFlowType;
-      const key = `${dateKey}-${typeKey}`;
+  // 변동 내역 / 알림함에서 쓰이는 data Table state
+  const [notificationTableColumns, setNotificationTableColumns] = useState([]);
+  const [notificationTableData, setNotificationTableData] = useState([]);
 
-      if (!acc[key]) {
-        acc[key] = {
-          date: dateKey,
-          type: typeKey,
-          count: 0,
-        };
-      }
+  // 알림 상세에 쓰이는 것들
+  const [notificationDetailTableColumns, setNotificationDetailTableColumns] =
+    useState([]);
+  const [notificationDetailTableData, setNotificationDetailTableData] =
+    useState([]);
 
-      acc[key].count += 1;
-      return acc;
-    }, {});
-
-    // Format grouped data for table display
-    const formattedData = Object.values(groupedData).map((entry) => ({
-      date: entry.date,
-      type: entry.type,
-      count: entry.count,
-    }));
-
-    setNotificationTableData(formattedData);
-    setColumns([
-      { name: "date", label: "날짜" },
-      { name: "type", label: "유형" },
-      { name: "count", label: "수량" },
-    ]);
-  };
-
-  // Function to handle row click and display details
+  // 알림함에서 상세 내역을 보기 위해 해당 열을 클릭했을 시에 작동하는 메서드
   const handleRowClick = (rowData) => {
+    console.log("클릭되었습니다.");
     const [selectedDate, selectedType] = rowData;
+
+    let transType;
+    if (selectedType === "입고") {
+      transType = "IMPORT";
+    } else if (selectedType === "출고") {
+      transType = "EXPORT";
+    } else if (selectedType === "이동") {
+      transType = "FLOW";
+    } else {
+      transType = selectedType;
+    }
 
     // Filter detailed data for the selected date and type
     const filteredData = detailedData.filter(
       (item) =>
         new Date(item.date).toLocaleDateString() === selectedDate &&
-        item.productFlowType === selectedType
+        item.productFlowType === transType
     );
 
     // Define columns for the detailed view
@@ -734,7 +884,7 @@ const MyContainerProduct = ({ WHId, businessId }) => {
     // Map filtered data to the table format
     const formattedData = filteredData.map((item) => ({
       date: new Date(item.date).toLocaleDateString(),
-      type: item.productFlowType,
+      type: translationMap[item.productFlowType] || item.productFlowType, // Translate type
       barcode: item.barcode,
       name: item.name,
       quantity: item.quantity,
@@ -744,8 +894,9 @@ const MyContainerProduct = ({ WHId, businessId }) => {
     }));
 
     // Update table with detailed data
-    setNotificationTableData(formattedData);
-    setColumns(detailedColumns);
+    setNotificationDetailTableData(formattedData);
+    setNotificationDetailTableColumns(detailedColumns);
+    setCurrentIndex(4);
   };
 
   // 상품 정보를 수정하는 API 호출 메서드
@@ -908,12 +1059,6 @@ const MyContainerProduct = ({ WHId, businessId }) => {
   // 선택 시에 테이블이 바뀐다.
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Separate options for each table view
-  const productOptions = {
-    selectableRows: "none", // Disable checkboxes by default
-    onRowClick: (rowData) => handleRowClick(rowData),
-  };
-
   const moveOptions = {
     selectableRows: "multiple", // Enable checkboxes for moving products
     onRowSelectionChange: (currentRowsSelected, allRowsSelected) => {
@@ -941,26 +1086,40 @@ const MyContainerProduct = ({ WHId, businessId }) => {
 
   // Define the componentsArray with separate options
   const componentsArray = [
-    <MUIDataTable
-      key="productList"
-      title={"상품 목록"}
-      data={tableData}
-      columns={columns}
-      options={productOptions}
-    />,
+    <MuiThemeProvider theme={myTheme}>
+      <MUIDataTable
+        key="productList"
+        title={"상품 목록"}
+        data={tableData}
+        columns={productColumns}
+        options={listOptions}
+      />
+    </MuiThemeProvider>,
     <MUIDataTable
       key="moveProductList"
       title={"상품 이동하기"}
       data={tableData}
-      columns={columns}
+      columns={productColumns}
       options={moveOptions}
     />,
     <MUIDataTable
-      key="importExportList"
+      key="notificationList"
+      title={"모든 변동 내역"}
+      data={allChangingTableData}
+      columns={allChangingTableColumns}
+    />,
+    <MUIDataTable
+      key="dateTypeList"
       title={"알림함"}
       data={notificationTableData}
-      columns={columns}
+      columns={notificationTableColumns}
       options={importExportOptions}
+    />,
+    <MUIDataTable
+      key="selectedNotificationList"
+      title={"알림 상세 내역"}
+      data={notificationDetailTableData}
+      columns={notificationDetailTableColumns}
     />,
     showAnalytics && (
       <div key="analyticsSection" style={{ padding: "20px" }}>
@@ -1013,9 +1172,36 @@ const MyContainerProduct = ({ WHId, businessId }) => {
     ),
   ];
 
-  const handleNextComponent = (index) => {
-    setCurrentIndex(index);
-    setShowAnalytics(index === 3); // Show analytics when index is 3
+  // 해당하는 Section Table을 보여준다.
+  const handleNextComponent = async (index) => {
+    if (index === 2 && !notificationsFetched) {
+      // Show loading if notifications not yet fetched and user enters '변동내역'
+      setLoading(true);
+      try {
+        await getNotificationsAPI(businessId);
+        setNotificationsFetched(true);
+      } catch (error) {
+        console.error("Failed to fetch notifications:", error);
+      } finally {
+        setLoading(false);
+        setCurrentIndex(index);
+      }
+    } else if ((index === 3 || index === 5) && !analyticsFetched) {
+      // Show loading if analytics not yet fetched and user enters '알림함' or '분석'
+      setLoading(true);
+      try {
+        await getNotificationsAPI(businessId);
+        setAnalyticsFetched(true);
+      } catch (error) {
+        console.error("Failed to fetch analytics:", error);
+      } finally {
+        setLoading(false);
+        setCurrentIndex(index);
+      }
+    } else {
+      setCurrentIndex(index);
+      setShowAnalytics(index === 5);
+    }
   };
 
   // Handle new product data input change
@@ -1073,7 +1259,6 @@ const MyContainerProduct = ({ WHId, businessId }) => {
    * 유저를 부르는 Part
    */
 
-
   /**
    * UseEffect를 통해 새로고침 때마다 api로 사장님의 재고를 불러옴
    * + 유저정보
@@ -1081,10 +1266,7 @@ const MyContainerProduct = ({ WHId, businessId }) => {
 
   useEffect(() => {
     //재고 목록과 알림 내역을 불러온다.
-
     productGetAPI(businessId);
-    getNotificationsAPI(businessId);
-
   }, [openModal]);
 
   return (
@@ -1180,7 +1362,6 @@ const MyContainerProduct = ({ WHId, businessId }) => {
             variant="contained"
             color="primary"
             onClick={() => {
-              getNotificationsAPI(businessId);
               handleNextComponent(2);
               setShowProductInputSection(false);
               setShowProductExportSection(false);
@@ -1195,7 +1376,7 @@ const MyContainerProduct = ({ WHId, businessId }) => {
             variant="contained"
             color="primary"
             onClick={() => {
-              handleNextComponent(3);
+              handleNextComponent(5);
               setShowProductInputSection(false);
               setShowProductExportSection(false);
             }}
@@ -1209,8 +1390,7 @@ const MyContainerProduct = ({ WHId, businessId }) => {
             variant="contained"
             color="primary"
             onClick={() => {
-              handleNextComponent(2);
-              showUniqueDates();
+              handleNextComponent(3);
               setShowProductInputSection(false);
               setShowProductExportSection(false);
             }}
@@ -1220,9 +1400,7 @@ const MyContainerProduct = ({ WHId, businessId }) => {
           </Button>
         </div>
       </div>
-
       {/* 모달들 */}
-
       {/* 입고 Modal */}
       <Dialog
         open={openModal}
@@ -1294,7 +1472,6 @@ const MyContainerProduct = ({ WHId, businessId }) => {
           </Button>
         </DialogActions>
       </Dialog>
-
       {/* 출고 Modal */}
       <Dialog
         open={openExportModal}
@@ -1349,7 +1526,6 @@ const MyContainerProduct = ({ WHId, businessId }) => {
           </Button>
         </DialogActions>
       </Dialog>
-
       {/* 상품 데이터 수정 Modal */}
       <Dialog
         open={openEditModal}
@@ -1400,7 +1576,6 @@ const MyContainerProduct = ({ WHId, businessId }) => {
           </Button>
         </DialogActions>
       </Dialog>
-
       {/* 상품 이동 Modal */}
       <Dialog
         open={openMoveModal}
@@ -1526,7 +1701,24 @@ const MyContainerProduct = ({ WHId, businessId }) => {
           </Button>
         </DialogActions>
       </Dialog>
-
+      {loading && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(255, 255, 255, 0.8)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 2000,
+          }}
+        >
+          <CircularProgress />
+        </div>
+      )}
       <div style={{ display: "flex", width: "100%", margin: "0 0 0 200px" }}>
         {/* 입고하기 Section */}
         {showProductInputSection && (
@@ -1720,7 +1912,7 @@ const MyContainerProduct = ({ WHId, businessId }) => {
             </div>
           </div>
         )}
-        <Grid item xs={12} style={{ width: "100%" }}>
+        <Grid item xs={12} style={{ width: "100%", height: "80vh" }}>
           {/* 메인 영역 */}
           {currentIndex >= 0 && componentsArray[currentIndex]}
         </Grid>

@@ -8,8 +8,7 @@ import ManageEmployees from '../components/MyPage/ManageEmployees';
 import Info from '../components/MyPage/Info';
 import Alarm from '../components/MyPage/Alarm';
 import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/mypageStyle.js";
-import { useRouter } from 'next/router'; // useRouter import
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@material-ui/core';
+import { useRouter } from 'next/router'; 
 
 const useStyles = makeStyles(styles);
 
@@ -30,8 +29,6 @@ export default function Mypage() {
   const [businessName, setBusinessName] = useState('');
   const [businessNumber, setBusinessNumber] = useState('');
   const [createdDate, setCreatedDate] = useState('');
-  const [openModal, setOpenModal] = useState(false);
-  const [modalMessage, setModalMessage] = useState('');
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user'));
@@ -50,13 +47,18 @@ export default function Mypage() {
     if (userId) {
       getUserInfo();
     }
-  }, [userId]);
+  }, [userId, selectedComponent]);
 
   useEffect(() => {
     if (businessId) {
       getBusinessInfo();
     }
   }, [businessId]);
+
+  const updateBusinessInfo = (newBusinessData) => {
+    setBusinessName(newBusinessData.name);
+    setBusinessNumber(newBusinessData.businessNumber);
+  }
 
   const getUserInfo = async () => {
     try {
@@ -102,32 +104,6 @@ export default function Mypage() {
     }
   }
 
-  const handleUpdate = () => {
-    getBusinessInfo();
-  }
-
-  const handleUpdateBusiness = (status) => {
-    getBusinessInfo();
-    setSelectedComponent('info');
-    let message = '';
-    if (status === '수정') {
-      message = '사업체 수정이 완료되었습니다.';
-    } else if (status === '등록') {
-      message = '사업체 등록이 완료되었습니다.';
-    } else {
-      message = '사업체 삭제가 완료되었습니다.';
-    }
-    setModalMessage(message);
-    setOpenModal(true);
-  }
-
-  const handleUpdateInfo = () => {
-    getBusinessInfo();
-    setSelectedComponent('info');
-    setModalMessage('정보 수정이 완료되었습니다.');
-    setOpenModal(true);
-  }
-
   const handleCloseModal = () => {
     setOpenModal(false);
   }
@@ -137,13 +113,13 @@ export default function Mypage() {
       case 'alarm':
         return <Alarm businessId={businessId} />;
       case 'edit':
-        return <EditInfo userId={userId} name={name} email={email} nickname={nickname} businessId={businessId} businessName={businessName} businessNumber={businessNumber} roleTypeEnum={roleTypeEnum} onUpdateInfo={handleUpdateInfo} />;
+        return <EditInfo userId={userId} name={name} email={email} nickname={nickname} businessId={businessId} businessName={businessName} businessNumber={businessNumber} roleTypeEnum={roleTypeEnum}/>;
       case 'license':
-        return <ManageBusiness businessId={businessId} businessName={businessName} businessNumber={businessNumber} onUpdateBusiness={handleUpdateBusiness} />;
+        return <ManageBusiness businessId={businessId} businessName={businessName} businessNumber={businessNumber} updateBusinessInfo={updateBusinessInfo}/>;
       case 'subscriptions':
         return <SubInfo businessId={businessId} />;
       case 'employees':
-        return <ManageEmployees businessId={businessId} onUpdateEmployees={handleUpdate} />;
+        return <ManageEmployees businessId={businessId}/>;
       case 'info':
         return <Info name={name} email={email} nickname={nickname} businessId={businessId} businessName={businessName} businessNumber={businessNumber} createdDate={createdDate} roleTypeEnum={roleTypeEnum} />;
       default:
@@ -156,7 +132,8 @@ export default function Mypage() {
   }
 
   return (
-    <div className={classes.container}>
+  <div className={classes.container}>
+    {roleTypeEnum === 'BUSINESS' ? (
       <div className={classes.leftPanel}>
         <div className={classes.titleContainer}>
           <h2 className={classes.h2} onClick={() => setSelectedComponent('info')}>마이페이지</h2>
@@ -169,23 +146,33 @@ export default function Mypage() {
           <h4 onClick={() => setSelectedComponent('subscriptions')}>구독 정보</h4>
         </div>
       </div>
-      <div className={classes.rightPanel}>
-        <div className={classes.rendering}>
-          {renderComponent()}
+    ) : roleTypeEnum === 'Employee' ? (
+      <div className={classes.leftPanel}>
+        <div className={classes.titleContainer}>
+          <h2 className={classes.h2} onClick={() => setSelectedComponent('info')}>마이페이지</h2>
+        </div>
+        <div className={classes.divContainer}>
+          <h4 onClick={() => setSelectedComponent('alarm')}>알람</h4>
+          <h4 onClick={() => setSelectedComponent('edit')}>내 정보 수정</h4>
+          <h4 onClick={() => setSelectedComponent('license')}>소속 사업체</h4>
         </div>
       </div>
-
-      <Dialog open={openModal} onClose={handleCloseModal}>
-        <DialogTitle>정보 수정</DialogTitle>
-        <DialogContent>
-          <p>{modalMessage}</p>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseModal} color="primary">
-            확인
-          </Button>
-        </DialogActions>
-      </Dialog>
+    ) : (
+      <div className={classes.leftPanel}>
+        <div className={classes.titleContainer}>
+          <h2 className={classes.h2} onClick={() => setSelectedComponent('info')}>마이페이지</h2>
+        </div>
+        <div className={classes.divContainer}>
+          <h4 onClick={() => setSelectedComponent('alarm')}>알람</h4>
+          <h4 onClick={() => setSelectedComponent('edit')}>내 정보 수정</h4>
+        </div>
+      </div>
+    )}
+    <div className={classes.rightPanel}>
+      <div className={classes.rendering}>
+        {renderComponent()}
+      </div>
     </div>
-  );
+  </div>
+  )
 }
