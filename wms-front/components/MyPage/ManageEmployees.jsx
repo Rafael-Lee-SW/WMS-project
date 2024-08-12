@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Input, Card, InputAdornment } from '@material-ui/core';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Input, Card, InputAdornment } from '@material-ui/core';
 import { deleteBusinessEmployee, addEmployeeToBusiness, fetchEmployeeByEmail, fetchBusinessEmployees } from '../../pages/api';
 import { makeStyles } from '@material-ui/core';
 import style from '/styles/jss/nextjs-material-kit/pages/componentsSections/manageEmployeesStyle.js';
@@ -104,9 +104,9 @@ export default function ManageEmployees({ businessId }) {
                         </InputAdornment>
                     }
                 />
-                <Button onClick={handleSearch} className={classes.searchButton}>
+                <button onClick={handleSearch} className={classes.Button}>
                     검색
-                </Button>
+                </button>
             </div>
 
             {/* 검색 결과 목록 */}
@@ -114,9 +114,9 @@ export default function ManageEmployees({ businessId }) {
                 {searchResults ? (
                     <card className={classes.card}>
                         <div>{searchResults.email}</div>
-                        <Button onClick={() => handleAddEmployee(searchResults.id)} className={classes.button}>
+                        <button onClick={() => handleAddEmployee(searchResults.id)} className={classes.button}>
                             추가
-                        </Button>
+                        </button>
                     </card>
                 ) : (
                     <div>검색 결과가 없습니다.</div>
@@ -129,9 +129,9 @@ export default function ManageEmployees({ businessId }) {
                     employees.map((employee) => (
                         <Card key={employee.id} className={classes.listCard}>
                             <div className={classes.nameDiv} onClick={() => handleOpen(employee)}>{employee.name}</div>
-                            <Button onClick={(e) => handleDelete(employee.id, e)} className={classes.button}>
+                            <button onClick={(e) => handleDelete(employee.id, e)} className={classes.button}>
                                 삭제
-                            </Button>
+                            </button>
                         </Card>
                     ))
                 ) : (
@@ -154,9 +154,9 @@ export default function ManageEmployees({ businessId }) {
                     )}
                 </DialogContent>
                 <DialogActions style={{ justifyContent: 'flex-end' }}>
-                    <Button className={classes.modalCloseButton} onClick={handleClose} color="primary">
+                    <button className={classes.modalCloseButton} onClick={handleClose} color="primary">
                         X
-                    </Button>
+                    </button>
                 </DialogActions>
             </Dialog>
         </div>

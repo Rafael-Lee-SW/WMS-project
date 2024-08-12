@@ -49,6 +49,8 @@ const editInfoStyle = {
         width: '100px',
         color: 'white',
         height: "30px",
+        border: '1px solid #7D4A1A',
+        borderRadius: '4px',
         '&:hover': {
             transform: 'scale(1.05)',
             backgroundColor: '#7D4A1A',

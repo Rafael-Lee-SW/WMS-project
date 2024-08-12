@@ -29,6 +29,8 @@ const manageBusinessStyle = {
         color: 'white',
         marginLeft: '10px',
         height: "30px",
+        border: '1px solid #7D4A1A',
+        borderRadius: '4px',
         '&:hover': {
             transform: 'scale(1.05)',
             backgroundColor: '#7D4A1A',
@@ -74,6 +76,9 @@ const manageBusinessStyle = {
         width: '70%',
         marginTop: '20px',
     },
+    businessTitle: {
+        paddingTop: '30px'
+    }
 }
 
 export default manageBusinessStyle;
