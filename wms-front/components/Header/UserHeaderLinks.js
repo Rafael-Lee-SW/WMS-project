@@ -27,25 +27,22 @@ export default function HeaderLinks(props) {
           <Button
           href="/signIn"
           color="transparent"
-          className={classes.navLink}>
-          <Icon className={classes.icons}>unarchive</Icon>로그인
+          className={classes.navLink}>로그아웃
         </Button>
       </ListItem>
       <ListItem className={classes.listItem}>
         <Button
-          href="/signup"
+          href="/mypage"
           color="transparent"
           // target="_blank" // 이를 통해 새로운 페이지로 띄워버릴 수 있다.
-          className={classes.navLink}>
-          <Icon className={classes.icons}>unarchive</Icon>회원가입
+          className={classes.navLink}>마이페이지
         </Button>
       </ListItem>
       <ListItem className={classes.listItem}>
         <Button
           href="/components"
           color="transparent"
-          className={classes.navLink}>
-          <CloudDownload className={classes.icons} />사용방법
+          className={classes.navLink}>사용방법
         </Button>
       </ListItem>
     </List>
