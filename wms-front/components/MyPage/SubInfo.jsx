@@ -8,7 +8,7 @@ import {
   Button,
 } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core";
-import subInfoStyle from "/styles/jss/nextjs-material-kit/pages/componentsSections/manageBusinessStyle.js";
+import subInfoStyle from "/styles/jss/nextjs-material-kit/pages/componentsSections/subInfoStyle.js";
 import { useRouter } from "next/router";
 
 const useStyles = makeStyles(subInfoStyle);
@@ -136,7 +136,7 @@ export default function SubInfo() {
 
   return (
     <div className={classes.container}>
-      <h2 className={classes.title}>구독 정보</h2>
+      <h3 className={classes.title}>구독 정보</h3>
       {renderContentByRole()}
 
       <Dialog open={open} onClose={handleClose}>

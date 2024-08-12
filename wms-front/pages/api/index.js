@@ -50,6 +50,11 @@ function addEmployeeToBusiness(businessId, employeeId) {
     return instance.put(`/users?id=${employeeId}&businessId=${businessId}`);
 }
 
+// 특정 사업체의 직원 삭제
+function deleteBusinessEmployee(employeeId, businessId) {
+    return instance.patch(`/users?id=${employeeId}&businessId=${businessId}`);
+}
+
 // 특정 직원 조회
 function fetchEmployee(id) {
     return instance.get(`/users/${id}`);
@@ -241,6 +246,7 @@ export {
     fetchEmployees, 
     fetchBusinessEmployees,
     addEmployeeToBusiness,
+    deleteBusinessEmployee,
     fetchEmployee,
     fetchEmployeeByEmail,
     editEmployee,
