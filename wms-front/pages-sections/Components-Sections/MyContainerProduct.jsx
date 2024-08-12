@@ -86,7 +86,7 @@ registerPlugin(Filters);
 registerPlugin(HiddenRows);
 
 // 재고를 엑셀 형식으로 보면서 관리하는 Component
-const MyContainerProduct = ({ WHId }) => {
+const MyContainerProduct = ({ WHId, businessId }) => {
   // 제품 목록 / 입고 / 출고 / 수정하기 / 이동하기에 쓰이는 data Table state
   const [tableData, setTableData] = useState([]);
   // 변동 내역 / 알림함에서 쓰이는 data Table state
@@ -411,7 +411,7 @@ const MyContainerProduct = ({ WHId }) => {
       // postData에 businessId와 warehouseId를 추가한다.
       const newPostData = {
         warehouseId: WHId,
-        businessId: businessData.businessId,
+        businessId: businessId,
         data: postData,
       };
       console.log(newPostData);
@@ -1073,40 +1073,6 @@ const MyContainerProduct = ({ WHId }) => {
    * 유저를 부르는 Part
    */
 
-  // 유저 및 비즈니스 정보를 담을 State
-  const [userData, setUserData] = useState(null);
-  const [businessData, setBusinessData] = useState(null);
-
-  // LocalStorage(로컬 스토레이지)를 바탕으로 비즈니스 정보를 받아온다.
-  const fetchBusinessData = async (userId) => {
-    try {
-      const response = await fetch(
-        `https://i11a508.p.ssafy.io/api/users/${userId}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (response.ok) {
-        const userData = await response.json();
-        const businessInfo = userData.result;
-        // Business Data를 추출한다.
-        setBusinessData(businessInfo);
-        console.log("Business data loaded:", businessInfo);
-
-        //재고 목록과 알림 내역을 불러온다.
-        productGetAPI(businessInfo.businessId);
-        getNotificationsAPI(businessInfo.businessId);
-      } else {
-        console.error("Error fetching user data");
-      }
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-    }
-  };
 
   /**
    * UseEffect를 통해 새로고침 때마다 api로 사장님의 재고를 불러옴
@@ -1114,20 +1080,11 @@ const MyContainerProduct = ({ WHId }) => {
    */
 
   useEffect(() => {
-    // Retrieve user data from localStorage
-    const user = localStorage.getItem("user");
-    if (user) {
-      try {
-        const parsedUser = JSON.parse(user);
-        setUserData(parsedUser);
-        console.log("User data loaded from localStorage:", parsedUser);
+    //재고 목록과 알림 내역을 불러온다.
 
-        // Fetch business data using user ID
-        fetchBusinessData(parsedUser.id);
-      } catch (error) {
-        console.error("Error parsing user data from localStorage:", error);
-      }
-    }
+    productGetAPI(businessId);
+    getNotificationsAPI(businessId);
+
   }, [openModal]);
 
   return (
@@ -1137,7 +1094,7 @@ const MyContainerProduct = ({ WHId }) => {
         style={{
           position: "absolute",
           width: "200px",
-          height: "90vh",
+          height: "80vh",
           marginRight: "5px",
           padding: "15px",
           boxShadow: "2px 0 5px rgba(0, 0, 0, 0.1)",
@@ -1149,7 +1106,7 @@ const MyContainerProduct = ({ WHId }) => {
           zIndex: 1000, // Ensure it stays above other content
         }}
       >
-        <div style={{ marginBottom: "10px" }}>
+        <div style={{ marginBottom: "10px", marginTop: "10vh" }}>
           <Button
             variant="contained"
             color="primary"
@@ -1196,7 +1153,7 @@ const MyContainerProduct = ({ WHId }) => {
             variant="contained"
             color="primary"
             onClick={() => {
-              setOpenEditModal(true)
+              setOpenEditModal(true);
               handleNextComponent(0);
             }}
             style={{ width: "100%" }}
@@ -1223,7 +1180,7 @@ const MyContainerProduct = ({ WHId }) => {
             variant="contained"
             color="primary"
             onClick={() => {
-              getNotificationsAPI(businessData.businessId);
+              getNotificationsAPI(businessId);
               handleNextComponent(2);
               setShowProductInputSection(false);
               setShowProductExportSection(false);
@@ -1570,10 +1527,10 @@ const MyContainerProduct = ({ WHId }) => {
         </DialogActions>
       </Dialog>
 
-      <div style={{display:"flex", width: "100%", margin: "0 0 0 200px" }}>
+      <div style={{ display: "flex", width: "100%", margin: "0 0 0 200px" }}>
         {/* 입고하기 Section */}
         {showProductInputSection && (
-          <div style={{ width: "30%"}}>
+          <div style={{ width: "30%" }}>
             <div style={{ flex: 1, padding: "1rem" }}>
               <Typography variant="h6">제품 데이터 입력</Typography>
               <TextField
@@ -1651,7 +1608,15 @@ const MyContainerProduct = ({ WHId }) => {
               </Button>
             </div>
 
-            <div style={{ flex: 1, padding: "1rem" }}>
+            <div
+              style={{
+                width: "300px",
+                height: "25vh",
+                flex: 1,
+                padding: "1rem",
+                overflow: "auto",
+              }}
+            >
               <Typography variant="h6">Expected Import List</Typography>
               <ul>
                 {expectedImportList.map((product, index) => (
@@ -1666,7 +1631,7 @@ const MyContainerProduct = ({ WHId }) => {
 
         {/* 출고하기 Section */}
         {showProductExportSection && (
-          <div style={{width: "30%" }}>
+          <div style={{ width: "30%" }}>
             <div style={{ flex: 1, padding: "1rem" }}>
               <Typography variant="h6">출고 데이터 입력</Typography>
               <TextField
@@ -1735,7 +1700,15 @@ const MyContainerProduct = ({ WHId }) => {
               </Button>
             </div>
 
-            <div style={{ flex: 1, padding: "1rem" }}>
+            <div
+              style={{
+                width: "300px",
+                height: "25vh",
+                flex: 1,
+                padding: "1rem",
+                overflow: "auto",
+              }}
+            >
               <Typography variant="h6">Expected Export List</Typography>
               <ul>
                 {expectedExportList.map((product, index) => (
@@ -1747,7 +1720,7 @@ const MyContainerProduct = ({ WHId }) => {
             </div>
           </div>
         )}
-        <Grid item xs={12} style={{ width:"100%"}}>
+        <Grid item xs={12} style={{ width: "100%" }}>
           {/* 메인 영역 */}
           {currentIndex >= 0 && componentsArray[currentIndex]}
         </Grid>

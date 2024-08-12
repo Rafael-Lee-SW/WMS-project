@@ -1,27 +1,18 @@
 import React, { useEffect, useState } from "react";
-// nodejs library that concatenates classes
 import classNames from "classnames";
-// react components for routing our app without refresh
 import Link from "next/link";
-// @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
-// core components
 import Header from "/components/Header/UserHeader.jsx";
 import HeaderLinks from "/components/Header/UserHeaderLinks.js";
 import Footer from "/components/Footer/Footer.js";
 import Button from "/components/CustomButtons/Button.js";
 import Parallax from "/components/Parallax/ParallaxUser.js";
 import dynamic from "next/dynamic";
-
-// 스타일 파일
 import styles from "/styles/jss/nextjs-material-kit/pages/users.js";
 import AOS from "aos";
 import "aos/dist/aos.css";
-
-// Import useRouter to access route parameters
 import { useRouter } from "next/router";
 
-// 다이나믹 import 테스트
 const DynamicMyContainerMap = dynamic(
   () => import("/pages-sections/Components-Sections/MyContainerMap.jsx"),
   { ssr: false }
@@ -37,9 +28,8 @@ const DynamicMyContainerProduct = dynamic(
 
 const useStyles = makeStyles((theme) => ({
   ...styles,
-  // Add sidebar styles
   sidebar: {
-    width: "90px", // Set a consistent width
+    width: "90px",
     height: "100vh",
     position: "fixed",
     top: 0,
@@ -64,33 +54,33 @@ const useStyles = makeStyles((theme) => ({
     fontWeight: "bold",
   },
   mainContent: {
-    marginLeft: "90px", // Align with sidebar width
-    width: "calc(100% - 80px)", // Take full width minus sidebar width
-    height: "100vh", // Fill the screen height
-    overflow: "auto", // Allow scrolling if needed
+    marginLeft: "90px",
+    width: "calc(100% - 80px)",
+    height: "100vh",
+    overflow: "auto",
   },
   warehouseDropdown: {
     margin: "10px 0",
   },
   warehouseSelect: {
     width: "100%",
-    padding: "5px", // Increased padding for better visibility
-    fontSize: "12px", // Larger font size for emphasis
-    fontWeight: "bold", // Bold text to highlight the title
+    padding: "5px",
+    fontSize: "12px",
+    fontWeight: "bold",
     borderRadius: "4px",
     border: "1px solid #ccc",
-    backgroundColor: "#fff", // Clean background color
-    cursor: "pointer", // Indicate interactiveness
-    appearance: "none", // Remove default styling
-    whiteSpace: "normal", // Enable text wrapping
+    backgroundColor: "#fff",
+    cursor: "pointer",
+    appearance: "none",
+    whiteSpace: "normal",
   },
   warehouseOption: {
-    fontSize: "12px", // Ensure options also have larger font
-    fontWeight: "bold", // Consistent emphasis
-    lineHeight: "1.2", // Allow for multi-line text
-    whiteSpace: "normal", // Enable text wrapping
-    overflow: "hidden", // Prevent overflow of text
-    padding: "10px", // Consistent padding
+    fontSize: "12px",
+    fontWeight: "bold",
+    lineHeight: "1.2",
+    whiteSpace: "normal",
+    overflow: "hidden",
+    padding: "10px",
   },
 }));
 
@@ -98,19 +88,13 @@ export default function Components(props) {
   const classes = useStyles();
   const { ...rest } = props;
   const router = useRouter();
-  const { id } = router.query; // Destructure id from router.query to get the current warehouse ID
+  const { id } = router.query;
 
   const [cards, setCards] = useState([]);
-  const [userData, setUserData] = useState(null); // State to store user data
-  const [businessData, setBusinessData] = useState(null); // State to store business data
+  const [userData, setUserData] = useState(null);
+  const [businessData, setBusinessData] = useState(null);
+  const [selectedWarehouse, setSelectedWarehouse] = useState(id || "");
 
-  const [selectedWarehouse, setSelectedWarehouse] = useState(id || ""); // State for selected warehouse
-
-  /*
-   * 유저 정보와 창고 정보를 받아오는 UseEffect 및 함수 정의
-   */
-
-  // API call to fetch warehouse information // 해당 비즈니스 아이디의 창고 정보
   const getAllWarehouseInfoAPI = async (businessId) => {
     try {
       const response = await fetch(
@@ -157,10 +141,9 @@ export default function Components(props) {
       if (response.ok) {
         const userData = await response.json();
         const businessInfo = userData.result;
-        setBusinessData(businessInfo); // Store business data in state
+        setBusinessData(businessInfo);
         console.log("Business data loaded:", businessInfo);
 
-        // Now call the warehouse info API with the business ID
         getAllWarehouseInfoAPI(businessInfo.businessId);
       } else {
         console.error("Error fetching user data");
@@ -170,20 +153,15 @@ export default function Components(props) {
     }
   };
 
-  /**
-   * UseEffect Part
-   */
-
   useEffect(() => {
-    // Retrieve user data from localStorage
     const user = localStorage.getItem("user");
+
     if (user) {
       try {
         const parsedUser = JSON.parse(user);
         setUserData(parsedUser);
         console.log("User data loaded from localStorage:", parsedUser);
 
-        // Fetch business data using user ID
         fetchBusinessData(parsedUser.id);
       } catch (error) {
         console.error("Error parsing user data from localStorage:", error);
@@ -193,20 +171,25 @@ export default function Components(props) {
 
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const componentsArray = [
-    <DynamicMyContainerMap
-      key={`map-${selectedWarehouse}`}
-      warehouseId={selectedWarehouse}
-    />,
-    <DynamicMyContainerNavigation
-      key={`nav-${selectedWarehouse}`}
-      WHId={selectedWarehouse}
-    />,
-    <DynamicMyContainerProduct
-      key={`product-${selectedWarehouse}`}
-      WHId={selectedWarehouse}
-    />,
-  ];
+  const componentsArray = userData
+    ? [
+        <DynamicMyContainerMap
+          key={`map-${selectedWarehouse}`}
+          warehouseId={selectedWarehouse}
+          businessId={userData.businessId}
+        />,
+        <DynamicMyContainerNavigation
+          key={`nav-${selectedWarehouse}`}
+          WHId={selectedWarehouse}
+          businessId={userData.businessId}
+        />,
+        <DynamicMyContainerProduct
+          key={`product-${selectedWarehouse}`}
+          WHId={selectedWarehouse}
+          businessId={userData.businessId}
+        />,
+      ]
+    : [];
 
   const handleNextComponent = (index) => {
     setCurrentIndex(index);
@@ -215,17 +198,24 @@ export default function Components(props) {
   const handleWarehouseChange = (event) => {
     const warehouseId = event.target.value;
     setSelectedWarehouse(warehouseId);
-    // Redirect to the new warehouse page with shallow routing
     router.push(`/user/${warehouseId}`, undefined, { shallow: true });
   };
 
   useEffect(() => {
-    // Update effect when selectedWarehouse changes
-    console.log(`Current selected warehouse ID: ${selectedWarehouse}`);
+    const user = localStorage.getItem("user");
+
+    if (user) {
+      try {
+        const parsedUser = JSON.parse(user);
+        setUserData(parsedUser);
+        console.log("User[id]에서 불러오기", parsedUser);
+      } catch (error) {
+        router.push("/");
+      }
+    }
   }, [selectedWarehouse]);
 
   return (
-    /** 헤더 영역 */
     <div>
       <Header
         rightLinks={<HeaderLinks />}
@@ -233,7 +223,6 @@ export default function Components(props) {
         color="rgba(237, 237, 237, 0.8)"
         {...rest}
       />
-      {/* Sidebar */}
       <div className={classes.sidebar}>
         <button>
           <Link href="/components" as="/components">
@@ -277,8 +266,13 @@ export default function Components(props) {
         </Button>
       </div>
 
-      {/* Main Content Area */}
-      <div className={classes.mainContent}>{componentsArray[currentIndex]}</div>
+      <div className={classes.mainContent}>
+        {componentsArray.length > 0 ? (
+          componentsArray[currentIndex]
+        ) : (
+          <div>Loading...</div>
+        )}
+      </div>
     </div>
   );
 }
