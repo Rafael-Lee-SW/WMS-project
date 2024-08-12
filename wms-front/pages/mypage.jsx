@@ -60,6 +60,10 @@ export default function Mypage() {
     setBusinessNumber(newBusinessData.businessNumber);
   }
 
+  const updateRoleType = (newRoleType) => {
+    setRoleTypeEnum(newRoleType);
+  }
+
   const getUserInfo = async () => {
     try {
       const response = await fetchUser(userId);
@@ -115,7 +119,7 @@ export default function Mypage() {
       case 'edit':
         return <EditInfo userId={userId} name={name} email={email} nickname={nickname} businessId={businessId} businessName={businessName} businessNumber={businessNumber} roleTypeEnum={roleTypeEnum}/>;
       case 'license':
-        return <ManageBusiness businessId={businessId} businessName={businessName} businessNumber={businessNumber} updateBusinessInfo={updateBusinessInfo}/>;
+        return <ManageBusiness businessId={businessId} businessName={businessName} businessNumber={businessNumber} updateBusinessInfo={updateBusinessInfo} updateRoleType={updateRoleType}/>;
       case 'subscriptions':
         return <SubInfo businessId={businessId} />;
       case 'employees':
@@ -146,7 +150,7 @@ export default function Mypage() {
           <h4 onClick={() => setSelectedComponent('subscriptions')}>구독 정보</h4>
         </div>
       </div>
-    ) : roleTypeEnum === 'Employee' ? (
+    ) : roleTypeEnum === 'EMPLOYEE' ? (
       <div className={classes.leftPanel}>
         <div className={classes.titleContainer}>
           <h2 className={classes.h2} onClick={() => setSelectedComponent('info')}>마이페이지</h2>

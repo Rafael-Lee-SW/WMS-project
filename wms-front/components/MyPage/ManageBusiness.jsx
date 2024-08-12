@@ -1,13 +1,14 @@
-import { Button, Input, makeStyles } from "@material-ui/core";
+import { Input, makeStyles } from "@material-ui/core";
 import { useState, useEffect } from "react";
 import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/manageBusinessStyle.js";
 import { useRouter } from "next/router";
 import axios from 'axios';
+import { deleteBusinessEmployee } from "../../pages/api";
 
 const useStyles = makeStyles(styles);
 
 // 사업자 관리 Component
-export default function ManageBusiness({ updateBusinessInfo }) {
+export default function ManageBusiness({ updateBusinessInfo, updateRoleType }) {
   const classes = useStyles();
   const router = useRouter();
 
@@ -16,6 +17,7 @@ export default function ManageBusiness({ updateBusinessInfo }) {
   const [roleType, setRoleType] = useState('');
   const [businessName, setBusinessName] = useState('');
   const [businessId, setBusinessId] = useState(null);
+  const [businessAddDate, setBusinessAddDate] = useState('');
 
   useEffect(() => {
     fetchUserData();
@@ -32,6 +34,7 @@ export default function ManageBusiness({ updateBusinessInfo }) {
           
           setRoleType(userData.roleTypeEnum);
           setBusinessId(userData.businessId);
+          setBusinessAddDate(userData.businessAddDate);
 
           if (userData.roleTypeEnum === 'BUSINESS' && userData.businessId !== -1) {
             const businessResponse = await axios.get(`https://i11a508.p.ssafy.io/api/businesses/${userData.businessId}`);
@@ -130,24 +133,12 @@ export default function ManageBusiness({ updateBusinessInfo }) {
 
   const handleLeave = async () => {
     try {
-      const storedUser = JSON.parse(localStorage.getItem('user')); // 유저 정보를 다시 가져오기
-      const userId = storedUser ? storedUser.id : null; // 유저 ID 가져오기
-
-      if (userId) {
-        const data = {
-          name: storedUser.name,
-          nickname: storedUser.nickname,
-          roleTypeEnum: "EMPLOYEE",
-          businessId: -1
-        };
-
-        const response = await axios.put(`https://i11a508.p.ssafy.io/api/users/${userId}`, data);
-
-        if (response.data.success) {
-          alert("사업장 탈퇴가 완료되었습니다.");
-          router.push('/');
-        }
-      }
+        const storedUser = JSON.parse(localStorage.getItem('user')); // 유저 정보를 다시 가져오기
+        const userId = storedUser ? storedUser.id : null; // 유저 ID 가져오기
+        await deleteBusinessEmployee(userId, businessId);
+        alert("사업장 탈퇴가 완료되었습니다.");
+        fetchUserData();
+        updateRoleType('GENERAL');
     } catch (error) {
       console.error("Error leaving business:", error);
       alert("탈퇴 중 오류가 발생했습니다.");
@@ -193,25 +184,43 @@ export default function ManageBusiness({ updateBusinessInfo }) {
               </tbody>
             </table>
             <div className={classes.buttonContainer}>
-              <Button 
+              <button 
                 type="submit"
                 className={classes.button}
                 onClick={handleSubmit}
               >
                 등록
-              </Button>
+              </button>
             </div>
           </div>
         </div>
       )}
       {roleType === 'EMPLOYEE' && (
-        <div>
-          <h3 className={classes.h3}>현재 소속된 창고</h3>
-          <p>사업체명: {businessName}</p>
-          <Button onClick={handleLeave} className={classes.button}>
-            탈퇴하기
-          </Button>
-        </div>
+      <div className={classes.renderContainer}>
+        <h3 className={classes.h3}>소속 사업체</h3>
+         <div className={classes.tableContainer}>
+            <table className={classes.table}>
+                <tbody>
+                  <tr>
+                    <td className={classes.labelCell}><strong className={classes.text}>사업체 이름</strong></td>
+                    <td className={classes.valueCell}>{businessName}</td>
+                  </tr>
+                  <tr>
+                    <td className={classes.labelCell}><strong className={classes.text}>등록 일자</strong></td>
+                    <td className={classes.valueCell}>{businessAddDate}</td>
+                  </tr>
+                </tbody>
+            </table>
+            <div className={classes.buttonContainer}>
+                <button 
+                    className={classes.button}
+                    onClick={handleLeave}
+                    >
+                    탈퇴
+                </button>
+            </div>
+         </div>
+      </div>
       )}
       {roleType === 'BUSINESS' && (
         <div className={classes.renderContainer}>
@@ -250,16 +259,16 @@ export default function ManageBusiness({ updateBusinessInfo }) {
               </tbody>
             </table>
             <div className={classes.buttonContainer}>
-              <Button 
+              <button 
                 type="submit"
                 className={classes.button}
                 onClick={handleSubmit}
               >
                 수정
-              </Button>
-              <Button onClick={handleDelete} className={classes.button}>
+              </button>
+              <button onClick={handleDelete} className={classes.button}>
                 삭제
-              </Button>
+              </button>
             </div>
           </div>
         </div>

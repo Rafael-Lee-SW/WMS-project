@@ -1,4 +1,4 @@
-import { Button, Input, makeStyles } from "@material-ui/core";
+import { Input, makeStyles } from "@material-ui/core";
 import { useState, useEffect } from "react";
 import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/editInfoStyle.js";
 import { useRouter } from "next/router";
@@ -6,7 +6,7 @@ import { editUser } from "../../pages/api";
 
 const useStyles = makeStyles(styles);
 
-export default function EditInfo({ userId, name, email, nickname, onUpdateInfo }) {
+export default function EditInfo({ userId, name, nickname, onUpdateInfo }) {
     const classes = useStyles();
     const router = useRouter();
     const [userInfo, setUserInfo] = useState({ userId, name, nickname });
@@ -71,13 +71,13 @@ export default function EditInfo({ userId, name, email, nickname, onUpdateInfo }
                     </tbody>
                 </table>
                 <div className={classes.buttonContainer}>
-                    <Button 
+                    <button 
                         type="submit"
                         className={classes.button}
                         onClick={handleSubmit}
                     >
                         저장
-                    </Button>
+                    </button>
                 </div>
             </div>
         </div>

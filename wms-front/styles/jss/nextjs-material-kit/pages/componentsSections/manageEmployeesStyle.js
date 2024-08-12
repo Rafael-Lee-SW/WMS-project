@@ -23,7 +23,33 @@ const manageEmployeesStyle = {
     button: {
         margin: "10px",
         backgroundColor: "lightgray",
-        height: "30px"
+        height: "30px",
+        border: '1px solid #7D4A1A',
+        borderRadius: '4px',
+        '&:hover': {
+            transform: 'scale(1.05)',
+            backgroundColor: '#7D4A1A',
+            color: 'white',
+        },
+    },
+    Button: {
+        margin: '10px',
+        backgroundColor: "transparent",
+        width: '50px',
+        color: 'black',
+        height: "30px",
+        border: '1px solid #7D4A1A',
+        borderRadius: '4px',
+        '&:hover': {
+            transform: 'scale(1.05)',
+            backgroundColor: '#7D4A1A',
+            color: 'white',
+        },
+    },
+    modalCloseButton: {
+        backgroundColor: "transparent",
+        border: "none",
+        cursor: 'pointer'
     },
     card: {
         width: '30%',
@@ -74,6 +100,8 @@ const manageEmployeesStyle = {
         width: '100px',
         color: 'white',
         height: "30px",
+        border: '1px solid #7D4A1A',
+        borderRadius: '4px',
         '&:hover': {
             transform: 'scale(1.05)',
             backgroundColor: '#7D4A1A',
