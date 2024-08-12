@@ -7,7 +7,7 @@ import AddCircleOutline from "@material-ui/icons/AddCircleOutline";
 import GridContainer from "/components/Grid/GridContainer.js";
 import GridItem from "/components/Grid/GridItem.js";
 import Card from "/components/Card/Card.js";
-import { Modal, Fade, Button, TextField, Typography } from "@mui/material";
+import { Modal, Fade, Button, TextField } from "@mui/material";
 import { useRouter } from "next/router"; // useRouter 훅 임포트
 import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/selectStyle.js";
 
@@ -38,9 +38,17 @@ const Select = (props) => {
 
   const [validationErrors, setValidationErrors] = useState({}); // 에러를 추적하기 위함
 
+  const handleOpen = async () => {
+    // 창고 수량 및 구독 정보 가져오기
+    await fetchWarehouseCounts();
 
-  const handleOpen = () => {
-    setOpen(true);
+    // 현재 창고 수와 결제된 창고 수 비교
+    if (currentWarehouseCount >= allowedWarehouseCount) {
+      alert("추가 생성을 위한 결제가 필요합니다.");
+      router.push("/payment"); // 결제 페이지로 이동
+    } else {
+      setOpen(true); // 모달을 띄운다
+    }
   };
 
   const handleClose = () => {
@@ -102,8 +110,6 @@ const Select = (props) => {
     setValidationErrors(errors);
   };
 
-
-
   const fetchWarehouseCounts = async () => {
     try {
       const warehouseCountResponse = await fetch(
@@ -129,9 +135,12 @@ const Select = (props) => {
       if (warehouseCountResponse.ok && subscriptionResponse.ok) {
         const warehouseCountData = await warehouseCountResponse.json();
         const subscriptionData = await subscriptionResponse.json();
+        const subscriptionCntDat = subscriptionData.result;
+        console.log("Warehouse Count Data:", warehouseCountData.result);
+        console.log("Subscription Data:", subscriptionCntDat[0].warehouseCount);
 
         setCurrentWarehouseCount(warehouseCountData.result);
-        setAllowedWarehouseCount(subscriptionData.result[0].warehouseCount);
+        setAllowedWarehouseCount(subscriptionCntDat[0].warehouseCount);
       } else {
         console.error("Error fetching warehouse or subscription data");
       }
@@ -144,43 +153,33 @@ const Select = (props) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    //입력값에 대한 검증
+    // 입력값에 대한 검증
     if (Object.keys(validationErrors).length > 0) {
-      // Prevent submission if there are validation errors
+      // 입력 검증 오류가 있는 경우 제출을 방지
       return;
     }
 
-    // 아이디가 일치하는 지에 대한 검증
+    // businessId가 설정되어 있는지 확인
     if (!businessId) {
       console.error("Business ID is missing");
       return;
     }
 
-    //창고 정보를 불러온다.
-    await fetchWarehouseCounts();
-
-    if (currentWarehouseCount > allowedWarehouseCount) {
-      alert("추가 생성을 위한 결제가 필요합니다.");
-      router.push("/payment"); // router.push로 페이지 이동
-      return;
-    }
-
     // 창고 생성을 위한 데이터
     const postData = {
-      businessId, // Use the stored business ID
-      size: parseInt(formData.containerSize), // Ensure size is a number
-      columnCount: parseInt(formData.column), // Ensure columnCount is a number
-      rowCount: parseInt(formData.row), // Ensure rowCount is a number
+      businessId, // 저장된 business ID 사용
+      size: parseInt(formData.containerSize), // 크기를 숫자로 변환
+      columnCount: parseInt(formData.column), // 열 개수를 숫자로 변환
+      rowCount: parseInt(formData.row), // 행 개수를 숫자로 변환
       name: formData.containerName || `Container ${cards.length + 1}`,
-      priority: 1, // Default priority
-      facilityTypeEnum: "STORE", // Default facility type
+      priority: 1, // 기본 우선순위
+      facilityTypeEnum: "STORE", // 기본 시설 유형
     };
 
     // 창고 내의 로케이션 생성을 위한 데이터 추출
     const { locationX, locationY, locationZ, row, column } = formData;
 
     // Calculate spacing between locations
-
     const xSpacing = postData.size / row / 2;
     const ySpacing = postData.size / column / 2;
 
@@ -281,7 +280,6 @@ const Select = (props) => {
 
   // 생성된 된정보를 API를 통해 보냄
   const postLocationAPI = async (requests, warehouseId) => {
-
     console.log("로케이션");
 
     const total = { requests, warehouseId };
@@ -310,7 +308,6 @@ const Select = (props) => {
   };
   // 생성된 된정보를 API를 통해 보냄
   const postWallAPI = async (wallDtos, warehouseId) => {
-
     console.log("벽");
     const total = { wallDtos, warehouseId };
     console.log(total);
@@ -352,7 +349,7 @@ const Select = (props) => {
 
       if (response.ok) {
         const apiConnection = await response.json();
-        console.log(apiConnection)
+        console.log(apiConnection);
         const warehouses = apiConnection.result;
 
         const warehouseCards = warehouses.map((warehouse) => ({
@@ -499,9 +496,7 @@ const Select = (props) => {
                     }
                     FormHelperTextProps={{
                       style: {
-                        color: validationErrors.containerName
-                          ? "red"
-                          : "blue",
+                        color: validationErrors.containerName ? "red" : "blue",
                       },
                     }}
                   />
@@ -557,8 +552,7 @@ const Select = (props) => {
                     onChange={handleChange}
                     error={Boolean(validationErrors.locationZ)}
                     helperText={
-                      validationErrors.locationZ ||
-                      "1~10층까지 설정 가능합니다."
+                      validationErrors.locationZ || "1~10층까지 설정 가능합니다."
                     }
                     FormHelperTextProps={{
                       style: {
