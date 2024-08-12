@@ -55,9 +55,8 @@ const useStyles = makeStyles((theme) => ({
   },
   mainContent: {
     marginLeft: "90px",
-    width: "calc(100% - 80px)",
-    height: "100vh",
-    overflow: "auto",
+    // height: "100vh",
+    overflow: "none",
   },
   warehouseDropdown: {
     margin: "10px 0",

@@ -381,7 +381,7 @@ const Select = (props) => {
         const warehouseCards = warehouses.map((warehouse) => ({
           id: warehouse.id,
           title: warehouse.name,
-          image: "/img/bg.jpg",
+          image: "/img/storeroom.webp",
         }));
 
         setCards(warehouseCards);
