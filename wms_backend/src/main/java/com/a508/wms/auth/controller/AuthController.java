@@ -31,6 +31,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -126,9 +128,9 @@ public class AuthController {
     }
 
     @GetMapping("/code/kakao")
-    public void handleKakaoLogin(HttpServletRequest request, HttpServletResponse response, Authentication authentication)
-        throws IOException, IOException {
-        OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
+    public void handleKakaoLogin(HttpServletResponse response, @AuthenticationPrincipal OAuth2AuthenticationToken authenticationToken)
+        throws IOException {
+        OAuth2User oAuth2User = authenticationToken.getPrincipal();
 
         Map<String, Object> attributes = oAuth2User.getAttributes();
         Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
