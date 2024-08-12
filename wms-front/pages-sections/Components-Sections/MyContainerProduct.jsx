@@ -13,6 +13,7 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import TextField from "@mui/material/TextField";
+import CircularProgress from "@mui/material/CircularProgress"; // Import CircularProgress for loading spinner
 
 // Import SheetJS xlsx for Excel operations
 import * as XLSX from "xlsx";
@@ -467,6 +468,7 @@ const MyContainerProduct = ({ WHId, businessId }) => {
   // 사장님이 갖고 있는 상품들을 가져오는 API
   const productGetAPI = async (businessId) => {
     try {
+      setLoading(true); // Start loading
       const response = await fetch(
         `https://i11a508.p.ssafy.io/api/products?businessId=${businessId}`,
         {
@@ -561,6 +563,8 @@ const MyContainerProduct = ({ WHId, businessId }) => {
       }
     } catch (error) {
       console.error("Error loading rectangles data:", error);
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
 
@@ -577,6 +581,7 @@ const MyContainerProduct = ({ WHId, businessId }) => {
   // 모든 알림(변동내역)을 가져오는 메서드
   const getNotificationsAPI = async (businessId) => {
     try {
+      setLoading(true); // Start loading
       const response = await fetch(
         `https://i11a508.p.ssafy.io/api/products/notification?businessId=${businessId}`,
         {
@@ -693,6 +698,8 @@ const MyContainerProduct = ({ WHId, businessId }) => {
       }
     } catch (error) {
       console.error("Error fetching notifications:", error);
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
 
@@ -1136,16 +1143,41 @@ const MyContainerProduct = ({ WHId, businessId }) => {
    * + 유저정보
    */
 
+  const [loading, setLoading] = useState(true); // Add a loading state
+
   useEffect(() => {
     //재고 목록과 알림 내역을 불러온다.
 
     productGetAPI(businessId);
 
     getNotificationsAPI(businessId);
+    
   }, [openModal]);
 
   return (
     <div style={{ marginTop: "3rem", display: "flex" }}>
+      {loading && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(255, 255, 255, 0.8)",
+            zIndex: 9999,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            flexDirection: "column",
+          }}
+        >
+          <CircularProgress size={60} />
+          <Typography variant="h6" style={{ marginTop: "20px" }}>
+            Loading data, please wait...
+          </Typography>
+        </div>
+      )}
       <div
         className="leftsidebar"
         style={{
@@ -1777,7 +1809,7 @@ const MyContainerProduct = ({ WHId, businessId }) => {
             </div>
           </div>
         )}
-        <Grid item xs={12} style={{ width: "100%" }}>
+        <Grid item xs={12} style={{ width: "100%", position: "relative" }}>
           {/* 메인 영역 */}
           {currentIndex >= 0 && componentsArray[currentIndex]}
         </Grid>
