@@ -13,7 +13,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -46,9 +45,9 @@ public class UserService {
      * @param businessId
      * @return List<EmployeeDto> (특정 사업체의 전체 직원)
      */
-    public List<UserResponseDto> findByBusinessId(Long businessId) {
-        log.info("[Service] find Employee User by BusinessId: {}", businessId);
-        List<User> users = userRepository.findByBusinessId(businessId);
+    public List<UserResponseDto> findAllByBusinessId(Long businessId) {
+        log.info("[Service] find All User by BusinessId: {}", businessId);
+        List<User> users = userRepository.findAllByBusinessId(businessId);
         return users.stream()
             .map(UserMapper::toUserResponseDto)
             .collect(Collectors.toList());
