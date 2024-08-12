@@ -130,7 +130,7 @@ export default function SubInfo() {
         );
 
       default:
-        return <h4 className={classes.contentText}>알 수 없는 사용자 역할입니다.</h4>;
+        return <h4 className={classes.contentText}>알 수 없는 사용자 입니다.</h4>;
     }
   };
 
