@@ -83,7 +83,7 @@ public class WebSecurityConfig {
             )
             .oauth2Login(oauth2 -> oauth2
                 .loginPage("/oauth2/authorization/kakao")  // 로그인 페이지 설정
-                .redirectionEndpoint(endpoint -> endpoint.baseUri("/login/oauth2/code/kakao"))  // 리다이렉션 엔드포인트 설정
+//                .redirectionEndpoint(endpoint -> endpoint.baseUri("/login/oauth2/code/kakao"))  // 리다이렉션 엔드포인트 설정
                 .successHandler((request, response, authentication) -> {
                     System.out.println("성공!!");
                     OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
