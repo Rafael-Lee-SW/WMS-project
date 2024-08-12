@@ -60,12 +60,6 @@ public class WebSecurityConfig {
     private final JwtProvider jwtProvider;
     private final AuthenticationSuccessHandler customSuccessHandler;
 
-    @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
-    private String kakaoClientId;
-
-    @Value("${spring.security.oauth2.client.registration.kakao.client-secret}")
-    private String kakoClientSecret;
-
     @Bean
     protected SecurityFilterChain configure(HttpSecurity httpSecurity,
         ValidationExceptionHandler validationExceptionHandler, UserService userService) throws Exception {
