@@ -464,6 +464,8 @@ const MyContainerProduct = ({ WHId, businessId }) => {
     }
   };
 
+  const [productColumns, setProductColumns] = useState([]);
+
   // 사장님이 갖고 있는 상품들을 가져오는 API
   const productGetAPI = async (businessId) => {
     try {
@@ -530,7 +532,7 @@ const MyContainerProduct = ({ WHId, businessId }) => {
           product.warehouseId,
         ]);
 
-        setColumns(formattedColumns);
+        setProductColumns(formattedColumns);
         setTableData(data);
         setEditData(data); // Initialize editData with the current table data
 
@@ -563,6 +565,8 @@ const MyContainerProduct = ({ WHId, businessId }) => {
       console.error("Error loading rectangles data:", error);
     }
   };
+
+  const [notificationColumns, setNotificationColumns] = useState([])
 
   // 모든 알림(변동내역)을 가져오는 메서드
   const getNotificationsAPI = async (businessId) => {
@@ -607,7 +611,7 @@ const MyContainerProduct = ({ WHId, businessId }) => {
 
         setNotificationTableData(formattedData);
 
-        setColumns([
+        setNotificationColumns([
           { name: "date", label: "날짜" },
           { name: "type", label: "유형" },
           { name: "barcode", label: "바코드" },
@@ -701,7 +705,7 @@ const MyContainerProduct = ({ WHId, businessId }) => {
     }));
 
     setNotificationTableData(formattedData);
-    setColumns([
+    setNotificationColumns([
       { name: "date", label: "날짜" },
       { name: "type", label: "유형" },
       { name: "count", label: "수량" },
@@ -745,7 +749,7 @@ const MyContainerProduct = ({ WHId, businessId }) => {
 
     // Update table with detailed data
     setNotificationTableData(formattedData);
-    setColumns(detailedColumns);
+    setNotificationColumns(detailedColumns);
   };
 
   // 상품 정보를 수정하는 API 호출 메서드
@@ -945,21 +949,21 @@ const MyContainerProduct = ({ WHId, businessId }) => {
       key="productList"
       title={"상품 목록"}
       data={tableData}
-      columns={columns}
+      columns={productColumns}
       options={productOptions}
     />,
     <MUIDataTable
       key="moveProductList"
       title={"상품 이동하기"}
       data={tableData}
-      columns={columns}
+      columns={productColumns}
       options={moveOptions}
     />,
     <MUIDataTable
       key="importExportList"
       title={"알림함"}
       data={notificationTableData}
-      columns={columns}
+      columns={notificationColumns}
       options={importExportOptions}
     />,
     showAnalytics && (
@@ -1073,7 +1077,6 @@ const MyContainerProduct = ({ WHId, businessId }) => {
    * 유저를 부르는 Part
    */
 
-
   /**
    * UseEffect를 통해 새로고침 때마다 api로 사장님의 재고를 불러옴
    * + 유저정보
@@ -1084,7 +1087,6 @@ const MyContainerProduct = ({ WHId, businessId }) => {
 
     productGetAPI(businessId);
     getNotificationsAPI(businessId);
-
   }, [openModal]);
 
   return (
