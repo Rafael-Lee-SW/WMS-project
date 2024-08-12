@@ -89,8 +89,6 @@ registerPlugin(HiddenRows);
 const MyContainerProduct = ({ WHId, businessId }) => {
   // 제품 목록 / 입고 / 출고 / 수정하기 / 이동하기에 쓰이는 data Table state
   const [tableData, setTableData] = useState([]);
-  // 변동 내역 / 알림함에서 쓰이는 data Table state
-  const [notificationTableData, setNotificationTableData] = useState([]);
   const [detailedData, setDetailedData] = useState([]); // Store all import/export data
   const [ModalTableData, setModalTableData] = useState([]);
   const [columns, setColumns] = useState([]);
@@ -566,7 +564,8 @@ const MyContainerProduct = ({ WHId, businessId }) => {
     }
   };
 
-  const [notificationColumns, setNotificationColumns] = useState([]);
+  const [allChangingTableData, setAllChangingTableData] = useState([]);
+  const [allChangingTableColumns, setAllChangingTableColumns] = useState([]);
 
   // 영어-한글 변환 - 입고-출고-이동
   const translationMap = {
@@ -609,7 +608,7 @@ const MyContainerProduct = ({ WHId, businessId }) => {
           // Determine the content for the 'trackingNumber' field based on 'productFlowType'
           let trackingOrNote = "";
           if (item.productFlowType === "EXPORT") {
-            trackingOrNote = item.trackingNumber || "N/A";
+            trackingOrNote = item.trackingNumber || "송장없음";
           } else if (item.productFlowType === "IMPORT") {
             trackingOrNote = "입고품목";
           } else if (item.productFlowType === "FLOW") {
@@ -628,9 +627,9 @@ const MyContainerProduct = ({ WHId, businessId }) => {
           };
         });
 
-        setNotificationTableData(formattedData);
+        setAllChangingTableData(formattedData);
 
-        setNotificationColumns([
+        setAllChangingTableColumns([
           { name: "date", label: "날짜" },
           { name: "type", label: "유형" },
           { name: "barcode", label: "바코드" },
@@ -697,6 +696,10 @@ const MyContainerProduct = ({ WHId, businessId }) => {
     }
   };
 
+  // 변동 내역 / 알림함에서 쓰이는 data Table state
+  const [notificationTableColumns, setNotificationTableColumns] = useState([]);
+  const [notificationTableData, setNotificationTableData] = useState([]);
+
   // 날짜와 입고-출고-타입
   const showUniqueDates = async () => {
     // Group data by date and type
@@ -726,16 +729,23 @@ const MyContainerProduct = ({ WHId, businessId }) => {
     }));
 
     setNotificationTableData(formattedData);
-    setNotificationColumns([
+    setNotificationTableColumns([
       { name: "date", label: "날짜" },
       { name: "type", label: "유형" },
       { name: "count", label: "수량" },
     ]);
   };
 
+  // 알림 상세에 쓰이는 것들
+  const [notificationDetailTableColumns, setNotificationDetailTableColumns] =
+    useState([]);
+  const [notificationDetailTableData, setNotificationDetailTableData] =
+    useState([]);
+
   const [transType, setTransType] = useState();
-  // Function to handle row click and display details
+  // 알림함에서 상세 내역을 보기 위해 해당 열을 클릭했을 시에 작동하는 메서드
   const handleRowClick = (rowData) => {
+    console.log("클릭되었습니다.");
     const [selectedDate, selectedType] = rowData;
 
     if (selectedType === "입고") {
@@ -769,7 +779,7 @@ const MyContainerProduct = ({ WHId, businessId }) => {
     // Map filtered data to the table format
     const formattedData = filteredData.map((item) => ({
       date: new Date(item.date).toLocaleDateString(),
-      type: item.productFlowType,
+      type: translationMap[item.productFlowType] || item.productFlowType, // Translate type
       barcode: item.barcode,
       name: item.name,
       quantity: item.quantity,
@@ -779,8 +789,9 @@ const MyContainerProduct = ({ WHId, businessId }) => {
     }));
 
     // Update table with detailed data
-    setNotificationTableData(formattedData);
-    setNotificationColumns(detailedColumns);
+    setNotificationDetailTableData(formattedData);
+    setNotificationDetailTableColumns(detailedColumns);
+    setCurrentIndex(4);
   };
 
   // 상품 정보를 수정하는 API 호출 메서드
@@ -993,23 +1004,21 @@ const MyContainerProduct = ({ WHId, businessId }) => {
     <MUIDataTable
       key="notificationList"
       title={"모든 변동 내역"}
-      data={notificationTableData}
-      columns={notificationColumns}
-      options={importExportOptions}
+      data={allChangingTableData}
+      columns={allChangingTableColumns}
     />,
     <MUIDataTable
       key="dateTypeList"
       title={"알림함"}
       data={notificationTableData}
-      columns={notificationColumns}
+      columns={notificationTableColumns}
       options={importExportOptions}
     />,
     <MUIDataTable
       key="selectedNotificationList"
       title={"알림 상세 내역"}
-      data={notificationTableData}
-      columns={notificationColumns}
-      options={importExportOptions}
+      data={notificationDetailTableData}
+      columns={notificationDetailTableColumns}
     />,
     showAnalytics && (
       <div key="analyticsSection" style={{ padding: "20px" }}>
@@ -1064,7 +1073,7 @@ const MyContainerProduct = ({ WHId, businessId }) => {
 
   const handleNextComponent = (index) => {
     setCurrentIndex(index);
-    setShowAnalytics(index === 3); // Show analytics when index is 3
+    setShowAnalytics(index === 5); // Show analytics when index is 3
   };
 
   // Handle new product data input change
@@ -1131,6 +1140,7 @@ const MyContainerProduct = ({ WHId, businessId }) => {
     //재고 목록과 알림 내역을 불러온다.
 
     productGetAPI(businessId);
+
     getNotificationsAPI(businessId);
   }, [openModal]);
 
