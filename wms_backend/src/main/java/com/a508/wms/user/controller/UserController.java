@@ -30,23 +30,18 @@ public class UserController {
         }  return new BaseSuccessResponse<>(null);
     }
 
-    @GetMapping("/businessId")
-    public BaseSuccessResponse<List<UserResponseDto>> findAllByBusinessId(@RequestParam Long businessId) {
+    @GetMapping
+    public BaseSuccessResponse<?> find(@RequestParam(required = false, name = "businessId") Long businessId,
+                                       @RequestParam(required = false, name = "email") String email) {
         if (businessId != null) {
             log.info("[Controller] find User by businessId: {}", businessId);
             return new BaseSuccessResponse<>(userService.findAllByBusinessId(businessId));
-        }
-        return new BaseSuccessResponse<>(null);
-    }
-    @GetMapping("/email")
-    public BaseSuccessResponse<UserResponseDto> findByEmail(@RequestParam String email) {
-        if (email != null) {
+        } else if (email != null) {
             log.info("[Controller] find User by email: {}", email);
-            return new BaseSuccessResponse<>(userModuleService.findByEmail(email));
+            return new BaseSuccessResponse<>(userService.findByEmail(email));
         }
         return new BaseSuccessResponse<>(null);
     }
-
     /**
      * userId, businessId로 해당 user의 businessId를 수정
      * @param businessId
