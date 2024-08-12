@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Slf4j
 @RestController
 @RequestMapping("/users")
@@ -20,35 +22,30 @@ public class UserController {
     private final UserService userService;
     private final UserModuleService userModuleService;
 
-    /**
-     * 특정 사업체의 전체 직원, 특정 유저 1명, 혹은 이메일로 특정 유저를 조회하는 메서드
-     *
-     * @param businessId : 특정 사업체의 전체 직원을 조회하는 경우 사업체 고유 번호
-     * @param userId : 특정 유저 1명을 조회하는 경우 유저의 고유 번호
-     * @param email : 이메일로 특정 유저를 조회하는 경우
-     * @return 조회 결과에 따른 BaseSuccessResponse 객체
-     */
-    @GetMapping()
-    public BaseSuccessResponse<?> find(
-            @RequestParam(value = "businessId", required = false) Long businessId,
-            @RequestParam(value = "userId", required = false) Long userId,
-            @RequestParam(value = "email", required = false) String email) {
-
-        if (businessId != null) {
-            log.info("[Controller] find Users by businessId: {}", businessId);
-            return new BaseSuccessResponse<>(userService.findAllByBusinessId(businessId));
-        } else if (userId != null) {
-            log.info("[Controller] find User by id: {}", userId);
-            return new BaseSuccessResponse<>(userService.findById(userId));
-        } else if (email != null) {
-            log.info("[Controller] find User by email: {}", email);
-            return new BaseSuccessResponse<>(userModuleService.findByEmail(email));
-        } else {
-            log.warn("[Controller] No valid parameter provided for user lookup");
-            return new BaseSuccessResponse<>(null);
-        }
+    @GetMapping("/{id}")
+    public BaseSuccessResponse<UserResponseDto> findById(@PathVariable Long id) {
+        if (id != null) {
+            log.info("[Controller] find User by id: {}", id);
+            return new BaseSuccessResponse<>(userService.findById(id));
+        }  return new BaseSuccessResponse<>(null);
     }
 
+    @GetMapping("/businessId")
+    public BaseSuccessResponse<List<UserResponseDto>> findAllByBusinessId(@RequestParam Long businessId) {
+        if (businessId != null) {
+            log.info("[Controller] find User by businessId: {}", businessId);
+            return new BaseSuccessResponse<>(userService.findAllByBusinessId(businessId));
+        }
+        return new BaseSuccessResponse<>(null);
+    }
+    @GetMapping("/email")
+    public BaseSuccessResponse<UserResponseDto> findByEmail(@RequestParam String email) {
+        if (email != null) {
+            log.info("[Controller] find User by email: {}", email);
+            return new BaseSuccessResponse<>(userModuleService.findByEmail(email));
+        }
+        return new BaseSuccessResponse<>(null);
+    }
 
     /**
      * userId, businessId로 해당 user의 businessId를 수정
