@@ -92,6 +92,7 @@ public class WebSecurityConfig {
                     String userEmail = (String) kakaoAccount.get("email");
 
                     String token = jwtProvider.create(userEmail);
+                    System.out.println(token);
                     response.addHeader("Authorization", "Bearer " + token);
                     String jsonResponse = URLEncoder.encode("{\"code\":\"SU\", \"token\":\"" + token + "\", \"userEmail\":\"" + userEmail + "\"}", "UTF-8");
                     response.sendRedirect("https://i11a508.p.ssafy.io/oauth/callback?token="
