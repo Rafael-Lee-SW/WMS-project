@@ -99,4 +99,8 @@ public class WarehouseController {
         return new BaseSuccessResponse<>(warehouseService.findLocationCnt(id));
     }
 
+    @GetMapping("/usage/{id}")
+    public BaseSuccessResponse<Integer> findUsage(@PathVariable Long id) {
+        return new BaseSuccessResponse<>(warehouseService.findUsage(id));
+    }
 }

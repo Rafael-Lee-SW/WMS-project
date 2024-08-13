@@ -226,4 +226,25 @@ public class WarehouseService {
             .mapToInt(Location::getZSize)
             .sum();
     }
+
+    public int findUsage(Long id) {
+        List<Location> locations = locationModuleService.findAllByWarehouseId(id);
+
+        int usageSum = 0;
+
+        for (Location location : locations) {
+            for (Floor floor : location.getFloors()) {
+                if (!productModuleService.findByFloor(floor).isEmpty()) {
+                    usageSum++;
+                }
+            }
+        }
+
+        int totalCnt = locations.stream()
+            .mapToInt(Location::getZSize)
+            .sum();
+
+        return usageSum * 100 / totalCnt;
+    }
+
 }
