@@ -3,6 +3,8 @@ package com.a508.wms.floor.mapper;
 import com.a508.wms.floor.domain.Floor;
 import com.a508.wms.floor.dto.FloorRequestDto;
 import com.a508.wms.floor.dto.FloorResponseDto;
+import com.a508.wms.product.dto.ProductCompressDto;
+import com.a508.wms.product.dto.ProductMoveRequestDto;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -45,6 +47,11 @@ public class FloorMapper {
             .floorLevel(floorRequestDto.getFloorLevel())
             .exportTypeEnum(floorRequestDto.getExportTypeEnum())
             .build();
+    }
+    public static ProductMoveRequestDto toProductMoveRequestDto(Floor floor) {
+        return ProductMoveRequestDto.builder()
+                .floorLevel(floor.getFloorLevel())
+                .build();
     }
 
 }

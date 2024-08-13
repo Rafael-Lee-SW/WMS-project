@@ -14,13 +14,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import static com.a508.wms.util.constant.ProductConstant.CONVERT_SIZE;
+import static com.a508.wms.util.constant.ProductConstant.DEFAULT_FLOOR_LEVEL;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class FloorModuleService {
 
-    private static final int DEFAULT_FLOOR_LEVEL = -1;
-    private static final int CONVERT_SIZE = 50;
+
     private final FloorRepository floorRepository;
     private final ProductRepository productRepository;
 
