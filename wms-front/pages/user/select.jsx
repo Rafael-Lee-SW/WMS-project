@@ -541,11 +541,16 @@ const Select = (props) => {
                               width: `${card.usagePercent}%`,
                               height: "100%",
                               backgroundColor: getBackgroundColor(card.warehouseColor),
+                              display: "flex", // 플렉스 박스를 사용하여 중앙 정렬
+                              justifyContent: "center", // 수평 중앙 정렬
+                              alignItems: "center", // 수직 중앙 정렬
+                              color: "white", // 텍스트 색상 (배경과 대비되도록 설정)
+                              fontWeight: "bold", // 텍스트 굵게
                             }}
                           > {`${card.usagePercent}%`}</div>
                         </div>
                       </div>
-                      <hr className={classes.gradientHr} />
+        
                       <div className={classes.cardFooter}>
                         <div className={classes.pcsContainer}>
                           <img

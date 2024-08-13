@@ -113,6 +113,16 @@ const selectStyle = theme => ({
     alignItems: "center", // 수직 정렬
     gap: "100px", // pcsContainer와 locationContainer 사이 간격
     height: "33.33%", // 카드의 1/3 높이
+    position: "relative", // ::before 가상 요소 위치를 위해 필요
+    "&::before": {
+      content: '""', // 내용 없음
+      position: "absolute",
+      top: 0, // 상단에 위치
+      left: "5%", // 가로선이 더 길어지도록 시작점을 좌측으로 이동
+      width: "90%", // 가로선 길이를 카드의 90%로 설정
+      height: "1px", // 가로선의 높이
+      background: "linear-gradient(to right, rgba(128, 128, 128, 0) 0%, rgba(128, 128, 128, 1) 50%, rgba(128, 128, 128, 0) 100%)", // 양 끝이 희미해지는 회색 그라데이션
+    },
   },
   pcsContainer: {
     display: "flex",
