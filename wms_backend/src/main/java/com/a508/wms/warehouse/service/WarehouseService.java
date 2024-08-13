@@ -10,7 +10,6 @@ import com.a508.wms.location.mapper.LocationMapper;
 import com.a508.wms.location.service.LocationModuleService;
 import com.a508.wms.product.domain.Product;
 import com.a508.wms.product.service.ProductModuleService;
-import com.a508.wms.productdetail.service.ProductDetailModuleService;
 import com.a508.wms.util.constant.ExportTypeEnum;
 import com.a508.wms.util.constant.ProductStorageTypeEnum;
 import com.a508.wms.warehouse.domain.Warehouse;
@@ -41,7 +40,6 @@ public class WarehouseService {
     private final WallModuleService wallModuleService;
     private final ProductModuleService productModuleService;
     private final WarehouseRepository warehouseRepository;
-    private final ProductDetailModuleService productDetailModuleService;
 
     /**
      * 최초 창고를 생성하는 메서드
@@ -215,10 +213,17 @@ public class WarehouseService {
         return warehouseRepository.countByBusinessId(businessId);
     }
 
-    public Integer findAllPscCount(Long id) {
+    public int findAllPscCount(Long id) {
         List<Product> products = productModuleService.findByWarehouseId(id);
         return products.stream()
             .mapToInt(Product::getQuantity)
+            .sum();
+    }
+
+    public int findLocationCnt(Long id) {
+        List<Location> locations = locationModuleService.findAllByWarehouseId(id);
+        return locations.stream()
+            .mapToInt(Location::getZSize)
             .sum();
     }
 }

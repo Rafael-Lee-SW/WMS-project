@@ -94,4 +94,9 @@ public class WarehouseController {
         return new BaseSuccessResponse<>(warehouseService.findAllPscCount(id));
     }
 
+    @GetMapping("/locationcnt/{id}")
+    public BaseSuccessResponse<Integer> findLocationCnt(@PathVariable Long id) {
+        return new BaseSuccessResponse<>(warehouseService.findLocationCnt(id));
+    }
+
 }
