@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import { Button, TextField } from '@mui/material';
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles } from '@material-ui/core/styles';
 import { useAuth } from '../context/AuthContext';
 import GridContainer from '../components/Grid/GridContainer';
 import GridItem from '../components/Grid/GridItem';
 import Card from '../components/Card/Card';
 import CardBody from '../components/Card/CardBody';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -102,13 +104,22 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-
 export default function Login() {
   const classes = useStyles();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { login } = useAuth();
+
+  const notify = (message) => toast(message, {
+    position: "top-center",
+    autoClose: 2000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+  });
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -122,22 +133,22 @@ export default function Login() {
         const { user, token } = response.data;
 
         login(user, token); // 전역 상태에 사용자 정보와 토큰 저장
-        alert(`${user.name}님 환영합니다!`);
+        notify(`${user.name}님 환영합니다!`);
         router.push('/'); // 메인 페이지로 이동
       }
     } catch (error) {
       if (error.response) {
         if (error.response.status === 400 && error.response.data.code === 'VF') {
-          alert('로그인에 실패하였습니다. 입력한 정보를 확인하세요.');
+          notify('로그인에 실패하였습니다. 입력한 정보를 확인하세요.');
         } else if (error.response.status === 401 && error.response.data.code === 'SF') {
-          alert('로그인 정보가 맞지 않습니다. 다시 시도해주세요.');
+          notify('로그인 정보가 맞지 않습니다. 다시 시도해주세요.');
         } else if (error.response.status === 500 && error.response.data.code === 'DBE') {
-          alert('서버가 불안정합니다. 잠시 후 다시 시도해주세요.');
+          notify('서버가 불안정합니다. 잠시 후 다시 시도해주세요.');
         } else {
-          alert('알 수 없는 오류가 발생했습니다. 관리자에게 문의하세요.');
+          notify('알 수 없는 오류가 발생했습니다. 관리자에게 문의하세요.');
         }
       } else {
-        alert('네트워크 오류가 발생했습니다. 인터넷 연결을 확인하세요.');
+        notify('네트워크 오류가 발생했습니다. 인터넷 연결을 확인하세요.');
       }
       // 로그인 페이지에 머무름
     }
@@ -165,7 +176,7 @@ export default function Login() {
             </div>
             <CardBody>
               <div className={classes.dividerContainer}>
-                <h3 variant="body1" className={classes.snsText}>
+                <h3 className={classes.snsText}>
                   간편 로그인
                 </h3>
               </div>
