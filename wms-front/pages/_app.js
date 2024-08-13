@@ -6,6 +6,8 @@ import HeaderLinks from "/components/Header/HomeHeaderLinks.js";
 import "/styles/scss/nextjs-material-kit.scss?v=1.2.0";
 import "../styles/globals.css";
 import { AuthProvider } from "../context/AuthContext";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default class MyApp extends App {
   componentDidMount() {
@@ -57,6 +59,7 @@ export default class MyApp extends App {
               />
             )}
             <Component {...pageProps} />
+            <ToastContainer/>
           </AuthProvider>
 
       </React.Fragment>
