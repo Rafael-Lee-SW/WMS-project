@@ -78,7 +78,17 @@ const manageBusinessStyle = {
     },
     businessTitle: {
         paddingTop: '30px'
-    }
+    },
+     modalTitle: {
+        display: 'flex',
+        justifyContent: 'center',
+        textAlign: 'center'
+    },
+    modalCloseButton: {
+        backgroundColor: "transparent",
+        border: "none",
+        cursor: 'pointer'
+    },
 }
 
 export default manageBusinessStyle;

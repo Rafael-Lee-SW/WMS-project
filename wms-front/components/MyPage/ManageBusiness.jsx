@@ -4,6 +4,7 @@ import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/man
 import { useRouter } from "next/router";
 import axios from 'axios';
 import { deleteBusinessEmployee } from "../../pages/api";
+import { Dialog, DialogTitle, DialogContent, DialogActions } from "@material-ui/core";
 
 const useStyles = makeStyles(styles);
 
@@ -14,10 +15,13 @@ export default function ManageBusiness({ updateBusinessInfo, updateRoleType }) {
 
   const [businessInfo, setBusinessInfo] = useState({ name: '', businessNumber: '' });
   const [isRegistered, setIsRegistered] = useState(false);
+  const [open, setOpen] = useState(false);
   const [roleType, setRoleType] = useState('');
   const [businessName, setBusinessName] = useState('');
   const [businessId, setBusinessId] = useState(null);
   const [businessAddDate, setBusinessAddDate] = useState('');
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalMessage, setModalMessage] = useState('');
 
   useEffect(() => {
     fetchUserData();
@@ -80,18 +84,20 @@ export default function ManageBusiness({ updateBusinessInfo, updateRoleType }) {
       if (isRegistered) {
         // 수정 로직
         await axios.put(`https://i11a508.p.ssafy.io/api/businesses/${businessId}`, data);
-        alert("사업체 정보가 수정되었습니다.");
+        setModalMessage('사업체 정보 수정이 완료되었습니다.');
+        setModalTitle('사업체 정보 수정')
+        handleOpen();
         
         updateBusinessInfo(data);
       } else {
         // 등록 로직
-        const storedUser = JSON.parse(localStorage.getItem('user')); // 유저 정보를 다시 가져오기
-        const userId = storedUser ? storedUser.id : null; // 유저 ID 가져오기
+        const storedUser = JSON.parse(localStorage.getItem('user')); 
+        const userId = storedUser ? storedUser.id : null; 
 
         if (userId) {
           // axios로 POST 요청 보내기
           const businessResponse = await axios.post(`https://i11a508.p.ssafy.io/api/businesses?userId=${userId}`, data);
-          alert("사업체가 등록되었습니다.");
+          handleOpen()
           updateBusinessInfo(data);
           fetchUserData(data)
 
@@ -107,8 +113,9 @@ export default function ManageBusiness({ updateBusinessInfo, updateRoleType }) {
           };
 
           await axios.post("https://i11a508.p.ssafy.io/api/subscriptions", subscriptionData);
-          alert("창고 1개를 무료 등록 할 수 있습니다.");
-          router.push('/user/select');
+          setModalMessage('창고 1개를 무료로 사용할 수 있습니다.');
+          setModalTitle('사업자 등록 완료');
+          handleOpen();
         } else {
           console.error("User ID is missing");
         }
@@ -123,7 +130,9 @@ export default function ManageBusiness({ updateBusinessInfo, updateRoleType }) {
     try {
       // 사업체 비활성화 로직
       await axios.patch(`https://i11a508.p.ssafy.io/api/businesses/${businessId}`, { statusEnum: "INACTIVE" });
-      alert("사업체가 삭제되었습니다.");
+      setModalMessage('사업체 삭제가 완료되었습니다.');
+      setModalTitle('사업체 삭제');
+      handleOpen();
       router.push('/');
     } catch (error) {
       console.error(error);
@@ -131,12 +140,22 @@ export default function ManageBusiness({ updateBusinessInfo, updateRoleType }) {
     }
   };
 
+  const handleOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
   const handleLeave = async () => {
     try {
-        const storedUser = JSON.parse(localStorage.getItem('user')); // 유저 정보를 다시 가져오기
-        const userId = storedUser ? storedUser.id : null; // 유저 ID 가져오기
+        const storedUser = JSON.parse(localStorage.getItem('user'));
+        const userId = storedUser ? storedUser.id : null; 
         await deleteBusinessEmployee(userId, businessId);
-        alert("사업장 탈퇴가 완료되었습니다.");
+        setModalMessage('사업장 탈퇴가 완료되었습니다.');
+        setModalTitle('사업장 탈퇴');
+        handleOpen();
         fetchUserData();
         updateRoleType('GENERAL');
     } catch (error) {
@@ -273,6 +292,19 @@ export default function ManageBusiness({ updateBusinessInfo, updateRoleType }) {
           </div>
         </div>
       )}
+      <Dialog open={open} onClose={handleClose}>
+        <div className={classes.modalTitle}><DialogTitle>{modalTitle}</DialogTitle></div>
+        <DialogContent>
+            <>
+              <p>{modalMessage}</p>
+            </>
+        </DialogContent>
+        <DialogActions style={{ justifyContent: 'flex-end' }}>
+          <button className={classes.modalCloseButton} onClick={handleClose}>
+            X
+          </button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };
