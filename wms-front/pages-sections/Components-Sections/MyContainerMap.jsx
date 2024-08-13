@@ -1,5 +1,6 @@
 //MyContainerMap.jsx
 import React, { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/router";
 // Library of konva and color Checker
 import {
   Stage,
@@ -99,7 +100,9 @@ const useStyles = makeStyles((theme) => ({
 /**
  * 창고 관리 Component
  */
+
 const MyContainerMap = ({ warehouseId, businessId }) => {
+  const router = useRouter();
   const classes = useStyles();
   const stageRef = useRef(null);
   const layerRef = useRef(null);
@@ -332,6 +335,16 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
 
       if (response.ok) {
         console.log("Map data saved successfully");
+
+        // Use router.replace with shallow routing
+        router.replace(
+          {
+            pathname: `/user/${warehouseId}`,
+            query: { component: "map" },
+          },
+          undefined,
+          { shallow: true }
+        );
       } else {
         console.error("Error saving map data");
       }
@@ -433,10 +446,21 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
           console.error("Locations data not found");
           return;
         }
+
         const newLocations = locations.map((location, index) => {
-          // Calculate the red and blue components based on the fill value
-          const red = Math.round((location.fill / 100) * 255); // Increase from 0 to 255
-          const blue = Math.round(((100 - location.fill) / 100) * 255); // Decrease from 255 to 0
+          const startColor = { r: 27, g: 177, b: 231 }; // Starting color (#1bb1e7)
+          const endColor = { r: 0, g: 0, b: 255 }; // Ending color (#0000FF)
+
+          // Calculate the color components based on the fill value
+          const red = Math.round(
+            startColor.r + ((endColor.r - startColor.r) * location.fill) / 100
+          );
+          const green = Math.round(
+            startColor.g + ((endColor.g - startColor.g) * location.fill) / 100
+          );
+          const blue = Math.round(
+            startColor.b + ((endColor.b - startColor.b) * location.fill) / 100
+          );
 
           return {
             id: location.id.toString(),
@@ -445,7 +469,7 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
             width: location.xsize || 50,
             height: location.ysize || 50,
             z: location.zsize,
-            fill: `rgba(${red}, 0, ${blue}, 1)`, // Calculate RGB with alpha as 1
+            fill: `rgba(${red}, ${green}, ${blue}, 1)`, // Calculate RGB with alpha as 1
             draggable: true,
             order: index,
             name: location.name || `적재함 ${index}`,
@@ -1196,8 +1220,17 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
 
     if (matches) {
       const red = parseInt(matches[1], 10);
-      // Assuming the fill percentage was encoded in the red component
-      return ((red / 255) * 100).toFixed(1);
+      const green = parseInt(matches[2], 10);
+
+      // Calculate the percentage using both red and green components
+      // Both red and green start at a higher value and decrease to 0 as the fill increases
+      const redPercentage = (27 - red) / 27;
+      const greenPercentage = (177 - green) / 177;
+
+      // The fill percentage is determined by averaging the percentage contribution from red and green
+      const fillPercentage = ((redPercentage + greenPercentage) / 2) * 100;
+
+      return fillPercentage.toFixed(1);
     }
 
     return "0.0"; // Default to 0% if unable to parse
@@ -1672,8 +1705,17 @@ const RectangleTransformer = ({
 
     if (matches) {
       const red = parseInt(matches[1], 10);
-      // Assuming the fill percentage was encoded in the red component
-      return ((red / 255) * 100).toFixed(1);
+      const green = parseInt(matches[2], 10);
+
+      // Calculate the percentage using both red and green components
+      // Both red and green start at a higher value and decrease to 0 as the fill increases
+      const redPercentage = (27 - red) / 27;
+      const greenPercentage = (177 - green) / 177;
+
+      // The fill percentage is determined by averaging the percentage contribution from red and green
+      const fillPercentage = ((redPercentage + greenPercentage) / 2) * 100;
+
+      return fillPercentage.toFixed(1);
     }
 
     return "0.0"; // Default to 0% if unable to parse

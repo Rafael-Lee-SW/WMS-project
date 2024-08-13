@@ -214,6 +214,23 @@ export default function Components(props) {
       }
     }
   }, [selectedWarehouse]);
+  useEffect(() => {
+    if (router.query.component) {
+      switch (router.query.component) {
+        case "map":
+          setCurrentIndex(0);
+          break;
+        case "nav":
+          setCurrentIndex(1);
+          break;
+        case "product":
+          setCurrentIndex(2);
+          break;
+        default:
+          setCurrentIndex(0);
+      }
+    }
+  }, [router.query]);
 
   return (
     <div>
