@@ -120,6 +120,8 @@ public class ProductMapper {
                 .locationId(product.getFloor().getLocation().getId())
                 .floorId(product.getFloor().getId())
                 .locationName(product.getFloor().getLocation().getName())
+                .warehouseId(product.getFloor().getLocation().getWarehouse().getId())
                 .build();
     }
+
 }

@@ -3,7 +3,7 @@ package com.a508.wms.location.repository;
 import com.a508.wms.location.domain.Location;
 import java.util.List;
 
-import com.a508.wms.location.dto.LocationStorageResponseDto;
+import com.a508.wms.product.dto.ProductMoveRequestDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,6 +18,8 @@ public interface LocationRepository extends JpaRepository<Location, Long> {
     Location findByNameAndWarehouseId(@Param("name") String name, Long warehouseId);
     @Query("SELECT l FROM Location l WHERE l.zSize > 0 ")
     List<Location> findAllMaxStorage();
+
+
 
 }
 

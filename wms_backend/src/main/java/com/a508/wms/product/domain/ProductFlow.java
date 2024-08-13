@@ -1,6 +1,7 @@
 package com.a508.wms.product.domain;
 
 import com.a508.wms.business.domain.Business;
+import com.a508.wms.util.BaseTimeEntity;
 import com.a508.wms.util.constant.ProductFlowTypeEnum;
 import com.a508.wms.util.constant.ProductStorageTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;
@@ -18,7 +19,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-public class ProductFlow {
+public class ProductFlow extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

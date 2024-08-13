@@ -11,6 +11,7 @@ import com.a508.wms.location.dto.LocationSaveRequestDto;
 import com.a508.wms.location.dto.LocationStorageResponseDto;
 import com.a508.wms.location.mapper.LocationMapper;
 import com.a508.wms.location.repository.LocationRepository;
+import com.a508.wms.product.dto.ProductMoveRequestDto;
 import com.a508.wms.product.service.ProductModuleService;
 import com.a508.wms.util.constant.ExportTypeEnum;
 import com.a508.wms.util.constant.FacilityTypeEnum;
@@ -19,7 +20,6 @@ import com.a508.wms.warehouse.domain.Warehouse;
 import com.a508.wms.warehouse.service.WarehouseModuleService;
 import jakarta.transaction.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

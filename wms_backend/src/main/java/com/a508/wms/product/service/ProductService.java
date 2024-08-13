@@ -5,7 +5,9 @@ import static java.util.stream.Collectors.groupingBy;
 import com.a508.wms.business.domain.Business;
 import com.a508.wms.business.service.BusinessModuleService;
 import com.a508.wms.floor.domain.Floor;
+import com.a508.wms.floor.mapper.FloorMapper;
 import com.a508.wms.floor.service.FloorModuleService;
+import com.a508.wms.floor.service.FloorService;
 import com.a508.wms.location.domain.Location;
 import com.a508.wms.location.dto.LocationResponseDto;
 import com.a508.wms.location.dto.LocationStorageResponseDto;
@@ -54,6 +56,7 @@ public class ProductService {
     private final ProductFlowModuleService productFlowModuleService;
     private final LocationRepository locationRepository;
     private final WarehouseRepository warehouseRepository;
+    private final FloorService floorService;
     private List<ExportTypeEnum> orderedExportType = List.of(ExportTypeEnum.STORE,
             ExportTypeEnum.DISPLAY, ExportTypeEnum.KEEP);
 
@@ -1248,59 +1251,39 @@ public class ProductService {
                 a.getYPosition() - b.getYPosition(), 2));
     }
 
-    public void compress(Long businessId) {
-        List<ProductCompressDto> MultipleProduct = findAllMultipleProductByFloorLevel(1,businessId)
+    //    층별 고려가 아니고 로케이션별 고려
+//    로케이션 앞에서부터 돌면서, 1층에 중복된 상품이 있는 경우: 위로 올리고 해당 로케이션 비우기
+//    빈 로케이션에 뒤에 남아있는 로케이션 땡기기
+    public void compress(Long businessId) throws ProductException {
+        List<ProductCompressDto> MultipleProduct = findAllMultipleProductByFloorLevel(1, businessId)
                 .stream().map(ProductMapper::toProductCompressDto)
-                        .toList();
+                .toList();
         findOptimalLocation(MultipleProduct);
-        /* # for( 특정 상품의 전체 수량 : 여러 곳에 분포되어있는 상품)
-  # 현재 상품(iterator)의 위치 결정하기 -> 비율로 최적의 위치 찾기
-    # 최대 적재 가능 수량에 가까울수록 최적이라고 판단(압축률이 높아지는 효과)
-      # floorLevel별로 돌고 있으므로 더 고려하지 않기
-      # 직전 쿼리에서 location_id별로 묶었으므로, 특정 f_id의 location_id를 찾아서
-      # 특정 상품이 있는 floor의 최대 적재 가능 수량 계산 가능 -> 그중 max 찾기
-*/
-        // 이거 말고 그냥 로케이션번호 젤 앞에꺼에 몰아넣는걸로 하겠습니다..
     }
 
     /**
-     * FloorLevel별로 여러 곳에 분포되어있는 상품 찾기
+     * FloorLevel별로 여러 곳에 분포되어있는 상품 찾기:1층만 하면 됨
      *
      * @param floorLevel
      * @return
      */
     public List<Product> findAllMultipleProductByFloorLevel(Integer floorLevel, Long businessId) {
         log.info("[Service] find All Multiple Product By FloorLevel : {} {}", floorLevel, businessId);
-        return productRepository.findAllMultipleProductByFloorLevel(floorLevel,businessId);
+        return productRepository.findAllMultipleProductByFloorLevel(floorLevel, businessId);
     }
 
-    public Product findOptimalLocation(List<ProductCompressDto> products) {
+    public Product findOptimalLocation(List<ProductCompressDto> products) throws ProductException {
         log.info("[Service] find Optimal Location : {}", products);
-//        pd_id가 24번인 상품 2개(38981, 38982)가 각 550개, 50개로 108번 층과 113번 층에 있음
-//       108번 층의 locationId, 113번 층의 locationId가 있을거고,
-//        각 층의 최대 적재량(550/625), (50/625)중에 sum(quantity) 다 담을수 있으면서(1) 
-//        최대로 담았을때 비율이 가장 100%에 가까운 곳에 적재하기
-//       findAllMultipleProductByFloorLevel을 product_detail_id로 grouping
-//       findMaxStorage가 product가 현재 있는 floor의 maxstorage의 list를 반환하고, 그걸 product_detail_id
-//       로 grouping
-//
-//       floorStorage, location_id
         List<LocationStorageResponseDto> locations = locationService.findAllMaxStorage();
-//            product.floor.location_id와 같은 location_id를 locations에서 찾기(1)
-//            product_detail_id로 묶은 다음, product_detail_id가 같은 상품들의 현재 수량 합 구하기(2)
-//        product_id, floor_id, product_detail_id, quantity
-        Map<Long, List<ProductCompressDto>> productsByDetailId = products.stream().collect(Collectors.groupingBy(ProductCompressDto::getProductDetailId));
-//          <저장된 floor의 id, location의 id, size,productId
-//           product_detail_id의 sum(quantity), locations의 floorStorage
-//       비율은 pd별이 아니고 floorId별로 계산되어야: floorId의 비율 저장하기
+        Map<Long, List<ProductCompressDto>> productsByDetailId = products.stream()
+                .collect(Collectors.groupingBy(ProductCompressDto::getProductDetailId));
 
-        List<ProductCompressDto> productsToUpdate = new ArrayList<>();
         // 각 productDetailId에 대해 처리
         for (Map.Entry<Long, List<ProductCompressDto>> entry : productsByDetailId.entrySet()) {
             Long productDetailId = entry.getKey();
             List<ProductCompressDto> productList = entry.getValue();
 
-            List<ProductCompressDto> sortedProducts = productList.stream()
+            List<ProductCompressDto> sortedProducts = new ArrayList<>(productList.stream()
                     .sorted((p1, p2) -> {
                         String[] location1Parts = p1.getLocationName().split("-");
                         String[] location2Parts = p2.getLocationName().split("-");
@@ -1319,39 +1302,39 @@ public class ProductService {
 
                         return Integer.compare(minor1, minor2);
                     })
-                    .toList();
+                    .toList());
+            // 첫번째 상품(로케이션의 번호가 가장 작은 상품)쪽으로 해당 로케이션의 수량만큼 모으기
             ProductCompressDto firstProduct = sortedProducts.get(0);
             Optional<LocationStorageResponseDto> locationOpt = locations.stream()
                     .filter(location -> location.getId().equals(firstProduct.getLocationId()))
                     .findFirst();
+//            first 제외하고 다 위로 올려
             if (locationOpt.isPresent()) {
-                LocationStorageResponseDto location = locationOpt.get();
-                int floorStorage = location.getFloorStorage();
+                sortedProducts.remove(0);
+//                moveTo에 들어갈 locationName과 floorLevel 찾기: 선형으로
+//                로케이션 번호가 가장 작은 순으로 정렬한 다음, 해당 로케이션의 1층을 제외하고 
+//                비어있는 로케이션을 찾기
 
-                // 충당 로직 TODO:여기부터 다시
-                if (firstProduct.getQuantity() > floorStorage) {
-                    int deficit = firstProduct.getQuantity() - floorStorage;
-                    firstProduct.setQuantity(floorStorage);
-
-                    for (ProductCompressDto product : sortedProducts) {
-                        if (product == firstProduct) continue; // Skip the first product
-
-                        if (deficit <= 0) break;
-
-                        if (product.getQuantity() >= deficit) {
-                            product.setQuantity(product.getQuantity() - deficit);
-                            deficit = 0;
-                        } else {
-                            deficit -= product.getQuantity();
-                            product.setQuantity(0);
-                        }
-                    }
-                    productsToUpdate.addAll(sortedProducts);
-                }
+                List<Floor> floors = floorService
+                        .findAllEmptyFloorByWarehouseId(firstProduct.getWarehouseId());
+                List<ProductMoveRequestDto> moveRequestDtos = floors.stream()
+                        .map(FloorMapper::toProductMoveRequestDto).toList();
+               for (int i = 0; i < Math.min(moveRequestDtos.size(),sortedProducts.size()); i++) {
+                   moveRequestDtos.get(i).setLocationName(sortedProducts.get(i).getLocationName());
+                   moveRequestDtos.get(i).setProductId(sortedProducts.get(i).getId());
+                   moveRequestDtos.get(i).setQuantity(sortedProducts.get(i).getQuantity());
+                   moveRequestDtos.get(i).setWarehouseId(sortedProducts.get(i).getWarehouseId());
+               }
+               moveRequestDtos = moveRequestDtos.stream()
+                       .filter(e -> e.getProductId() != null)
+                       .collect(Collectors.toList());
+               log.info("size : {}",moveRequestDtos.size());
+                moveProducts(moveRequestDtos);
             }
         }
-        System.out.println("\nProducts to update:");
-        productsToUpdate.forEach(System.out::println);
+
+//        특정 floor 이동시키기: moveTe update 하기
+//        moveTo의 floor를 먼저 이동시키고 나서 비어있는 1층이 선택됨: 상품 이동 처리하기
         return null;
     }
 }

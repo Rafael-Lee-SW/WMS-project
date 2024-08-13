@@ -14,6 +14,7 @@ public class ProductCompressDto {
     private Long floorId;
     private Long productDetailId;
     private Long locationId;
+    private Long warehouseId;
     private int quantity;
     private String locationName;
 

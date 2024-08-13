@@ -156,7 +156,7 @@ public class ProductController {
         return new BaseSuccessResponse<>(productService.moveProducts(requests));
     }
     @GetMapping("/compress")
-    public BaseSuccessResponse<Void> compressProducts(@RequestParam(value = "businessId") Long businessId) {
+    public BaseSuccessResponse<Void> compressProducts(@RequestParam(value = "businessId") Long businessId) throws ProductException {
         log.info("[Controller] compress Products");
         productService.compress(businessId);
         return new BaseSuccessResponse<>(null);

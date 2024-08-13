@@ -113,5 +113,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "AND pd.business_id = :businessId " +
             "ORDER BY p.quantity DESC", nativeQuery = true)
     List<Product> findAllMultipleProductByFloorLevel(@Param("floorLevel") Integer floorLevel, @Param("businessId") Long businessId);
+
 }
 
