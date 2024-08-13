@@ -37,6 +37,7 @@ public class LocationController {
         log.info("[Controller] find Locations by warehouseId: {}", warehouseId);
         return new BaseSuccessResponse<>(
             locationService.findAllByWarehouseId(warehouseId));
+
     }
 
     /**
@@ -46,7 +47,8 @@ public class LocationController {
      * @return location이 있으면 locationDto, 없으면 null
      */
     @GetMapping("/{id}")
-    public BaseSuccessResponse<LocationResponseDto> findById(@PathVariable Long id) throws FloorException {
+    public BaseSuccessResponse<LocationResponseDto> findById(@PathVariable Long id)
+        throws FloorException {
         log.info("[Controller] find Location by id: {}", id);
         return new BaseSuccessResponse<>(locationService.findById(id));
     }
@@ -82,7 +84,8 @@ public class LocationController {
      * @param id -> locationId
      */
     @PatchMapping("/{id}")
-    public BaseSuccessResponse<Void> delete(@PathVariable Long id) throws Exception, FloorException {
+    public BaseSuccessResponse<Void> delete(@PathVariable Long id)
+        throws Exception, FloorException {
         log.info("[Controller] delete Location by id: {}", id);
         locationService.delete(id);
         return new BaseSuccessResponse<>(null);
