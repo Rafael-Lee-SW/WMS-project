@@ -363,7 +363,6 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
       barcode: row[selectedExportColumns.barcode],
       quantity: row[selectedExportColumns.quantity],
       trackingNumber: "121351203",
-      date: "2024-08-02",
     }));
 
     // Append to expected export list
@@ -855,12 +854,14 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
       floorLevel: String(row[5]),
       productRequestDto: {
         name: row[1],
-        barcode: String(row[2]),
+        barcode: row[2],
         quantity: row[3],
         expirationDate: null,
         warehouseId: parseInt(row[7]),
       },
     }));
+
+    console.log([productsArray])
 
     // Send the array of products to the API
     productEditAPI(productsArray);
