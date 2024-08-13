@@ -103,16 +103,18 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 //                                           @Param("businessId") Long businessId);
     Optional<Product> findByIdAndExpirationDate(Long id, LocalDateTime expirationDate);
 
-    @Query(value =
-            "SELECT p.quantity, p.created_date, p.expiration_date, p.floor_id, p.id, p.product_detail_id, p.updated_date, p.status_enum " +
+    @Query(value = "SELECT p.quantity, p.created_date, p.expiration_date, p.floor_id, p.id, p.product_detail_id, p.updated_date, p.status_enum " +
             "FROM product p " +
             "JOIN floor f ON p.floor_id = f.id " +
             "JOIN product_detail pd ON p.product_detail_id = pd.id " +
+            "JOIN location l ON f.location_id = l.id " +
             "AND f.floor_level = :floorLevel " +
             "AND p.quantity > 0 " +
             "AND pd.business_id = :businessId " +
-            "ORDER BY p.quantity DESC", nativeQuery = true)
-    List<Product> findAllMultipleProductByFloorLevel(@Param("floorLevel") Integer floorLevel, @Param("businessId") Long businessId);
+            "AND l.warehouse_id = :warehouseId " +
+            "ORDER BY p.quantity DESC ", nativeQuery = true)
+    List<Product> findAllMultipleProductByFloorLevel(@Param("floorLevel") Integer floorLevel, @Param("businessId") Long businessId,
+                                                     @Param("warehouseId") Long warehouseId);
 
 }
 
