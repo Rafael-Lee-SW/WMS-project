@@ -5,7 +5,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
 } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core";
 import subInfoStyle from "/styles/jss/nextjs-material-kit/pages/componentsSections/subInfoStyle.js";
@@ -79,24 +78,6 @@ export default function SubInfo() {
     }
 
     switch (userData.roleTypeEnum) {
-      case "GENERAL":
-        return <h4 className={classes.contentText}>{userData.name}님, 사업자 등록 후 이용해주세요.</h4>;
-
-      case "EMPLOYEE":
-        return (
-          <div>
-            <h4 className={classes.contentText}>현재 직원입니다.</h4>
-            <Button
-              className={classes.button}
-              onClick={() => {
-                console.log("사업장 나가기");
-              }}
-            >
-              사업장 나가기
-            </Button>
-          </div>
-        );
-
       case "BUSINESS":
         if (subscriptionData.length === 0) {
           return <h4 className={classes.contentText}>구독 정보가 없습니다.</h4>;
@@ -105,25 +86,29 @@ export default function SubInfo() {
         const currentSubscription = subscriptionData[0];
         return (
           <div>
-            <h4 className={classes.contentText}>
-              현재 사용 중인 창고 수: {currentSubscription.warehouseCount}
-            </h4>
-            <Button
-              className={classes.button}
-              onClick={() => router.push("/payment")}
-            >
-              창고 추가 결제하기
-            </Button>
+            <div className={classes.contentContainer}>
+              <h4 className={classes.contentText}>
+                현재 사용 중인 창고 수: {currentSubscription.warehouseCount}
+              </h4>
+              <button
+                className={classes.button}
+                onClick={() => router.push("/payment")}
+              >
+                창고 추가 결제
+              </button>
+            </div>
             <div>
+              <h3 className={classes.contentText}>구독 내역</h3>
               {subscriptionData.map((subscription) => (
-                <Card
+                <div className={classes.cardContainer}>
+                  <Card
                   key={subscription.id}
                   onClick={() => handleOpen(subscription)}
                   className={classes.card}
                 >
-                  <p>구독 타입 : {subscription.subscriptionTypeEnum}</p>
-                  <p>구독 날짜 : {subscription.startDate}</p>
+                  <p style={{ margin: 0}}>구독 날짜 : {subscription.startDate.substring(0, 10)}</p>
                 </Card>
+                </div>
               ))}
             </div>
           </div>
@@ -140,21 +125,18 @@ export default function SubInfo() {
       {renderContentByRole()}
 
       <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>구독 상세 정보</DialogTitle>
+        <div className={classes.modalTitle}><DialogTitle>구독 상세 정보</DialogTitle></div>
         <DialogContent>
           {currentSubscription && (
             <>
-              <p>구독 타입 : {currentSubscription.subscriptionTypeEnum}</p>
-              <p>구독 날짜 : {currentSubscription.startDate}</p>
+              <p>구독 날짜 : {currentSubscription.startDate.substring(0, 10)}</p>
+              <p>구독 종료 날짜 : {currentSubscription.endDate.substring(0, 10)}</p>
               <p>결제 방법 : {currentSubscription.paidTypeEnum}</p>
             </>
           )}
         </DialogContent>
-        <DialogActions>
-          <button
-            className={classes.modalCloseButton}
-            onClick={handleClose}
-          >
+        <DialogActions style={{ justifyContent: 'flex-end' }}>
+          <button className={classes.modalCloseButton} onClick={handleClose}>
             X
           </button>
         </DialogActions>
