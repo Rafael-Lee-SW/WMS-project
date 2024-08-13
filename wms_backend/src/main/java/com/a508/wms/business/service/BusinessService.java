@@ -110,8 +110,10 @@ public class BusinessService {
 
             List<User> employees = userModuleService.findByBusinessId(deletedBusiness.getId());
             for (User employee : employees) {
-                employee.updateBusinessId(null);
+                employee.updateBusinessId(-1L);
+                employee.updateRoleTypeEnum(RoleTypeEnum.GENERAL);
             }
+            user.updateBusinessId(-1L);
             return toBusinessResponseDto(deletedBusiness);
         } catch (Exception e) {
             throw new RuntimeException(e);
