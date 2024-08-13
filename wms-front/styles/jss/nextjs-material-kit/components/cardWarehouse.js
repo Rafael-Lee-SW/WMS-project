@@ -1,4 +1,5 @@
 const cardStyle = {
+  
   card: {
     border: "0",
     marginBottom: "30px",
@@ -24,6 +25,11 @@ const cardStyle = {
   cardCarousel: {
     overflow: "hidden",
   },
+  gradientHr: {
+    height: "1px",
+    background: "#bbb", // 기본 배경 색상
+    backgroundImage: "linear-gradient(to right, #eee 0%, #777 50%, #eee 100%)", // 표준 문법
+  }
   
 };
 

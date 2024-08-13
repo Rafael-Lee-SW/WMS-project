@@ -71,7 +71,7 @@ const selectStyle = theme => ({
   cardSelect: {
     display: "flex",
     flexDirection: "column",
-    height: "300px", // Total height of the card
+    height: "450px", // Total height of the card
     border: "1px solid #ccc",
     borderRadius: "8px",
   },
@@ -80,31 +80,52 @@ const selectStyle = theme => ({
     justifyContent: "center",
     alignItems: "center",
     height: "33.33%", // Height set to 1/3 of the card
-    backgroundColor: "rgb(27, 177, 231)", // Apply the blue color
+    backgroundColor: "rgb(27, 177, 231)", // 기본 배경 색상은 JSX에서 동적으로 설정
+    position: "relative", // 이미지 포지셔닝을 위해 설정
+  },
+  warehouseImage: {
+    position: "absolute",
+    bottom: 0,
+    width: "100%",
   },
   cardBody: {
     display: "flex",
+    flexDirection: "column", // 제목과 퍼센트 바를 세로로 정렬
     justifyContent: "center",
     alignItems: "center",
     height: "33.33%", // Height set to 1/3 of the card
   },
+  usageBarContainer: {
+    width: "100%",
+    height: "20px",
+    backgroundColor: "lightgray",
+    borderRadius: "4px",
+    overflow: "hidden",
+    marginTop: "10px",
+  },
+  usageBar: {
+    height: "100%",
+    backgroundColor: "rgb(27, 177, 231)", // 기본 배경 색상은 JSX에서 동적으로 설정
+  },
   cardFooter: {
     display: "flex",
-    justifyContent: "space-around", // Evenly space elements in the footer
-    height: "33.33%", // Height set to 1/3 of the card
+    justifyContent: "center", // 요소를 가운데 정렬하여 간격 줄임
+    alignItems: "center", // 수직 정렬
+    gap: "100px", // pcsContainer와 locationContainer 사이 간격
+    height: "33.33%", // 카드의 1/3 높이
   },
   pcsContainer: {
     display: "flex",
     alignItems: "center",
-    gap: "10px", // Gap between image and text
+    gap: "1px", // 이미지와 텍스트 사이의 간격
   },
   locationContainer: {
     display: "flex",
     alignItems: "center",
-    gap: "10px", // Gap between image and text
+    gap: "1px", // 이미지와 텍스트 사이의 간격
   },
   containerImage: {
-    width: "30px",
+    width: "40px",
     height: "auto",
   },
   gradientLine: {
@@ -112,9 +133,9 @@ const selectStyle = theme => ({
     background: "linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(27,177,231,1) 50%, rgba(255,255,255,0) 100%)",
     margin: "10px 0", // Margin around the line
   },
-   gradientHr: {
+  gradientHr: {
     height: "1px",
-    background: "#bbb", // 기본 배경 색상
+    background: "black", // 기본 배경 색상
     backgroundImage: "linear-gradient(to right, #eee 0%, #777 50%, #eee 100%)", // 표준 문법
   }
 });

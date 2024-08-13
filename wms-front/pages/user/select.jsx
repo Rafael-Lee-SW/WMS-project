@@ -1,13 +1,24 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import axios from "axios";
 import Header from "../../components/Header/SelectHeader";
 import HeaderLinks from "/components/Header/SelectHeaderLinks.js";
 import { makeStyles } from "@material-ui/core/styles";
 import AddCircleOutline from "@material-ui/icons/AddCircleOutline";
 import GridContainer from "/components/Grid/GridContainer.js";
 import GridItem from "/components/Grid/GridItem.js";
-import CardSelect from "/components/Card/CardSelect.js"; // Ensure correct path
-import { Modal, Fade, Button, TextField, Radio, RadioGroup, FormControlLabel, FormControl, FormLabel } from "@mui/material";
+import CardSelect from "/components/Card/CardSelect.js";
+import {
+  Modal,
+  Fade,
+  Button,
+  TextField,
+  Radio,
+  RadioGroup,
+  FormControlLabel,
+  FormControl,
+  FormLabel,
+} from "@mui/material";
 import { useRouter } from "next/router";
 import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/selectStyle.js";
 
@@ -403,6 +414,65 @@ const Select = (props) => {
     }
   }, []);
 
+  // pcsCount, locationCount, usagePercent 및 warehouseColor 가져오기 위한 useEffect 추가
+  useEffect(() => {
+    const fetchCounts = async (warehouseId) => {
+      try {
+        const pcsResponse = await axios.get(`http://localhost:8080/api/warehouses/pcscnt/${warehouseId}`);
+        const locationResponse = await axios.get(`http://localhost:8080/api/warehouses/locationcnt/${warehouseId}`);
+        const usageResponse = await axios.get(`http://localhost:8080/api/warehouses/usage/${warehouseId}`);
+        const warehouseTypeResponse = await axios.get(`http://localhost:8080/api/purpose/${warehouseId}`);
+
+        const pcsCount = pcsResponse.data.result;
+        const locationCount = locationResponse.data.result;
+        const usagePercent = usageResponse.data.result; // 1부터 100까지
+        const warehouseColor = warehouseTypeResponse.data.result; // 1부터 3까지
+
+        setCards((prevCards) =>
+          prevCards.map((card) =>
+            card.id === warehouseId
+              ? { ...card, pcsCount, locationCount, usagePercent, warehouseColor }
+              : card
+          )
+        );
+      } catch (error) {
+        console.error("Error fetching counts:", error);
+      }
+    };
+
+    // 각 창고 카드에 대한 pcsCount 및 locationCount 요청
+    cards.forEach((card) => {
+      fetchCounts(card.id);
+    });
+  }, [cards]); // cards가 변경될 때마다 호출
+
+  // warehouseColor에 따른 배경 색상 및 usagePercent에 따른 색상 높이
+  const getBackgroundColor = (color) => {
+    switch (color) {
+      case 1:
+        return "rgb(27, 177, 231)";
+      case 2:
+        return "rgb(21, 137, 181)";
+      case 3:
+        return "rgb(15, 97, 131)";
+      default:
+        return "rgb(27, 177, 231)";
+    }
+  };
+
+  const getWarehouseImage = (color) => {
+    switch (color) {
+      case 1:
+        return "/img/warehouse1.png";
+      case 2:
+        return "/img/warehouse2.png";
+      case 3:
+        return "/img/warehouse3.png";
+      default:
+        return "/img/warehouse1.png";
+    }
+  };
+
   return (
     <div>
       <Header
@@ -429,27 +499,68 @@ const Select = (props) => {
                     component="a"
                     className={`${classes.cardLink} ${classes.imageCard}`}
                   >
-                  <div className={classes.cardSelect} >
-                      <div className={classes.cardHeader}>
-                        {/* Header Section Content */}
+                    <div className={classes.cardSelect}>
+                      <div
+                        className={classes.cardHeader}
+                        style={{
+                          backgroundColor: getBackgroundColor(card.warehouseColor),
+                          position: "relative",
+                        }}
+                      >
+                        <img
+                          src={getWarehouseImage(card.warehouseColor)}
+                          alt="warehouse"
+                          style={{
+                            position: "absolute",
+                            bottom: 0,
+                            width: "100%",
+                          }}
+                        />
                       </div>
                       <div className={classes.cardBody}>
-                        <h4>{card.title}</h4>
+                        <h3>{card.title}</h3>
+                        <div
+                          style={{
+                            width: "80%",
+                            height: "30px",
+                            backgroundColor: "lightgray",
+                            borderRadius: "20px",
+                            overflow: "hidden",
+                            marginTop: "10px",
+                            border: "2px solid #ccc",
+                             
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: `${card.usagePercent}%`,
+                              height: "100%",
+                              backgroundColor: getBackgroundColor(card.warehouseColor),
+                            }}
+                          > {`${card.usagePercent}%`}</div>
+                        </div>
                       </div>
                       <hr className={classes.gradientHr} />
                       <div className={classes.cardFooter}>
                         <div className={classes.pcsContainer}>
-                          <img src="/img/box.png" alt="pcsContainer" className={classes.containerImage} />
+                          <img
+                            src="/img/box.png"
+                            alt="pcsContainer"
+                            className={classes.containerImage}
+                          />
                           <div className="pcsCnt">{card.pcsCount}</div>
                         </div>
 
                         <div className={classes.locationContainer}>
-                          <img src="/img/location.png" alt="location" className={classes.containerImage} />
+                          <img
+                            src="/img/location.png"
+                            alt="location"
+                            className={classes.containerImage}
+                          />
                           <div className="locationCnt">{card.locationCount}</div>
                         </div>
                       </div>
                     </div>
-              
                   </CardSelect>
                 </Link>
               </GridItem>
@@ -504,7 +615,9 @@ const Select = (props) => {
                     error={Boolean(validationErrors.containerSize)}
                     helperText={
                       validationErrors.containerSize ||
-                      `창고 부지의 크기: ${formData.containerSize} * ${formData.containerSize} = ${Math.pow(
+                      `창고 부지의 크기: ${
+                        formData.containerSize
+                      } * ${formData.containerSize} = ${Math.pow(
                         parseInt(formData.containerSize) || 0,
                         2
                       )}`
@@ -545,7 +658,8 @@ const Select = (props) => {
                     onChange={handleChange}
                     error={Boolean(validationErrors.locationZ)}
                     helperText={
-                      validationErrors.locationZ || "1~10층까지 설정 가능합니다."
+                      validationErrors.locationZ ||
+                      "1~10층까지 설정 가능합니다."
                     }
                     FormHelperTextProps={{
                       style: {
@@ -582,7 +696,10 @@ const Select = (props) => {
                     onChange={handleChange}
                     error={Boolean(validationErrors.locations)}
                   />
-                  <FormControl component="fieldset" className={classes.formControl}>
+                  <FormControl
+                    component="fieldset"
+                    className={classes.formControl}
+                  >
                     <FormLabel component="legend">시설 유형</FormLabel>
                     <RadioGroup
                       aria-label="facilityType"
@@ -590,8 +707,16 @@ const Select = (props) => {
                       value={facilityType}
                       onChange={handleFacilityTypeChange}
                     >
-                      <FormControlLabel value="STORE" control={<Radio />} label="매장" />
-                      <FormControlLabel value="WAREHOUSE" control={<Radio />} label="창고" />
+                      <FormControlLabel
+                        value="STORE"
+                        control={<Radio />}
+                        label="매장"
+                      />
+                      <FormControlLabel
+                        value="WAREHOUSE"
+                        control={<Radio />}
+                        label="창고"
+                      />
                     </RadioGroup>
                   </FormControl>
                   {facilityType === "WAREHOUSE" && (
