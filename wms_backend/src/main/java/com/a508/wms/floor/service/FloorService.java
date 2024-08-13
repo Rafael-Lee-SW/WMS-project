@@ -6,6 +6,9 @@ import com.a508.wms.floor.exception.FloorException;
 import com.a508.wms.floor.mapper.FloorMapper;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.a508.wms.floor.repository.FloorRepository;
+import com.a508.wms.product.dto.ProductMoveRequestDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 public class FloorService {
 
     private final FloorModuleService floorModuleService;
+    private final FloorRepository floorRepository;
 
     /**
      * location이 가지고 있는 층 전부 조회
@@ -52,5 +56,11 @@ public class FloorService {
         } catch (FloorException.InvalidExportType e) {
             throw new FloorException.InvalidExportType(id);
         }
+    }
+
+
+    public List<Floor> findAllEmptyFloorByWarehouseId(Long warehouseId) {
+        log.info("[Service] findAllEmptyLocationByWarehouseId: {}", warehouseId);
+        return floorRepository.findAllEmptyFloorByWarehouseId(warehouseId);
     }
 }
