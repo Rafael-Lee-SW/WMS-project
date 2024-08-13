@@ -646,7 +646,7 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
       id: id,
       x: Math.round(x),
       y: Math.round(y),
-      radius: 20,
+      radius: 10,
       stroke: "#666",
       fill: "#ddd",
       opacity: 0,
@@ -968,11 +968,11 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
           if (!existingAnchor) {
             const newId = anchorsRef.current.length
               ? Math.max(
-                ...anchorsRef.current.flatMap(({ start, end }) => [
-                  parseInt(start.id(), 10),
-                  parseInt(end.id(), 10),
-                ])
-              ) + 1
+                  ...anchorsRef.current.flatMap(({ start, end }) => [
+                    parseInt(start.id(), 10),
+                    parseInt(end.id(), 10),
+                  ])
+                ) + 1
               : 1;
             existingAnchor = buildAnchor(newId, x, y);
           } else {
@@ -1063,10 +1063,8 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
 
   // 최초 한번 실행된다.
   useEffect(() => {
-
     // 현재 param값을 통해 불러온다.
     getWarehouseAPI(warehouseId);
-
   }, []);
 
   /**
@@ -1104,9 +1102,9 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
     // Extract values from formData
     const { locationX, locationY, locationZ, row, column } = formData;
 
-    // Calculate spacing between locations
-    const xSpacing = CANVAS_SIZE / row;
-    const ySpacing = CANVAS_SIZE / column;
+    // Calculate fixed spacing between columns and rows
+    const columnSpacing = 10; // Fixed spacing of 10px between columns
+    const rowSpacing = parseInt(locationY); // Distance between rows equal to the height of each location
 
     // 위치 자동 생성을 위한 부분
     const newLocations = [];
@@ -1116,10 +1114,14 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
         const rowNumber = (i + 1).toString().padStart(2, "0"); // Convert to string and pad with zeros
         const columnNumber = (j + 1).toString().padStart(2, "0"); // Convert to string and pad with zeros
 
+        // Calculate x and y positions with new spacing logic
+        const xPosition = j * (parseInt(locationX) + columnSpacing);
+        const yPosition = i * (parseInt(locationY) + rowSpacing);
+
         newLocations.push({
           id: null,
-          x: Math.round(j * xSpacing + xSpacing / 2 - locationX / 2),
-          y: Math.round(i * ySpacing + ySpacing / 2 - locationY / 2),
+          x: xPosition,
+          y: yPosition,
           z: parseInt(locationZ),
           width: Math.round(parseInt(locationX)),
           height: Math.round(parseInt(locationY)),
@@ -1447,7 +1449,10 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
               }}
             >
               {locations
-                .filter((locations) => locations.type === "location" && locations.name !== "00-00" )
+                .filter(
+                  (locations) =>
+                    locations.type === "location" && locations.name !== "00-00"
+                )
                 .map((locations, index) => (
                   <li
                     key={index}
@@ -1657,7 +1662,9 @@ const RectangleTransformer = ({
   const fontSize = Math.min(shapeProps.width, shapeProps.height) / 4;
 
   // 재고함의 행렬과 높이를 나타내도록 설정한 MainText
-  const mainText = `${shapeProps.name}-${shapeProps.z < 10 ? '0' + shapeProps.z : shapeProps.z}`;
+  const mainText = `${shapeProps.name}-${
+    shapeProps.z < 10 ? "0" + shapeProps.z : shapeProps.z
+  }`;
 
   // RGB 색깔로 재고율 퍼센트(%)를 추출하는 함수
   const extractFillPercentage = (rgbaString) => {
@@ -1671,7 +1678,6 @@ const RectangleTransformer = ({
 
     return "0.0"; // Default to 0% if unable to parse
   };
-
 
   // 사각형이 선택되었을 때 변형기를 연결하기 위한 Effect 훅
   useEffect(() => {

@@ -16,6 +16,14 @@ import DialogTitle from "@mui/material/DialogTitle";
 import TextField from "@mui/material/TextField";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Paper from "@mui/material/Paper";
+import IconButton from "@mui/material/IconButton";
 
 // Import SheetJS xlsx for Excel operations
 import * as XLSX from "xlsx";
@@ -53,7 +61,7 @@ import {
 import { createMuiTheme, MuiThemeProvider } from "@material-ui/core/styles";
 import MUIDataTable from "mui-datatables";
 import Chip from "@mui/material/Chip";
-import { IconButton, Tooltip, InputLabel, FormControl } from "@mui/material";
+import { Tooltip, InputLabel, FormControl } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MoveIcon from "@mui/icons-material/MoveUp";
 import PrintIcon from "@mui/icons-material/Print";
@@ -154,7 +162,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
   const [newExportData, setNewExportData] = useState({
     barcode: "",
     quantity: "",
-    date: "",
+    trackingNumber: "",
   });
   const [expectedExportList, setExpectedExportList] = useState([]); // Store expected export list
 
@@ -924,9 +932,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
 
       if (field === "quantity") {
         // Check if the input is not a number
-        if (!/^\d*$/.test(value)) {
-          errors.quantity = "수량은 숫자만 입력 가능합니다.";
-        } else if (!Number.isInteger(parseInt(value)) || parseInt(value) < 0) {
+        if (!Number.isInteger(parseInt(value)) || parseInt(value) < 0) {
           errors.quantity = "잘못된 수량입니다. 유효한 정수를 입력하세요.";
         } else if (parseInt(value) > product.quantityNow) {
           errors.quantity = `수량이 너무 큽니다. 최대 ${product.quantityNow}개 가능합니다.`;
@@ -1173,6 +1179,11 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
     });
   };
 
+  // Delete product from expected import list
+  const handleDeleteImportProduct = (index) => {
+    setExpectedImportList((prevList) => prevList.filter((_, i) => i !== index));
+  };
+
   // Finalize import from expected import list
   const handleFinalImport = () => {
     importAPI(expectedImportList);
@@ -1194,8 +1205,13 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
     setNewExportData({
       barcode: "",
       quantity: "",
-      date: "",
+      trackingNumber: "",
     });
+  };
+
+  // Delete export from expected export list
+  const handleDeleteExportProduct = (index) => {
+    setExpectedExportList((prevList) => prevList.filter((_, i) => i !== index));
   };
 
   // Finalize export from expected export list
@@ -1449,7 +1465,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
             onClick={() => {
               setShowProductInputSection(true);
               setShowProductExportSection(false);
-              handleNextComponent(0); // Close other sections
+              handleNextComponent(6); // Close other sections
             }}
             style={{ width: "100%" }}
           >
@@ -1463,7 +1479,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
             onClick={() => {
               setShowProductInputSection(false);
               setShowProductExportSection(true);
-              handleNextComponent(0); // Close other sections
+              handleNextComponent(6); // Close other sections
             }}
             style={{ width: "100%" }}
           >
@@ -1475,6 +1491,8 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
             variant="contained"
             color="primary"
             onClick={() => {
+              setShowProductInputSection(false);
+              setShowProductExportSection(false);
               setOpenEditModal(true);
               handleNextComponent(0);
             }}
@@ -1964,200 +1982,350 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
       <div style={{ display: "flex", width: "100%", margin: "0 0 0 200px" }}>
         {/* 입고하기 Section */}
         {showProductInputSection && (
-          <div style={{ width: "30%" }}>
-            <div style={{ flex: 1, padding: "1rem" }}>
-              <Typography variant="h6">제품 데이터 입력</Typography>
-              <TextField
-                label="바코드"
-                value={newProductData.barcode}
-                onChange={(e) =>
-                  handleNewProductInputChange("barcode", e.target.value)
-                }
-                fullWidth
-                margin="normal"
-              />
-              <TextField
-                label="상품명"
-                value={newProductData.name}
-                onChange={(e) =>
-                  handleNewProductInputChange("name", e.target.value)
-                }
-                fullWidth
-                margin="normal"
-              />
-              <TextField
-                label="수량"
-                value={newProductData.quantity}
-                onChange={(e) =>
-                  handleNewProductInputChange("quantity", e.target.value)
-                }
-                fullWidth
-                margin="normal"
-              />
-              <TextField
-                label="유통기한"
-                value={newProductData.expirationDate}
-                onChange={(e) =>
-                  handleNewProductInputChange("expirationDate", e.target.value)
-                }
-                fullWidth
-                margin="normal"
-              />
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleAddNewProduct}
-              >
-                제품 추가
-              </Button>
-
-              <label htmlFor="upload-import">
-                <input
-                  required
-                  style={{ display: "none" }}
-                  id="upload-import"
-                  name="upload-import"
-                  type="file"
-                  onChange={importExcel}
-                />
-                <Fab
-                  color="primary"
-                  size="small"
-                  component="span"
-                  aria-label="add"
-                  variant="extended"
-                  style={{ marginTop: "10px" }}
-                >
-                  엑셀로 입고하기
-                </Fab>
-              </label>
-
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={handleFinalImport}
-                style={{ marginTop: "10px" }}
-              >
-                Final Import
-              </Button>
+          <div style={{ width: "100%", marginRight: "20px" }}>
+            <div style={{ padding: "1rem" }}>
+              <Typography variant="h6" gutterBottom>
+                제품 데이터 입력
+              </Typography>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <tbody>
+                  <tr>
+                    <td style={{ padding: "8px" }}>
+                      <TextField
+                        label="바코드"
+                        value={newProductData.barcode}
+                        onChange={(e) =>
+                          handleNewProductInputChange("barcode", e.target.value)
+                        }
+                        fullWidth
+                        margin="normal"
+                      />
+                    </td>
+                    <td style={{ padding: "8px" }}>
+                      <TextField
+                        label="상품명"
+                        value={newProductData.name}
+                        onChange={(e) =>
+                          handleNewProductInputChange("name", e.target.value)
+                        }
+                        fullWidth
+                        margin="normal"
+                      />
+                    </td>
+                    <td style={{ padding: "8px" }}>
+                      <TextField
+                        label="수량"
+                        value={newProductData.quantity}
+                        onChange={(e) =>
+                          handleNewProductInputChange(
+                            "quantity",
+                            e.target.value
+                          )
+                        }
+                        fullWidth
+                        margin="normal"
+                      />
+                    </td>
+                    <td style={{ padding: "8px" }}>
+                      <TextField
+                        label="유통기한"
+                        value={newProductData.expirationDate}
+                        onChange={(e) =>
+                          handleNewProductInputChange(
+                            "expirationDate",
+                            e.target.value
+                          )
+                        }
+                        fullWidth
+                        margin="normal"
+                      />
+                    </td>
+                    <td style={{ padding: "8px", textAlign: "center" }}>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleAddNewProduct}
+                      >
+                        제품 추가
+                      </Button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style={{ padding: "8px" }} colSpan={5}>
+                      <label htmlFor="upload-import">
+                        <input
+                          required
+                          style={{ display: "none" }}
+                          id="upload-import"
+                          name="upload-import"
+                          type="file"
+                          onChange={importExcel}
+                        />
+                        <Fab
+                          color="primary"
+                          size="small"
+                          component="span"
+                          aria-label="add"
+                          variant="extended"
+                          style={{ marginRight: "10px" }}
+                        >
+                          엑셀로 제품 추가
+                        </Fab>
+                      </label>
+                      <Button
+                        variant="contained"
+                        color="secondary"
+                        onClick={handleFinalImport}
+                      >
+                        입고하기
+                      </Button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
 
             <div
               style={{
-                width: "300px",
+                width: "100%",
                 height: "25vh",
-                flex: 1,
                 padding: "1rem",
                 overflow: "auto",
+                border: "1px solid #ddd",
+                borderRadius: "8px",
               }}
             >
               <Typography variant="h6">Expected Import List</Typography>
-              <ul>
-                {expectedImportList.map((product, index) => (
-                  <li key={index}>
-                    {product.name} - {product.barcode} - {product.quantity}
-                  </li>
-                ))}
-              </ul>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr>
+                    <th
+                      style={{
+                        borderBottom: "1px solid #ddd",
+                        padding: "8px",
+                        textAlign: "left",
+                      }}
+                    >
+                      이름
+                    </th>
+                    <th
+                      style={{
+                        borderBottom: "1px solid #ddd",
+                        padding: "8px",
+                        textAlign: "left",
+                      }}
+                    >
+                      바코드
+                    </th>
+                    <th
+                      style={{
+                        borderBottom: "1px solid #ddd",
+                        padding: "8px",
+                        textAlign: "left",
+                      }}
+                    >
+                      수량
+                    </th>
+                    <th
+                      style={{
+                        borderBottom: "1px solid #ddd",
+                        padding: "8px",
+                        textAlign: "left",
+                      }}
+                    >
+                      비고
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {expectedImportList.map((product, index) => (
+                    <tr key={index}>
+                      <td style={{ padding: "8px" }}>{product.name}</td>
+                      <td style={{ padding: "8px" }}>{product.barcode}</td>
+                      <td style={{ padding: "8px" }}>{product.quantity}</td>
+                      <td style={{ padding: "8px" }}>
+                        <IconButton
+                          color="secondary"
+                          onClick={() => handleDeleteImportProduct(index)}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         )}
 
         {/* 출고하기 Section */}
         {showProductExportSection && (
-          <div style={{ width: "30%" }}>
-            <div style={{ flex: 1, padding: "1rem" }}>
-              <Typography variant="h6">출고 데이터 입력</Typography>
-              <TextField
-                label="바코드"
-                value={newExportData.barcode}
-                onChange={(e) =>
-                  handleNewExportInputChange("barcode", e.target.value)
-                }
-                fullWidth
-                margin="normal"
-              />
-              <TextField
-                label="수량"
-                value={newExportData.quantity}
-                onChange={(e) =>
-                  handleNewExportInputChange("quantity", e.target.value)
-                }
-                fullWidth
-                margin="normal"
-              />
-              <TextField
-                label="날짜"
-                value={newExportData.date}
-                onChange={(e) =>
-                  handleNewExportInputChange("date", e.target.value)
-                }
-                fullWidth
-                margin="normal"
-              />
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleAddNewExport}
-              >
-                출고 추가
-              </Button>
-
-              <label htmlFor="upload-export">
-                <input
-                  required
-                  style={{ display: "none" }}
-                  id="upload-export"
-                  name="upload-export"
-                  type="file"
-                  onChange={exportExcel}
-                />
-                <Fab
-                  color="primary"
-                  size="small"
-                  component="span"
-                  aria-label="add"
-                  variant="extended"
-                  style={{ marginTop: "10px" }}
-                >
-                  엑셀로 출고하기
-                </Fab>
-              </label>
-
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={handleFinalExport}
-                style={{ marginTop: "10px" }}
-              >
-                Final Export
-              </Button>
+          <div style={{ width: "100%", marginRight: "20px" }}>
+            <div style={{ padding: "1rem" }}>
+              <Typography variant="h6" gutterBottom>
+                출고 데이터 입력
+              </Typography>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <tbody>
+                  <tr>
+                    <td style={{ padding: "8px" }}>
+                      <TextField
+                        label="바코드"
+                        value={newExportData.barcode}
+                        onChange={(e) =>
+                          handleNewExportInputChange("barcode", e.target.value)
+                        }
+                        fullWidth
+                        margin="normal"
+                      />
+                    </td>
+                    <td style={{ padding: "8px" }}>
+                      <TextField
+                        label="수량"
+                        value={newExportData.quantity}
+                        onChange={(e) =>
+                          handleNewExportInputChange("quantity", e.target.value)
+                        }
+                        fullWidth
+                        margin="normal"
+                      />
+                    </td>
+                    <td style={{ padding: "8px" }}>
+                      <TextField
+                        label="송장"
+                        value={newExportData.trackingNumber}
+                        onChange={(e) =>
+                          handleNewExportInputChange("trackingNumber", e.target.value)
+                        }
+                        fullWidth
+                        margin="normal"
+                      />
+                    </td>
+                    <td style={{ padding: "8px", textAlign: "center" }}>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleAddNewExport}
+                      >
+                        출고 추가
+                      </Button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style={{ padding: "8px" }} colSpan={4}>
+                      <label htmlFor="upload-export">
+                        <input
+                          required
+                          style={{ display: "none" }}
+                          id="upload-export"
+                          name="upload-export"
+                          type="file"
+                          onChange={exportExcel}
+                        />
+                        <Fab
+                          color="primary"
+                          size="small"
+                          component="span"
+                          aria-label="add"
+                          variant="extended"
+                          style={{ marginRight: "10px" }}
+                        >
+                          엑셀로 데이터 가져오기
+                        </Fab>
+                      </label>
+                      <Button
+                        variant="contained"
+                        color="secondary"
+                        onClick={handleFinalExport}
+                      >
+                        Final Export
+                      </Button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
 
             <div
               style={{
-                width: "300px",
+                width: "100%",
                 height: "25vh",
-                flex: 1,
                 padding: "1rem",
                 overflow: "auto",
+                border: "1px solid #ddd",
+                borderRadius: "8px",
               }}
             >
               <Typography variant="h6">Expected Export List</Typography>
-              <ul>
-                {expectedExportList.map((product, index) => (
-                  <li key={index}>
-                    {product.barcode} - {product.quantity} - {product.date}
-                  </li>
-                ))}
-              </ul>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr>
+                    <th
+                      style={{
+                        borderBottom: "1px solid #ddd",
+                        padding: "8px",
+                        textAlign: "left",
+                      }}
+                    >
+                      바코드
+                    </th>
+                    <th
+                      style={{
+                        borderBottom: "1px solid #ddd",
+                        padding: "8px",
+                        textAlign: "left",
+                      }}
+                    >
+                      수량
+                    </th>
+                    <th
+                      style={{
+                        borderBottom: "1px solid #ddd",
+                        padding: "8px",
+                        textAlign: "left",
+                      }}
+                    >
+                      송장번호
+                    </th>
+                    <th
+                      style={{
+                        borderBottom: "1px solid #ddd",
+                        padding: "8px",
+                        textAlign: "left",
+                      }}
+                    >
+                      비고
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {expectedExportList.map((product, index) => (
+                    <tr key={index}>
+                      <td style={{ padding: "8px" }}>{product.barcode}</td>
+                      <td style={{ padding: "8px" }}>{product.quantity}</td>
+                      <td style={{ padding: "8px" }}>{product.trackingNumber}</td>
+                      <td style={{ padding: "8px" }}>
+                        <IconButton
+                          color="secondary"
+                          onClick={() => handleDeleteExportProduct(index)}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         )}
-        <Grid item xs={12} style={{ width: "100%", height: "80vh" }}>
-          {/* 메인 영역 */}
-          {currentIndex >= 0 && componentsArray[currentIndex]}
-        </Grid>
+        {!(showProductExportSection || showProductInputSection) && (
+          <Grid item xs={12} style={{ width: "100%" }}>
+            {/* 메인 영역 */}
+            {currentIndex >= 0 && componentsArray[currentIndex]}
+          </Grid>
+        )}
       </div>
     </div>
   );
