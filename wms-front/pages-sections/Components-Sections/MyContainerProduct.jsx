@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-
+import {useRouter} from "next/router";
 // Import MUI components
 import Grid from "@mui/material/Grid";
 import Fab from "@mui/material/Fab";
@@ -99,6 +99,9 @@ registerPlugin(Filters);
 registerPlugin(HiddenRows);
 
 const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
+
+  const router = useRouter();
+
   const [tableData, setTableData] = useState([]);
   const [detailedData, setDetailedData] = useState([]); // Store all import/export data
   const [ModalTableData, setModalTableData] = useState([]);
@@ -850,13 +853,13 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
     // 수정을 위한 데이터를 updatedData를 통해 가져온다.
     const productsArray = updatedData.map((row) => ({
       productId: String(row[0]), // Get From HiddenId
-      locationName: row[4],
+      locationName: (row[4] !== "임시" ? row[4] : "00-00"),
       floorLevel: String(row[5]),
       productRequestDto: {
         name: row[1],
         barcode: row[2],
         quantity: row[3],
-        expirationDate: null,
+        expirationDate: (row[6] === "없음" ? null : row[6]),
         warehouseId: parseInt(row[7]),
       },
     }));
