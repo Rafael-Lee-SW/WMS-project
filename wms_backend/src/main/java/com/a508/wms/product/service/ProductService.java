@@ -1254,8 +1254,8 @@ public class ProductService {
     //    층별 고려가 아니고 로케이션별 고려
 //    로케이션 앞에서부터 돌면서, 1층에 중복된 상품이 있는 경우: 위로 올리고 해당 로케이션 비우기
 //    빈 로케이션에 뒤에 남아있는 로케이션 땡기기
-    public void compress(Long businessId) throws ProductException {
-        List<ProductCompressDto> MultipleProduct = findAllMultipleProductByFloorLevel(1, businessId)
+    public void compress(Long businessId, Long warehouseId) throws ProductException {
+        List<ProductCompressDto> MultipleProduct = findAllMultipleProductByFloorLevel(1, businessId, warehouseId)
                 .stream().map(ProductMapper::toProductCompressDto)
                 .toList();
         findOptimalLocation(MultipleProduct);
@@ -1267,9 +1267,9 @@ public class ProductService {
      * @param floorLevel
      * @return
      */
-    public List<Product> findAllMultipleProductByFloorLevel(Integer floorLevel, Long businessId) {
-        log.info("[Service] find All Multiple Product By FloorLevel : {} {}", floorLevel, businessId);
-        return productRepository.findAllMultipleProductByFloorLevel(floorLevel, businessId);
+    public List<Product> findAllMultipleProductByFloorLevel(Integer floorLevel, Long businessId, Long warehouseId) {
+        log.info("[Service] find All Multiple Product By FloorLevel : {} {}", floorLevel, warehouseId);
+        return productRepository.findAllMultipleProductByFloorLevel(floorLevel, businessId, warehouseId);
     }
 
     public Product findOptimalLocation(List<ProductCompressDto> products) throws ProductException {
