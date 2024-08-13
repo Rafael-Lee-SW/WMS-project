@@ -17,6 +17,7 @@ export default function HeaderLinks(props) {
   const handleLogout = () => {
     // Remove the token from local storage
     localStorage.removeItem("token");
+    localStorage.removeItem("user");  
     // Redirect to the homepage
     router.push("/");
   };
