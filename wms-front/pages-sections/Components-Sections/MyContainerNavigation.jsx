@@ -411,7 +411,7 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
       id: id,
       x: Math.round(x),
       y: Math.round(y),
-      radius: 20,
+      radius: 10,
       stroke: "#666",
       fill: "#ddd",
       opacity: 0,
@@ -802,7 +802,7 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
       if (response.ok) {
         const apiConnection = await response.json();
         const products = apiConnection.result;
-        console.log(apiConnection);
+        console.log("상품 불러옴");
         console.log(products); // 삭제해야 할 console.log (콘솔)
 
         // Extract only the required columns
@@ -851,6 +851,9 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
           product.expirationDate,
           product.warehouseId,
         ]);
+
+        console.log("여기가 문제?");
+        console.log(data); // 삭제해야 할 console.log (콘솔)
 
         setColumns(formattedColumns);
         setTableData(data);
@@ -1294,8 +1297,25 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
                 </div>
                 <hr />
                 {ModalTableData.length > 0 && (
-                  <div>
-                    <MUIDataTable data={ModalTableData} columns={columns} />
+                  <div style={{ marginTop: "20px" }}>
+                    <h3>재고 목록</h3>
+                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                      <tbody>
+                        {ModalTableData.map((item, index) => (
+                          <tr key={index} style={{ borderBottom: "1px solid #ccc" }}>
+                            <td style={{ padding: "10px", width: "70%", fontSize: "18px" }}>
+                              <strong>{item.name}</strong>
+                              <div style={{ fontSize: "12px", color: "#666" }}>
+                                {item.barcode}
+                              </div>
+                            </td>
+                            <td style={{ padding: "10px", width: "30%", textAlign: "right", fontSize: "16px" }}>
+                              {item.quantity}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 )}
               </div>
@@ -1338,6 +1358,9 @@ const RectangleTransformer = ({
 }) => {
   const shapeRef = useRef();
 
+  // Local state for hover effect
+  const [isHoveredLocal, setIsHoveredLocal] = useState(false);
+
   // Calculate font size for the text inside the rectangle
   const fontSize = Math.min(shapeProps.width, shapeProps.height) / 4;
 
@@ -1368,8 +1391,10 @@ const RectangleTransformer = ({
         ref={shapeRef}
         {...shapeProps}
         draggable={false} // Disable dragging
-        stroke={isSelected ? "red" : "transparent"} // Border color when selected
-        strokeWidth={isSelected ? 2 : 0} // Border width when selected
+        stroke={isSelected || isHoveredLocal ? "red" : "transparent"} // Border color when selected or hovered
+        strokeWidth={isSelected || isHoveredLocal ? 2 : 0} // Border width when selected or hovered
+       F onMouseEnter={() => setIsHoveredLocal(true)} // Set hover state
+        onMouseLeave={() => setIsHoveredLocal(false)} // Reset hover state
       />
       <Text
         text={mainText}

@@ -186,6 +186,7 @@ export default function Components(props) {
           key={`product-${selectedWarehouse}`}
           WHId={selectedWarehouse}
           businessId={userData.businessId}
+          warehouses={cards}
         />,
       ]
     : [];

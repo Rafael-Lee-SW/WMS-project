@@ -14,6 +14,16 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import TextField from "@mui/material/TextField";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Paper from "@mui/material/Paper";
+import IconButton from "@mui/material/IconButton";
 
 // Import SheetJS xlsx for Excel operations
 import * as XLSX from "xlsx";
@@ -51,10 +61,10 @@ import {
 import { createMuiTheme, MuiThemeProvider } from "@material-ui/core/styles";
 import MUIDataTable from "mui-datatables";
 import Chip from "@mui/material/Chip";
-import IconButton from "@mui/material/IconButton";
-import Tooltip from "@mui/material/Tooltip";
+import { Tooltip, InputLabel, FormControl } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MoveIcon from "@mui/icons-material/MoveUp";
+import PrintIcon from "@mui/icons-material/Print";
 
 // Import Chart.js for analytics
 import { Chart, Bar } from "react-chartjs-2";
@@ -88,93 +98,7 @@ registerPlugin(DropdownMenu);
 registerPlugin(Filters);
 registerPlugin(HiddenRows);
 
-// Define the table options
-export const listOptions = {
-  fixedHeader: true,
-  filterType: "multiselect",
-  responsive: "scrollMaxHeight",
-  download: true,
-  print: true,
-  viewColumns: true,
-  filter: true,
-  selectableRows: "none",
-  elevation: 0,
-  rowsPerPage: 10,
-  pagination: true,
-  rowsPerPageOptions: [10, 30, 60, 100, 10000],
-  textLabels: { body: { noMatch: "데이터를 불러오는 중입니다." } },
-
-  // Override the print behavior to ensure all data is included
-  onTableChange: (action, tableState) => {
-    if (action === "print") {
-      // Ensure all data is visible for printing
-      document
-        .querySelectorAll(
-          ".MUIDataTableToolbar-root, .MUIDataTablePagination-root"
-        )
-        .forEach((elem) => (elem.style.display = "none"));
-
-      // Restore the pagination and toolbar after print
-      window.onafterprint = () => {
-        document
-          .querySelectorAll(
-            ".MUIDataTableToolbar-root, .MUIDataTablePagination-root"
-          )
-          .forEach((elem) => (elem.style.display = ""));
-      };
-    }
-  },
-};
-
-// Customize theme
-const myTheme = createMuiTheme({
-  overrides: {
-    MUIDataTable: {
-      root: {
-        overflow: "scroll",
-        backgroundImage: "none !important",
-      },
-      responsive: {
-        overflow: "scroll",
-        maxWidth: "none !important",
-        msMaxWidth: "none !important",
-      },
-      responsiveStacked: {
-        overflow: "scroll",
-      },
-      responsiveScroll: {
-        overflow: "scroll",
-        maxHeight: "none !important",
-        maxWidth: "none !important",
-      },
-      responsiveScrollMaxHeight: {
-        overflow: "scroll",
-        maxHeight: "none !important",
-      },
-      responsiveScrollFullHeight: {
-        overflowX: "scroll",
-      },
-    },
-    MuiTableCell: {
-      root: {
-        "@media print": {
-          borderBottom: "1px solid #ccc",
-          padding: "8px",
-          fontSize: "12px",
-        },
-      },
-    },
-    MuiTableRow: {
-      root: {
-        "@media print": {
-          pageBreakInside: "avoid",
-        },
-      },
-    },
-  },
-});
-
-const MyContainerProduct = ({ WHId, businessId }) => {
+const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
   const [tableData, setTableData] = useState([]);
   const [detailedData, setDetailedData] = useState([]); // Store all import/export data
   const [ModalTableData, setModalTableData] = useState([]);
@@ -217,10 +141,8 @@ const MyContainerProduct = ({ WHId, businessId }) => {
     floorLevel: "",
     quantity: "",
   });
-
   // 에러 메세지 출력을 위한 State
   const [errors, setErrors] = useState([]);
-
   // '상품 한번에 이동하기' 를 위한 State
   const [isBulkMove, setIsBulkMove] = useState(true);
 
@@ -240,7 +162,7 @@ const MyContainerProduct = ({ WHId, businessId }) => {
   const [newExportData, setNewExportData] = useState({
     barcode: "",
     quantity: "",
-    date: "",
+    trackingNumber: "",
   });
   const [expectedExportList, setExpectedExportList] = useState([]); // Store expected export list
 
@@ -441,7 +363,6 @@ const MyContainerProduct = ({ WHId, businessId }) => {
       barcode: row[selectedExportColumns.barcode],
       quantity: row[selectedExportColumns.quantity],
       trackingNumber: "121351203",
-      date: "2024-08-02",
     }));
 
     // Append to expected export list
@@ -581,7 +502,8 @@ const MyContainerProduct = ({ WHId, businessId }) => {
           name: product.name,
           barcode: product.barcode,
           quantity: product.quantity,
-          locationName: product.locationName || "임시",
+          locationName:
+            product.locationName === "00-00" ? "임시" : product.locationName,
           floorLevel: product.floorLevel,
           expirationDate: product.expirationDate || "없음",
           warehouseId: product.warehouseId,
@@ -932,12 +854,14 @@ const MyContainerProduct = ({ WHId, businessId }) => {
       floorLevel: String(row[5]),
       productRequestDto: {
         name: row[1],
-        barcode: String(row[2]),
+        barcode: row[2],
         quantity: row[3],
         expirationDate: null,
         warehouseId: parseInt(row[7]),
       },
     }));
+
+    console.log([productsArray])
 
     // Send the array of products to the API
     productEditAPI(productsArray);
@@ -978,8 +902,14 @@ const MyContainerProduct = ({ WHId, businessId }) => {
         ...selectedRows.map((rowIndex) => tableData[rowIndex][3])
       );
 
-      // Check if entered quantity is greater than the minimum available
-      if (parseInt(value) > minQuantity) {
+      // Check if the input is not a number
+      if (!/^\d*$/.test(value)) {
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          bulkQuantity: "수량은 숫자만 입력 가능합니다.",
+        }));
+      } else if (parseInt(value) > minQuantity) {
+        // Check if entered quantity is greater than the minimum available
         setErrors((prevErrors) => ({
           ...prevErrors,
           bulkQuantity:
@@ -1002,6 +932,7 @@ const MyContainerProduct = ({ WHId, businessId }) => {
       const errors = { ...newData[index].errors };
 
       if (field === "quantity") {
+        // Check if the input is not a number
         if (!Number.isInteger(parseInt(value)) || parseInt(value) < 0) {
           errors.quantity = "잘못된 수량입니다. 유효한 정수를 입력하세요.";
         } else if (parseInt(value) > product.quantityNow) {
@@ -1084,17 +1015,43 @@ const MyContainerProduct = ({ WHId, businessId }) => {
     onRowClick: (rowData) => handleRowClick(rowData), // Handle row click
   };
 
+  // options for printing but fail
+  const listOptions = {
+    fixedHeader: true,
+    filterType: "multiselect",
+    responsive: "standard",
+    download: true,
+    print: false, // Disable default print
+    viewColumns: true,
+    filter: true,
+    selectableRows: "none",
+    elevation: 0,
+    rowsPerPage: 10,
+    pagination: true,
+    rowsPerPageOptions: [10, 30, 60, 100, 10000],
+    textLabels: { body: { noMatch: "데이터를 불러오는 중입니다." } },
+
+    // Custom toolbar with custom print button
+    customToolbar: () => {
+      return (
+        <Tooltip title="Print">
+          <IconButton onClick={() => setPrintModalOpen(true)}>
+            <PrintIcon />
+          </IconButton>
+        </Tooltip>
+      );
+    },
+  };
+
   // Define the componentsArray with separate options
   const componentsArray = [
-    <MuiThemeProvider theme={myTheme}>
-      <MUIDataTable
-        key="productList"
-        title={"상품 목록"}
-        data={tableData}
-        columns={productColumns}
-        options={listOptions}
-      />
-    </MuiThemeProvider>,
+    <MUIDataTable
+      key="productList"
+      title={"상품 목록"}
+      data={tableData}
+      columns={productColumns}
+      options={listOptions}
+    />,
     <MUIDataTable
       key="moveProductList"
       title={"상품 이동하기"}
@@ -1223,6 +1180,11 @@ const MyContainerProduct = ({ WHId, businessId }) => {
     });
   };
 
+  // Delete product from expected import list
+  const handleDeleteImportProduct = (index) => {
+    setExpectedImportList((prevList) => prevList.filter((_, i) => i !== index));
+  };
+
   // Finalize import from expected import list
   const handleFinalImport = () => {
     importAPI(expectedImportList);
@@ -1244,8 +1206,13 @@ const MyContainerProduct = ({ WHId, businessId }) => {
     setNewExportData({
       barcode: "",
       quantity: "",
-      date: "",
+      trackingNumber: "",
     });
+  };
+
+  // Delete export from expected export list
+  const handleDeleteExportProduct = (index) => {
+    setExpectedExportList((prevList) => prevList.filter((_, i) => i !== index));
   };
 
   // Finalize export from expected export list
@@ -1256,18 +1223,208 @@ const MyContainerProduct = ({ WHId, businessId }) => {
   };
 
   /**
-   * 유저를 부르는 Part
-   */
-
-  /**
    * UseEffect를 통해 새로고침 때마다 api로 사장님의 재고를 불러옴
    * + 유저정보
    */
 
   useEffect(() => {
     //재고 목록과 알림 내역을 불러온다.
+
+    console.log(warehouses);
     productGetAPI(businessId);
   }, [openModal]);
+
+  // Printing logic
+  const [printModalOpen, setPrintModalOpen] = useState(false);
+
+  const PrintableTable = ({ columns, data }) => (
+    <div style={{ padding: "20px" }}>
+      <table
+        style={{
+          width: "100%",
+          borderCollapse: "collapse",
+          marginBottom: "20px",
+        }}
+      >
+        <thead>
+          <tr>
+            {columns.map((column, index) => (
+              <th
+                key={index}
+                style={{
+                  border: "1px solid #ddd",
+                  padding: "8px",
+                  textAlign: "left",
+                  backgroundColor: "#f2f2f2",
+                }}
+              >
+                {column.label}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((row, rowIndex) => (
+            <tr key={rowIndex}>
+              {row.map((cell, cellIndex) => (
+                <td
+                  key={cellIndex}
+                  style={{
+                    border: "1px solid #ddd",
+                    padding: "8px",
+                    textAlign: "left",
+                  }}
+                >
+                  {cell}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+
+  // Effect to trigger print on modal open
+  useEffect(() => {
+    if (printModalOpen) {
+      const timer = setTimeout(() => {
+        window.print();
+        setPrintModalOpen(false);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [printModalOpen]);
+
+  /**
+   * 상품 이동 시에 토글로 제약
+   */
+
+  // 창고를 선택할 수 있다.
+  const handleWarehouseSelectChange = (field, value, index = null) => {
+    if (isBulkMove) {
+      setBulkMoveDetails((prevDetails) => ({
+        ...prevDetails,
+        [field]: value,
+        locationName: "",
+        floorLevel: "", // Reset location and floor level when warehouse changes
+      }));
+      setFloorLevels([]); // Clear floor levels
+      getWarehouseAPI(value); // Fetch locations for the selected warehouse
+    } else {
+      setMoveData((prevMoveData) => {
+        const newData = [...prevMoveData];
+        newData[index][field] = value;
+        newData[index].locationName = "";
+        newData[index].floorLevel = ""; // Reset location and floor level
+        return newData;
+      });
+      setFloorLevels([]); // Clear floor levels
+      getWarehouseAPI(value); // Fetch locations for the selected warehouse
+    }
+  };
+
+  //선택된 창고를 바탕으로 로케이션과 층수를 선택한다.
+  const [locations, setLocations] = useState([]);
+  const [floorLevels, setFloorLevels] = useState([]);
+
+  // API call to fetch locations for a specific warehouse
+  const getWarehouseAPI = async (warehouseId) => {
+    try {
+      const response = await fetch(
+        `https://i11a508.p.ssafy.io/api/warehouses/${warehouseId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        const apiConnection = await response.json();
+        const warehouseData = apiConnection.result; // Extract data
+
+        console.log(warehouseData);
+
+        // Process location data from the API response
+        const locations = warehouseData.locations;
+        if (!locations) {
+          console.error("Locations data not found");
+          return;
+        }
+        const newLocations = locations.map((location, index) => {
+          // Calculate the red and blue components based on the fill value
+          const red = Math.round((location.fill / 100) * 255); // Increase from 0 to 255
+          const blue = Math.round(((100 - location.fill) / 100) * 255); // Decrease from 255 to 0
+
+          return {
+            id: location.id.toString(),
+            x: location.xposition,
+            y: location.yposition,
+            width: location.xsize || 50,
+            height: location.ysize || 50,
+            z: location.zsize,
+            fill: `rgba(${red}, 0, ${blue}, 1)`, // Calculate RGB with alpha as 1
+
+            order: index,
+            name: location.name || `적재함 ${index}`,
+            type: "location",
+            rotation: 0,
+          };
+        });
+
+        setLocations(newLocations);
+      } else {
+        console.error("Error loading rectangles data");
+      }
+    } catch (error) {
+      console.error("Error loading rectangles data:", error);
+    }
+  };
+  const handleLocationSelectChange = (field, value, index = null) => {
+    if (isBulkMove) {
+      setBulkMoveDetails((prevDetails) => ({
+        ...prevDetails,
+        [field]: value,
+        floorLevel: "", // Reset floor level when location changes
+      }));
+      // Find the location to get available floor levels
+      const selectedLocation = locations.find(
+        (location) => location.name === value
+      );
+      if (selectedLocation) {
+        const newFloorLevels = Array.from(
+          { length: selectedLocation.z },
+          (_, i) => i + 1
+        );
+        setFloorLevels(newFloorLevels);
+      }
+    } else {
+      setMoveData((prevMoveData) => {
+        const newData = [...prevMoveData];
+        newData[index][field] = value;
+        newData[index].floorLevel = ""; // Reset floor level
+        const selectedLocation = locations.find(
+          (location) => location.name === value
+        );
+        if (selectedLocation) {
+          const newFloorLevels = Array.from(
+            { length: selectedLocation.z },
+            (_, i) => i + 1
+          );
+          setFloorLevels(newFloorLevels);
+        }
+        return newData;
+      });
+    }
+  };
+
+  const isBulkMoveEnabled =
+    bulkMoveDetails.warehouseId &&
+    bulkMoveDetails.locationName &&
+    bulkMoveDetails.floorLevel &&
+    bulkMoveDetails.quantity;
 
   return (
     <div style={{ marginTop: "3rem", display: "flex" }}>
@@ -1309,7 +1466,7 @@ const MyContainerProduct = ({ WHId, businessId }) => {
             onClick={() => {
               setShowProductInputSection(true);
               setShowProductExportSection(false);
-              handleNextComponent(0); // Close other sections
+              handleNextComponent(6); // Close other sections
             }}
             style={{ width: "100%" }}
           >
@@ -1323,7 +1480,7 @@ const MyContainerProduct = ({ WHId, businessId }) => {
             onClick={() => {
               setShowProductInputSection(false);
               setShowProductExportSection(true);
-              handleNextComponent(0); // Close other sections
+              handleNextComponent(6); // Close other sections
             }}
             style={{ width: "100%" }}
           >
@@ -1335,6 +1492,8 @@ const MyContainerProduct = ({ WHId, businessId }) => {
             variant="contained"
             color="primary"
             onClick={() => {
+              setShowProductInputSection(false);
+              setShowProductExportSection(false);
               setOpenEditModal(true);
               handleNextComponent(0);
             }}
@@ -1587,33 +1746,68 @@ const MyContainerProduct = ({ WHId, businessId }) => {
         <DialogContent>
           {isBulkMove ? (
             <>
-              <TextField
-                label="창고 ID"
-                value={bulkMoveDetails.warehouseId}
-                onChange={(e) =>
-                  handleBulkInputChange("warehouseId", e.target.value)
-                }
+              <FormControl fullWidth margin="normal">
+                <InputLabel>창고 선택</InputLabel>
+                <Select
+                  value={bulkMoveDetails.warehouseId}
+                  onChange={(e) =>
+                    handleWarehouseSelectChange("warehouseId", e.target.value)
+                  }
+                >
+                  <MenuItem value="">
+                    <em>선택하세요</em>
+                  </MenuItem>
+                  {warehouses.map((warehouse) => (
+                    <MenuItem key={warehouse.id} value={warehouse.id}>
+                      {warehouse.title}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <FormControl
                 fullWidth
                 margin="normal"
-              />
-              <TextField
-                label="적재함 이름"
-                value={bulkMoveDetails.locationName}
-                onChange={(e) =>
-                  handleBulkInputChange("locationName", e.target.value)
-                }
+                disabled={!locations.length}
+              >
+                <InputLabel>적재함 이름 선택</InputLabel>
+                <Select
+                  value={bulkMoveDetails.locationName}
+                  onChange={(e) =>
+                    handleLocationSelectChange("locationName", e.target.value)
+                  }
+                >
+                  <MenuItem value="">
+                    <em>선택하세요</em>
+                  </MenuItem>
+                  {locations.map((location) => (
+                    <MenuItem key={location.id} value={location.name}>
+                      {location.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <FormControl
                 fullWidth
                 margin="normal"
-              />
-              <TextField
-                label="층수"
-                value={bulkMoveDetails.floorLevel}
-                onChange={(e) =>
-                  handleBulkInputChange("floorLevel", e.target.value)
-                }
-                fullWidth
-                margin="normal"
-              />
+                disabled={!floorLevels.length}
+              >
+                <InputLabel>층수 선택</InputLabel>
+                <Select
+                  value={bulkMoveDetails.floorLevel}
+                  onChange={(e) =>
+                    handleBulkInputChange("floorLevel", e.target.value)
+                  }
+                >
+                  <MenuItem value="">
+                    <em>선택하세요</em>
+                  </MenuItem>
+                  {floorLevels.map((floor) => (
+                    <MenuItem key={floor} value={floor}>
+                      {floor}층
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
               <TextField
                 label="수량"
                 value={bulkMoveDetails.quantity}
@@ -1633,43 +1827,83 @@ const MyContainerProduct = ({ WHId, businessId }) => {
                   {product.name} (Barcode: {product.barcode}) - 수량 :{" "}
                   {product.quantityNow}개
                 </h3>
-                <TextField
-                  label="물건이 옮겨질 창고의 ID"
-                  value={product.warehouseId}
-                  onChange={(e) =>
-                    handleNewLocationChange(
-                      index,
-                      "warehouseId",
-                      e.target.value
-                    )
-                  }
+                <FormControl fullWidth margin="normal">
+                  <InputLabel>물건이 옮겨질 창고 선택</InputLabel>
+                  <Select
+                    value={product.warehouseId}
+                    onChange={(e) =>
+                      handleWarehouseSelectChange(
+                        "warehouseId",
+                        e.target.value,
+                        index
+                      )
+                    }
+                  >
+                    <MenuItem value="">
+                      <em>선택하세요</em>
+                    </MenuItem>
+                    {warehouses.map((warehouse) => (
+                      <MenuItem key={warehouse.id} value={warehouse.id}>
+                        {warehouse.title}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <FormControl
                   fullWidth
                   margin="normal"
-                />
-                <TextField
-                  label="물건이 옮겨질 적재함 이름"
-                  value={product.locationName}
-                  onChange={(e) =>
-                    handleNewLocationChange(
-                      index,
-                      "locationName",
-                      e.target.value
-                    )
-                  }
+                  disabled={!locations.length}
+                >
+                  <InputLabel>물건이 옮겨질 적재함 이름 선택</InputLabel>
+                  <Select
+                    value={product.locationName}
+                    onChange={(e) =>
+                      handleLocationSelectChange(
+                        "locationName",
+                        e.target.value,
+                        index
+                      )
+                    }
+                  >
+                    <MenuItem value="">
+                      <em>선택하세요</em>
+                    </MenuItem>
+                    {locations.map((location) => (
+                      <MenuItem key={location.id} value={location.name}>
+                        {location.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <FormControl
                   fullWidth
                   margin="normal"
-                />
-                <TextField
-                  label="옮겨질 적재함의 층"
-                  value={product.floorLevel}
-                  onChange={(e) =>
-                    handleNewLocationChange(index, "floorLevel", e.target.value)
-                  }
-                  fullWidth
-                  margin="normal"
-                />
+                  disabled={!floorLevels.length}
+                >
+                  <InputLabel>옮겨질 적재함의 층 선택</InputLabel>
+                  <Select
+                    value={product.floorLevel}
+                    onChange={(e) =>
+                      handleNewLocationChange(
+                        index,
+                        "floorLevel",
+                        e.target.value
+                      )
+                    }
+                  >
+                    <MenuItem value="">
+                      <em>선택하세요</em>
+                    </MenuItem>
+                    {floorLevels.map((floor) => (
+                      <MenuItem key={floor} value={floor}>
+                        {floor}층
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
                 <TextField
                   label="옮길 수량"
+                  type="number"
                   value={product.quantity}
                   onChange={(e) =>
                     handleNewLocationChange(index, "quantity", e.target.value)
@@ -1685,11 +1919,19 @@ const MyContainerProduct = ({ WHId, businessId }) => {
         </DialogContent>
         <DialogActions>
           {isBulkMove ? (
-            <Button onClick={handleFinalizeBulkMove} color="primary">
+            <Button
+              onClick={handleFinalizeBulkMove}
+              color="primary"
+              disabled={!isBulkMoveEnabled}
+            >
               Bulk Move
             </Button>
           ) : (
-            <Button onClick={handleFinalizeDetailMove} color="primary">
+            <Button
+              onClick={handleFinalizeDetailMove}
+              color="primary"
+              disabled={!moveData.every((product) => product.floorLevel)}
+            >
               Detail Move
             </Button>
           )}
@@ -1698,6 +1940,25 @@ const MyContainerProduct = ({ WHId, businessId }) => {
           </Button>
           <Button onClick={() => setOpenMoveModal(false)} color="primary">
             Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* Print Modal */}
+      <Dialog
+        open={printModalOpen}
+        onClose={() => setPrintModalOpen(false)}
+        fullScreen
+      >
+        <DialogContent>
+          <PrintableTable columns={productColumns} data={tableData} />
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setPrintModalOpen(false)}
+            color="primary"
+            autoFocus
+          >
+            Close
           </Button>
         </DialogActions>
       </Dialog>
@@ -1722,200 +1983,350 @@ const MyContainerProduct = ({ WHId, businessId }) => {
       <div style={{ display: "flex", width: "100%", margin: "0 0 0 200px" }}>
         {/* 입고하기 Section */}
         {showProductInputSection && (
-          <div style={{ width: "30%" }}>
-            <div style={{ flex: 1, padding: "1rem" }}>
-              <Typography variant="h6">제품 데이터 입력</Typography>
-              <TextField
-                label="바코드"
-                value={newProductData.barcode}
-                onChange={(e) =>
-                  handleNewProductInputChange("barcode", e.target.value)
-                }
-                fullWidth
-                margin="normal"
-              />
-              <TextField
-                label="상품명"
-                value={newProductData.name}
-                onChange={(e) =>
-                  handleNewProductInputChange("name", e.target.value)
-                }
-                fullWidth
-                margin="normal"
-              />
-              <TextField
-                label="수량"
-                value={newProductData.quantity}
-                onChange={(e) =>
-                  handleNewProductInputChange("quantity", e.target.value)
-                }
-                fullWidth
-                margin="normal"
-              />
-              <TextField
-                label="유통기한"
-                value={newProductData.expirationDate}
-                onChange={(e) =>
-                  handleNewProductInputChange("expirationDate", e.target.value)
-                }
-                fullWidth
-                margin="normal"
-              />
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleAddNewProduct}
-              >
-                제품 추가
-              </Button>
-
-              <label htmlFor="upload-import">
-                <input
-                  required
-                  style={{ display: "none" }}
-                  id="upload-import"
-                  name="upload-import"
-                  type="file"
-                  onChange={importExcel}
-                />
-                <Fab
-                  color="primary"
-                  size="small"
-                  component="span"
-                  aria-label="add"
-                  variant="extended"
-                  style={{ marginTop: "10px" }}
-                >
-                  엑셀로 입고하기
-                </Fab>
-              </label>
-
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={handleFinalImport}
-                style={{ marginTop: "10px" }}
-              >
-                Final Import
-              </Button>
+          <div style={{ width: "100%", marginRight: "20px" }}>
+            <div style={{ padding: "1rem" }}>
+              <Typography variant="h6" gutterBottom>
+                제품 데이터 입력
+              </Typography>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <tbody>
+                  <tr>
+                    <td style={{ padding: "8px" }}>
+                      <TextField
+                        label="바코드"
+                        value={newProductData.barcode}
+                        onChange={(e) =>
+                          handleNewProductInputChange("barcode", e.target.value)
+                        }
+                        fullWidth
+                        margin="normal"
+                      />
+                    </td>
+                    <td style={{ padding: "8px" }}>
+                      <TextField
+                        label="상품명"
+                        value={newProductData.name}
+                        onChange={(e) =>
+                          handleNewProductInputChange("name", e.target.value)
+                        }
+                        fullWidth
+                        margin="normal"
+                      />
+                    </td>
+                    <td style={{ padding: "8px" }}>
+                      <TextField
+                        label="수량"
+                        value={newProductData.quantity}
+                        onChange={(e) =>
+                          handleNewProductInputChange(
+                            "quantity",
+                            e.target.value
+                          )
+                        }
+                        fullWidth
+                        margin="normal"
+                      />
+                    </td>
+                    <td style={{ padding: "8px" }}>
+                      <TextField
+                        label="유통기한"
+                        value={newProductData.expirationDate}
+                        onChange={(e) =>
+                          handleNewProductInputChange(
+                            "expirationDate",
+                            e.target.value
+                          )
+                        }
+                        fullWidth
+                        margin="normal"
+                      />
+                    </td>
+                    <td style={{ padding: "8px", textAlign: "center" }}>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleAddNewProduct}
+                      >
+                        제품 추가
+                      </Button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style={{ padding: "8px" }} colSpan={5}>
+                      <label htmlFor="upload-import">
+                        <input
+                          required
+                          style={{ display: "none" }}
+                          id="upload-import"
+                          name="upload-import"
+                          type="file"
+                          onChange={importExcel}
+                        />
+                        <Fab
+                          color="primary"
+                          size="small"
+                          component="span"
+                          aria-label="add"
+                          variant="extended"
+                          style={{ marginRight: "10px" }}
+                        >
+                          엑셀로 제품 추가
+                        </Fab>
+                      </label>
+                      <Button
+                        variant="contained"
+                        color="secondary"
+                        onClick={handleFinalImport}
+                      >
+                        입고하기
+                      </Button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
 
             <div
               style={{
-                width: "300px",
+                width: "100%",
                 height: "25vh",
-                flex: 1,
                 padding: "1rem",
                 overflow: "auto",
+                border: "1px solid #ddd",
+                borderRadius: "8px",
               }}
             >
               <Typography variant="h6">Expected Import List</Typography>
-              <ul>
-                {expectedImportList.map((product, index) => (
-                  <li key={index}>
-                    {product.name} - {product.barcode} - {product.quantity}
-                  </li>
-                ))}
-              </ul>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr>
+                    <th
+                      style={{
+                        borderBottom: "1px solid #ddd",
+                        padding: "8px",
+                        textAlign: "left",
+                      }}
+                    >
+                      이름
+                    </th>
+                    <th
+                      style={{
+                        borderBottom: "1px solid #ddd",
+                        padding: "8px",
+                        textAlign: "left",
+                      }}
+                    >
+                      바코드
+                    </th>
+                    <th
+                      style={{
+                        borderBottom: "1px solid #ddd",
+                        padding: "8px",
+                        textAlign: "left",
+                      }}
+                    >
+                      수량
+                    </th>
+                    <th
+                      style={{
+                        borderBottom: "1px solid #ddd",
+                        padding: "8px",
+                        textAlign: "left",
+                      }}
+                    >
+                      비고
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {expectedImportList.map((product, index) => (
+                    <tr key={index}>
+                      <td style={{ padding: "8px" }}>{product.name}</td>
+                      <td style={{ padding: "8px" }}>{product.barcode}</td>
+                      <td style={{ padding: "8px" }}>{product.quantity}</td>
+                      <td style={{ padding: "8px" }}>
+                        <IconButton
+                          color="secondary"
+                          onClick={() => handleDeleteImportProduct(index)}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         )}
 
         {/* 출고하기 Section */}
         {showProductExportSection && (
-          <div style={{ width: "30%" }}>
-            <div style={{ flex: 1, padding: "1rem" }}>
-              <Typography variant="h6">출고 데이터 입력</Typography>
-              <TextField
-                label="바코드"
-                value={newExportData.barcode}
-                onChange={(e) =>
-                  handleNewExportInputChange("barcode", e.target.value)
-                }
-                fullWidth
-                margin="normal"
-              />
-              <TextField
-                label="수량"
-                value={newExportData.quantity}
-                onChange={(e) =>
-                  handleNewExportInputChange("quantity", e.target.value)
-                }
-                fullWidth
-                margin="normal"
-              />
-              <TextField
-                label="날짜"
-                value={newExportData.date}
-                onChange={(e) =>
-                  handleNewExportInputChange("date", e.target.value)
-                }
-                fullWidth
-                margin="normal"
-              />
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleAddNewExport}
-              >
-                출고 추가
-              </Button>
-
-              <label htmlFor="upload-export">
-                <input
-                  required
-                  style={{ display: "none" }}
-                  id="upload-export"
-                  name="upload-export"
-                  type="file"
-                  onChange={exportExcel}
-                />
-                <Fab
-                  color="primary"
-                  size="small"
-                  component="span"
-                  aria-label="add"
-                  variant="extended"
-                  style={{ marginTop: "10px" }}
-                >
-                  엑셀로 출고하기
-                </Fab>
-              </label>
-
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={handleFinalExport}
-                style={{ marginTop: "10px" }}
-              >
-                Final Export
-              </Button>
+          <div style={{ width: "100%", marginRight: "20px" }}>
+            <div style={{ padding: "1rem" }}>
+              <Typography variant="h6" gutterBottom>
+                출고 데이터 입력
+              </Typography>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <tbody>
+                  <tr>
+                    <td style={{ padding: "8px" }}>
+                      <TextField
+                        label="바코드"
+                        value={newExportData.barcode}
+                        onChange={(e) =>
+                          handleNewExportInputChange("barcode", e.target.value)
+                        }
+                        fullWidth
+                        margin="normal"
+                      />
+                    </td>
+                    <td style={{ padding: "8px" }}>
+                      <TextField
+                        label="수량"
+                        value={newExportData.quantity}
+                        onChange={(e) =>
+                          handleNewExportInputChange("quantity", e.target.value)
+                        }
+                        fullWidth
+                        margin="normal"
+                      />
+                    </td>
+                    <td style={{ padding: "8px" }}>
+                      <TextField
+                        label="송장"
+                        value={newExportData.trackingNumber}
+                        onChange={(e) =>
+                          handleNewExportInputChange("trackingNumber", e.target.value)
+                        }
+                        fullWidth
+                        margin="normal"
+                      />
+                    </td>
+                    <td style={{ padding: "8px", textAlign: "center" }}>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleAddNewExport}
+                      >
+                        출고 추가
+                      </Button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style={{ padding: "8px" }} colSpan={4}>
+                      <label htmlFor="upload-export">
+                        <input
+                          required
+                          style={{ display: "none" }}
+                          id="upload-export"
+                          name="upload-export"
+                          type="file"
+                          onChange={exportExcel}
+                        />
+                        <Fab
+                          color="primary"
+                          size="small"
+                          component="span"
+                          aria-label="add"
+                          variant="extended"
+                          style={{ marginRight: "10px" }}
+                        >
+                          엑셀로 데이터 가져오기
+                        </Fab>
+                      </label>
+                      <Button
+                        variant="contained"
+                        color="secondary"
+                        onClick={handleFinalExport}
+                      >
+                        Final Export
+                      </Button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
 
             <div
               style={{
-                width: "300px",
+                width: "100%",
                 height: "25vh",
-                flex: 1,
                 padding: "1rem",
                 overflow: "auto",
+                border: "1px solid #ddd",
+                borderRadius: "8px",
               }}
             >
               <Typography variant="h6">Expected Export List</Typography>
-              <ul>
-                {expectedExportList.map((product, index) => (
-                  <li key={index}>
-                    {product.barcode} - {product.quantity} - {product.date}
-                  </li>
-                ))}
-              </ul>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr>
+                    <th
+                      style={{
+                        borderBottom: "1px solid #ddd",
+                        padding: "8px",
+                        textAlign: "left",
+                      }}
+                    >
+                      바코드
+                    </th>
+                    <th
+                      style={{
+                        borderBottom: "1px solid #ddd",
+                        padding: "8px",
+                        textAlign: "left",
+                      }}
+                    >
+                      수량
+                    </th>
+                    <th
+                      style={{
+                        borderBottom: "1px solid #ddd",
+                        padding: "8px",
+                        textAlign: "left",
+                      }}
+                    >
+                      송장번호
+                    </th>
+                    <th
+                      style={{
+                        borderBottom: "1px solid #ddd",
+                        padding: "8px",
+                        textAlign: "left",
+                      }}
+                    >
+                      비고
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {expectedExportList.map((product, index) => (
+                    <tr key={index}>
+                      <td style={{ padding: "8px" }}>{product.barcode}</td>
+                      <td style={{ padding: "8px" }}>{product.quantity}</td>
+                      <td style={{ padding: "8px" }}>{product.trackingNumber}</td>
+                      <td style={{ padding: "8px" }}>
+                        <IconButton
+                          color="secondary"
+                          onClick={() => handleDeleteExportProduct(index)}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         )}
-        <Grid item xs={12} style={{ width: "100%", height: "80vh" }}>
-          {/* 메인 영역 */}
-          {currentIndex >= 0 && componentsArray[currentIndex]}
-        </Grid>
+        {!(showProductExportSection || showProductInputSection) && (
+          <Grid item xs={12} style={{ width: "100%" }}>
+            {/* 메인 영역 */}
+            {currentIndex >= 0 && componentsArray[currentIndex]}
+          </Grid>
+        )}
       </div>
     </div>
   );
