@@ -57,6 +57,16 @@ const editInfoStyle = {
             color: 'white',
         },
     },
+    modalTitle: {
+        display: 'flex',
+        justifyContent: 'center',
+        textAlign: 'center'
+    },
+    modalCloseButton: {
+        backgroundColor: "transparent",
+        border: "none",
+        cursor: 'pointer'
+    },
 }
 
 export default editInfoStyle;

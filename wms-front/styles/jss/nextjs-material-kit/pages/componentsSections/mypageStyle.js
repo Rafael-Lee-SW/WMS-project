@@ -25,6 +25,7 @@ const mypageStyle = {
     flex: '8', 
     backgroundColor: '#ffffff',
     textAlign: 'center',
+    overflow: 'auto'
   },
   divContainer: {
     display: 'flex',

@@ -1,5 +1,6 @@
 //MyContainerMap.jsx
 import React, { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/router";
 // Library of konva and color Checker
 import {
   Stage,
@@ -10,7 +11,6 @@ import {
   Circle,
   Transformer,
 } from "react-konva";
-import { SketchPicker } from "react-color";
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
 // @material-ui/icons
@@ -100,7 +100,9 @@ const useStyles = makeStyles((theme) => ({
 /**
  * 창고 관리 Component
  */
+
 const MyContainerMap = ({ warehouseId, businessId }) => {
+  const router = useRouter();
   const classes = useStyles();
   const stageRef = useRef(null);
   const layerRef = useRef(null);
@@ -165,7 +167,6 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
 
   // 현재 벽 생성 / 일반 커서 를 선택하기 위한 State
   const [currentSetting, setCurrentSetting] = useState("location");
-  const [showColorPicker, setShowColorPicker] = useState(false);
 
   // 새롭게 생성되는 적재함(location)의 속성 설정을 위한 State
   const [newLocationColor, setNewLocationColor] = useState("blue");
@@ -334,6 +335,16 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
 
       if (response.ok) {
         console.log("Map data saved successfully");
+
+        // Use router.replace with shallow routing
+        router.replace(
+          {
+            pathname: `/user/${warehouseId}`,
+            query: { component: "map" },
+          },
+          undefined,
+          { shallow: true }
+        );
       } else {
         console.error("Error saving map data");
       }
@@ -435,10 +446,21 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
           console.error("Locations data not found");
           return;
         }
+
         const newLocations = locations.map((location, index) => {
-          // Calculate the red and blue components based on the fill value
-          const red = Math.round((location.fill / 100) * 255); // Increase from 0 to 255
-          const blue = Math.round(((100 - location.fill) / 100) * 255); // Decrease from 255 to 0
+          const startColor = { r: 27, g: 177, b: 231 }; // Starting color (#1bb1e7)
+          const endColor = { r: 0, g: 0, b: 255 }; // Ending color (#0000FF)
+
+          // Calculate the color components based on the fill value
+          const red = Math.round(
+            startColor.r + ((endColor.r - startColor.r) * location.fill) / 100
+          );
+          const green = Math.round(
+            startColor.g + ((endColor.g - startColor.g) * location.fill) / 100
+          );
+          const blue = Math.round(
+            startColor.b + ((endColor.b - startColor.b) * location.fill) / 100
+          );
 
           return {
             id: location.id.toString(),
@@ -447,7 +469,7 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
             width: location.xsize || 50,
             height: location.ysize || 50,
             z: location.zsize,
-            fill: `rgba(${red}, 0, ${blue}, 1)`, // Calculate RGB with alpha as 1
+            fill: `rgba(${red}, ${green}, ${blue}, 1)`, // Calculate RGB with alpha as 1
             draggable: true,
             order: index,
             name: location.name || `적재함 ${index}`,
@@ -648,7 +670,7 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
       id: id,
       x: Math.round(x),
       y: Math.round(y),
-      radius: 20,
+      radius: 10,
       stroke: "#666",
       fill: "#ddd",
       opacity: 0,
@@ -970,11 +992,11 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
           if (!existingAnchor) {
             const newId = anchorsRef.current.length
               ? Math.max(
-                ...anchorsRef.current.flatMap(({ start, end }) => [
-                  parseInt(start.id(), 10),
-                  parseInt(end.id(), 10),
-                ])
-              ) + 1
+                  ...anchorsRef.current.flatMap(({ start, end }) => [
+                    parseInt(start.id(), 10),
+                    parseInt(end.id(), 10),
+                  ])
+                ) + 1
               : 1;
             existingAnchor = buildAnchor(newId, x, y);
           } else {
@@ -1065,10 +1087,8 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
 
   // 최초 한번 실행된다.
   useEffect(() => {
-
     // 현재 param값을 통해 불러온다.
     getWarehouseAPI(warehouseId);
-
   }, []);
 
   /**
@@ -1106,9 +1126,9 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
     // Extract values from formData
     const { locationX, locationY, locationZ, row, column } = formData;
 
-    // Calculate spacing between locations
-    const xSpacing = CANVAS_SIZE / row;
-    const ySpacing = CANVAS_SIZE / column;
+    // Calculate fixed spacing between columns and rows
+    const columnSpacing = 10; // Fixed spacing of 10px between columns
+    const rowSpacing = parseInt(locationY); // Distance between rows equal to the height of each location
 
     // 위치 자동 생성을 위한 부분
     const newLocations = [];
@@ -1118,10 +1138,14 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
         const rowNumber = (i + 1).toString().padStart(2, "0"); // Convert to string and pad with zeros
         const columnNumber = (j + 1).toString().padStart(2, "0"); // Convert to string and pad with zeros
 
+        // Calculate x and y positions with new spacing logic
+        const xPosition = j * (parseInt(locationX) + columnSpacing);
+        const yPosition = i * (parseInt(locationY) + rowSpacing);
+
         newLocations.push({
           id: null,
-          x: Math.round(j * xSpacing + xSpacing / 2 - locationX / 2),
-          y: Math.round(i * ySpacing + ySpacing / 2 - locationY / 2),
+          x: xPosition,
+          y: yPosition,
           z: parseInt(locationZ),
           width: Math.round(parseInt(locationX)),
           height: Math.round(parseInt(locationY)),
@@ -1196,8 +1220,17 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
 
     if (matches) {
       const red = parseInt(matches[1], 10);
-      // Assuming the fill percentage was encoded in the red component
-      return ((red / 255) * 100).toFixed(1);
+      const green = parseInt(matches[2], 10);
+
+      // Calculate the percentage using both red and green components
+      // Both red and green start at a higher value and decrease to 0 as the fill increases
+      const redPercentage = (27 - red) / 27;
+      const greenPercentage = (177 - green) / 177;
+
+      // The fill percentage is determined by averaging the percentage contribution from red and green
+      const fillPercentage = ((redPercentage + greenPercentage) / 2) * 100;
+
+      return fillPercentage.toFixed(1);
     }
 
     return "0.0"; // Default to 0% if unable to parse
@@ -1343,27 +1376,6 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
             <h3>Set Properties for Wall</h3>
             <div>
               <label>
-                Color:
-                <div
-                  onClick={() => setShowColorPicker(!showColorPicker)}
-                  style={{
-                    width: "36px",
-                    height: "14px",
-                    background: newWallColor,
-                    border: "1px solid #000",
-                    cursor: "pointer",
-                  }}
-                />
-                {showColorPicker && (
-                  <SketchPicker
-                    color={newWallColor}
-                    onChangeComplete={(color) => setNewWallColor(color.hex)}
-                  />
-                )}
-              </label>
-            </div>
-            <div>
-              <label>
                 Width:
                 <input
                   type="range"
@@ -1470,7 +1482,10 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
               }}
             >
               {locations
-                .filter((locations) => locations.type === "location" && locations.name !== "00-00" )
+                .filter(
+                  (locations) =>
+                    locations.type === "location" && locations.name !== "00-00"
+                )
                 .map((locations, index) => (
                   <li
                     key={index}
@@ -1680,7 +1695,9 @@ const RectangleTransformer = ({
   const fontSize = Math.min(shapeProps.width, shapeProps.height) / 4;
 
   // 재고함의 행렬과 높이를 나타내도록 설정한 MainText
-  const mainText = `${shapeProps.name}-${shapeProps.z < 10 ? '0' + shapeProps.z : shapeProps.z}`;
+  const mainText = `${shapeProps.name}-${
+    shapeProps.z < 10 ? "0" + shapeProps.z : shapeProps.z
+  }`;
 
   // RGB 색깔로 재고율 퍼센트(%)를 추출하는 함수
   const extractFillPercentage = (rgbaString) => {
@@ -1688,13 +1705,21 @@ const RectangleTransformer = ({
 
     if (matches) {
       const red = parseInt(matches[1], 10);
-      // Assuming the fill percentage was encoded in the red component
-      return ((red / 255) * 100).toFixed(1);
+      const green = parseInt(matches[2], 10);
+
+      // Calculate the percentage using both red and green components
+      // Both red and green start at a higher value and decrease to 0 as the fill increases
+      const redPercentage = (27 - red) / 27;
+      const greenPercentage = (177 - green) / 177;
+
+      // The fill percentage is determined by averaging the percentage contribution from red and green
+      const fillPercentage = ((redPercentage + greenPercentage) / 2) * 100;
+
+      return fillPercentage.toFixed(1);
     }
 
     return "0.0"; // Default to 0% if unable to parse
   };
-
 
   // 사각형이 선택되었을 때 변형기를 연결하기 위한 Effect 훅
   useEffect(() => {

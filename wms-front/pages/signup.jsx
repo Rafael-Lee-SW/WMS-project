@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
-import { Button, TextField, IconButton } from "@mui/material";
+import { Button, TextField } from "@mui/material";
 import { makeStyles } from "@material-ui/core/styles";
-import ArrowBackIcon from '@material-ui/icons/ArrowBack';
+import { toast } from 'react-toastify';
 import GridContainer from '../components/Grid/GridContainer';
 import GridItem from '../components/Grid/GridItem';
 import Card from '../components/Card/Card';
@@ -134,7 +134,17 @@ export default function SignUp() {
   const [isEmailValid, setIsEmailValid] = useState(false);
   const [timer, setTimer] = useState(0);
   const [isCertificationButtonEnabled, setIsCertificationButtonEnabled] = useState(false);
-  const [isCertificationSuccess, setIsCertificationSuccess] = useState(false); // 인증 성공 상태
+  const [isCertificationSuccess, setIsCertificationSuccess] = useState(false);
+
+  const notify = (message) => toast(message, {
+    position: "top-center",
+    autoClose: 2000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+  });
 
   useEffect(() => {
     const validatePassword = (password) => {
@@ -188,11 +198,11 @@ export default function SignUp() {
   const handleEmailCheck = async () => {
     try {
       const response = await axios.post('https://i11a508.p.ssafy.io/api/oauth/email-check', { email });
-      console.log('Email Check Response:', response.data); // 응답 데이터 출력
+      console.log('Email Check Response:', response.data);
       
       if (response.data.code === 'SU') { 
         setEmailCheckMessage('사용 가능한 이메일입니다.');
-        setIsEmailValid(true); // 이메일이 유효할 때만 true로 설정
+        setIsEmailValid(true);
       } else {
         setEmailCheckMessage(response.data.message);
         setIsEmailValid(false);
@@ -208,11 +218,10 @@ export default function SignUp() {
       try {
         const certificationResponse = await axios.post('https://i11a508.p.ssafy.io/api/oauth/email-certification', { email });
         
-        // 응답을 직접 확인하여 처리
         if (certificationResponse.data.code === 'SU') {
           setCertificationMessage('인증번호 발송에 성공하였습니다.');
-          setIsCertificationButtonEnabled(true); // 인증 확인 버튼 활성화
-          setTimer(180); // 타이머를 3분으로 초기화
+          setIsCertificationButtonEnabled(true);
+          setTimer(180); 
         } else {
           setCertificationMessage('메일 전송에 실패했습니다.');
         }
@@ -235,16 +244,16 @@ export default function SignUp() {
 
         if (code === 'SU') {
           setCertificationMessage('이메일이 인증되었습니다.');
-          setIsCertificationButtonEnabled(false); // 인증 확인 버튼 비활성화
-          setIsCertificationSuccess(true); // 인증 성공 상태 설정
-          setTimer(0); // 타이머 초기화
+          setIsCertificationButtonEnabled(false);
+          setIsCertificationSuccess(true);
+          setTimer(0); 
         } else {
           setCertificationMessage('인증번호가 일치하지 않습니다.');
-          setIsCertificationSuccess(false); // 인증 실패 상태
+          setIsCertificationSuccess(false);
         }
       } catch (error) {
         setCertificationMessage('네트워크 오류가 발생했습니다.');
-        setIsCertificationSuccess(false); // 인증 실패 상태
+        setIsCertificationSuccess(false);
       }
     }
   };
@@ -262,13 +271,13 @@ export default function SignUp() {
         });
         const { message, isSuccess } = handleResponse(response);
 
-        alert(isSuccess ? '회원가입이 완료되었습니다. 로그인 후 이용해주세요.' : message);
+        toast[isSuccess ? 'success' : 'error'](isSuccess ? '회원가입이 완료되었습니다. 로그인 후 이용해주세요.' : message);
 
         if (isSuccess) {
           router.push('/signIn');
         }
       } catch (error) {
-        alert('회원가입에 실패하였습니다. 다시 시도해주세요.');
+        toast.error('회원가입에 실패하였습니다. 다시 시도해주세요.');
       }
     }
   };
@@ -319,12 +328,12 @@ export default function SignUp() {
                   <Button
                     variant="contained"
                     style={{
-                      backgroundColor: isEmailValid ? "#7D4A1A" : "#c0c0c0", // 이메일이 유효할 때만 활성화 색상
+                      backgroundColor: isEmailValid ? "#7D4A1A" : "#c0c0c0",
                       color: "white",
                     }} 
                     onClick={handleSendCertificationEmail}
                     className={classes.button}
-                    disabled={!isEmailValid} // 버튼 활성화 조건
+                    disabled={!isEmailValid}
                   >
                     인증 메일 발송
                   </Button>
@@ -333,14 +342,14 @@ export default function SignUp() {
                   <Button
                     variant="contained"
                     style={{
-                      backgroundColor: isCertificationButtonEnabled ? "#7D4A1A" : "#c0c0c0", // 인증 메일 발송 후에만 활성화
+                      backgroundColor: isCertificationButtonEnabled ? "#7D4A1A" : "#c0c0c0",
                       color: "white"
                     }} 
                     onClick={handleCertification}
                     className={classes.buttonSmall}
-                    disabled={!isCertificationButtonEnabled} // 버튼 활성화 조건
+                    disabled={!isCertificationButtonEnabled}
                   >
-                    {certificationButtonLabel} {/* 현재 작업에 맞게 라벨 업데이트 */}
+                    {certificationButtonLabel}
                   </Button>
                 </div>
                 <span style={{ color: isCertificationSuccess ? 'blue' : 'red' }}>{certificationMessage}</span>

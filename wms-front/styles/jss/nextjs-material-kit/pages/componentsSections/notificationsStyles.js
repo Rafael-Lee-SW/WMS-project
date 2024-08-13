@@ -6,7 +6,24 @@ const notificationsStyles = {
     display: "block",
     width: "100%",
     position: "relative",
-    padding: "0"
+    padding: "0",
+  },
+  cardContainer: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      width: '100%',
+      justifyContent: 'center',
+      paddingTop: '20px',
+  },
+  card: {
+      cursor: "pointer",
+      marginBottom: "10px",
+      padding: "10px",
+      border: "1px solid lightgray",
+      borderRadius: "5px",
+      width: '50%',
+      border: '1px solid #7D4A1A'
   },
   title: {
     ...title,
@@ -14,7 +31,16 @@ const notificationsStyles = {
     minHeight: "32px",
     textDecoration: "none"
   },
-  container
+  modalTitle: {
+        display: 'flex',
+        justifyContent: 'center',
+        textAlign: 'center'
+  },
+  modalCloseButton: {
+        backgroundColor: "transparent",
+        border: "none",
+        cursor: 'pointer'
+  },
 };
 
 export default notificationsStyles;
