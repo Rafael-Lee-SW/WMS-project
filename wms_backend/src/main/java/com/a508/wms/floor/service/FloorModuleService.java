@@ -1,5 +1,8 @@
 package com.a508.wms.floor.service;
 
+import static com.a508.wms.util.constant.ProductConstant.CONVERT_SIZE;
+import static com.a508.wms.util.constant.ProductConstant.DEFAULT_FLOOR_LEVEL;
+
 import com.a508.wms.floor.domain.Floor;
 import com.a508.wms.floor.exception.FloorException;
 import com.a508.wms.floor.repository.FloorRepository;
@@ -13,9 +16,6 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import static com.a508.wms.util.constant.ProductConstant.CONVERT_SIZE;
-import static com.a508.wms.util.constant.ProductConstant.DEFAULT_FLOOR_LEVEL;
 
 @Slf4j
 @Service
@@ -119,7 +119,7 @@ public class FloorModuleService {
         int floorSize = calculateFloorSize(floor);
 
         int productTotalSize = products.stream()
-            .mapToInt(product -> product.getProductDetail().getSize() * product.getQuantity())
+            .mapToInt(Product::getQuantity)
             .sum();
 
         return Math.min(100, productTotalSize * 100 / floorSize);
