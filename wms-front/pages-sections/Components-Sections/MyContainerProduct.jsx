@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
-import {useRouter} from "next/router";
+import { useRouter } from "next/router";
+import styled from "styled-components";
 // Import MUI components
 import Grid from "@mui/material/Grid";
 import Fab from "@mui/material/Fab";
@@ -58,7 +59,7 @@ import {
 } from "/components/Test/hooksCallbacks.jsx";
 
 // MUI-DataTable 관련 import
-import { createMuiTheme, MuiThemeProvider } from "@material-ui/core/styles";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
 import MUIDataTable from "mui-datatables";
 import Chip from "@mui/material/Chip";
 import { Tooltip, InputLabel, FormControl } from "@mui/material";
@@ -97,6 +98,28 @@ registerPlugin(CopyPaste);
 registerPlugin(DropdownMenu);
 registerPlugin(Filters);
 registerPlugin(HiddenRows);
+
+// Create the theme with the desired overrides
+const muiDatatableTheme = createTheme({
+  components: {
+    MuiTableBody: {
+      styleOverrides: {
+        root: {
+          '& .MuiTableCell-root': {
+            maxHeight: '400px !important', // Set your desired max height here
+          }
+        }
+      }
+    },
+    MUIDataTable: {
+      styleOverrides: {
+        responsiveScroll: {
+          maxHeight: '80vh !important', // Set your desired max height here
+        }
+      }
+    }
+  },
+});
 
 const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
 
@@ -470,6 +493,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
         console.log("Product moved successfully");
         const result = await response.json();
         console.log(result);
+        productGetAPI(businessId); // 정보가 반영된 테이블을 새로 불러온다.
       } else {
         console.error("Failed to move product");
       }
@@ -1022,7 +1046,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
   const listOptions = {
     fixedHeader: true,
     filterType: "multiselect",
-    responsive: "standard",
+    responsive: "scroll",
     download: true,
     print: false, // Disable default print
     viewColumns: true,
@@ -1046,15 +1070,18 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
     },
   };
 
+
   // Define the componentsArray with separate options
   const componentsArray = [
-    <MUIDataTable
-      key="productList"
-      title={"상품 목록"}
-      data={tableData}
-      columns={productColumns}
-      options={listOptions}
-    />,
+    <ThemeProvider  theme={muiDatatableTheme}>
+      <MUIDataTable
+        key="productList"
+        title={"상품 목록"}
+        data={tableData}
+        columns={productColumns}
+        options={listOptions}
+      />
+    </ThemeProvider>,
     <MUIDataTable
       key="moveProductList"
       title={"상품 이동하기"}
@@ -1983,7 +2010,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
           <CircularProgress />
         </div>
       )}
-      <div style={{ display: "flex", width: "100%", margin: "0 0 0 200px" }}>
+      <div style={{ display: "flex", width: "100%", margin: "0 0 0 200px", height: "85vh" }}>
         {/* 입고하기 Section */}
         {showProductInputSection && (
           <div style={{ width: "100%", marginRight: "20px" }}>
@@ -2092,14 +2119,14 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
             <div
               style={{
                 width: "100%",
-                height: "25vh",
+                height: "75vh",
                 padding: "1rem",
                 overflow: "auto",
                 border: "1px solid #ddd",
                 borderRadius: "8px",
               }}
             >
-              <Typography variant="h6">Expected Import List</Typography>
+              <Typography variant="h6">입고 예정 목록</Typography>
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
                   <tr>
@@ -2141,7 +2168,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
                     </th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody >
                   {expectedImportList.map((product, index) => (
                     <tr key={index}>
                       <td style={{ padding: "8px" }}>{product.name}</td>
@@ -2254,7 +2281,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
             <div
               style={{
                 width: "100%",
-                height: "25vh",
+                height: "75vh",
                 padding: "1rem",
                 overflow: "auto",
                 border: "1px solid #ddd",

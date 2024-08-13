@@ -189,12 +189,17 @@ const Select = (props) => {
     const locationData = [];
     for (let i = 0; i < row; i++) {
       for (let j = 0; j < column; j++) {
-        const rowNumber = (i + 1).toString().padStart(2, "0");
-        const columnNumber = (j + 1).toString().padStart(2, "0");
+        // Format row and column numbers as two-digit strings
+        const rowNumber = (i + 1).toString().padStart(2, "0"); // Convert to string and pad with zeros
+        const columnNumber = (j + 1).toString().padStart(2, "0"); // Convert to string and pad with zeros
+
+        // Calculate x and y positions with new spacing logic
+        const xPosition = j * (parseInt(locationX) + columnSpacing);
+        const yPosition = i * (parseInt(locationY) + rowSpacing);
 
         locationData.push({
-          xPosition: Math.round(j * xSpacing + xSpacing / 2 - locationX / 2),
-          yPosition: Math.round(i * ySpacing + ySpacing / 2 - locationY / 2),
+          x: xPosition,
+          y: yPosition,
           zSize: parseInt(locationZ),
           xSize: Math.round(parseInt(locationX)),
           ySize: Math.round(parseInt(locationY)),
@@ -429,7 +434,7 @@ const Select = (props) => {
                     component="a"
                     className={`${classes.cardLink} ${classes.imageCard}`}
                   >
-                  <div className={classes.cardSelect} >
+                    <div className={classes.cardSelect} >
                       <div className={classes.cardHeader}>
                         {/* Header Section Content */}
                       </div>
@@ -449,7 +454,7 @@ const Select = (props) => {
                         </div>
                       </div>
                     </div>
-              
+
                   </CardSelect>
                 </Link>
               </GridItem>

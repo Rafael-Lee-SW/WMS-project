@@ -17,6 +17,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import SaveIcon from "@mui/icons-material/Save";
+import CircularProgress from "@mui/material/CircularProgress";
 // core components
 import Button from "/components/CustomButtons/Button.js";
 // CSS스타일
@@ -107,6 +108,9 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
   const stageRef = useRef(null);
   const layerRef = useRef(null);
 
+  // 로딩 Loading
+  const [loading, setLoading] = useState(true); // Overall loading state
+
   // 창고 배열을 저장하기 위한 초기 세팅
   const initialContainer = Array.from({ length: CANVAS_SIZE }, () =>
     Array.from({ length: CANVAS_SIZE }, () => ({
@@ -118,7 +122,11 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
   const [container, setContainer] = useState(initialContainer);
 
   // 줌 인, 줌 아웃을 위한 Scale
-  const [scale, setScale] = useState(1); // 초기 줌 값
+  const [scale, setScale] = useState(0.8); // 초기 줌 값
+  // 처음 시작 위치를 지정하기 위함
+  const [stagePosition, setStagePosition] = useState({ x: 0, y: 0 });
+  const VIEWPORT_WIDTH = window.innerWidth; // 현재 창의 가로세로 길이를 받아서 창을 구한다.
+  const VIEWPORT_HEIGHT = window.innerHeight;
 
   // 사각형을 추가하고 관리하는 State 추가
   const [locations, setLocations] = useState([
@@ -531,10 +539,10 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
 
   // 줌-인 / 줌-아웃 함수
   const handleZoomIn = () => {
-    setScale(scale * 1.2);
+    setScale((prevScale) => prevScale * 1.2);
   };
   const handleZoomOut = () => {
-    setScale(scale / 1.2);
+    setScale((prevScale) => prevScale / 1.2);
   };
 
   // 그리드 라인 생성하는 함수
@@ -992,11 +1000,11 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
           if (!existingAnchor) {
             const newId = anchorsRef.current.length
               ? Math.max(
-                  ...anchorsRef.current.flatMap(({ start, end }) => [
-                    parseInt(start.id(), 10),
-                    parseInt(end.id(), 10),
-                  ])
-                ) + 1
+                ...anchorsRef.current.flatMap(({ start, end }) => [
+                  parseInt(start.id(), 10),
+                  parseInt(end.id(), 10),
+                ])
+              ) + 1
               : 1;
             existingAnchor = buildAnchor(newId, x, y);
           } else {
@@ -1087,10 +1095,33 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
 
   // 최초 한번 실행된다.
   useEffect(() => {
-    // 현재 param값을 통해 불러온다.
-    getWarehouseAPI(warehouseId);
+
+    const fetchData = async () => {
+      try {
+        setLoading(true); // Start loading
+        await getWarehouseAPI(warehouseId);
+      } catch (error) {
+        console.error("Error during fetch:", error);
+      } finally {
+        setLoading(false); // End loading
+      }
+    };
+    fetchData();
   }, []);
 
+  // 중앙에서 시작하기 위함
+  useEffect(() => {
+
+    const centerCanvas = () => {
+      
+      const centerX = (VIEWPORT_WIDTH - CANVAS_SIZE) / 2;
+      const centerY = (VIEWPORT_HEIGHT - CANVAS_SIZE) / 1.5;
+
+      setStagePosition({ x: centerX, y: centerY });
+    };
+
+    centerCanvas();
+  }, [CANVAS_SIZE, VIEWPORT_WIDTH, VIEWPORT_HEIGHT]);
   /**
    * 창고 자동 생성 로직을 위한 부분
    */
@@ -1149,12 +1180,12 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
           z: parseInt(locationZ),
           width: Math.round(parseInt(locationX)),
           height: Math.round(parseInt(locationY)),
-          fill: "lightblue", // Default fill color
           draggable: true,
           order: newLocations.length + 1,
-          name: `${rowNumber}-${columnNumber}`, // Use formatted row and column numbers
-          type: "temp",
+          name: `${rowNumber}-${columnNumber}`,
+          productStorageType: "상온",
           rotation: 0,
+          touchableFloor: 2, // 닿을 수 있는 층수
         });
       }
     }
@@ -1399,6 +1430,8 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
             height={window.innerHeight}
             scaleX={scale}
             scaleY={scale}
+            x={stagePosition.x}
+            y={stagePosition.y}
             draggable={currentSetting === "wall" ? false : true}
             ref={stageRef}
             onPointerMove={Pointer}
@@ -1677,6 +1710,24 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
           </div>
         </Fade>
       </Modal>
+      {loading && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(255, 255, 255, 0.8)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 2000,
+          }}
+        >
+          <CircularProgress />
+        </div>
+      )}
     </div>
   );
 };
@@ -1695,9 +1746,8 @@ const RectangleTransformer = ({
   const fontSize = Math.min(shapeProps.width, shapeProps.height) / 4;
 
   // 재고함의 행렬과 높이를 나타내도록 설정한 MainText
-  const mainText = `${shapeProps.name}-${
-    shapeProps.z < 10 ? "0" + shapeProps.z : shapeProps.z
-  }`;
+  const mainText = `${shapeProps.name}-${shapeProps.z < 10 ? "0" + shapeProps.z : shapeProps.z
+    }`;
 
   // RGB 색깔로 재고율 퍼센트(%)를 추출하는 함수
   const extractFillPercentage = (rgbaString) => {
