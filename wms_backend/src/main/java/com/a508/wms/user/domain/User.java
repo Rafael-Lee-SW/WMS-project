@@ -22,11 +22,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@SQLRestriction("status_enum = 'Active'")
 @Builder
 @Table(name = "user")
 public class User extends BaseTimeEntity {
