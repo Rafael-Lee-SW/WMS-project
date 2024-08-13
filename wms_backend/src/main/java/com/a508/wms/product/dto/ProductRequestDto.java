@@ -17,7 +17,6 @@ public class ProductRequestDto {
     private int quantity;
     private LocalDateTime expirationDate;
     private ProductStorageTypeEnum productStorageType;
-    private String warehouseName;
     private Long warehouseId;
 
 }

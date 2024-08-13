@@ -48,7 +48,9 @@ public class ProductFlowMapper {
                  .productFlowType(ProductFlowTypeEnum.EXPORT)
                  .build();
      }
-     public static ProductFlow fromImportResponseDto(ProductRequestDto request, Business business) {
+     public static ProductFlow fromImportResponseDto(ProductRequestDto request,
+                                                     Business business,
+                                                     String warehouseName) {
          return ProductFlow.builder()
                  .business(business)
                  .warehouseId(request.getWarehouseId())
@@ -61,7 +63,7 @@ public class ProductFlowMapper {
                  .expirationDate(request.getExpirationDate())
                  .date(LocalDateTime.now().withNano(0))
                  .productStorageType(request.getProductStorageType())
-                 .warehouseName(request.getWarehouseName())
+                 .warehouseName(warehouseName)
                  .productFlowType(ProductFlowTypeEnum.IMPORT)
                  .build();
      }

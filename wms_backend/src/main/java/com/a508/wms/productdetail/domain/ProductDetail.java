@@ -9,6 +9,7 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @Table(name = "product_detail")
+@SQLRestriction("status_enum = 'Active'")
 public class ProductDetail extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "productDetail")
