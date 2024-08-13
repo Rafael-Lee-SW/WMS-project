@@ -55,6 +55,7 @@ public class BusinessModuleService {
 
     public Business delete(Business business) {
         business.setStatusEnum(StatusEnum.DELETED);
+        business.setUser(null);
         return save(business);
     }
 }

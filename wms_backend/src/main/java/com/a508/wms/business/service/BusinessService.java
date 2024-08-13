@@ -104,8 +104,8 @@ public class BusinessService {
         try {
             log.info("[Service] delete Business by id: {}", id);
             Business existingBusiness = businessModuleService.findById(id);
-            Business deletedBusiness = businessModuleService.delete(existingBusiness);
             User user = existingBusiness.getUser();
+            Business deletedBusiness = businessModuleService.delete(existingBusiness);
             user.updateRoleTypeEnum(RoleTypeEnum.GENERAL);
 
             List<User> employees = userModuleService.findByBusinessId(deletedBusiness.getId());

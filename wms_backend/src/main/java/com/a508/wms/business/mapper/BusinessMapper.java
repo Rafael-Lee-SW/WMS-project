@@ -30,7 +30,7 @@ public class BusinessMapper {
     public static BusinessResponseDto toBusinessResponseDto(Business business) {
         return BusinessResponseDto.builder()
             .id(business.getId())
-            .userId(business.getUser().getId())
+            .userId(business.getUser() == null ? -1 : business.getUser().getId())
             .name(business.getName())
             .businessNumber(business.getBusinessNumber())
             .createdDate(business.getCreatedDate())
