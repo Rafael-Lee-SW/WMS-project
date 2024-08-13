@@ -6,9 +6,9 @@ import { makeStyles } from "@material-ui/core/styles";
 import AddCircleOutline from "@material-ui/icons/AddCircleOutline";
 import GridContainer from "/components/Grid/GridContainer.js";
 import GridItem from "/components/Grid/GridItem.js";
-import Card from "/components/Card/Card.js";
+import CardSelect from "/components/Card/CardSelect.js"; // Ensure correct path
 import { Modal, Fade, Button, TextField, Radio, RadioGroup, FormControlLabel, FormControl, FormLabel } from "@mui/material";
-import { useRouter } from "next/router"; // useRouter 훅 임포트
+import { useRouter } from "next/router";
 import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/selectStyle.js";
 
 const useStyles = makeStyles(styles);
@@ -16,7 +16,7 @@ const useStyles = makeStyles(styles);
 const Select = (props) => {
   const { ...rest } = props;
   const classes = useStyles();
-  const router = useRouter(); // useRouter 훅으로 라우터 객체 초기화
+  const router = useRouter();
 
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -31,26 +31,24 @@ const Select = (props) => {
 
   const [facilityType, setFacilityType] = useState("STORE");
   const [priority, setPriority] = useState(1);
-  
+
   const [cards, setCards] = useState([]);
-  const [userData, setUserData] = useState(null); // State to store user data
-  const [businessData, setBusinessData] = useState(null); // State to store business data
-  const [businessId, setBusinessId] = useState(null); // State to store business ID
+  const [userData, setUserData] = useState(null);
+  const [businessData, setBusinessData] = useState(null);
+  const [businessId, setBusinessId] = useState(null);
   const [currentWarehouseCount, setCurrentWarehouseCount] = useState(0);
   const [allowedWarehouseCount, setAllowedWarehouseCount] = useState(0);
 
-  const [validationErrors, setValidationErrors] = useState({}); // 에러를 추적하기 위함
+  const [validationErrors, setValidationErrors] = useState({});
 
   const handleOpen = async () => {
-    // 창고 수량 및 구독 정보 가져오기
-    const {presentCount, MaxCount} = await fetchWarehouseCounts(businessId);
+    const { presentCount, MaxCount } = await fetchWarehouseCounts(businessId);
 
-    // 현재 창고 수와 결제된 창고 수 비교
     if (presentCount >= MaxCount) {
       alert("추가 생성을 위한 결제가 필요합니다.");
-      router.push("/payment"); // 결제 페이지로 이동
+      router.push("/payment");
     } else {
-      setOpen(true); // 모달을 띄운다
+      setOpen(true);
     }
   };
 
@@ -66,7 +64,6 @@ const Select = (props) => {
 
   const handleFacilityTypeChange = (e) => {
     setFacilityType(e.target.value);
-    // Reset priority to default when facility type is STORE
     if (e.target.value === "STORE") {
       setPriority(1);
     }
@@ -76,28 +73,23 @@ const Select = (props) => {
     setPriority(e.target.value);
   };
 
-  // 입력값 검증
   const validateForm = (data) => {
     const errors = {};
 
-    // 1. Validate containerName
     if (data.containerName.length > 20) {
       errors.containerName = "20글자를 초과했습니다.";
     }
 
-    // 2. Validate containerSize
     const containerSize = parseInt(data.containerSize, 10);
     if (isNaN(containerSize) || containerSize < 300 || containerSize > 10000) {
       errors.containerSize = "잘못된 입력입니다.";
     }
 
-    // 3. Validate locationZ
     const locationZ = parseInt(data.locationZ, 10);
     if (isNaN(locationZ) || locationZ < 1 || locationZ > 10) {
       errors.locationZ = "잘못된 입력입니다.";
     }
 
-    // 4. Validate locationX, locationY, row, column
     const locationX = parseInt(data.locationX, 10);
     const locationY = parseInt(data.locationY, 10);
     const row = parseInt(data.row, 10);
@@ -151,22 +143,14 @@ const Select = (props) => {
         const warehouseCountData = await warehouseCountResponse.json();
         const subscriptionData = await subscriptionResponse.json();
         const subscriptionCntDat = subscriptionData.result;
-        
+
         const presentCount = warehouseCountData.result;
-        const MaxCount = subscriptionCntDat[0].warehouseCount
-        /**
-         * React 생명 주기와 관련된 것으로, 우선적으로 해당 값은 다음 함수로 전해질 때 살아있지 않거나, 뒤늦게 옴.
-         * await으로 기다리게 해도 이건 밖에 있는 함수를 건들여서 갖고 오는 것이라서 안될 가능성이 있다.
-         * 방법 1. 그냥 return 값으로 넘겨줘서 그대로 함수에서 쓸 수 있게 하기
-         * 방법 2. 애초에 useEffect로 불러서 미리 값을 받아놓기
-         * 
-         * --> 둘다 해놓았습니다~(둘다 필요할거 같아서)
-         */
-        setCurrentWarehouseCount(warehouseCountData.result); 
+        const MaxCount = subscriptionCntDat[0].warehouseCount;
+
+        setCurrentWarehouseCount(warehouseCountData.result);
         setAllowedWarehouseCount(subscriptionCntDat[0].warehouseCount);
 
-        return {presentCount, MaxCount}
-
+        return { presentCount, MaxCount };
       } else {
         console.error("Error fetching warehouse or subscription data");
       }
@@ -175,47 +159,38 @@ const Select = (props) => {
     }
   };
 
-  // 입력된 창고 정보를 바탕으로 새로운 창고를 만드는 메서드 (클릭시 작용)
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // 입력값에 대한 검증
     if (Object.keys(validationErrors).length > 0) {
-      // 입력 검증 오류가 있는 경우 제출을 방지
       return;
     }
 
-    // businessId가 설정되어 있는지 확인
     if (!businessId) {
       console.error("Business ID is missing");
       return;
     }
 
-    // 창고 생성을 위한 데이터
     const postData = {
-      businessId, // 저장된 business ID 사용
-      size: parseInt(formData.containerSize), // 크기를 숫자로 변환
-      columnCount: parseInt(formData.column), // 열 개수를 숫자로 변환
-      rowCount: parseInt(formData.row), // 행 개수를 숫자로 변환
+      businessId,
+      size: parseInt(formData.containerSize),
+      columnCount: parseInt(formData.column),
+      rowCount: parseInt(formData.row),
       name: formData.containerName || `Container ${cards.length + 1}`,
-      priority: facilityType === "STORE" ? 1 : parseInt(priority), // 기본 우선순위
-      facilityTypeEnum: facilityType, // 기본 시설 유형
+      priority: facilityType === "STORE" ? 1 : parseInt(priority),
+      facilityTypeEnum: facilityType,
     };
 
-    // 창고 내의 로케이션 생성을 위한 데이터 추출
     const { locationX, locationY, locationZ, row, column } = formData;
 
-    // Calculate spacing between locations
     const xSpacing = postData.size / row / 2;
     const ySpacing = postData.size / column / 2;
 
-    // Location(적재함) 생성
     const locationData = [];
     for (let i = 0; i < row; i++) {
       for (let j = 0; j < column; j++) {
-        // Format row and column numbers as two-digit strings
-        const rowNumber = (i + 1).toString().padStart(2, "0"); // Convert to string and pad with zeros
-        const columnNumber = (j + 1).toString().padStart(2, "0"); // Convert to string and pad with zeros
+        const rowNumber = (i + 1).toString().padStart(2, "0");
+        const columnNumber = (j + 1).toString().padStart(2, "0");
 
         locationData.push({
           xPosition: Math.round(j * xSpacing + xSpacing / 2 - locationX / 2),
@@ -223,14 +198,14 @@ const Select = (props) => {
           zSize: parseInt(locationZ),
           xSize: Math.round(parseInt(locationX)),
           ySize: Math.round(parseInt(locationY)),
-          name: `${rowNumber}-${columnNumber}`, // Use formatted row and column numbers
+          name: `${rowNumber}-${columnNumber}`,
           productStorageType: "상온",
           rotation: 0,
           touchableFloor: 2,
         });
       }
     }
-    // walls(벽) 생성
+
     const wallData = generateWalls(locationData);
 
     try {
@@ -251,18 +226,15 @@ const Select = (props) => {
 
         const warehousesId = warehouses.id;
 
-        // 창고가 생성되면 해당 창고에 자동 로케이션 설정에 들어간다.
         postLocationAPI(locationData, warehousesId);
         postWallAPI(wallData, warehousesId);
 
-        // card 섹션 추가
         console.log("New warehouse created:", newWarehouse);
 
-        // Optionally update the cards state to reflect the new warehouse
         const newCard = {
-          id: newWarehouse.result.id, // Assuming the API returns the new warehouse ID
+          id: newWarehouse.result.id,
           title: newWarehouse.result.name,
-          image: "/img/bg.jpg", // Replace with an actual image path if available
+          image: "/img/sign.jpg",
         };
 
         setCards((prev) => [...prev, newCard]);
@@ -275,12 +247,9 @@ const Select = (props) => {
     }
   };
 
-  // Function to generate walls around locations
-  // Function to generate a perimeter wall around all locations
   const generateWalls = (generatedLocations) => {
     if (generatedLocations.length === 0) return null;
 
-    // Calculate the bounding box for the new locations
     let minX = Number.MAX_VALUE,
       minY = Number.MAX_VALUE,
       maxX = 0,
@@ -293,7 +262,6 @@ const Select = (props) => {
       maxY = Math.max(maxY, location.yPosition + location.ySize);
     });
 
-    // 벽 데이터를 기록합니다.
     const wallData = [
       { startX: minX, startY: minY, endX: maxX, endY: minY },
       { startX: maxX, startY: minY, endX: maxX, endY: maxY },
@@ -304,7 +272,6 @@ const Select = (props) => {
     return wallData;
   };
 
-  // 생성된 된정보를 API를 통해 보냄
   const postLocationAPI = async (requests, warehouseId) => {
     console.log("로케이션");
 
@@ -332,7 +299,7 @@ const Select = (props) => {
       console.error("Error saving map data:", error);
     }
   };
-  // 생성된 된정보를 API를 통해 보냄
+
   const postWallAPI = async (wallDtos, warehouseId) => {
     console.log("벽");
     const total = { wallDtos, warehouseId };
@@ -360,7 +327,6 @@ const Select = (props) => {
     }
   };
 
-  // API call to fetch warehouse information // 해당 비즈니스 아이디의 창고 정보
   const getAllWarehouseInfoAPI = async (businessId) => {
     try {
       const response = await fetch(
@@ -408,11 +374,10 @@ const Select = (props) => {
       if (response.ok) {
         const userData = await response.json();
         const businessInfo = userData.result;
-        setBusinessData(businessInfo); // Store business data in state
-        setBusinessId(businessInfo.businessId); // Store business ID
+        setBusinessData(businessInfo);
+        setBusinessId(businessInfo.businessId);
         console.log("Business data loaded:", businessInfo);
 
-        // Now call the warehouse info API with the business ID
         fetchWarehouseCounts(businessInfo.businessId);
         getAllWarehouseInfoAPI(businessInfo.businessId);
       } else {
@@ -423,12 +388,7 @@ const Select = (props) => {
     }
   };
 
-  /**
-   * UseEffect Part
-   */
-
   useEffect(() => {
-    // Retrieve user data from localStorage
     const user = localStorage.getItem("user");
     if (user) {
       try {
@@ -436,18 +396,15 @@ const Select = (props) => {
         setUserData(parsedUser);
         console.log("User data loaded from localStorage:", parsedUser);
 
-        // Fetch business data using user ID
         fetchBusinessData(parsedUser.id);
       } catch (error) {
         console.error("Error parsing user data from localStorage:", error);
       }
     }
-
   }, []);
 
   return (
     <div>
-      {/* Header */}
       <Header
         brand="FIT-BOX"
         rightLinks={<HeaderLinks />}
@@ -461,39 +418,35 @@ const Select = (props) => {
         {...rest}
       />
 
-      {/* Card Section */}
       <div className={classes.section}>
         <div className={classes.container}>
           <h3>창고를 선택하세요. ({currentWarehouseCount}/{allowedWarehouseCount})</h3>
           <GridContainer>
-            {/* Image Card */}
             {cards.map((card) => (
               <GridItem key={card.id} xs={12} sm={12} md={4}>
                 <Link href={`/user/${card.id}`} passHref>
-                  <Card
+                  <CardSelect
                     component="a"
                     className={`${classes.cardLink} ${classes.imageCard}`}
                   >
+                    <div>
+                      <h4>{card.title}</h4>
+                    </div>
                     <img
                       src={card.image}
                       alt="Card image"
                       className={classes.cardImage}
                     />
-                    <div>
-                      <h4>{card.title}</h4>
-                    </div>
-                  </Card>
+                  </CardSelect>
                 </Link>
               </GridItem>
             ))}
-            {/* Plus Button Card */}
             <GridItem xs={12} sm={12} md={4} className={classes.plusCard}>
               <div className={classes.buttonCard} onClick={handleOpen}>
                 <AddCircleOutline className={classes.plusButton} />
               </div>
             </GridItem>
           </GridContainer>
-          {/* Modal for input form */}
           <Modal
             className={classes.modal}
             open={open}
@@ -519,8 +472,7 @@ const Select = (props) => {
                     onChange={handleChange}
                     error={Boolean(validationErrors.containerName)}
                     helperText={
-                      validationErrors.containerName ||
-                      "20글자까지 가능합니다."
+                      validationErrors.containerName || "20글자까지 가능합니다."
                     }
                     FormHelperTextProps={{
                       style: {
@@ -647,7 +599,7 @@ const Select = (props) => {
                     variant="contained"
                     color="primary"
                     fullWidth
-                    disabled={Object.keys(validationErrors).length > 0} // Disable button if there are validation errors
+                    disabled={Object.keys(validationErrors).length > 0}
                   >
                     Finish
                   </Button>
