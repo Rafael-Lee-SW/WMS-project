@@ -229,9 +229,19 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
         }
         console.log(locations);
         const newLocations = locations.map((location, index) => {
-          // Calculate the red and blue components based on the fill value
-          const red = Math.round((location.fill / 100) * 255); // Increase from 0 to 255
-          const blue = Math.round(((100 - location.fill) / 100) * 255); // Decrease from 255 to 0
+          const startColor = { r: 27, g: 177, b: 231 }; // Starting color (#1bb1e7)
+          const endColor = { r: 0, g: 0, b: 255 }; // Ending color (#0000FF)
+
+          // Calculate the color components based on the fill value
+          const red = Math.round(
+            startColor.r + ((endColor.r - startColor.r) * location.fill) / 100
+          );
+          const green = Math.round(
+            startColor.g + ((endColor.g - startColor.g) * location.fill) / 100
+          );
+          const blue = Math.round(
+            startColor.b + ((endColor.b - startColor.b) * location.fill) / 100
+          );
 
           return {
             id: location.id.toString(),
@@ -240,7 +250,7 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
             width: location.xsize || 50,
             height: location.ysize || 50,
             z: location.zsize,
-            fill: `rgba(${red}, 0, ${blue}, 1)`, // Calculate RGB with alpha as 1
+            fill: `rgba(${red}, ${green}, ${blue}, 1)`, // Calculate RGB with alpha as 1
             draggable: true,
             order: index,
             name: location.name || `적재함 ${index}`,
@@ -991,14 +1001,23 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
     console.log(selectedData);
   };
 
-  // RGB 색깔로 재고율 퍼센트(%)를 추출하는 함수
+  // Extract fill percentage from RGBA color
   const extractFillPercentage = (rgbaString) => {
     const matches = rgbaString.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
 
     if (matches) {
       const red = parseInt(matches[1], 10);
-      // Assuming the fill percentage was encoded in the red component
-      return ((red / 255) * 100).toFixed(1);
+      const green = parseInt(matches[2], 10);
+
+      // Calculate the percentage using both red and green components
+      // Both red and green start at a higher value and decrease to 0 as the fill increases
+      const redPercentage = (27 - red) / 27;
+      const greenPercentage = (177 - green) / 177;
+
+      // The fill percentage is determined by averaging the percentage contribution from red and green
+      const fillPercentage = ((redPercentage + greenPercentage) / 2) * 100;
+
+      return fillPercentage.toFixed(1);
     }
 
     return "0.0"; // Default to 0% if unable to parse
@@ -1299,17 +1318,35 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
                 {ModalTableData.length > 0 && (
                   <div style={{ marginTop: "20px" }}>
                     <h3>재고 목록</h3>
-                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <table
+                      style={{ width: "100%", borderCollapse: "collapse" }}
+                    >
                       <tbody>
                         {ModalTableData.map((item, index) => (
-                          <tr key={index} style={{ borderBottom: "1px solid #ccc" }}>
-                            <td style={{ padding: "10px", width: "70%", fontSize: "18px" }}>
+                          <tr
+                            key={index}
+                            style={{ borderBottom: "1px solid #ccc" }}
+                          >
+                            <td
+                              style={{
+                                padding: "10px",
+                                width: "70%",
+                                fontSize: "18px",
+                              }}
+                            >
                               <strong>{item.name}</strong>
                               <div style={{ fontSize: "12px", color: "#666" }}>
                                 {item.barcode}
                               </div>
                             </td>
-                            <td style={{ padding: "10px", width: "30%", textAlign: "right", fontSize: "16px" }}>
+                            <td
+                              style={{
+                                padding: "10px",
+                                width: "30%",
+                                textAlign: "right",
+                                fontSize: "16px",
+                              }}
+                            >
                               {item.quantity}
                             </td>
                           </tr>
@@ -1369,14 +1406,23 @@ const RectangleTransformer = ({
     shapeProps.z < 10 ? "0" + shapeProps.z : shapeProps.z
   }`;
 
-  // Function to extract fill percentage from RGBA color
+  // Extract fill percentage from RGBA color
   const extractFillPercentage = (rgbaString) => {
     const matches = rgbaString.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
 
     if (matches) {
       const red = parseInt(matches[1], 10);
-      // Assuming the fill percentage was encoded in the red component
-      return ((red / 255) * 100).toFixed(1);
+      const green = parseInt(matches[2], 10);
+
+      // Calculate the percentage using both red and green components
+      // Both red and green start at a higher value and decrease to 0 as the fill increases
+      const redPercentage = (27 - red) / 27;
+      const greenPercentage = (177 - green) / 177;
+
+      // The fill percentage is determined by averaging the percentage contribution from red and green
+      const fillPercentage = ((redPercentage + greenPercentage) / 2) * 100;
+
+      return fillPercentage.toFixed(1);
     }
 
     return "0.0"; // Default to 0% if unable to parse
@@ -1393,7 +1439,8 @@ const RectangleTransformer = ({
         draggable={false} // Disable dragging
         stroke={isSelected || isHoveredLocal ? "red" : "transparent"} // Border color when selected or hovered
         strokeWidth={isSelected || isHoveredLocal ? 2 : 0} // Border width when selected or hovered
-       F onMouseEnter={() => setIsHoveredLocal(true)} // Set hover state
+        F
+        onMouseEnter={() => setIsHoveredLocal(true)} // Set hover state
         onMouseLeave={() => setIsHoveredLocal(false)} // Reset hover state
       />
       <Text
