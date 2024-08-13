@@ -103,4 +103,9 @@ public class WarehouseController {
     public BaseSuccessResponse<Integer> findUsage(@PathVariable Long id) {
         return new BaseSuccessResponse<>(warehouseService.findUsage(id));
     }
+
+    @GetMapping("/purpose/{id}")
+    public BaseSuccessResponse<Integer> findPurpose(@PathVariable Long id) {
+        return new BaseSuccessResponse<>(warehouseService.findPurpose(id));
+    }
 }

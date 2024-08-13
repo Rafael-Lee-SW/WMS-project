@@ -11,6 +11,7 @@ import com.a508.wms.location.service.LocationModuleService;
 import com.a508.wms.product.domain.Product;
 import com.a508.wms.product.service.ProductModuleService;
 import com.a508.wms.util.constant.ExportTypeEnum;
+import com.a508.wms.util.constant.FacilityTypeEnum;
 import com.a508.wms.util.constant.ProductStorageTypeEnum;
 import com.a508.wms.warehouse.domain.Warehouse;
 import com.a508.wms.warehouse.dto.LocationsAndWallsRequestDto;
@@ -245,6 +246,20 @@ public class WarehouseService {
             .sum();
 
         return usageSum * 100 / totalCnt;
+    }
+
+    public int findPurpose(Long id) {
+        Warehouse warehouse = warehouseModuleService.findById(id);
+
+        if (warehouse.getFacilityTypeEnum() == FacilityTypeEnum.STORE) {
+            if (warehouse.getPriority() == 1) {
+                return 1;
+            }
+
+            return 2;
+        }
+
+        return 3;
     }
 
 }
