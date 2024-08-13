@@ -8,7 +8,9 @@ import com.a508.wms.location.domain.Location;
 import com.a508.wms.location.dto.LocationResponseDto;
 import com.a508.wms.location.mapper.LocationMapper;
 import com.a508.wms.location.service.LocationModuleService;
+import com.a508.wms.product.domain.Product;
 import com.a508.wms.product.service.ProductModuleService;
+import com.a508.wms.productdetail.service.ProductDetailModuleService;
 import com.a508.wms.util.constant.ExportTypeEnum;
 import com.a508.wms.util.constant.ProductStorageTypeEnum;
 import com.a508.wms.warehouse.domain.Warehouse;
@@ -39,6 +41,7 @@ public class WarehouseService {
     private final WallModuleService wallModuleService;
     private final ProductModuleService productModuleService;
     private final WarehouseRepository warehouseRepository;
+    private final ProductDetailModuleService productDetailModuleService;
 
     /**
      * 최초 창고를 생성하는 메서드
@@ -140,7 +143,7 @@ public class WarehouseService {
 
     private int getMaxFloorCapacity(Location location) {
         List<Floor> floors = floorModuleService.findAllByLocationId(location.getId());
-        
+
         return floors.stream()
             .mapToInt(floorModuleService::getCapacity)
             .max()
@@ -210,5 +213,12 @@ public class WarehouseService {
         // 실제 로직을 여기에 구현합니다.
         // 예를 들어, 레포지토리를 사용하여 비즈니스 ID에 해당하는 창고 수를 조회합니다.
         return warehouseRepository.countByBusinessId(businessId);
+    }
+
+    public Integer findAllPscCount(Long id) {
+        List<Product> products = productModuleService.findByWarehouseId(id);
+        return products.stream()
+            .mapToInt(Product::getQuantity)
+            .sum();
     }
 }

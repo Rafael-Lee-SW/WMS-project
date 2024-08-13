@@ -2,16 +2,14 @@ package com.a508.wms.warehouse.controller;
 
 import com.a508.wms.util.BaseSuccessResponse;
 import com.a508.wms.warehouse.dto.LocationsAndWallsRequestDto;
+import com.a508.wms.warehouse.dto.WallRequestDto;
 import com.a508.wms.warehouse.dto.WarehouseByBusinessDto;
 import com.a508.wms.warehouse.dto.WarehouseDetailResponseDto;
 import com.a508.wms.warehouse.dto.WarehouseDto;
-import com.a508.wms.warehouse.dto.*;
-import com.a508.wms.warehouse.exception.WarehouseException;
 import com.a508.wms.warehouse.service.WarehouseService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -66,12 +64,14 @@ public class WarehouseController {
         warehouseService.delete(id);
         return new BaseSuccessResponse<>(null);
     }
+
     @PostMapping("/walls")
     public BaseSuccessResponse<Void> saveAllWall(@RequestBody WallRequestDto request) {
         log.info("[Controller] save Walls: ");
         warehouseService.saveAllWall(request);
         return new BaseSuccessResponse<>(null);
     }
+
     @PutMapping("/{id}/locatons-and-walls")
     public BaseSuccessResponse<WarehouseDetailResponseDto> updateLocationsAndWalls(
         @PathVariable Long id, @RequestBody LocationsAndWallsRequestDto request
@@ -80,11 +80,18 @@ public class WarehouseController {
         return new BaseSuccessResponse<>(
             warehouseService.updateLocationsAndWalls(id, request));
     }
+
     @GetMapping("/cnt/{businessId}")
-    public BaseSuccessResponse<Integer> findWarehouseCntByBusinessId(@PathVariable Long businessId) {
+    public BaseSuccessResponse<Integer> findWarehouseCntByBusinessId(
+        @PathVariable Long businessId) {
         log.info("[Controller] find Warehouse cnt by businessId: {}", businessId);
         int count = warehouseService.findWarehouseCntByBusinessId(businessId);
         return new BaseSuccessResponse<>(count);
+    }
+
+    @GetMapping("/pcscnt/{id}")
+    public BaseSuccessResponse<Integer> findAllPscCount(@PathVariable Long id) {
+        return new BaseSuccessResponse<>(warehouseService.findAllPscCount(id));
     }
 
 }
