@@ -11,11 +11,14 @@ const useStyles = makeStyles(style);
 export default function ManageEmployees({ businessId }) {
     const classes = useStyles();
     const router = useRouter();
-    const [open, setOpen] = useState(false);
+    const [detailOpen, setDetailOpen] = useState(false);
+    const [modalOpen, setModalOpen] = useState(false);
     const [currentEmployee, setCurrentEmployee] = useState(null);
     const [employees, setEmployees] = useState(null);
     const [searchResults, setSearchResults] = useState(null);
     const [searchEmail, setSearchEmail] = useState('');
+    const [message, setMessage] = useState('');
+    const [title, setTitle] = useState('');
 
     useEffect(() => {
         fetchEmployees();
@@ -59,7 +62,9 @@ export default function ManageEmployees({ businessId }) {
             await addEmployeeToBusiness(businessId, employeeId);
             setSearchResults(null);
             setSearchEmail('');
-            alert('직원이 추가되었습니다.');
+            setTitle('직원 추가');
+            setMessage('직원이 추가되었습니다.');
+            handleModalOpen();
             fetchEmployees();
         } catch (error) {
             router.push('/404');
@@ -70,19 +75,30 @@ export default function ManageEmployees({ businessId }) {
     event.stopPropagation();
     try {
         await deleteBusinessEmployee(employeeId, businessId);
+        setTitle('직원 삭제');
+        setMessage('직원이 삭제되었습니다.');
+        handleModalOpen();
         fetchEmployees(); 
     } catch (error) {
         router.push('/404');
     }
 };
 
-    const handleOpen = (employee) => {
+    const handleDetailOpen = (employee) => {
         setCurrentEmployee(employee);
-        setOpen(true);
+        setDetailOpen(true);
     };
 
-    const handleClose = () => {
+    const handleModalOpen = () => {
+        setModalOpen(true);
+    };
+
+    const handleDetailClose = () => {
         setOpen(false);
+    };
+
+    const handleModalClose = () => {
+        setModalOpen(false);
     };
 
     return (
@@ -128,7 +144,7 @@ export default function ManageEmployees({ businessId }) {
                 {employees ? (
                     employees.map((employee) => (
                         <Card key={employee.id} className={classes.listCard}>
-                            <div className={classes.nameDiv} onClick={() => handleOpen(employee)}>{employee.name}</div>
+                            <div className={classes.nameDiv} onClick={() => handleDetailOpen(employee)}>{employee.name}</div>
                             <button onClick={(e) => handleDelete(employee.id, e)} className={classes.button}>
                                 삭제
                             </button>
@@ -142,7 +158,7 @@ export default function ManageEmployees({ businessId }) {
             </div>
 
             {/* 직원 상세 정보 모달 */}
-            <Dialog open={open} onClose={handleClose}>
+            <Dialog open={detailOpen} onClose={handleDetailClose}>
                 <div className={classes.modalTitle}><DialogTitle>직원 상세 정보</DialogTitle></div>
                 <DialogContent>
                     {currentEmployee && (
@@ -154,9 +170,22 @@ export default function ManageEmployees({ businessId }) {
                     )}
                 </DialogContent>
                 <DialogActions style={{ justifyContent: 'flex-end' }}>
-                    <button className={classes.modalCloseButton} onClick={handleClose} color="primary">
+                    <button className={classes.modalCloseButton} onClick={handleDetailClose} color="primary">
                         X
                     </button>
+                </DialogActions>
+            </Dialog>
+            <Dialog open={modalOpen} onClose={handleModalClose}>
+                <div className={classes.modalTitle}><DialogTitle>{title}</DialogTitle></div>
+                <DialogContent>
+                    <>
+                    <p>{message}</p>
+                    </>
+                </DialogContent>
+                <DialogActions style={{ justifyContent: 'flex-end' }}>
+                <button className={classes.modalCloseButton} onClick={handleModalClose}>
+                    X
+                </button>
                 </DialogActions>
             </Dialog>
         </div>

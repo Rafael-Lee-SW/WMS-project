@@ -5,6 +5,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import { List, ListItem } from "@mui/material";
 import Button from "/components/CustomButtons/Button.js";
 import styles from "/styles/jss/nextjs-material-kit/components/headerLinksStyle.js";
+import axios from "axios";
 
 const useStyles = makeStyles(styles);
 
@@ -21,6 +22,35 @@ export default function HeaderLinks(props) {
   const handleLogout = () => {
     localStorage.removeItem("token");
     router.push("/");
+  };
+
+  const handleWarehouseManagement = async () => {
+    const user = localStorage.getItem("user");
+    if (user) {
+      const userInfo = JSON.parse(user);
+      const userId = userInfo.id;
+
+      try {
+        const response = await axios.get(`https://i11a508.p.ssafy.io/api/users/${userId}`);
+        const userData = response.data.result;
+
+        if (userData.roleTypeEnum === "GENERAL") {
+          alert("사업자 등록 후 이용해 주세요")
+          router.push({
+            pathname: "/mypage",
+            query: { component: "license" },
+          });
+        } else {
+          router.push("/user/select");
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        alert("사용자 정보를 불러오는 중 오류가 발생했습니다.");
+      }
+    } else {
+      alert("로그인이 필요합니다.");
+      router.push("/signIn");
+    }
   };
 
   // 현재 경로가 /mypage인지 확인
@@ -50,7 +80,7 @@ export default function HeaderLinks(props) {
           </ListItem>
           <ListItem className={classes.listItem}>
             <Button
-              href="/warehouse"
+              onClick={handleWarehouseManagement}
               color="transparent"
               className={classes.navLink}
             >
@@ -71,7 +101,7 @@ export default function HeaderLinks(props) {
           </ListItem>
           <ListItem className={classes.listItem}>
             <Button
-              href="/warehouse"
+              onClick={handleWarehouseManagement}
               color="transparent"
               className={classes.navLink}
             >

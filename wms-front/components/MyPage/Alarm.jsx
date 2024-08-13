@@ -20,15 +20,20 @@ export default function Alarm({ businessId }) {
     }, []);
 
     const getNotifications = async () => {
-        try {
-            const response = await fetchNotifications(businessId);
-            const notifications = response.data.result.productFlowResponseDtos;
-            
-            setNotifications(notifications);
-        } catch (error) {
-            console.log(error)
-            router.push('/404');
+        if ( businessId !== -1 ) {
+            try {
+                const response = await fetchNotifications(businessId);
+                const notifications = response.data.result.productFlowResponseDtos;
+                
+                setNotifications(notifications);
+            } catch (error) {
+                console.log(error)
+                router.push('/404');
+            }
+        } else {
+            setNotifications([]);
         }
+        
     }
 
     const handleOpen = (notification) => {

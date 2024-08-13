@@ -3,12 +3,14 @@ import { useState, useEffect } from "react";
 import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/editInfoStyle.js";
 import { useRouter } from "next/router";
 import { editUser } from "../../pages/api";
+import { Dialog, DialogTitle, DialogContent, DialogActions } from "@material-ui/core";
 
 const useStyles = makeStyles(styles);
 
-export default function EditInfo({ userId, name, nickname, onUpdateInfo }) {
+export default function EditInfo({ userId, name, nickname }) {
     const classes = useStyles();
     const router = useRouter();
+    const [open, setOpen] = useState(false);
     const [userInfo, setUserInfo] = useState({ userId, name, nickname });
 
     useEffect(() => {
@@ -23,6 +25,14 @@ export default function EditInfo({ userId, name, nickname, onUpdateInfo }) {
         }));
     };
 
+    const handleOpen = () => {
+        setOpen(true);
+    };
+
+    const handleClose = () => {
+        setOpen(false);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -31,8 +41,8 @@ export default function EditInfo({ userId, name, nickname, onUpdateInfo }) {
                 "nickname" : userInfo.nickname
             };
             await editUser(userInfo.userId, data);
-            alert('회원정보 수정이 완료되었습니다.')
             setUserInfo(data);
+            handleOpen();
         } catch (error) {
             router.push('/404');
         }
@@ -80,6 +90,17 @@ export default function EditInfo({ userId, name, nickname, onUpdateInfo }) {
                     </button>
                 </div>
             </div>
+            <Dialog open={open} onClose={handleClose}>
+                <div className={classes.modalTitle}><DialogTitle>회원 정보 수정</DialogTitle></div>
+                <DialogContent>
+                    <p>회원 정보 수정이 완료되었습니다.</p>
+                </DialogContent>
+                <DialogActions style={{ justifyContent: 'flex-end' }}>
+                <button className={classes.modalCloseButton} onClick={handleClose}>
+                    X
+                </button>
+                </DialogActions>
+            </Dialog>
         </div>
     );
 }

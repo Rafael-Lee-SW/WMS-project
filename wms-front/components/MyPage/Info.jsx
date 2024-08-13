@@ -29,12 +29,6 @@ export default function Info({ name, email, nickname, roleTypeEnum, businessId, 
                   <td className={classes.labelCell}><strong className={classes.text}>이메일</strong></td>
                   <td className={classes.valueCell}>{initialUserInfo.email}</td>
                 </tr>
-                <tr>
-                  <td className={classes.labelCell}>
-                    <strong className={classes.text}>가입 일자</strong>
-                  </td>
-                  <td className={classes.valueCell}>{formattedDate}</td>
-                </tr>
                 {roleTypeEnum === 'BUSINESS' && (
                 <>
                 <tr>
