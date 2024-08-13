@@ -4,6 +4,7 @@ import com.a508.wms.floor.mapper.FloorMapper;
 import com.a508.wms.location.domain.Location;
 import com.a508.wms.location.dto.LocationRequestDto;
 import com.a508.wms.location.dto.LocationResponseDto;
+import com.a508.wms.location.dto.LocationStorageResponseDto;
 import com.a508.wms.location.dto.LocationUpdateDto;
 import com.a508.wms.warehouse.domain.Warehouse;
 import org.springframework.stereotype.Component;
@@ -68,5 +69,10 @@ public class LocationMapper {
             .productStorageType(request.getStorageType())
             .build();
     }
-
+    public static LocationStorageResponseDto toLocationStorageResponseDto(Location location) {
+        return LocationStorageResponseDto.builder()
+                .id(location.getId())
+                .floorStorage(location.getXSize() * location.getYSize() / location.getZSize())
+                .build();
+    }
 }
