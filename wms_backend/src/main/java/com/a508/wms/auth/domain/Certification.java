@@ -10,12 +10,14 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLRestriction;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name="certification")
 @Table(name="certification")
+@SQLRestriction("status_enum = 'Active'")
 public class Certification extends BaseTimeEntity {
 
     @Id

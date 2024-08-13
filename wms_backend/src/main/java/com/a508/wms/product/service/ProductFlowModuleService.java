@@ -8,6 +8,7 @@ import com.a508.wms.product.dto.*;
 import com.a508.wms.product.exception.ProductInvalidRequestException;
 import com.a508.wms.product.mapper.ProductFlowMapper;
 import com.a508.wms.product.repository.ProductFlowRepository;
+import com.a508.wms.warehouse.service.WarehouseModuleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ public class ProductFlowModuleService {
 
     private final ProductFlowRepository productFlowRepository;
     private final BusinessRepository businessRepository;
+    private final WarehouseModuleService warehouseModuleService;
 
     public void saveExport(ExportResponseDto exportResponseDto, Business business) {
 
@@ -32,7 +34,8 @@ public class ProductFlowModuleService {
     public void saveImport(ProductRequestDto request, Product product) {
 
         Business business = product.getProductDetail().getBusiness();
-        ProductFlow productFlow = ProductFlowMapper.fromImportResponseDto(request,business);
+        ProductFlow productFlow = ProductFlowMapper.fromImportResponseDto(request,business,
+                warehouseModuleService.findById(request.getWarehouseId()).getName());
         productFlow.updateBusiness(business);
         productFlowRepository.save(productFlow);
     }
