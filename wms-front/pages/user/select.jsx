@@ -429,14 +429,27 @@ const Select = (props) => {
                     component="a"
                     className={`${classes.cardLink} ${classes.imageCard}`}
                   >
-                    <div>
-                      <h4>{card.title}</h4>
+                  <div className={classes.cardSelect} >
+                      <div className={classes.cardHeader}>
+                        {/* Header Section Content */}
+                      </div>
+                      <div className={classes.cardBody}>
+                        <h4>{card.title}</h4>
+                      </div>
+                      <hr className={classes.gradientHr} />
+                      <div className={classes.cardFooter}>
+                        <div className={classes.pcsContainer}>
+                          <img src="/img/box.png" alt="pcsContainer" className={classes.containerImage} />
+                          <div className="pcsCnt">{card.pcsCount}</div>
+                        </div>
+
+                        <div className={classes.locationContainer}>
+                          <img src="/img/location.png" alt="location" className={classes.containerImage} />
+                          <div className="locationCnt">{card.locationCount}</div>
+                        </div>
+                      </div>
                     </div>
-                    <img
-                      src={card.image}
-                      alt="Card image"
-                      className={classes.cardImage}
-                    />
+              
                   </CardSelect>
                 </Link>
               </GridItem>
