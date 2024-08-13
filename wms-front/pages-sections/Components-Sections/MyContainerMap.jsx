@@ -10,7 +10,6 @@ import {
   Circle,
   Transformer,
 } from "react-konva";
-import { SketchPicker } from "react-color";
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
 // @material-ui/icons
@@ -165,7 +164,6 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
 
   // 현재 벽 생성 / 일반 커서 를 선택하기 위한 State
   const [currentSetting, setCurrentSetting] = useState("location");
-  const [showColorPicker, setShowColorPicker] = useState(false);
 
   // 새롭게 생성되는 적재함(location)의 속성 설정을 위한 State
   const [newLocationColor, setNewLocationColor] = useState("blue");
@@ -1341,27 +1339,6 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
         {currentSetting === "wall" && (
           <>
             <h3>Set Properties for Wall</h3>
-            <div>
-              <label>
-                Color:
-                <div
-                  onClick={() => setShowColorPicker(!showColorPicker)}
-                  style={{
-                    width: "36px",
-                    height: "14px",
-                    background: newWallColor,
-                    border: "1px solid #000",
-                    cursor: "pointer",
-                  }}
-                />
-                {showColorPicker && (
-                  <SketchPicker
-                    color={newWallColor}
-                    onChangeComplete={(color) => setNewWallColor(color.hex)}
-                  />
-                )}
-              </label>
-            </div>
             <div>
               <label>
                 Width:
