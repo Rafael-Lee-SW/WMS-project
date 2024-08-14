@@ -139,4 +139,22 @@ public class AuthController {
         UserResponseDto userResponseDto = UserMapper.toUserResponseDto(user);
         return ResponseEntity.ok(userResponseDto);
     }
+
+
+    @GetMapping("/refresh/token")
+    public ResponseEntity<UserResponseDto> getUserInfo(@RequestHeader("Authorization") String authHeader) {
+        // JWT 토큰에서 "Bearer " 부분을 제거하고 토큰 값만 추출
+        String token = authHeader.substring(7);
+        // 토큰을 검증하고 사용자 ID 추출
+        String userId = jwtProvider.validate(token);
+
+        if (userId == null) {
+            // 토큰이 유효하지 않으면 401 Unauthorized 응답 반환
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        // 추출한 사용자 ID로 사용자 정보를 조회
+        UserResponseDto userResponseDto = userService.findById(Long.parseLong(userId));
+        return ResponseEntity.ok(userResponseDto);
+    }
 }
