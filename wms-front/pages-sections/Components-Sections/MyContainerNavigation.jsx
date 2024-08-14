@@ -215,14 +215,12 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
     });
 
     // Extract the location names and warehouse IDs from the filtered data
-    const locationNames = filteredData.map((item) => item.currentLocationName);
-
+    const locationNames = filteredData
+      .filter((item) => item.warehouseId === parseInt(WHId))
+      .map((item) => item.currentLocationName);
     // Find the IDs of the locations that match both the location name and warehouse ID
     const matchedLocationIds = locations
-      .filter(
-        (location) =>
-          locationNames.includes(location.name)
-      )
+      .filter((location) => locationNames.includes(location.name))
       .map((location) => location.id);
 
     console.log(matchedLocationIds);
