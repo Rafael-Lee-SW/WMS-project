@@ -16,16 +16,16 @@ const Card = React.forwardRef((props, ref) => {
     [className]: className !== undefined,
   });
 
-  const frameRef = useRef(null);
+  const containerRef = useRef(null);
   const cardRef = useRef(null);
   const lightRef = useRef(null);
 
   useEffect(() => {
-    const frame = frameRef.current;
+    const container = containerRef.current;
     const card = cardRef.current;
     const light = lightRef.current;
 
-    let { x, y, width, height } = frame.getBoundingClientRect();
+    let { x, y, width, height } = container.getBoundingClientRect();
 
     const mouseMove = (e) => {
       const left = e.clientX - x;
@@ -40,19 +40,19 @@ const Card = React.forwardRef((props, ref) => {
     };
 
     const handleResize = () => {
-      const rect = frame.getBoundingClientRect();
+      const rect = container.getBoundingClientRect();
       x = rect.x;
       y = rect.y;
       width = rect.width;
       height = rect.height;
     };
 
-    frame.addEventListener("mouseenter", () => {
-      frame.addEventListener("mousemove", mouseMove);
+    container.addEventListener("mouseenter", () => {
+      container.addEventListener("mousemove", mouseMove);
     });
 
-    frame.addEventListener("mouseleave", () => {
-      frame.removeEventListener("mousemove", mouseMove);
+    container.addEventListener("mouseleave", () => {
+      container.removeEventListener("mousemove", mouseMove);
       card.style.transform = "";
       light.style.backgroundImage = "";
     });
@@ -60,17 +60,16 @@ const Card = React.forwardRef((props, ref) => {
     window.addEventListener("resize", handleResize);
 
     return () => {
-      frame.removeEventListener("mouseenter", mouseMove);
-      frame.removeEventListener("mouseleave", mouseMove);
+      container.removeEventListener("mouseenter", mouseMove);
+      container.removeEventListener("mouseleave", mouseMove);
       window.removeEventListener("resize", handleResize);
     };
   }, []);
 
   return (
-    <div className={classes.frame} ref={frameRef}>
+    <div className={classes.frame} ref={containerRef}>
       <div className={cardClasses} ref={cardRef} {...rest}>
-        <div className={classes.light} ref={lightRef}>
-        </div>
+        <div className={classes.light} ref={lightRef}></div>
         {children}
       </div>
     </div>

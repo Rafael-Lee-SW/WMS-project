@@ -88,6 +88,15 @@ const selectStyle = theme => ({
     bottom: 0,
     width: "100%",
   },
+  deleteButton: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    width: "20px",
+    height: "20px",
+    cursor: "pointer",
+    display: "none", // 기본 상태에서는 보이지 않음
+  },
   cardBody: {
     display: "flex",
     flexDirection: "column", // 제목과 퍼센트 바를 세로로 정렬
@@ -106,6 +115,11 @@ const selectStyle = theme => ({
   usageBar: {
     height: "100%",
     backgroundColor: "rgb(27, 177, 231)", // 기본 배경 색상은 JSX에서 동적으로 설정
+    display: "flex", // 플렉스 박스를 사용하여 중앙 정렬
+    justifyContent: "center", // 수평 중앙 정렬
+    alignItems: "center", // 수직 중앙 정렬
+    color: "white", // 텍스트 색상 (배경과 대비되도록 설정)
+    fontWeight: "bold", // 텍스트 굵게
   },
   cardFooter: {
     display: "flex",
@@ -126,13 +140,15 @@ const selectStyle = theme => ({
   },
   pcsContainer: {
     display: "flex",
-    alignItems: "center",
-    gap: "1px", // 이미지와 텍스트 사이의 간격
+    flexDirection: "column", // 이미지와 텍스트를 세로로 정렬
+    alignItems: "center", // 중앙 정렬
+    gap: "5px", // 이미지와 텍스트 사이의 간격
   },
   locationContainer: {
     display: "flex",
-    alignItems: "center",
-    gap: "1px", // 이미지와 텍스트 사이의 간격
+    flexDirection: "column", // 이미지와 텍스트를 세로로 정렬
+    alignItems: "center", // 중앙 정렬
+    gap: "5px", // 이미지와 텍스트 사이의 간격
   },
   containerImage: {
     width: "40px",
@@ -147,7 +163,10 @@ const selectStyle = theme => ({
     height: "1px",
     background: "black", // 기본 배경 색상
     backgroundImage: "linear-gradient(to right, #eee 0%, #777 50%, #eee 100%)", // 표준 문법
-  }
+  },
+  activeDelete: {
+    display: "block", // 토글 상태에 따라 Delete 버튼을 보이게 함
+  },
 });
 
 export default selectStyle;

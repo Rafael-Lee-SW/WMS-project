@@ -421,10 +421,18 @@ const Select = (props) => {
   useEffect(() => {
     const fetchCounts = async (warehouseId) => {
       try {
-        const pcsResponse = await axios.get(`https://i11a508.p.ssafy.io/api/warehouses/pcscnt/${warehouseId}`);
-        const locationResponse = await axios.get(`https://i11a508.p.ssafy.io/api/warehouses/locationcnt/${warehouseId}`);
-        const usageResponse = await axios.get(`https://i11a508.p.ssafy.io/api/warehouses/usage/${warehouseId}`);
-        const warehouseTypeResponse = await axios.get(`https://i11a508.p.ssafy.io/api/warehouses/purpose/${warehouseId}`);
+        const pcsResponse = await axios.get(
+          `https://i11a508.p.ssafy.io/api/warehouses/pcscnt/${warehouseId}`
+        );
+        const locationResponse = await axios.get(
+          `https://i11a508.p.ssafy.io/api/warehouses/locationcnt/${warehouseId}`
+        );
+        const usageResponse = await axios.get(
+          `https://i11a508.p.ssafy.io/api/warehouses/usage/${warehouseId}`
+        );
+        const warehouseTypeResponse = await axios.get(
+          `https://i11a508.p.ssafy.io/api/warehouses/purpose/${warehouseId}`
+        );
 
         const pcsCount = pcsResponse.data.result;
         const locationCount = locationResponse.data.result;
@@ -482,6 +490,20 @@ const Select = (props) => {
     }
   };
 
+  const handleDelete = async (warehouseId) => {
+    try {
+      await axios.patch(
+        `http://localhost:8080/api/warehouses/${warehouseId}`,
+        { isDeleted: true }
+      );
+
+      // 삭제 후 카드 목록에서 해당 창고 제거
+      setCards((prevCards) => prevCards.filter((card) => card.id !== warehouseId));
+    } catch (error) {
+      console.error("Error deleting warehouse:", error);
+    }
+  };
+
   return (
     <div>
       <Header
@@ -526,7 +548,28 @@ const Select = (props) => {
                           style={{
                             position: "absolute",
                             bottom: 0,
-                            width: "100%",
+                            width: "30%", // 이미지 너비를 30%로 조정
+                            height: "auto", // 높이를 자동으로 조정하여 비율 유지
+                            borderLeft: "4px solid #000", // 왼쪽 테두리
+                            borderRight: "4px solid #000", // 오른쪽 테두리
+                            borderTop: "4px solid #000", // 위쪽 테두리
+                            borderBottom: "none", // 아래쪽 테두리는 없음
+                          }}
+                        />
+                        <img
+                          src="/img/delete.png"
+                          alt="delete"
+                          style={{
+                            position: "absolute",
+                            top: 10,
+                            right: 10,
+                            width: "20px",
+                            height: "20px",
+                            cursor: "pointer",
+                          }}
+                          onClick={(e) => {
+                            e.preventDefault(); // 링크 이동 방지
+                            handleDelete(card.id);
                           }}
                         />
                       </div>
