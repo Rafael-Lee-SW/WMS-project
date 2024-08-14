@@ -2,23 +2,12 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext'; // AuthContext를 import
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 const OAuthCallback = () => {
   const router = useRouter();
   const { login } = useAuth();
   const [loading, setLoading] = useState(true); // 로딩 상태 추가
 
-  const notify = (message) => toast(message, {
-    position: "top-center",
-    autoClose: 2000,
-    hideProgressBar: false,
-    closeOnClick: true,
-    pauseOnHover: true,
-    draggable: true,
-    progress: undefined,
-  });
   // 사용자 정보를 가져오는 비동기 함수
   const fetchUserInfo = async (token, userEmail) => {
     try {
@@ -39,11 +28,11 @@ const OAuthCallback = () => {
 
         // 전역 상태에 사용자 정보와 토큰 저장
         login(user, token);
-        notify(`${user.name}님 환영합니다!`);
+        alert(`${user.name}님 환영합니다!`);
         router.push('/'); // 메인 페이지로 이동
       }
     } catch (error) {
-      notify('사용자 정보를 가져오는 중 오류가 발생했습니다.');
+      alert('사용자 정보를 가져오는 중 오류가 발생했습니다.');
       router.push('/signIn');
     } finally {
       setLoading(false); // 로딩 상태 해제
@@ -64,11 +53,11 @@ const OAuthCallback = () => {
           // 이메일과 토큰을 사용하여 사용자 정보 가져오기
           await fetchUserInfo(token, userEmail);
         } else {
-          notify('로그인에 실패하였습니다.');
+          alert('로그인에 실패하였습니다.');
           router.push('/signIn'); // 로그인 페이지로 이동
         }
       } catch (error) {
-        notify('인증 처리 중 오류가 발생했습니다.');
+        alert('인증 처리 중 오류가 발생했습니다.');
         router.push('/signIn');
       } finally {
         setLoading(false); // 로딩 상태 해제
