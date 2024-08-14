@@ -245,7 +245,7 @@ public class WarehouseService {
             .mapToInt(Location::getZSize)
             .sum();
 
-        return usageSum * 100 / totalCnt;
+        return Math.max(1, usageSum * 100 / totalCnt);
     }
 
     public int findPurpose(Long id) {
