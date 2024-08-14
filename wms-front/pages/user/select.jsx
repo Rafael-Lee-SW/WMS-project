@@ -495,7 +495,7 @@ const Select = (props) => {
 
   const handleDelete = async (warehouseId) => {
     try {
-      await axios.patch(`http://localhost:8080/api/warehouses/${warehouseId}`, {
+      await axios.patch(`https://i11a508.p.ssafy.io/api/warehouses/${warehouseId}`, {
         isDeleted: true,
       });
 
