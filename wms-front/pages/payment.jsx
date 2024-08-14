@@ -5,6 +5,7 @@ import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
 import { useRouter } from 'next/router';
 import axios from 'axios';
+import 'react-toastify/dist/ReactToastify.css';
 
 const useStyles = makeStyles({
   container: {
@@ -113,6 +114,16 @@ export default function Payment() {
   const [user, setUser] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
+  const notify = (message) => toast(message, {
+    position: "top-center",
+    autoClose: 2000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+  });
+
   const handleIncrease = () => {
     setQuantity(quantity + 1);
   };
@@ -182,7 +193,7 @@ export default function Payment() {
   const requestPay = () => {
 
     if (!isLoggedIn) {
-      alert('로그인이 필요합니다.');
+      notify('로그인이 필요합니다.');
       router.push('/signIn');
       return;
     } else {

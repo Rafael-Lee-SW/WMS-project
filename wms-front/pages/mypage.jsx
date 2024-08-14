@@ -9,6 +9,8 @@ import Info from '../components/MyPage/Info';
 import Alarm from '../components/MyPage/Alarm';
 import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/mypageStyle.js";
 import { useRouter } from 'next/router'; 
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const useStyles = makeStyles(styles);
 
@@ -30,6 +32,16 @@ export default function Mypage() {
   const [businessNumber, setBusinessNumber] = useState('');
   const [createdDate, setCreatedDate] = useState('');
 
+  const notify = (message) => toast(message, {
+    position: "top-center",
+    autoClose: 2000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+  });
+
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user'));
     const token = localStorage.getItem('token');
@@ -37,7 +49,7 @@ export default function Mypage() {
     if (user && token) {
       setUserId(user.id);
     } else {
-      alert("로그인이 필요합니다.");
+      notify("로그인이 필요합니다.");
       router.push('/signin');
     }
   }, [router]);

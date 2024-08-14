@@ -5,6 +5,8 @@ import { useRouter } from "next/router";
 import axios from 'axios';
 import { deleteBusinessEmployee } from "../../pages/api";
 import { Dialog, DialogTitle, DialogContent, DialogActions } from "@material-ui/core";
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const useStyles = makeStyles(styles);
 
@@ -22,6 +24,16 @@ export default function ManageBusiness({ updateBusinessInfo, updateRoleType }) {
   const [businessAddDate, setBusinessAddDate] = useState('');
   const [modalTitle, setModalTitle] = useState('');
   const [modalMessage, setModalMessage] = useState('');
+
+  const notify = (message) => toast(message, {
+    position: "top-center",
+    autoClose: 2000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+  });
 
   useEffect(() => {
     fetchUserData();
@@ -53,12 +65,12 @@ export default function ManageBusiness({ updateBusinessInfo, updateRoleType }) {
             setBusinessName(businessResponse.data.result.name);
           }
         } else {
-          alert("로그인이 필요합니다.");
+          notify("로그인이 필요합니다.");
           router.push('/signIn');
         }
       } catch (error) {
         router.push('/404');
-        alert("데이터를 불러오는 중 오류가 발생했습니다.");
+        notify("데이터를 불러오는 중 오류가 발생했습니다.");
         router.push('/404');
       }
     };
@@ -159,7 +171,7 @@ export default function ManageBusiness({ updateBusinessInfo, updateRoleType }) {
         updateRoleType('GENERAL');
     } catch (error) {
       router.push('/404');
-      alert("탈퇴 중 오류가 발생했습니다.");
+      notify("탈퇴 중 오류가 발생했습니다.");
     }
   };
 

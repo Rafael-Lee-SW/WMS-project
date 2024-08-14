@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";  // useRouter 훅 추가
-import { Link as ScrollLink } from "react-scroll";
 import { makeStyles } from "@material-ui/core/styles";
 import { List, ListItem } from "@mui/material";
 import Button from "/components/CustomButtons/Button.js";
 import styles from "/styles/jss/nextjs-material-kit/components/headerLinksStyle.js";
 import axios from "axios";
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const useStyles = makeStyles(styles);
 
@@ -13,6 +14,16 @@ export default function HeaderLinks(props) {
   const classes = useStyles();
   const router = useRouter();  // useRouter 훅 초기화
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const notify = (message) => toast(message, {
+    position: "top-center",
+    autoClose: 2000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+  });
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -35,7 +46,7 @@ export default function HeaderLinks(props) {
         const userData = response.data.result;
 
         if (userData.roleTypeEnum === "GENERAL") {
-          alert("사업자 등록 후 이용해 주세요")
+          notify("사업자 등록 후 이용해 주세요")
           router.push({
             pathname: "/mypage",
             query: { component: "license" },
@@ -45,10 +56,10 @@ export default function HeaderLinks(props) {
         }
       } catch (error) {
         router.push('/404');
-        alert("사용자 정보를 불러오는 중 오류가 발생했습니다.");
+        notify("사용자 정보를 불러오는 중 오류가 발생했습니다.");
       }
     } else {
-      alert("로그인이 필요합니다.");
+      notify("로그인이 필요합니다.");
       router.push("/signIn");
     }
   };

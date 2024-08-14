@@ -21,6 +21,8 @@ import {
 } from "@mui/material";
 import { useRouter } from "next/router";
 import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/selectStyle.js";
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const useStyles = makeStyles(styles);
 
@@ -28,6 +30,16 @@ const Select = (props) => {
   const { ...rest } = props;
   const classes = useStyles();
   const router = useRouter();
+
+  const notify = (message) => toast(message, {
+    position: "top-center",
+    autoClose: 2000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+  });
 
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -56,7 +68,7 @@ const Select = (props) => {
     const { presentCount, MaxCount } = await fetchWarehouseCounts(businessId);
 
     if (presentCount >= MaxCount) {
-      alert("추가 생성을 위한 결제가 필요합니다.");
+      notify("추가 생성을 위한 결제가 필요합니다.");
       router.push("/payment");
     } else {
       setOpen(true);

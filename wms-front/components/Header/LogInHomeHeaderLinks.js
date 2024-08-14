@@ -5,14 +5,25 @@ import { List, ListItem } from "@mui/material"; // Correct casing for ListItem
 import Button from "/components/CustomButtons/Button.js";
 import { Link as ScrollLink } from "react-scroll"; // react-scroll import 추가
 import axios from "axios"; // Axios import 추가
-
 import styles from "/styles/jss/nextjs-material-kit/components/headerLinksStyle.js";
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const useStyles = makeStyles(styles);
 
 export default function HeaderLinks(props) {
   const classes = useStyles();
   const router = useRouter(); // Initialize useRouter
+
+  const notify = (message) => toast(message, {
+    position: "top-center",
+    autoClose: 2000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+  });
 
   const handleLogout = () => {
     // Remove the token from local storage
@@ -34,7 +45,7 @@ export default function HeaderLinks(props) {
         const userData = response.data.result;
 
         if (userData.roleTypeEnum === "GENERAL") {
-          alert("사업자 등록 후 이용해 주세요")
+          notify("사업자 등록 후 이용해 주세요")
           router.push({
             pathname: "/mypage",
             query: { component: "license" },
@@ -44,10 +55,10 @@ export default function HeaderLinks(props) {
         }
       } catch (error) {
         router.push('/404');
-        alert("사용자 정보를 불러오는 중 오류가 발생했습니다.");
+        notify("사용자 정보를 불러오는 중 오류가 발생했습니다.");
       }
     } else {
-      alert("로그인이 필요합니다.");
+      notify("로그인이 필요합니다.");
       router.push("/signIn");
     }
   };
