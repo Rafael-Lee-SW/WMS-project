@@ -243,8 +243,8 @@ const Select = (props) => {
 
         const warehousesId = warehouses.id;
 
-        postLocationAPI(locationData, warehousesId);
-        postWallAPI(wallData, warehousesId);
+        await postLocationAPI(locationData, warehousesId);
+        await postWallAPI(wallData, warehousesId);
 
         console.log("New warehouse created:", newWarehouse);
 
@@ -254,7 +254,11 @@ const Select = (props) => {
           image: "/img/sign.jpg",
         };
 
-        setCards((prev) => [...prev, newCard]);
+        await setCards((prev) => [...prev, newCard]);
+
+        // 각 창고 카드에 대한 pcsCount 및 locationCount 요청
+        fetchCounts(newCard.id);
+
         handleClose();
       } else {
         console.error("Error creating new warehouse");
@@ -358,13 +362,19 @@ const Select = (props) => {
         console.log(apiConnection);
         const warehouses = apiConnection.result;
 
-        const warehouseCards = warehouses.map((warehouse) => ({
+        const warehouseCards = await warehouses.map((warehouse) => ({
           id: warehouse.id,
           title: warehouse.name,
           image: "/img/storeroom.webp",
         }));
 
-        setCards(warehouseCards);
+        await setCards(warehouseCards);
+        //모든 카드 정보를 받은 다음에 움직인다.
+        // 각 창고 카드에 대한 pcsCount 및 locationCount 요청
+        warehouseCards.forEach((card) => {
+          fetchCounts(card.id);
+        });
+
       } else {
         console.error("Error loading warehouse data");
       }
@@ -394,6 +404,7 @@ const Select = (props) => {
 
         fetchWarehouseCounts(businessInfo.businessId);
         getAllWarehouseInfoAPI(businessInfo.businessId);
+        
       } else {
         console.error("Error fetching user data");
       }
@@ -417,43 +428,43 @@ const Select = (props) => {
     }
   }, []);
 
-  // pcsCount, locationCount, usagePercent 및 warehouseColor 가져오기 위한 useEffect 추가
-  useEffect(() => {
-    const fetchCounts = async (warehouseId) => {
-      try {
-        const pcsResponse = await axios.get(`https://i11a508.p.ssafy.io/api/warehouses/pcscnt/${warehouseId}`);
-        const locationResponse = await axios.get(`https://i11a508.p.ssafy.io/api/warehouses/locationcnt/${warehouseId}`);
-        const usageResponse = await axios.get(`https://i11a508.p.ssafy.io/api/warehouses/usage/${warehouseId}`);
-        const warehouseTypeResponse = await axios.get(`https://i11a508.p.ssafy.io/api/warehouse/purpose/${warehouseId}`);
+  const fetchCounts = async (warehouseId) => {
+    try {
+      const pcsResponse = await axios.get(
+        `https://i11a508.p.ssafy.io/api/warehouses/pcscnt/${warehouseId}`
+      );
+      const locationResponse = await axios.get(
+        `https://i11a508.p.ssafy.io/api/warehouses/locationcnt/${warehouseId}`
+      );
+      const usageResponse = await axios.get(
+        `https://i11a508.p.ssafy.io/api/warehouses/usage/${warehouseId}`
+      );
+      const warehouseTypeResponse = await axios.get(
+        `https://i11a508.p.ssafy.io/api/warehouses/purpose/${warehouseId}`
+      );
 
-        const pcsCount = pcsResponse.data.result;
-        const locationCount = locationResponse.data.result;
-        const usagePercent = usageResponse.data.result; // 1부터 100까지
-        const warehouseColor = warehouseTypeResponse.data.result; // 1부터 3까지
+      const pcsCount = pcsResponse.data.result;
+      const locationCount = locationResponse.data.result;
+      const usagePercent = usageResponse.data.result; // 1부터 100까지
+      const warehouseColor = warehouseTypeResponse.data.result; // 1부터 3까지
 
-        setCards((prevCards) =>
-          prevCards.map((card) =>
-            card.id === warehouseId
-              ? {
-                  ...card,
-                  pcsCount,
-                  locationCount,
-                  usagePercent,
-                  warehouseColor,
-                }
-              : card
-          )
-        );
-      } catch (error) {
-        console.error("Error fetching counts:", error);
-      }
-    };
-
-    // 각 창고 카드에 대한 pcsCount 및 locationCount 요청
-    cards.forEach((card) => {
-      fetchCounts(card.id);
-    });
-  }, [cards]); // cards가 변경될 때마다 호출
+      setCards((prevCards) =>
+        prevCards.map((card) =>
+          card.id === warehouseId
+            ? {
+                ...card,
+                pcsCount,
+                locationCount,
+                usagePercent,
+                warehouseColor,
+              }
+            : card
+        )
+      );
+    } catch (error) {
+      console.error("Error fetching counts:", error);
+    }
+  };
 
   // warehouseColor에 따른 배경 색상 및 usagePercent에 따른 색상 높이
   const getBackgroundColor = (color) => {
@@ -484,13 +495,14 @@ const Select = (props) => {
 
   const handleDelete = async (warehouseId) => {
     try {
-      await axios.patch(
-        `http://localhost:8080/api/warehouses/${warehouseId}`,
-        { isDeleted: true }
-      );
+      await axios.patch(`http://localhost:8080/api/warehouses/${warehouseId}`, {
+        isDeleted: true,
+      });
 
       // 삭제 후 카드 목록에서 해당 창고 제거
-      setCards((prevCards) => prevCards.filter((card) => card.id !== warehouseId));
+      setCards((prevCards) =>
+        prevCards.filter((card) => card.id !== warehouseId)
+      );
     } catch (error) {
       console.error("Error deleting warehouse:", error);
     }
