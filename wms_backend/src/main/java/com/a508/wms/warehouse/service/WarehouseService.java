@@ -238,6 +238,10 @@ public class WarehouseService {
             .mapToInt(Location::getZSize)
             .sum();
 
+        if(totalCnt == 0){
+            return 0;
+        }
+
         return Math.max(1, floors.size() * 100 / totalCnt);
     }
 
