@@ -423,10 +423,10 @@ const Select = (props) => {
   useEffect(() => {
     const fetchCounts = async (warehouseId) => {
       try {
-        const pcsResponse = await axios.get(`http://localhost:8080/api/warehouses/pcscnt/${warehouseId}`);
-        const locationResponse = await axios.get(`http://localhost:8080/api/warehouses/locationcnt/${warehouseId}`);
-        const usageResponse = await axios.get(`http://localhost:8080/api/warehouses/usage/${warehouseId}`);
-        const warehouseTypeResponse = await axios.get(`http://localhost:8080/api/purpose/${warehouseId}`);
+        const pcsResponse = await axios.get(`https://i11a508.p.ssafy.io/api/warehouses/pcscnt/${warehouseId}`);
+        const locationResponse = await axios.get(`https://i11a508.p.ssafy.io/api/warehouses/locationcnt/${warehouseId}`);
+        const usageResponse = await axios.get(`https://i11a508.p.ssafy.io/api/warehouses/usage/${warehouseId}`);
+        const warehouseTypeResponse = await axios.get(`https://i11a508.p.ssafy.io/api/warehouse/purpose/${warehouseId}`);
 
         const pcsCount = pcsResponse.data.result;
         const locationCount = locationResponse.data.result;
