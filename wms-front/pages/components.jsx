@@ -1,11 +1,4 @@
 import React, { useEffect, useState } from "react";
-// nodejs library that concatenates classes
-import classNames from "classnames";
-// react components for routing our app without refresh
-import Link from "next/link";
-// @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
-// core components
 import Header from "/components/Header/HomeHeader.js";
 import HeaderLinks from "/components/Header/HomeHeaderLinks.js";
 import LoginHeaderLinks from "../components/Header/LogInHomeHeaderLinks";
@@ -14,7 +7,7 @@ import Slider from "react-slick";
 import ServiceInfo1 from '/components/Main/ServiceInfo1';
 import ServiceInfo2 from '/components/Main/ServiceInfo2';
 import ServiceInfo3 from '/components/Main/ServiceInfo3';
-
+import Layout from '../layout/Layout';
 import styles from "/styles/jss/nextjs-material-kit/pages/components.js";
 import AOS from 'aos';
 import 'aos/dist/aos.css';
@@ -28,24 +21,13 @@ import MainEnd from "../components/Main/MainEnd";
 
 const useStyles = makeStyles(styles);
 
-const Components = (props) => {
+const Components = ({ isLoggedIn, ...rest }) => {
   const classes = useStyles();
-  const { ...rest } = props;
-  
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     AOS.init({
       duration: 1200,
     });
-
-    // Check for token in local storage
-    const token = localStorage.getItem("token");
-    if (token) {
-      setIsLoggedIn(true);
-    } else {
-      setIsLoggedIn(false);
-    }
   }, []);
 
   // 캐러셀 설정
@@ -60,7 +42,7 @@ const Components = (props) => {
   };
 
   return (
-    <div>
+    <Layout>
       <Header
         brand="FIT-BOX"
         rightLinks={isLoggedIn ? <LoginHeaderLinks /> : <HeaderLinks />}
@@ -104,8 +86,37 @@ const Components = (props) => {
           <MainEnd/>
         </div>
         <Footer/>
-    </div>
+    </Layout>
   );
 };
+
+// getServerSideProps를 사용하여 서버 사이드에서 로그인 상태 확인
+export async function getServerSideProps(context) {
+  const token = context.req.cookies.token || null;
+  let isLoggedIn = false;
+
+  if (token) {
+    try {
+      // JWT 토큰을 검증하고 사용자 정보를 가져오는 로직
+      const response = await axios.get('http://localhost:8080/api/oauth/refresh/token', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (response.status === 200) {
+        isLoggedIn = true;
+      }
+    } catch (error) {
+      console.error("Failed to verify token", error);
+      isLoggedIn = false;
+    }
+  }
+
+  return {
+    props: {
+      isLoggedIn,
+    },
+  };
+}
 
 export default Components;

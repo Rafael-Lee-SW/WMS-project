@@ -22,28 +22,24 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
+    console.log("please in userEffect")
     const token = localStorage.getItem('token');
-    const userData = localStorage.getItem('user');
-
-    if (token && userData) {
-      // 로컬 스토리지에서 가져온 사용자 정보로 로그인 함수 호출
-      login(JSON.parse(userData), token);
+    if (token) {
+      console.log("Token found, starting API request"); // 추가 로그
+      axios.get('http://localhost:8080/api/oauth/refresh/token', { headers: { Authorization: `Bearer ${token}` } })
+        .then(response => {
+          const userData = response.data;
+          console.log("들어왔니 리프레시", userData);  // 서버에서 가져온 최신 정보로 갱신
+          login(userData, token);
+        })
+        .catch(error => {
+          console.error("Failed to fetch user data", error);
+          if (error.response && error.response.status === 401) {
+            logout();
+          }
+        });
     } else {
-      if (token) {
-        axios.get('/api/user', { headers: { Authorization: `Bearer ${token}` } })
-          .then(response => {
-            const userData = response.data;
-            login(userData, token);
-          })
-          .catch(error => {
-            console.error("Failed to fetch user data", error);
-
-            // 에러가 발생했지만 토큰이 유효하지 않다고 확신할 수 없는 경우, logout을 호출하지 않음
-            if (error.response && error.response.status === 401) {
-              logout();
-            }
-          });
-      }
+      console.log("No token found");
     }
   }, []);
 

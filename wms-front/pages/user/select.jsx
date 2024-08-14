@@ -494,7 +494,9 @@ const Select = (props) => {
     }
   };
 
-  const handleDelete = async (warehouseId) => {
+  const handleDelete = async (warehouseId, e) => {
+    e.stopPropagation(); // 이벤트 버블링을 막아 Link의 기본 동작이 실행되지 않도록 함
+
     try {
       await axios.patch(`https://i11a508.p.ssafy.io/api/warehouses/${warehouseId}`, {
         isDeleted: true,
@@ -572,8 +574,7 @@ const Select = (props) => {
                             height: "20px",
                           }}
                           onClick={(e) => {
-                            e.preventDefault(); // 링크 이동 방지
-                            handleDelete(card.id);
+                            handleDelete(card.id, e);
                           }}
                         />
                       </div>
