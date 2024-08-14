@@ -1,6 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/router";
 import { makeStyles } from '@material-ui/core/styles';
+// 알림창을 위한 import
+import { toast } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
+
 // Import MUI components
 import Grid from "@mui/material/Grid";
 import Fab from "@mui/material/Fab";
@@ -146,6 +150,22 @@ const muiDatatableTheme = createTheme({
 });
 
 const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
+
+  // Find the selected warehouse from the cards array
+  const selectedWarehouse = warehouses.find((warehouse) => warehouse.id === parseInt(WHId));
+
+  // If a warehouse is found, get its title
+  const selectedWarehouseTitle = selectedWarehouse ? selectedWarehouse.title : "Warehouse not found";
+
+  const notify = (message) => toast(message, {
+    position: "top-center",
+    autoClose: 2000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+  });
 
   const router = useRouter();
   const classes = useStyles();
@@ -300,7 +320,6 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
       fileData.splice(0, 1);
       convertToArrayOfArraysExportModal(fileData);
       setOpenExportModal(true); // Open the modal after exporting
-      console.log("Export data loaded");
     };
     reader.readAsArrayBuffer(file);
   };
@@ -388,7 +407,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
     }
   };
 
-  // 입고 시에, 최종적으로 선택된 칼럼을 DB에 입고 API를 보내는 메서드
+  // 선별된 엑셀 데이터를 입고 예상 목록에 추가하는 메서드
   const finalizeSelectionImport = () => {
     // 선택된 열의 데이터를 postData에 담는 과정
     const postData = ModalTableData.map((row) => ({
@@ -412,7 +431,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
     });
   };
 
-  // 출고 시에, 최종적으로 선택된 칼럼을 DB에 출고 API를 보내는 메서드
+  // 선별된 엑셀 데이터를 입고 예상 목록에 추가하는 메서드 
   const finalizeSelectionExport = () => {
     // 선택된 열의 데이터를 postData에 담는 과정
     const postData = ModalTableExportData.map((row) => ({
@@ -435,7 +454,6 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
   // 새로운 엑셀 상품들을 입고시키는 API 메서드
   const importAPI = async (postData) => {
     try {
-      console.log(postData);
 
       //  // 입고 시에 사용되는 데이터 양식
       const ImportArray = postData.map((product) => ({
@@ -447,7 +465,6 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
         warehouseId: parseInt(WHId),
       }));
 
-      console.log(ImportArray);
 
       const response = await fetch(
         "https://i11a508.p.ssafy.io/api/products/import",
@@ -461,17 +478,18 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
       );
 
       if (response.ok) {
-        console.log("Data posted successfully");
         const result = await response.json();
-        console.log(result);
-
+        notify(`${selectedWarehouseTitle} 창고에 입고되었습니다.`);
         productGetAPI(businessId);
         handleNextComponent(0)
+
       } else {
-        console.error("Error posting data");
+        notify(`입고에 실패했습니다.`);
+        handleNextComponent(0)
       }
     } catch (error) {
-      console.error("Error posting data:", error);
+      notify(`입고에 실패했습니다.`);
+      handleNextComponent(0)
     }
   };
 
@@ -484,7 +502,6 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
         businessId: businessId,
         data: postData,
       };
-      console.log(newPostData);
       const response = await fetch(
         "https://i11a508.p.ssafy.io/api/products/export",
         {
@@ -497,16 +514,18 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
       );
 
       if (response.ok) {
-        console.log("Data posted successfully");
-        const result = await response.json();
-        console.log(result);
-        productGetAPI(businessId)
-        handleNextComponent(0);
+        const accept = await response.json(); // 해당 accept.result.path에 출고 루트가 담겨있다.
+        notify(`출고처리가 완료되었습니다.`);
+        productGetAPI(businessId) // 새로 데이터를 불러오고
+        handleNextComponent(0); // Redirect 처리한다.
       } else {
-        console.error("Error posting data");
+        notify(`출고에 실패했습니다.`);
+        handleNextComponent(0)
       }
     } catch (error) {
-      console.error("Error posting data:", error);
+
+      notify(`출고에 실패했습니다.`);
+      handleNextComponent(0)
     }
   };
 
@@ -525,15 +544,17 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
       );
 
       if (response.ok) {
-        console.log("Product moved successfully");
+        // 성공
         const result = await response.json();
-        console.log(result);
+        notify(`상품을 이동했습니다.`); 
         productGetAPI(businessId); // 정보가 반영된 테이블을 새로 불러온다.
       } else {
-        console.error("Failed to move product");
+        notify(`이동에 실패했습니다.`);
+        handleNextComponent(0)
       }
     } catch (error) {
-      console.error("Failed to move product:", error);
+      notify(`이동에 실패했습니다.`);
+      handleNextComponent(0)
     }
   };
 
@@ -553,10 +574,9 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
       );
 
       if (response.ok) {
+        //성공
         const apiConnection = await response.json();
         const products = apiConnection.result;
-        console.log("상품데이터를 성공적으로 불러왔습니다.");
-        console.log(products); // 삭제해야 할 console.log (콘솔)
 
         // Extract only the required columns
         const formattedData = products.map((product) => ({
@@ -610,9 +630,10 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
         setTableData(data);
         setEditData(data); // 둘을 분리할 필요가 있을까?
 
-        // Precompute quantity by location data
+        // 각 재고함별로 몇개의 데이터가 있는지 계산하는 로직
         const locationData = products.reduce((acc, product) => {
-          if(product.warehouseId === WHId){
+
+          if (product.warehouseId === parseInt(WHId)) {
             const locationName = product.locationName || "임시";
             acc[locationName] = (acc[locationName] || 0) + product.quantity;
           }
@@ -636,11 +657,11 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
         });
         setLoading(false);
       } else {
-        console.error("Error loading rectangles data");
+        //에러
         setLoading(false);
       }
     } catch (error) {
-      console.error("Error loading rectangles data:", error);
+      //에러
       setLoading(false);
     }
   };
@@ -770,10 +791,10 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
         });
         setNotificationsFetched(true);
         setAnalyticsFetched(true);
-        console.log("알림데이터를 성공적으로 불러왔습니다.");
+        //알림 호출 성공
 
         /**
-         * 알림을 정리하는 부분
+         * 알림을 정리해서 날짜별로 분류하는 부분
          */
 
         // Group data by date and type
@@ -809,14 +830,14 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
           { name: "count", label: "수량" },
         ]);
 
-        console.log("알림을 성공적으로 정리했습니다.");
+        // 알림 호출 완료
       } else {
-        console.error("Error fetching notifications");
+        // 에러
         setNotificationsFetched(true);
         setAnalyticsFetched(true);
       }
     } catch (error) {
-      console.error("Error fetching notifications:", error);
+      // 에러
       setNotificationsFetched(true);
       setAnalyticsFetched(true);
     }
@@ -834,7 +855,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
 
   // 알림함에서 상세 내역을 보기 위해 해당 열을 클릭했을 시에 작동하는 메서드
   const handleRowClick = (rowData) => {
-    console.log("클릭되었습니다.");
+
     const [selectedDate, selectedType] = rowData;
 
     let transType;
@@ -887,7 +908,10 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
 
   // 상품 정보를 수정하는 API 호출 메서드
   const productEditAPI = async (productsArray) => {
+
+    setLoading(true)
     try {
+
       const response = await fetch(`https://i11a508.p.ssafy.io/api/products`, {
         method: "PUT",
         headers: {
@@ -897,13 +921,18 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
       });
 
       if (response.ok) {
-        console.log("Product updated successfully");
+        setLoading(false)
+        // 수정 성공
         productGetAPI(businessId);
+        notify(`데이터를 수정하였습니다.`);
+        handleNextComponent(0)
       } else {
-        console.error("Failed to update product");
+        notify(`수정에 실패했습니다.`);
+        handleNextComponent(0)
       }
     } catch (error) {
-      console.error("Failed to update product:", error);
+      notify(`수정에 실패했습니다.`);
+      handleNextComponent(0)
     }
   };
 
@@ -925,8 +954,6 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
         warehouseId: parseInt(row[7]),
       },
     }));
-
-    console.log([productsArray]);
 
     // Send the array of products to the API
     productEditAPI(productsArray);
@@ -1040,7 +1067,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
       };
     });
 
-    console.log("Bulk move details:", moveDetails);
+    // 대량 이동 성공
     productMoveAPI(moveDetails);
     setOpenMoveModal(false);
   };
@@ -1058,7 +1085,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
       quantity: parseInt(product.quantity),
     }));
 
-    console.log("Detail move details:", moveDetails);
+    // 상세 이동 성공
     productMoveAPI(moveDetails);
     setOpenMoveModal(false);
   };
@@ -1217,13 +1244,13 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
         <Typography variant="h6">재고 분석</Typography>
         <div style={{ marginTop: "20px" }}>
           <Typography variant="subtitle1">
-            로케이션별 재고 현황 {WHId}
+            로케이션별 재고 현황 (창고 : {selectedWarehouseTitle})
           </Typography>
           {quantityByLocationData && <Bar data={quantityByLocationData} />}
         </div>
         <div style={{ marginTop: "40px" }}>
           <Typography variant="subtitle1">
-            Total Import, Export, and Flow by Day
+            일자별 입-출고-이동 추이
           </Typography>
           {flowByDateData && (
             <Bar
@@ -1272,7 +1299,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
         await getNotificationsAPI(businessId);
         setNotificationsFetched(true);
       } catch (error) {
-        console.error("Failed to fetch notifications:", error);
+        //에러
       } finally {
         setLoading(false);
         setCurrentIndex(index);
@@ -1284,10 +1311,11 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
         await getNotificationsAPI(businessId);
         setAnalyticsFetched(true);
       } catch (error) {
-        console.error("Failed to fetch analytics:", error);
+        // 에러
       } finally {
         setLoading(false);
         setCurrentIndex(index);
+        setShowAnalytics(index === 5);
       }
     } else {
       setCurrentIndex(index);
@@ -1398,16 +1426,19 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
       );
 
       if (response.ok) {
-        console.log("Data posted successfully");
+        //성공
         const result = await response.json();
-        console.log(result);
-        productGetAPI(businessId);
+        productGetAPI(businessId); // 새로 상품 불러오기
+        notify(`상품들을 정렬하였습니다.`)
         handleNextComponent(0);
+        // 압축 성공 모달 띄우기
       } else {
-        console.error("Error posting data");
+        notify(`압축에 실패하였습니다.`)
+        handleNextComponent(0);
       }
     } catch (error) {
-      console.error("Error posting data:", error);
+      notify(`압축에 실패하였습니다.`)
+      handleNextComponent(0);
     }
   };
 
@@ -1417,10 +1448,10 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
    */
 
   useEffect(() => {
-    //재고 목록과 알림 내역을 불러온다.
 
-    console.log(warehouses);
-    productGetAPI(businessId);
+    //재고 목록과 알림 내역을 불러온다.
+    productGetAPI(businessId); // 실행되면서 같이 부른다.
+
   }, [openModal]);
 
   // Printing logic
@@ -1537,7 +1568,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
         // Process location data from the API response
         const locations = warehouseData.locations;
         if (!locations) {
-          console.error("Locations data not found");
+          //에러
           return;
         }
         const newLocations = locations.map((location, index) => {
@@ -1563,10 +1594,10 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
 
         setLocations(newLocations);
       } else {
-        console.error("Error loading rectangles data");
+        //에러
       }
     } catch (error) {
-      console.error("Error loading rectangles data:", error);
+      //에러
     }
   };
 
