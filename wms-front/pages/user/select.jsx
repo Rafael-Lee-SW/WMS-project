@@ -470,13 +470,13 @@ const Select = (props) => {
   const getBackgroundColor = (color) => {
     switch (color) {
       case 1:
-        return "rgb(27, 177, 231)";
+        return "rgb(100, 150, 200)";
       case 2:
-        return "rgb(21, 137, 181)";
+        return "rgb(27, 177, 250)";
       case 3:
-        return "rgb(15, 97, 131)";
+        return "rgb(27, 177, 300)";
       default:
-        return "rgb(27, 177, 231)";
+        return "rgb(27, 150, 200)";
     }
   };
 
@@ -495,7 +495,7 @@ const Select = (props) => {
 
   const handleDelete = async (warehouseId) => {
     try {
-      await axios.patch(`http://localhost:8080/api/warehouses/${warehouseId}`, {
+      await axios.patch(`https://i11a508.p.ssafy.io/api/warehouses/${warehouseId}`, {
         isDeleted: true,
       });
 

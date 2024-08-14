@@ -166,6 +166,7 @@ const selectStyle = theme => ({
   },
   activeDelete: {
     display: "block", // 토글 상태에 따라 Delete 버튼을 보이게 함
+    cursor: "pointer", // 커서가 포인터 모양으로 바뀜
   },
 });
 
