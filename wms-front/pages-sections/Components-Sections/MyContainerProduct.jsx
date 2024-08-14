@@ -465,6 +465,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
         warehouseId: parseInt(WHId),
       }));
 
+      console.log(ImportArray)
 
       const response = await fetch(
         "https://i11a508.p.ssafy.io/api/products/import",
@@ -493,6 +494,15 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
     }
   };
 
+  // 루트 프린트를 위한 State
+  const [printableContent, setPrintableContent] = useState({
+    columns: [],
+    data: []
+  });
+
+  // 출고 프린트 모달
+  const [exportPrintModalOpen, setExportPrintModalOpen] = useState(false);
+
   // 새로운 엑셀 상품들을 출고고시키는 API 메서드
   const exportAPI = async (postData) => {
     try {
@@ -514,8 +524,43 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
       );
 
       if (response.ok) {
-        const accept = await response.json(); // 해당 accept.result.path에 출고 루트가 담겨있다.
-        notify(`출고처리가 완료되었습니다.`);
+        const accept = await response.json();
+        const pathData = accept.result;
+
+        // Convert the path data to the format required for the printable table
+        const printData = Object.keys(pathData[0].path).map(warehouseName => {
+          return pathData[0].path[warehouseName].map(item => ([
+            item.warehouseName,
+            item.productName,
+            item.barcode,
+            item.quantity,
+            item.locationName,
+            item.floorLevel,
+            item.trackingNumber,
+            new Date(item.date).toLocaleDateString(),
+            item.expirationDate ? new Date(item.expirationDate).toLocaleDateString() : 'N/A',
+            item.productStorageType
+          ]));
+        }).flat();
+
+        // Prepare columns for printing
+        const printColumns = [
+          { name: "warehouseName", label: "창고 이름" },
+          { name: "productName", label: "상품명" },
+          { name: "barcode", label: "바코드" },
+          { name: "quantity", label: "수량" },
+          { name: "locationName", label: "적재함 이름" },
+          { name: "floorLevel", label: "층수" },
+          { name: "trackingNumber", label: "송장 번호" },
+          { name: "date", label: "출고 날짜" },
+          { name: "expirationDate", label: "유통기한" },
+          { name: "productStorageType", label: "보관 상태" },
+        ];
+
+        // Trigger the print dialog
+        setPrintableContent({ columns: printColumns, data: printData });
+        setExportPrintModalOpen(true);
+
         productGetAPI(businessId) // 새로 데이터를 불러오고
         handleNextComponent(0); // Redirect 처리한다.
       } else {
@@ -546,7 +591,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
       if (response.ok) {
         // 성공
         const result = await response.json();
-        notify(`상품을 이동했습니다.`); 
+        notify(`상품을 이동했습니다.`);
         productGetAPI(businessId); // 정보가 반영된 테이블을 새로 불러온다.
       } else {
         notify(`이동에 실패했습니다.`);
@@ -1516,6 +1561,18 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
     }
   }, [printModalOpen]);
 
+  // Effect to trigger print on modal open
+  useEffect(() => {
+    if (exportPrintModalOpen) {
+      const timer = setTimeout(() => {
+        window.print();
+        setExportPrintModalOpen(false);
+        notify(`출고처리가 완료되었습니다.`);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [exportPrintModalOpen]);
+
   /**
    * 상품 이동 시에 토글로 제약
    */
@@ -2229,7 +2286,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
           </Button>
         </DialogActions>
       </Dialog>
-      {/* Print Modal */}
+      {/* 일반 프린트 Print Modal */}
       <Dialog
         open={printModalOpen}
         onClose={() => setPrintModalOpen(false)}
@@ -2241,6 +2298,24 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
         <DialogActions>
           <Button
             onClick={() => setPrintModalOpen(false)}
+            autoFocus
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* 출고 목록 프린트 Print Modal */}
+      <Dialog
+        open={exportPrintModalOpen}
+        onClose={() => setExportPrintModalOpen(false)}
+        fullScreen
+      >
+        <DialogContent>
+          <PrintableTable columns={printableContent.columns} data={printableContent.data} />
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setExportPrintModalOpen(false)}
             autoFocus
           >
             Close
