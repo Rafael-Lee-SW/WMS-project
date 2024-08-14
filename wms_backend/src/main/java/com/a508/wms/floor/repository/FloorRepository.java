@@ -36,7 +36,8 @@ public interface FloorRepository extends JpaRepository<Floor, Long> {
         "JOIN f.Products p " +
         "JOIN f.location l " +
         "JOIN l.warehouse w " +
-        "WHERE w.id = :warehouseId")
+        "WHERE w.id = :warehouseId "
+        + "AND f.floorLevel>0")
     List<Floor> findAllNotEmptyFloorByWarehouseId(@Param("warehouseId") Long warehouseId);
 
     //SELECT e FROM Employee e
