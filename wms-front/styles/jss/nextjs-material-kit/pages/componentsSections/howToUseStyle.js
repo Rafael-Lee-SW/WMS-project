@@ -27,6 +27,13 @@ const howToUse = {
     section2Content: {
         fontSize: "20px",
         paddingTop: "10px"
+    },
+    video: {
+        height: '100%'
+    },
+    mainImg: {
+        width: '100%',
+        height: '90%'
     }
 }
 

@@ -13,7 +13,9 @@ export default function serviceInfo3 () {
                 <p className={classes.content}>FitBox는 창고를 옮겨 놓은 듯한 직관적인 UI를 제공합니다.</p>
                 <p className={classes.content}>사용자가 원하는 곳에 직접 적재함을 위치시킬 수 있습니다.</p>
             </div>
-            <div className={classes.section2}></div>
+            <div className={classes.section2}>
+                <img className={classes.mainImg} src="/img/mainInfo1.png" alt="mainInfo"/>
+            </div>
         </div>
     )
 }

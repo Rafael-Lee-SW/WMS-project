@@ -1,15 +1,29 @@
 import { makeStyles } from "@material-ui/core"
 import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/howToUseStyle.js"
+import { useEffect, useRef } from "react";
 
 const useStyles = makeStyles(styles)
 
 export default function HowToUse4() {
     const classes = useStyles();
+    const videoRef = useRef(null);
+
+    useEffect(() => {
+        if (videoRef.current) {
+            videoRef.current.play();
+        }
+    }, []);
 
     return (
         <div className={classes.container} style={{ backgroundColor: "#DEBF8A" }}>
             <div className={classes.section1}>
-                <h4>엑셀 업로드 영상</h4>
+                <video
+                    className={classes.video}
+                    src="/video/import.mp4"
+                    ref={videoRef}
+                    muted
+                    loop
+                ></video>
             </div>
             <div className={classes.section2}>
                 <h2 className={classes.title} style={{ color: "#54462E" }}>입고/출고 처리를 합니다.</h2> 

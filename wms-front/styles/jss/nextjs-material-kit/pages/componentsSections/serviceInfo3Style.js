@@ -31,6 +31,9 @@ const serviceInfo3 = {
     content: {
         fontSize: '20px',
         color: "#4E4544",
+    },
+    mainImg: {
+        width: '100%',
     }
 }
 
