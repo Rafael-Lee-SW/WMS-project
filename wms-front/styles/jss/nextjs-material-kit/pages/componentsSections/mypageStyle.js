@@ -18,6 +18,7 @@ const mypageStyle = {
     justifyContent: 'center',
   },
   rightPanel: {
+    marginTop: '64px',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',

@@ -63,6 +63,15 @@ export default function HeaderLinks(props) {
           사용방법
         </Button>
       </ListItem>
+      <ListItem className={classes.listItem}>
+        <Button
+          href="/user/select"
+          color="transparent"
+          className={classes.navLink}
+        >
+          창고목록
+        </Button>
+      </ListItem>
     </List>
   );
 }

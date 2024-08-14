@@ -55,10 +55,11 @@ export default function HeaderLinks(props) {
 
   // 현재 경로가 /mypage인지 확인
   const isMypage = router.pathname === '/mypage';
+  const isSelect = router.pathname === '/user/select';
 
   return (
     <List className={classes.list}>
-      {isLoggedIn && !isMypage ? (  // isMypage가 false일 때만 로그인 관련 링크 표시
+      {isLoggedIn && !isMypage && !isSelect ? (  // isMypage가 false일 때만 로그인 관련 링크 표시
         <>
           <ListItem className={classes.listItem}>
             <Button
@@ -106,6 +107,27 @@ export default function HeaderLinks(props) {
               className={classes.navLink}
             >
               창고관리
+            </Button>
+          </ListItem>
+        </>
+      ) : isLoggedIn && isSelect ? (
+        <>
+          <ListItem className={classes.listItem}>
+            <Button
+              onClick={handleLogout}
+              color="transparent"
+              className={classes.navLink}
+            >
+              로그아웃
+            </Button>
+          </ListItem>
+          <ListItem className={classes.listItem}>
+            <Button
+              href="/mypage"
+              color="transparent"
+              className={classes.navLink}
+            >
+              마이페이지
             </Button>
           </ListItem>
         </>
