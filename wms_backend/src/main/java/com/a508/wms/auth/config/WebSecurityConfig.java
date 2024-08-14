@@ -5,34 +5,23 @@ import com.a508.wms.auth.common.ResponseMessage;
 import com.a508.wms.auth.filter.JwtAuthenticationFilter;
 import com.a508.wms.auth.handler.ValidationExceptionHandler;
 import com.a508.wms.auth.provider.JwtProvider;
-import com.a508.wms.auth.service.implement.OAuth2UserServiceImplement;
-import com.a508.wms.user.domain.User;
 import com.a508.wms.user.repository.UserRepository;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.a508.wms.user.service.UserService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
-import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HttpBasicConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -41,9 +30,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.stereotype.Component;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -62,7 +48,8 @@ public class WebSecurityConfig {
 
     @Bean
     protected SecurityFilterChain configure(HttpSecurity httpSecurity,
-        ValidationExceptionHandler validationExceptionHandler, UserService userService) throws Exception {
+        ValidationExceptionHandler validationExceptionHandler, UserService userService)
+        throws Exception {
 
         httpSecurity
             .cors(cors -> cors
@@ -82,24 +69,23 @@ public class WebSecurityConfig {
                 .anyRequest().permitAll()
             )
             .oauth2Login(oauth2 -> oauth2
-                .loginPage("/oauth2/authorization/kakao")  // 로그인 페이지 설정
+                    .loginPage("/oauth2/authorization/kakao")  // 로그인 페이지 설정
 //                .redirectionEndpoint(endpoint -> endpoint.baseUri("/login/oauth2/code/kakao"))  // 리다이렉션 엔드포인트 설정
-                .successHandler((request, response, authentication) -> {
-                    System.out.println("성공!!");
-                    OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
-                    Map<String, Object> attributes = oAuth2User.getAttributes();
-                    Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
-                    String userEmail = (String) kakaoAccount.get("email");
+                    .successHandler((request, response, authentication) -> {
+                        OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
+                        Map<String, Object> attributes = oAuth2User.getAttributes();
+                        Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get(
+                            "kakao_account");
+                        String userEmail = (String) kakaoAccount.get("email");
 
-                    String token = jwtProvider.create(userEmail);
-                    System.out.println("kakaoAccount = " + kakaoAccount);
-                    System.out.println("userEmail = " + userEmail);
-                    System.out.println(token);
-                    response.addHeader("Authorization", "Bearer " + token);
-                    String jsonResponse = URLEncoder.encode("{\"code\":\"SU\", \"token\":\"" + token + "\", \"userEmail\":\"" + userEmail + "\"}", "UTF-8");
-                    response.sendRedirect("https://i11a508.p.ssafy.io/oauth/callback?token="
-                        + token);  // 성공 후 리다이렉트
-                })
+                        String token = jwtProvider.create(userEmail);
+                        response.addHeader("Authorization", "Bearer " + token);
+                        String jsonResponse = URLEncoder.encode(
+                            "{\"code\":\"SU\", \"token\":\"" + token + "\", \"userEmail\":\""
+                                + userEmail + "\"}", "UTF-8");
+                        response.sendRedirect("https://i11a508.p.ssafy.io/oauth/callback?token="
+                            + token);  // 성공 후 리다이렉트
+                    })
             )
             .exceptionHandling(exceptionHandling -> exceptionHandling
                 .authenticationEntryPoint(new FailedAuthenticationEntryPoint())
@@ -136,6 +122,8 @@ class FailedAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
         response.setContentType("application/json");
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-        response.getWriter().write("{\"code\":\"" + ResponseCode.SIGN_IN_FAIL + "\" , \"message\":\"" + ResponseMessage.SIGN_IN_FAIL + "\"}");
+        response.getWriter().write(
+            "{\"code\":\"" + ResponseCode.SIGN_IN_FAIL + "\" , \"message\":\""
+                + ResponseMessage.SIGN_IN_FAIL + "\"}");
     }
 }
