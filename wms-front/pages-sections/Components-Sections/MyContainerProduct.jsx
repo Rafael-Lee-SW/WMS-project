@@ -73,6 +73,7 @@ import { Tooltip, InputLabel, FormControl } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MoveIcon from "@mui/icons-material/MoveUp";
 import PrintIcon from "@mui/icons-material/Print";
+import { Download } from "@mui/icons-material";
 
 // Import Chart.js for analytics
 import { Chart, Bar } from "react-chartjs-2";
@@ -229,7 +230,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
 
   const [activeButton, setActiveButton] = useState(null);
   const handleButtonClick = (index) => {
-    setActiveButton(index); 
+    setActiveButton(index);
   };
 
   // 엑셀로 입고(import)데이터를 받았을 때 이를 변환하는 메서드
@@ -304,14 +305,14 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
   };
 
   // 엑셀을 통해 상품 데이터를 다운로드하는 메서드
-  const downloadExcel = () => {
+  const downloadExcel = (columns, tableData) => {
     const worksheet = XLSX.utils.aoa_to_sheet([
       columns.map((col) => col.label),
       ...tableData,
     ]);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
-    XLSX.writeFile(workbook, "ADN_project엑셀테스트.xlsx");
+    XLSX.writeFile(workbook, "FIT-BOX-엑셀.xlsx");
   };
 
   // 열의 색상을 바꾸는 메서드
@@ -1024,7 +1025,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
   // Function to finalize move in bulk mode
   const handleFinalizeBulkMove = () => {
     const quantity = parseInt(bulkMoveDetails.quantity);
-    
+
     const moveDetails = selectedRows.map((rowIndex) => {
       const product = tableData[rowIndex];
       return {
@@ -1062,37 +1063,42 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
   // 선택 시에 테이블이 바뀐다.
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  // 이동 테이블을 위한 옵션
   const moveOptions = {
+
+    textLabels: {
+      body: {
+        noMatch: "데이터가 없습니다.",
+      },
+      selectedRows: {
+        text: "행이 선택되었습니다", // Change this to your desired text
+      },
+    },
+    responsive: "scroll",
+    viewColumns: false,
+    download: false,
+    print: false, // Disable default print
     selectableRows: "multiple", // Enable checkboxes for moving products
     onRowSelectionChange: (currentRowsSelected, allRowsSelected) => {
       setSelectedRows(allRowsSelected.map((row) => row.dataIndex));
     },
     customToolbarSelect: (selectedRows, displayData, setSelectedRows) => (
       <div>
-        <Tooltip title="Move">
+        <Tooltip title="이동">
           <IconButton onClick={handleMoveButtonClick}>
             <MoveIcon />
-          </IconButton>
-        </Tooltip>
-        <Tooltip title="Delete">
-          <IconButton>
-            <DeleteIcon />
           </IconButton>
         </Tooltip>
       </div>
     ),
   };
 
-  const importExportOptions = {
-    onRowClick: (rowData) => handleRowClick(rowData), // Handle row click
-  };
-
-  // options for printing but fail
+  // 기본적으로 프린트와 다운로드가 되는 옵션
   const listOptions = {
     fixedHeader: true,
     filterType: "multiselect",
     responsive: "scroll",
-    download: true,
+    download: false,
     print: false, // Disable default print
     viewColumns: true,
     filter: true,
@@ -1101,16 +1107,57 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
     rowsPerPage: 10,
     pagination: true,
     rowsPerPageOptions: [10, 30, 60, 100, 10000],
-    textLabels: { body: { noMatch: "데이터를 불러오는 중입니다." } },
+    textLabels: { body: { noMatch: "데이터가 없습니다." } },
 
     // Custom toolbar with custom print button
     customToolbar: () => {
       return (
-        <Tooltip title="Print">
-          <IconButton onClick={() => setPrintModalOpen(true)}>
-            <PrintIcon />
-          </IconButton>
-        </Tooltip>
+        <React.Fragment>
+          <Tooltip title="Print">
+            <IconButton onClick={() => setPrintModalOpen(true)}>
+              <PrintIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Download">
+            <IconButton onClick={() => downloadExcel(productColumns, tableData)}>
+              <Download />
+            </IconButton>
+          </Tooltip>
+        </React.Fragment>
+      );
+    },
+  };
+
+  const importExportOptions = {
+    onRowClick: (rowData) => handleRowClick(rowData), // Handle row click
+
+    filterType: "multiselect",
+    responsive: "scroll",
+    download: false,
+    print: false, // Disable default print
+    viewColumns: true,
+    filter: true,
+    selectableRows: "none",
+    elevation: 0,
+    rowsPerPage: 10,
+    pagination: true,
+    rowsPerPageOptions: [10, 30, 60, 100, 10000],
+    textLabels: { body: { noMatch: "알림이 없습니다." } },
+    // Custom toolbar with custom print button
+    customToolbar: () => {
+      return (
+        <React.Fragment>
+          <Tooltip title="Print">
+            <IconButton onClick={() => setPrintModalOpen(true)}>
+              <PrintIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Download">
+            <IconButton onClick={() => downloadExcel(productColumns, tableData)}>
+              <Download />
+            </IconButton>
+          </Tooltip>
+        </React.Fragment>
       );
     },
   };
@@ -1126,32 +1173,42 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
         options={listOptions}
       />
     </ThemeProvider>,
-    <MUIDataTable
-      key="moveProductList"
-      title={"상품 이동하기"}
-      data={tableData}
-      columns={productColumns}
-      options={moveOptions}
-    />,
-    <MUIDataTable
-      key="notificationList"
-      title={"모든 변동 내역"}
-      data={allChangingTableData}
-      columns={allChangingTableColumns}
-    />,
-    <MUIDataTable
-      key="dateTypeList"
-      title={"알림함"}
-      data={notificationTableData}
-      columns={notificationTableColumns}
-      options={importExportOptions}
-    />,
-    <MUIDataTable
-      key="selectedNotificationList"
-      title={"알림 상세 내역"}
-      data={notificationDetailTableData}
-      columns={notificationDetailTableColumns}
-    />,
+    <ThemeProvider theme={muiDatatableTheme}>
+      <MUIDataTable
+        key="moveProductList"
+        title={"상품 이동하기"}
+        data={tableData}
+        columns={productColumns}
+        options={moveOptions}
+      />
+    </ThemeProvider>,
+    <ThemeProvider theme={muiDatatableTheme}>
+      <MUIDataTable
+        key="notificationList"
+        title={"모든 변동 내역"}
+        data={allChangingTableData}
+        columns={allChangingTableColumns}
+        options={listOptions}
+      />
+    </ThemeProvider>,
+    <ThemeProvider theme={muiDatatableTheme}>
+      <MUIDataTable
+        key="dateTypeList"
+        title={"알림함"}
+        data={notificationTableData}
+        columns={notificationTableColumns}
+        options={importExportOptions}
+      />
+    </ThemeProvider>,
+    <ThemeProvider theme={muiDatatableTheme}>
+      <MUIDataTable
+        key="selectedNotificationList"
+        title={"알림 상세 내역"}
+        data={notificationDetailTableData}
+        columns={notificationDetailTableColumns}
+        options={listOptions}
+      />
+    </ThemeProvider>,
     showAnalytics && (
       <div key="analyticsSection" style={{ padding: "20px" }}>
         <Typography variant="h6">Analytics</Typography>
@@ -1509,7 +1566,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
       console.error("Error loading rectangles data:", error);
     }
   };
-  
+
   const handleLocationSelectChange = (field, value, index = null) => {
     if (isBulkMove) {
       setBulkMoveDetails((prevDetails) => ({
@@ -1592,12 +1649,12 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
               setShowProductInputSection(false);
               setShowProductExportSection(false);
             }}
-            style={{ 
-              width: "70%", 
+            style={{
+              width: "70%",
               backgroundColor: activeButton === 0 ? '#7D4A1A' : 'transparent',
               color: activeButton === 0 ? 'white' : '#7D4A1A',
               outline: activeButton === 0 ? 'none' : '1px solid #7D4A1A'
-            }} 
+            }}
           >
             제품 목록
           </Button>
@@ -1611,8 +1668,8 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
               setShowProductExportSection(false);
               handleNextComponent(6); // Close other sections
             }}
-            style={{ 
-              width: "70%", 
+            style={{
+              width: "70%",
               backgroundColor: activeButton === 1 ? '#7D4A1A' : 'transparent',
               color: activeButton === 1 ? 'white' : '#7D4A1A',
               outline: activeButton === 1 ? 'none' : '1px solid #7D4A1A'
@@ -1630,8 +1687,8 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
               setShowProductExportSection(true);
               handleNextComponent(6); // Close other sections
             }}
-            style={{ 
-              width: "70%", 
+            style={{
+              width: "70%",
               backgroundColor: activeButton === 2 ? '#7D4A1A' : 'transparent',
               color: activeButton === 2 ? 'white' : '#7D4A1A',
               outline: activeButton === 2 ? 'none' : '1px solid #7D4A1A'
@@ -1650,11 +1707,11 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
               setOpenEditModal(true);
               handleNextComponent(0);
             }}
-            style={{ 
-              width: "70%", 
+            style={{
+              width: "70%",
               backgroundColor: activeButton === 3 ? '#7D4A1A' : 'transparent',
               color: activeButton === 3 ? 'white' : '#7D4A1A',
-              outline: activeButton === 3 ? 'none' : '1px solid #7D4A1A' 
+              outline: activeButton === 3 ? 'none' : '1px solid #7D4A1A'
             }}
           >
             수정하기
@@ -1669,8 +1726,8 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
               setShowProductInputSection(false);
               setShowProductExportSection(false);
             }}
-            style={{ 
-              width: "70%", 
+            style={{
+              width: "70%",
               backgroundColor: activeButton === 4 ? '#7D4A1A' : 'transparent',
               color: activeButton === 4 ? 'white' : '#7D4A1A',
               outline: activeButton === 4 ? 'none' : '1px solid #7D4A1A'
@@ -1688,8 +1745,8 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
               setShowProductInputSection(false);
               setShowProductExportSection(false);
             }}
-            style={{ 
-              width: "70%", 
+            style={{
+              width: "70%",
               backgroundColor: activeButton === 5 ? '#7D4A1A' : 'transparent',
               color: activeButton === 5 ? 'white' : '#7D4A1A',
               outline: activeButton === 5 ? 'none' : '1px solid #7D4A1A'
@@ -1707,8 +1764,8 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
               setShowProductInputSection(false);
               setShowProductExportSection(false);
             }}
-            style={{ 
-              width: "70%", 
+            style={{
+              width: "70%",
               backgroundColor: activeButton === 6 ? '#7D4A1A' : 'transparent',
               color: activeButton === 6 ? 'white' : '#7D4A1A',
               outline: activeButton === 6 ? 'none' : '1px solid #7D4A1A'
@@ -1726,8 +1783,8 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
               setShowProductInputSection(false);
               setShowProductExportSection(false);
             }}
-            style={{ 
-              width: "70%", 
+            style={{
+              width: "70%",
               backgroundColor: activeButton === 7 ? '#7D4A1A' : 'transparent',
               color: activeButton === 7 ? 'white' : '#7D4A1A',
               outline: activeButton === 7 ? 'none' : '1px solid #7D4A1A'
@@ -1743,8 +1800,8 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
               handleButtonClick(8);
               handleEncapsulation();
             }}
-            style={{ 
-              width: "70%", 
+            style={{
+              width: "70%",
               backgroundColor: activeButton === 8 ? '#7D4A1A' : 'transparent',
               color: activeButton === 8 ? 'white' : '#7D4A1A',
               outline: activeButton === 8 ? 'none' : '1px solid #7D4A1A'
@@ -1922,10 +1979,10 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleSaveEdits} style={{ color: '#7D4A1A'}}>
+          <Button onClick={handleSaveEdits} style={{ color: '#7D4A1A' }}>
             저장하기
           </Button>
-          <Button onClick={() => setOpenEditModal(false)} style={{ color: '#7D4A1A'}}>
+          <Button onClick={() => setOpenEditModal(false)} style={{ color: '#7D4A1A' }}>
             닫기
           </Button>
         </DialogActions>
