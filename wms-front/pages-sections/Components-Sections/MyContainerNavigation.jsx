@@ -214,15 +214,17 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
       return commonData; // Fallback if type doesn't match
     });
 
+    console.log("선별데이터")
+    console.log(filteredData)
+
     // Extract the location names and warehouse IDs from the filtered data
-    const locationNames = filteredData.map((item) => item.currentLocationName);
+    const locationNames = filteredData
+      .filter((item) => item.warehouseId === parseInt(WHId))
+      .map((item) => item.currentLocationName);
 
     // Find the IDs of the locations that match both the location name and warehouse ID
     const matchedLocationIds = locations
-      .filter(
-        (location) =>
-          locationNames.includes(location.name)
-      )
+      .filter((location) => locationNames.includes(location.name))
       .map((location) => location.id);
 
     console.log(matchedLocationIds);
