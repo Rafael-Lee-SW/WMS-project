@@ -131,4 +131,8 @@ public class FloorModuleService {
 
         return xSize * CONVERT_SIZE * ySize * CONVERT_SIZE;
     }
+
+    public List<Floor> findAllNotEmptyFloorByWarehouseId(Long id) {
+        return floorRepository.findAllNotEmptyFloorByWarehouseId(id);
+    }
 }

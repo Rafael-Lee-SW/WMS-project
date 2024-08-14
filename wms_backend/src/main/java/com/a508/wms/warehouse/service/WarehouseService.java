@@ -229,33 +229,26 @@ public class WarehouseService {
     }
 
     public int findUsage(Long id) {
+        log.info("service usage");
         List<Location> locations = locationModuleService.findAllByWarehouseId(id);
+        log.info("location");
+        List<Floor> floors = floorModuleService.findAllNotEmptyFloorByWarehouseId(id);
 
-        int usageSum = 0;
-
-        for (Location location : locations) {
-            for (Floor floor : location.getFloors()) {
-                if (!productModuleService.findByFloor(floor).isEmpty()) {
-                    usageSum++;
-                }
-            }
-        }
+        log.info("floors");
 
         int totalCnt = locations.stream()
             .mapToInt(Location::getZSize)
             .sum();
 
-        return Math.max(1, usageSum * 100 / totalCnt);
+        return Math.max(1, floors.size() * 100 / totalCnt);
     }
 
     public int findPurpose(Long id) {
         Warehouse warehouse = warehouseModuleService.findById(id);
 
         if (warehouse.getFacilityTypeEnum() == FacilityTypeEnum.STORE) {
-            if (warehouse.getPriority() == 1) {
-                return 1;
-            }
-
+            return 1;
+        } else if (warehouse.getPriority() == 1) {
             return 2;
         }
 
