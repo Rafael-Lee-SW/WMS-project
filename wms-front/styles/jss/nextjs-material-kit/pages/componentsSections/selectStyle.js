@@ -93,7 +93,7 @@ const selectStyle = theme => ({
     flexDirection: "column", // 제목과 퍼센트 바를 세로로 정렬
     justifyContent: "center",
     alignItems: "center",
-    height: "33.33%", // Height set to 1/3 of the card
+    height: "45%", // Height set to 1/3 of the card
   },
   usageBarContainer: {
     width: "100%",
