@@ -210,8 +210,8 @@ const Select = (props) => {
         const yPosition = i * (parseInt(locationY) + rowSpacing);
 
         locationData.push({
-          x: xPosition,
-          y: yPosition,
+          xPosition: xPosition,
+          yPosition: yPosition,
           zSize: parseInt(locationZ),
           xSize: Math.round(parseInt(locationX)),
           ySize: Math.round(parseInt(locationY)),
