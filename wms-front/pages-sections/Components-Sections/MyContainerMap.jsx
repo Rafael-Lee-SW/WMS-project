@@ -182,7 +182,13 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
   const [newLocationHeight, setNewLocationHeight] = useState(50);
   const [newLocationZIndex, setNewLocationZIndex] = useState(1);
   const [newLocationName, setNewLocationName] = useState("");
-  const [newLocationType, setNewLocationType] = useState(""); // 속성 추가 예정
+  // 상온, 냉장, 보관, 위험 등의 옵션 추가
+  const [newLocationType, setNewLocationType] = useState("상온");
+
+  // 상태 추가: nameMode가 'text'이면 텍스트 입력, 'rowColumn'이면 행/열 입력
+  const [nameMode, setNameMode] = useState("text");
+  const [rowNumber, setRowNumber] = useState("");
+  const [columnNumber, setColumnNumber] = useState("");
 
   // New State for wall settings(벽 관련 설정)
   const [newWallColor, setNewWallColor] = useState("brown");
@@ -211,33 +217,57 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
   const currentShapeRef = useRef(null);
 
   // 로케이션을 추가하는 메서드
-  const handleAddLocation = (type) => {
-    const newLocation = {
-      id: null,
-      x: 50,
-      y: 50,
-      z: newLocationZIndex,
-      width: newLocationWidth,
-      height: newLocationHeight,
-      fill: newLocationColor,
-      draggable: true,
-      order: locations.length + 1,
-      name:
-        newLocationName ||
-        `적재함 ${parseInt(locations[locations.length - 1].id) + 1}`,
-      type: type,
-      rotation: 0,
-    };
-    setLocations([...locations, newLocation]);
-    updateContainer(newLocation, "location", `location${newLocation.id}`);
-    //적재함 추가 후 값 초기화
-    setNewLocationColor("blue");
-    setNewLocationWidth(50);
-    setNewLocationHeight(50);
-    setNewLocationZIndex(1);
-    setNewLocationName("");
+const handleAddLocation = (type) => {
+  let newName;
+
+  // nameMode에 따라 name을 설정
+  if (nameMode === "text") {
+    // 텍스트 모드에서는 사용자가 입력한 name을 사용하거나, 기본 값으로 '적재함-{마지막번호+1}' 사용
+    const latestId = locations.length > 0 ? parseInt(locations[locations.length - 1].id) : 0;
+    newName = newLocationName || `적재함-${latestId + 1}`;
+  } else if (nameMode === "rowColumn") {
+    // 행/열 선택 모드에서는 '00-00' 형식으로 이름을 생성
+    const formattedRow = rowNumber.padStart(2, '0');
+    const formattedColumn = columnNumber.padStart(2, '0');
+    newName = `${formattedRow}-${formattedColumn}`;
+  }
+
+  // 중복된 이름이 있는지 확인
+  const isDuplicateName = locations.some((location) => location.name === newName);
+
+  if (isDuplicateName) {
+    alert(`이름이 "${newName}"인 로케이션이 이미 존재합니다. 다른 이름을 사용하세요.`);
+    return;  // 중복된 이름이 있으면 생성 중단
+  }
+
+  const newLocation = {
+    id: locations.length.toString(),
+    x: 50,
+    y: 50,
+    z: newLocationZIndex,
+    width: newLocationWidth,
+    height: newLocationHeight,
+    fill: newLocationColor,
+    draggable: true,
+    order: locations.length + 1,
+    name: newName,  // 생성된 name 사용
+    type: type,
+    rotation: 0,
   };
-  //
+
+  setLocations([...locations, newLocation]);
+  updateContainer(newLocation, "location", `location${newLocation.id}`);
+
+  // 적재함 추가 후 값 초기화
+  setNewLocationColor("blue");
+  setNewLocationWidth(50);
+  setNewLocationHeight(50);
+  setNewLocationZIndex(1);
+  setNewLocationName("");
+  setRowNumber("");  // 행/열 선택 모드 초기화
+  setColumnNumber("");  // 행/열 선택 모드 초기화
+};
+
   // 창고 배열 저장
   const updateContainer = (location, type, code) => {
     const newContainer = container.map((row, x) =>
@@ -1000,11 +1030,11 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
           if (!existingAnchor) {
             const newId = anchorsRef.current.length
               ? Math.max(
-                ...anchorsRef.current.flatMap(({ start, end }) => [
-                  parseInt(start.id(), 10),
-                  parseInt(end.id(), 10),
-                ])
-              ) + 1
+                  ...anchorsRef.current.flatMap(({ start, end }) => [
+                    parseInt(start.id(), 10),
+                    parseInt(end.id(), 10),
+                  ])
+                ) + 1
               : 1;
             existingAnchor = buildAnchor(newId, x, y);
           } else {
@@ -1095,7 +1125,6 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
 
   // 최초 한번 실행된다.
   useEffect(() => {
-
     const fetchData = async () => {
       try {
         setLoading(true); // Start loading
@@ -1111,9 +1140,7 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
 
   // 중앙에서 시작하기 위함
   useEffect(() => {
-
     const centerCanvas = () => {
-      
       const centerX = (VIEWPORT_WIDTH - CANVAS_SIZE) / 2;
       const centerY = (VIEWPORT_HEIGHT - CANVAS_SIZE) / 1.5;
 
@@ -1184,7 +1211,7 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
           order: newLocations.length + 1,
           name: `${rowNumber}-${columnNumber}`,
           productStorageType: "상온",
-          fill :"0",
+          fill: "0",
           rotation: 0,
           touchableFloor: 2, // 닿을 수 있는 층수
         });
@@ -1314,11 +1341,9 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
             <Typography variant="h6" gutterBottom>
               {currentSetting === "location" ? "로케이션" : "입구-출구"} 설정
             </Typography>
-
             <Typography variant="body2" color="textSecondary" gutterBottom>
               단수와 크기를 정하세요
             </Typography>
-
             <Box mb={2}>
               <Typography gutterBottom>
                 단수(층): {newLocationZIndex}단/층
@@ -1334,7 +1359,6 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
                 max={10}
               />
             </Box>
-
             <Box mb={2}>
               <Typography gutterBottom>가로: {newLocationWidth}cm</Typography>
               <Slider
@@ -1348,7 +1372,6 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
                 max={500}
               />
             </Box>
-
             <Box mb={2}>
               <Typography gutterBottom>세로: {newLocationHeight}cm</Typography>
               <Slider
@@ -1362,14 +1385,27 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
                 max={500}
               />
             </Box>
-
             <hr />
-
             <Typography variant="body2" color="textSecondary" gutterBottom>
               이름과 속성을 지정해주세요
             </Typography>
-
-            <Box mb={2}>
+            <Typography gutterBottom>이름 입력 모드 선택</Typography>
+            <Button
+              className={classes.buttonStyle}
+              variant="contained"
+              onClick={() => setNameMode("text")}
+            >
+              직접 입력
+            </Button>
+            <Button
+              className={classes.buttonStyle}
+              variant="contained"
+              onClick={() => setNameMode("rowColumn")}
+            >
+              행/열 선택
+            </Button>
+            {/* name 입력 부분 - 텍스트 모드와 행/열 모드에 따라 다른 입력 필드 표시 */}
+            {nameMode === "text" ? (
               <TextField
                 label="Name"
                 value={newLocationName}
@@ -1379,20 +1415,50 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
                 size="small"
                 margin="dense"
               />
-            </Box>
-
+            ) : (
+              <Box display="flex" justifyContent="space-between">
+                <TextField
+                  label="행"
+                  value={rowNumber}
+                  onChange={(e) => setRowNumber(e.target.value)}
+                  variant="outlined"
+                  size="small"
+                  margin="dense"
+                  type="number"
+                />
+                <TextField
+                  label="열"
+                  value={columnNumber}
+                  onChange={(e) => setColumnNumber(e.target.value)}
+                  variant="outlined"
+                  size="small"
+                  margin="dense"
+                  type="number"
+                />
+              </Box>
+            )}
             <Box mb={2}>
+              <Typography gutterBottom>타입</Typography>
               <TextField
-                label="속성"
-                value={newLocationType} // Fixing the value to refer to the correct state
+                select
+                label="Type"
+                value={newLocationType}
                 onChange={(e) => setNewLocationType(e.target.value)}
                 variant="outlined"
                 fullWidth
                 size="small"
                 margin="dense"
-              />
+                SelectProps={{
+                  native: true,
+                }}
+              >
+                <option value="상온">상온</option>
+                <option value="냉장">냉장</option>
+                <option value="보관">보관</option>
+                <option value="위험">위험</option>
+                {/* 필요에 따라 더 많은 옵션을 추가할 수 있습니다 */}
+              </TextField>
             </Box>
-
             <Button
               onClick={() => handleAddLocation(currentSetting)}
               variant="contained"
@@ -1747,8 +1813,9 @@ const RectangleTransformer = ({
   const fontSize = Math.min(shapeProps.width, shapeProps.height) / 4;
 
   // 재고함의 행렬과 높이를 나타내도록 설정한 MainText
-  const mainText = `${shapeProps.name}-${shapeProps.z < 10 ? "0" + shapeProps.z : shapeProps.z
-    }`;
+  const mainText = `${shapeProps.name}-${
+    shapeProps.z < 10 ? "0" + shapeProps.z : shapeProps.z
+  }`;
 
   // RGB 색깔로 재고율 퍼센트(%)를 추출하는 함수
   const extractFillPercentage = (rgbaString) => {

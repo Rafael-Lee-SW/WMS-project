@@ -8,6 +8,12 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Checkbox from "@mui/material/Checkbox";
 import CircularProgress from "@mui/material/CircularProgress";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
+//시간 보여주기
+import { format } from "date-fns";
+import dayjs from "dayjs";
 
 // 모달 페이지를 위한 Import
 import Dialog from "@mui/material/Dialog";
@@ -105,24 +111,23 @@ const muiDatatableTheme = createTheme({
     MuiTableBody: {
       styleOverrides: {
         root: {
-          '& .MuiTableCell-root': {
-            maxHeight: '400px !important', // Set your desired max height here
-          }
-        }
-      }
+          "& .MuiTableCell-root": {
+            maxHeight: "400px !important", // Set your desired max height here
+          },
+        },
+      },
     },
     MUIDataTable: {
       styleOverrides: {
         responsiveScroll: {
-          maxHeight: '80vh !important', // Set your desired max height here
-        }
-      }
-    }
+          maxHeight: "80vh !important", // Set your desired max height here
+        },
+      },
+    },
   },
 });
 
 const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
-
   const router = useRouter();
 
   const [tableData, setTableData] = useState([]);
@@ -178,7 +183,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
     barcode: "",
     name: "",
     quantity: "",
-    expirationDate: "",
+    expirationDate: dayjs(), // Initialize with current date
   });
   const [expectedImportList, setExpectedImportList] = useState([]); // Store expected import list
 
@@ -573,7 +578,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
 
         setProductColumns(formattedColumns);
         setTableData(data);
-        setEditData(data); // Initialize editData with the current table data
+        setEditData(data); // 둘을 분리할 필요가 있을까?
 
         // Precompute quantity by location data
         const locationData = products.reduce((acc, product) => {
@@ -877,21 +882,31 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
     // 수정을 위한 데이터를 updatedData를 통해 가져온다.
     const productsArray = updatedData.map((row) => ({
       productId: String(row[0]), // Get From HiddenId
-      locationName: (row[4] !== "임시" ? row[4] : "00-00"),
+      locationName: row[4] !== "임시" ? row[4] : "00-00",
       floorLevel: String(row[5]),
       productRequestDto: {
         name: row[1],
         barcode: row[2],
         quantity: row[3],
-        expirationDate: (row[6] === "없음" ? null : row[6]),
+        expirationDate: row[6] === "없음" ? null : row[6],
         warehouseId: parseInt(row[7]),
       },
     }));
 
-    console.log([productsArray])
+    console.log([productsArray]);
 
     // Send the array of products to the API
     productEditAPI(productsArray);
+
+    // Use router.replace with shallow routing
+    router.replace(
+      {
+        pathname: `/user/${WHId}`,
+        query: { component: "product" },
+      },
+      undefined,
+      { shallow: true }
+    );
 
     setOpenEditModal(false); // Close modal after saving
   };
@@ -1070,10 +1085,9 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
     },
   };
 
-
   // Define the componentsArray with separate options
   const componentsArray = [
-    <ThemeProvider  theme={muiDatatableTheme}>
+    <ThemeProvider theme={muiDatatableTheme}>
       <MUIDataTable
         key="productList"
         title={"상품 목록"}
@@ -1195,18 +1209,34 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
   const handleNewProductInputChange = (field, value) => {
     setNewProductData((prevData) => ({
       ...prevData,
-      [field]: value,
+      [field]: field === "expirationDate" ? dayjs(value) : value,
     }));
   };
 
   // Add new product to expected import list
   const handleAddNewProduct = () => {
-    setExpectedImportList((prevList) => [...prevList, newProductData]);
+    const formattedDate = format(
+      newProductData.expirationDate,
+      "yyyy-MM-dd'T'HH:mm"
+    );
+
+    const formattedDisplayDate = format(
+      newProductData.expirationDate,
+      "yyyy년 M월 d일 HH시 mm분"
+    );
+
+    const productData = {
+      ...newProductData,
+      expirationDate: formattedDate,
+      expirationDateDisplay: formattedDisplayDate, // 보여주기용
+    };
+
+    setExpectedImportList((prevList) => [...prevList, productData]);
     setNewProductData({
       barcode: "",
       name: "",
       quantity: "",
-      expirationDate: "",
+      expirationDate: null,
     });
   };
 
@@ -1737,7 +1767,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
               `130vw`,
               `130vw`,
             ]}
-            colHeaders={columns.map((col) => col.label)}
+            colHeaders={productColumns.map((col) => col.label)}
             dropdownMenu={true}
             hiddenColumns={{
               columns: [0], // Hide the first column (hiddenId) during editing
@@ -2010,7 +2040,14 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
           <CircularProgress />
         </div>
       )}
-      <div style={{ display: "flex", width: "100%", margin: "0 0 0 200px", height: "85vh" }}>
+      <div
+        style={{
+          display: "flex",
+          width: "100%",
+          margin: "0 0 0 200px",
+          height: "85vh",
+        }}
+      >
         {/* 입고하기 Section */}
         {showProductInputSection && (
           <div style={{ width: "100%", marginRight: "20px" }}>
@@ -2058,18 +2095,21 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
                       />
                     </td>
                     <td style={{ padding: "8px" }}>
-                      <TextField
-                        label="유통기한"
-                        value={newProductData.expirationDate}
-                        onChange={(e) =>
-                          handleNewProductInputChange(
-                            "expirationDate",
-                            e.target.value
-                          )
-                        }
-                        fullWidth
-                        margin="normal"
-                      />
+                      <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <DateTimePicker
+                          label="유통기한"
+                          value={newProductData.expirationDate}
+                          onChange={(newValue) =>
+                            handleNewProductInputChange(
+                              "expirationDate",
+                              newValue
+                            )
+                          }
+                          renderInput={(params) => (
+                            <TextField {...params} fullWidth margin="normal" />
+                          )}
+                        />
+                      </LocalizationProvider>
                     </td>
                     <td style={{ padding: "8px", textAlign: "center" }}>
                       <Button
@@ -2164,16 +2204,28 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
                         textAlign: "left",
                       }}
                     >
+                      유통기한
+                    </th>
+                    <th
+                      style={{
+                        borderBottom: "1px solid #ddd",
+                        padding: "8px",
+                        textAlign: "left",
+                      }}
+                    >
                       비고
                     </th>
                   </tr>
                 </thead>
-                <tbody >
+                <tbody>
                   {expectedImportList.map((product, index) => (
                     <tr key={index}>
                       <td style={{ padding: "8px" }}>{product.name}</td>
                       <td style={{ padding: "8px" }}>{product.barcode}</td>
                       <td style={{ padding: "8px" }}>{product.quantity}</td>
+                      <td style={{ padding: "8px" }}>
+                        {product.expirationDateDisplay}
+                      </td>
                       <td style={{ padding: "8px" }}>
                         <IconButton
                           color="secondary"
@@ -2227,7 +2279,10 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
                         label="송장"
                         value={newExportData.trackingNumber}
                         onChange={(e) =>
-                          handleNewExportInputChange("trackingNumber", e.target.value)
+                          handleNewExportInputChange(
+                            "trackingNumber",
+                            e.target.value
+                          )
                         }
                         fullWidth
                         margin="normal"
@@ -2335,7 +2390,9 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
                     <tr key={index}>
                       <td style={{ padding: "8px" }}>{product.barcode}</td>
                       <td style={{ padding: "8px" }}>{product.quantity}</td>
-                      <td style={{ padding: "8px" }}>{product.trackingNumber}</td>
+                      <td style={{ padding: "8px" }}>
+                        {product.trackingNumber}
+                      </td>
                       <td style={{ padding: "8px" }}>
                         <IconButton
                           color="secondary"
