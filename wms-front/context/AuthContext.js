@@ -22,18 +22,14 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    console.log("please in userEffect")
     const token = localStorage.getItem('token');
     if (token) {
-      console.log("Token found, starting API request"); // 추가 로그
       axios.get('http://localhost:8080/api/oauth/refresh/token', { headers: { Authorization: `Bearer ${token}` } })
         .then(response => {
           const userData = response.data;
-          console.log("들어왔니 리프레시", userData);  // 서버에서 가져온 최신 정보로 갱신
           login(userData, token);
         })
         .catch(error => {
-          console.error("Failed to fetch user data", error);
           if (error.response && error.response.status === 401) {
             logout();
           }
