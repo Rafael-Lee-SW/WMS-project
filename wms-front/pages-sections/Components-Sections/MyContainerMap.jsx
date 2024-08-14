@@ -1,6 +1,8 @@
 //MyContainerMap.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
+import { toast } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 // Library of konva and color Checker
 import {
   Stage,
@@ -71,25 +73,25 @@ const useStyles = makeStyles((theme) => ({
   },
   buttonStyle: {
     backgroundColor: "transparent",
-    width: '50px',
-    color: '#7D4A1A',
-    marginLeft: '10px',
+    width: "50px",
+    color: "#7D4A1A",
+    marginLeft: "10px",
     height: "30px",
-    border: '1px solid #7D4A1A',
-    borderRadius: '4px',
-    '&:hover': {
-        transform: 'scale(1.05)',
-        backgroundColor: '#7D4A1A',
-        color: 'white',
+    border: "1px solid #7D4A1A",
+    borderRadius: "4px",
+    "&:hover": {
+      transform: "scale(1.05)",
+      backgroundColor: "#7D4A1A",
+      color: "white",
     },
   },
   generateButton: {
     backgroundColor: "#7D4A1A",
-    '&:hover': {
-        transform: 'scale(1.05)',
-        backgroundColor: 'transparent',
-        border: '1px solid #7D4A1A',
-        color: '#7D4A1A',
+    "&:hover": {
+      transform: "scale(1.05)",
+      backgroundColor: "transparent",
+      border: "1px solid #7D4A1A",
+      color: "#7D4A1A",
     },
   },
   outOfCanvas: {
@@ -126,6 +128,16 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
   const classes = useStyles();
   const stageRef = useRef(null);
   const layerRef = useRef(null);
+
+  const notify = (message) => toast(message, {
+    position: "top-center",
+    autoClose: 2000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+  });
 
   // 로딩 Loading
   const [loading, setLoading] = useState(true); // Overall loading state
@@ -236,56 +248,61 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
   const currentShapeRef = useRef(null);
 
   // 로케이션을 추가하는 메서드
-const handleAddLocation = (type) => {
-  let newName;
+  const handleAddLocation = (type) => {
+    let newName;
 
-  // nameMode에 따라 name을 설정
-  if (nameMode === "text") {
-    // 텍스트 모드에서는 사용자가 입력한 name을 사용하거나, 기본 값으로 '적재함-{마지막번호+1}' 사용
-    const latestId = locations.length > 0 ? parseInt(locations[locations.length - 1].id) : 0;
-    newName = newLocationName || `적재함-${latestId + 1}`;
-  } else if (nameMode === "rowColumn") {
-    // 행/열 선택 모드에서는 '00-00' 형식으로 이름을 생성
-    const formattedRow = rowNumber.padStart(2, '0');
-    const formattedColumn = columnNumber.padStart(2, '0');
-    newName = `${formattedRow}-${formattedColumn}`;
-  }
+    // nameMode에 따라 name을 설정
+    if (nameMode === "text") {
+      // 텍스트 모드에서는 사용자가 입력한 name을 사용하거나, 기본 값으로 '적재함-{마지막번호+1}' 사용
+      const latestId =
+        locations.length > 0 ? parseInt(locations[locations.length - 1].id) : 0;
+      newName = newLocationName || `적재함-${latestId + 1}`;
+    } else if (nameMode === "rowColumn") {
+      // 행/열 선택 모드에서는 '00-00' 형식으로 이름을 생성
+      const formattedRow = rowNumber.padStart(2, "0");
+      const formattedColumn = columnNumber.padStart(2, "0");
+      newName = `${formattedRow}-${formattedColumn}`;
+    }
 
-  // 중복된 이름이 있는지 확인
-  const isDuplicateName = locations.some((location) => location.name === newName);
+    // 중복된 이름이 있는지 확인
+    const isDuplicateName = locations.some(
+      (location) => location.name === newName
+    );
 
-  if (isDuplicateName) {
-    alert(`이름이 "${newName}"인 로케이션이 이미 존재합니다. 다른 이름을 사용하세요.`);
-    return;  // 중복된 이름이 있으면 생성 중단
-  }
+    if (isDuplicateName) {
+      notify(
+        `이름이 "${newName}"인 로케이션이 이미 존재합니다. 다른 이름을 사용하세요.`
+      );
+      return; // 중복된 이름이 있으면 생성 중단
+    }
 
-  const newLocation = {
-    id: locations.length.toString(),
-    x: 50,
-    y: 50,
-    z: newLocationZIndex,
-    width: newLocationWidth,
-    height: newLocationHeight,
-    fill: newLocationColor,
-    draggable: true,
-    order: locations.length + 1,
-    name: newName,  // 생성된 name 사용
-    type: type,
-    rotation: 0,
+    const newLocation = {
+      id: locations.length.toString(),
+      x: 50,
+      y: 50,
+      z: newLocationZIndex,
+      width: newLocationWidth,
+      height: newLocationHeight,
+      fill: newLocationColor,
+      draggable: true,
+      order: locations.length + 1,
+      name: newName, // 생성된 name 사용
+      type: type,
+      rotation: 0,
+    };
+
+    setLocations([...locations, newLocation]);
+    updateContainer(newLocation, "location", `location${newLocation.id}`);
+
+    // 적재함 추가 후 값 초기화
+    setNewLocationColor("blue");
+    setNewLocationWidth(50);
+    setNewLocationHeight(50);
+    setNewLocationZIndex(1);
+    setNewLocationName("");
+    setRowNumber(""); // 행/열 선택 모드 초기화
+    setColumnNumber(""); // 행/열 선택 모드 초기화
   };
-
-  setLocations([...locations, newLocation]);
-  updateContainer(newLocation, "location", `location${newLocation.id}`);
-
-  // 적재함 추가 후 값 초기화
-  setNewLocationColor("blue");
-  setNewLocationWidth(50);
-  setNewLocationHeight(50);
-  setNewLocationZIndex(1);
-  setNewLocationName("");
-  setRowNumber("");  // 행/열 선택 모드 초기화
-  setColumnNumber("");  // 행/열 선택 모드 초기화
-};
 
   // 창고 배열 저장
   const updateContainer = (location, type, code) => {
@@ -389,7 +406,6 @@ const handleAddLocation = (type) => {
       );
 
       if (response.ok) {
-
         // 성공
         // Use router.replace with shallow routing
         router.replace(
@@ -1349,22 +1365,31 @@ const handleAddLocation = (type) => {
         <br />
         {currentSetting && currentSetting !== "wall" && (
           <div>
-            <Typography variant="h6" gutterBottom style={{ textAlign: 'center', fontWeight: 'bold'}}>
+            <Typography
+              variant="h6"
+              gutterBottom
+              style={{ textAlign: "center", fontWeight: "bold" }}
+            >
               {currentSetting === "location" ? "로케이션" : "입구-출구"} 설정
             </Typography>
 
-            <Typography style={{ textAlign: 'center'}} variant="body2" color="textSecondary" gutterBottom>
+            <Typography
+              style={{ textAlign: "center" }}
+              variant="body2"
+              color="textSecondary"
+              gutterBottom
+            >
               단수와 크기를 정하세요
             </Typography>
 
-            <Box mb={2} style={{ paddingTop: '20px'}}>
-              <Typography gutterBottom style={{ textAlign: 'center'}}>
+            <Box mb={2} style={{ paddingTop: "20px" }}>
+              <Typography gutterBottom style={{ textAlign: "center" }}>
                 단수(층): {newLocationZIndex}단/층
               </Typography>
               <Slider
                 value={newLocationZIndex}
                 style={{
-                  color: '#4E4544', 
+                  color: "#4E4544",
                 }}
                 onChange={(e, newValue) => setNewLocationZIndex(newValue)}
                 aria-labelledby="z-index-slider"
@@ -1381,7 +1406,7 @@ const handleAddLocation = (type) => {
               <Slider
                 value={newLocationWidth}
                 style={{
-                  color: '#4E4544', 
+                  color: "#4E4544",
                 }}
                 onChange={(e, newValue) => setNewLocationWidth(newValue)}
                 aria-labelledby="width-slider"
@@ -1397,7 +1422,7 @@ const handleAddLocation = (type) => {
               <Slider
                 value={newLocationHeight}
                 style={{
-                  color: '#4E4544', 
+                  color: "#4E4544",
                 }}
                 onChange={(e, newValue) => setNewLocationHeight(newValue)}
                 aria-labelledby="height-slider"
@@ -1412,7 +1437,6 @@ const handleAddLocation = (type) => {
             <Typography variant="body2" color="textSecondary" gutterBottom>
               이름과 속성을 지정해주세요
             </Typography>
-            <Typography gutterBottom>이름 입력 모드 선택</Typography>
             <Button
               className={classes.buttonStyle}
               variant="contained"
@@ -1430,7 +1454,7 @@ const handleAddLocation = (type) => {
             {/* name 입력 부분 - 텍스트 모드와 행/열 모드에 따라 다른 입력 필드 표시 */}
             {nameMode === "text" ? (
               <TextField
-                label="Name"
+                label="이름"
                 value={newLocationName}
                 onChange={(e) => setNewLocationName(e.target.value)}
                 variant="outlined"
@@ -1461,7 +1485,6 @@ const handleAddLocation = (type) => {
               </Box>
             )}
             <Box mb={2}>
-              <Typography gutterBottom>타입</Typography>
               <TextField
                 select
                 label="Type"
@@ -1483,7 +1506,8 @@ const handleAddLocation = (type) => {
               </TextField>
             </Box>
 
-            <Button className={classes.generateButton}
+            <Button
+              className={classes.generateButton}
               onClick={() => handleAddLocation(currentSetting)}
               variant="contained"
               fullWidth
@@ -1575,13 +1599,28 @@ const handleAddLocation = (type) => {
             gap: "10px",
           }}
         >
-          <Button justIcon round style={{backgroundColor:"#7D4A1A"}} onClick={handleZoomIn}>
+          <Button
+            justIcon
+            round
+            style={{ backgroundColor: "#7D4A1A" }}
+            onClick={handleZoomIn}
+          >
             <ZoomInIcon className={classes.icons} />
           </Button>
-          <Button justIcon round style={{backgroundColor:"#ADAAA5"}} onClick={handleZoomOut}>
+          <Button
+            justIcon
+            round
+            style={{ backgroundColor: "#ADAAA5" }}
+            onClick={handleZoomOut}
+          >
             <ZoomOutIcon className={classes.icons} />
           </Button>
-          <Button justIcon round style={{backgroundColor:"#C2B6A1", marginRight: '40px'}} onClick={editContainerAPI}>
+          <Button
+            justIcon
+            round
+            style={{ backgroundColor: "#C2B6A1", marginRight: "40px" }}
+            onClick={editContainerAPI}
+          >
             <SaveIcon className={classes.icons} />
           </Button>
         </div>
@@ -1836,9 +1875,7 @@ const RectangleTransformer = ({
   const fontSize = Math.min(shapeProps.width, shapeProps.height) / 4;
 
   // 재고함의 행렬과 높이를 나타내도록 설정한 MainText
-  const mainText = `${shapeProps.name}-${
-    shapeProps.z < 10 ? "0" + shapeProps.z : shapeProps.z
-  }`;
+  const floorName = `${shapeProps.z}층`;
 
   // RGB 색깔로 재고율 퍼센트(%)를 추출하는 함수
   const extractFillPercentage = (rgbaString) => {
@@ -1906,18 +1943,32 @@ const RectangleTransformer = ({
         }}
       />
       <Text
-        text={mainText}
+        text={floorName}
         x={shapeProps.x}
         y={shapeProps.y}
         z={shapeProps.z}
         width={shapeProps.width}
-        height={shapeProps.height - fontSize}
+        height={shapeProps.height - fontSize * 2}
+        fontSize={Math.min(shapeProps.width, shapeProps.height) / 6}
+        fontFamily="Arial"
+        fill="white"
+        align="center"
+        verticalAlign="middle"
+        listening={false} // Disable interactions with the text
+      />
+      <Text
+        text={shapeProps.name}
+        x={shapeProps.x}
+        y={shapeProps.y}
+        z={shapeProps.z}
+        width={shapeProps.width}
+        height={shapeProps.height}
         fontSize={Math.min(shapeProps.width, shapeProps.height) / 5}
         fontFamily="Arial"
         fill="white"
         align="center"
         verticalAlign="middle"
-        listening={false} // 텍스트를 클릭할 수 없도록 비활성화
+        listening={false} // Disable interactions with the text
       />
       <Text
         text={`${extractFillPercentage(shapeProps.fill)}%`}
@@ -1925,8 +1976,8 @@ const RectangleTransformer = ({
         y={shapeProps.y}
         z={shapeProps.z}
         width={shapeProps.width}
-        height={shapeProps.height + fontSize}
-        fontSize={Math.min(shapeProps.width, shapeProps.height) / 5}
+        height={shapeProps.height + (fontSize)*2}
+        fontSize={Math.min(shapeProps.width, shapeProps.height) / 6}
         fontFamily="Arial"
         fill="white"
         align="center"
