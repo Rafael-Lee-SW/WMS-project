@@ -902,6 +902,7 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
           product.warehouseId,
         ]);
 
+
         setColumns(formattedColumns);
         setTableData(data);
       } else {
@@ -1567,8 +1568,10 @@ const RectangleTransformer = ({
   // Calculate font size for the text inside the rectangle
   const fontSize = Math.min(shapeProps.width, shapeProps.height) / 4;
 
-  // 재고함의 행렬과 높이를 나타내도록 설정한 MainText
-  const floorName = `${shapeProps.z}층`;
+  // Text to display on the rectangle
+  const mainText = `${shapeProps.name}-${
+    shapeProps.z < 10 ? "0" + shapeProps.z : shapeProps.z
+  }`;
 
   // Extract fill percentage from RGBA color
   const extractFillPercentage = (rgbaString) => {
@@ -1613,26 +1616,12 @@ const RectangleTransformer = ({
         shadowOpacity={isHovered || isHoveredLocal ? 0.5 : 0} // Shadow opacity when hovered
       />
       <Text
-        text={floorName}
+        text={mainText}
         x={shapeProps.x}
         y={shapeProps.y}
         z={shapeProps.z}
         width={shapeProps.width}
-        height={shapeProps.height - fontSize * 2}
-        fontSize={Math.min(shapeProps.width, shapeProps.height) / 6}
-        fontFamily="Arial"
-        fill="white"
-        align="center"
-        verticalAlign="middle"
-        listening={false} // Disable interactions with the text
-      />
-      <Text
-        text={shapeProps.name}
-        x={shapeProps.x}
-        y={shapeProps.y}
-        z={shapeProps.z}
-        width={shapeProps.width}
-        height={shapeProps.height}
+        height={shapeProps.height - fontSize}
         fontSize={Math.min(shapeProps.width, shapeProps.height) / 5}
         fontFamily="Arial"
         fill="white"
@@ -1646,8 +1635,8 @@ const RectangleTransformer = ({
         y={shapeProps.y}
         z={shapeProps.z}
         width={shapeProps.width}
-        height={shapeProps.height + fontSize * 2}
-        fontSize={Math.min(shapeProps.width, shapeProps.height) / 6}
+        height={shapeProps.height + fontSize}
+        fontSize={Math.min(shapeProps.width, shapeProps.height) / 5}
         fontFamily="Arial"
         fill="white"
         align="center"
