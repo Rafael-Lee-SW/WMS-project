@@ -17,7 +17,6 @@ import org.hibernate.annotations.SQLRestriction;
 @AllArgsConstructor
 @Entity(name="certification")
 @Table(name="certification")
-@SQLRestriction("status_enum = 'Active'")
 public class Certification extends BaseTimeEntity {
 
     @Id
