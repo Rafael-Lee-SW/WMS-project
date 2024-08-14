@@ -146,6 +146,7 @@ const muiDatatableTheme = createTheme({
 });
 
 const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
+
   const router = useRouter();
   const classes = useStyles();
 
@@ -611,8 +612,10 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
 
         // Precompute quantity by location data
         const locationData = products.reduce((acc, product) => {
-          const locationName = product.locationName || "임시";
-          acc[locationName] = (acc[locationName] || 0) + product.quantity;
+          if(product.warehouseId === WHId){
+            const locationName = product.locationName || "임시";
+            acc[locationName] = (acc[locationName] || 0) + product.quantity;
+          }
           return acc;
         }, {});
 
@@ -1211,10 +1214,10 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
     </ThemeProvider>,
     showAnalytics && (
       <div key="analyticsSection" style={{ padding: "20px" }}>
-        <Typography variant="h6">Analytics</Typography>
+        <Typography variant="h6">재고 분석</Typography>
         <div style={{ marginTop: "20px" }}>
           <Typography variant="subtitle1">
-            Total Quantity of Each Location in the Warehouse
+            로케이션별 재고 현황 {WHId}
           </Typography>
           {quantityByLocationData && <Bar data={quantityByLocationData} />}
         </div>
