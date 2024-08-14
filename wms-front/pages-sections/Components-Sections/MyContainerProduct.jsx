@@ -473,6 +473,9 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
         console.log("Data posted successfully");
         const result = await response.json();
         console.log(result);
+
+        //result-path-창고이름별
+
       } else {
         console.error("Error posting data");
       }
@@ -1288,6 +1291,38 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
     setShowProductExportSection(false);
   };
 
+  // 압축하기
+  const handleEncapsulation = () => {
+
+    EncapsuleAPI();
+
+  };
+
+   // 새로운 엑셀 상품들을 출고고시키는 API 메서드
+   const EncapsuleAPI = async () => {
+    try {
+      const response = await fetch(
+        `https://i11a508.p.ssafy.io/api/products/compress?businessId=${businessId}&warehouseId=${WHId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        console.log("Data posted successfully");
+        const result = await response.json();
+        console.log(result);
+      } else {
+        console.error("Error posting data");
+      }
+    } catch (error) {
+      console.error("Error posting data:", error);
+    }
+  };
+
   /**
    * UseEffect를 통해 새로고침 때마다 api로 사장님의 재고를 불러옴
    * + 유저정보
@@ -1624,6 +1659,17 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
             style={{ width: "70%", backgroundColor:'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }}
           >
             알림함
+          </Button>
+        </div>
+        <div style={{ textAlign: 'center'}}>
+          <Button
+            variant="contained"
+            onClick={() => {
+              handleEncapsulation();
+            }}
+            style={{ width: "70%", backgroundColor:'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }}
+          >
+            압축하기
           </Button>
         </div>
       </div>
