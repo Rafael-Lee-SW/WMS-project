@@ -6,7 +6,7 @@
 
 ---
 
-## 목차
+# 목차
 
 - [📌 프로젝트 소개](#-프로젝트-소개)
 - [📦 도메인 소개](#-도메인-소개)
@@ -17,9 +17,12 @@
 - [📜 커밋 컨벤션](#-커밋-컨벤션)
 - [🌐 포팅 매뉴얼](#-포팅-매뉴얼)
 - [💻 서비스 화면](#-서비스-화면)
-- [💡 주요 기능](#-주요-기능)
 - [📄 설계 문서](#-설계-문서)
 - [할까말까](#할까-말까)
+- [🐞 트러블 슈팅](#-트러블-슈팅)
+- [💡 주요 기능](#-주요-기능)
+- [🎯 개선 목표](#-개선-목표)
+- [📝 프로젝트 후기](#-프로젝트-후기)
 
 <br>
 
@@ -50,9 +53,6 @@
 <br>
 
 # ⏱ 개발 기간
-
-
-### 개발 기간
 
 - 전체 개발 기간 : 2024-07-08 ~ 2024-08-16 (7주)
 - BE 구현 :
@@ -165,7 +165,10 @@
 ![Next.js](https://img.shields.io/badge/Next.js-000000?logo=next.js&logoColor=white)
 ![Styled-Components](https://img.shields.io/badge/styled--components-DB7093?logo=styled-components&logoColor=white)
 
-##### npm-contents
+##### 🔗 npm
+
+
+
 ![HandsonTable](https://img.shields.io/badge/HandsonTable-FFA500?logo=handsoncode&logoColor=white)
 ![SheetJS](https://img.shields.io/badge/SheetJS-0072C6?logo=javascript&logoColor=white)
 ![MUI DataTable](https://img.shields.io/badge/MUI%20DataTable-007FFF?logo=mui&logoColor=white)
@@ -212,13 +215,11 @@
 
 # ❓ 채택 이유
 
-### React, styled-component, Next.js
-
-##### React.js 사용 이유 
+##### React.js
 1. 우리의 프로젝트에서 핵심 기능을 담당하는 재고관리의 시각화(2D 시각화 - 실시간 연동) 기술에 대한 Library 및 예시가 React.js에 풍부하게 존재하는 점
 2. React를 통해 최소한의 DOM 수정으로 효율적이고 Interactive한 기능을 제공하기 위함
 
-##### Next.js 사용 이유
+##### Next.js
 1. React.js 만을 사용하여 client-side-rendering으로는 한꺼번에 오가는 수많은 데이터를 처리하는데 성능 및 속도 저하가 예상되어 이를 Server-side-rendering으로 처리할 수 있으며, React.js Library를 사용할 수 있는 Next.js를 사용하기로 결정
 2. Backend와 잦은 데이터 교환 및 API 통신에 따라 그에 유리한 FrontEnd Framework로 선택됨.
     
@@ -238,9 +239,8 @@
 
 ## 3. 프로젝트 구조
 ```
-com/
-└── a508/
-└── wms/
+
+wms/
 ├── auth/
 │ ├── common/
 │ ├── config/
@@ -361,7 +361,7 @@ com/
 ---
 # 할까말까
 
-## 8. 트러블 슈팅
+# 🐞 트러블 슈팅
 
 ## 2024-07-18 문제 해결 내용
 ### Soft Delete 적용
@@ -392,7 +392,7 @@ com/
 
 <br>
 
-## 9. 개선 목표
+# 🎯 개선 목표
 
 - **24-00-00 성능 개선 내용**
 ### indexing 
@@ -403,7 +403,7 @@ com/
     
 <br>
 
-## 10. 프로젝트 후기
+# 📝 프로젝트 후기
 
 ### 김유석
   
