@@ -25,43 +25,45 @@ const Card = React.forwardRef((props, ref) => {
     const card = cardRef.current;
     const light = lightRef.current;
 
-    let { x, y, width, height } = container.getBoundingClientRect();
+    const getCardCenter = () => {
+      const rect = container.getBoundingClientRect();
+      return {
+        centerX: rect.left + rect.width / 2,
+        centerY: rect.top + rect.height / 2,
+      };
+    };
 
     const mouseMove = (e) => {
-      const left = e.clientX - x;
-      const top = e.clientY - y;
-      const centerX = left - width / 2;
-      const centerY = top - height / 2;
-      const d = Math.sqrt(centerX ** 2 + centerY ** 2);
+      const { centerX, centerY } = getCardCenter();
+      const offsetX = e.clientX - centerX;
+      const offsetY = e.clientY - centerY;
+      const rotationX = offsetY / 20; // 세로 기준 회전
+      const rotationY = -offsetX / 20; // 가로 기준 회전
 
-      card.style.boxShadow = `${-centerX / 8}px ${-centerY / 8}px 10px rgba(0,0,0,0.1)`;
-      card.style.transform = `rotate3d(${centerY / 100}, ${-centerX / 100}, 0, ${d / 10}deg)`;
-      light.style.backgroundImage = `radial-gradient(circle at ${left}px ${top}px, #00000010, #ffffff00, #ffffff70)`;
+      // 카드 회전 및 그림자 효과 적용
+      card.style.transform = `rotateX(${rotationX}deg) rotateY(${rotationY}deg)`;
+      card.style.boxShadow = `${-offsetX / 10}px ${-offsetY / 10}px 30px rgba(0,0,0,0.3)`;
+
+      // 빛 효과 추가
+      light.style.backgroundImage = `radial-gradient(circle at ${offsetX + container.clientWidth / 2}px ${offsetY + container.clientHeight / 2}px, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0))`;
     };
 
     const handleResize = () => {
-      const rect = container.getBoundingClientRect();
-      x = rect.x;
-      y = rect.y;
-      width = rect.width;
-      height = rect.height;
+      getCardCenter(); // 리사이즈 시 카드의 중심점을 재계산
     };
 
-    container.addEventListener("mouseenter", () => {
-      container.addEventListener("mousemove", mouseMove);
-    });
+    container.addEventListener("mousemove", mouseMove);
 
     container.addEventListener("mouseleave", () => {
-      container.removeEventListener("mousemove", mouseMove);
-      card.style.transform = "";
-      light.style.backgroundImage = "";
+      card.style.transform = ""; // 원래 상태로 되돌리기
+      card.style.boxShadow = ""; // 그림자 초기화
+      light.style.backgroundImage = ""; // 빛 효과 제거
     });
 
     window.addEventListener("resize", handleResize);
 
     return () => {
-      container.removeEventListener("mouseenter", mouseMove);
-      container.removeEventListener("mouseleave", mouseMove);
+      container.removeEventListener("mousemove", mouseMove);
       window.removeEventListener("resize", handleResize);
     };
   }, []);
