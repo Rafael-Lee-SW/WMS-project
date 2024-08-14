@@ -194,8 +194,9 @@ const Select = (props) => {
 
     const { locationX, locationY, locationZ, row, column } = formData;
 
-    const xSpacing = postData.size / row / 2;
-    const ySpacing = postData.size / column / 2;
+    // Calculate fixed spacing between columns and rows
+    const columnSpacing = 10; // Fixed spacing of 10px between columns
+    const rowSpacing = parseInt(locationY); // Distance between rows equal to the height of each location
 
     const locationData = [];
     for (let i = 0; i < row; i++) {
@@ -209,8 +210,8 @@ const Select = (props) => {
         const yPosition = i * (parseInt(locationY) + rowSpacing);
 
         locationData.push({
-          x: xPosition,
-          y: yPosition,
+          xPosition: xPosition,
+          yPosition: yPosition,
           zSize: parseInt(locationZ),
           xSize: Math.round(parseInt(locationX)),
           ySize: Math.round(parseInt(locationY)),
@@ -295,16 +296,13 @@ const Select = (props) => {
     console.log(total);
 
     try {
-      const response = await fetch(
-        `https://i11a508.p.ssafy.io/api/locations`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(total),
-        }
-      );
+      const response = await fetch(`https://i11a508.p.ssafy.io/api/locations`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(total),
+      });
 
       if (response.ok) {
         console.log("Location data saved successfully");
@@ -423,10 +421,25 @@ const Select = (props) => {
   useEffect(() => {
     const fetchCounts = async (warehouseId) => {
       try {
+<<<<<<< HEAD
         const pcsResponse = await axios.get(`https://i11a508.p.ssafy.io/api/warehouses/pcscnt/${warehouseId}`);
         const locationResponse = await axios.get(`https://i11a508.p.ssafy.io/api/warehouses/locationcnt/${warehouseId}`);
         const usageResponse = await axios.get(`https://i11a508.p.ssafy.io/api/warehouses/usage/${warehouseId}`);
         const warehouseTypeResponse = await axios.get(`https://i11a508.p.ssafy.io/api/warehouse/purpose/${warehouseId}`);
+=======
+        const pcsResponse = await axios.get(
+          `http://localhost:8080/api/warehouses/pcscnt/${warehouseId}`
+        );
+        const locationResponse = await axios.get(
+          `http://localhost:8080/api/warehouses/locationcnt/${warehouseId}`
+        );
+        const usageResponse = await axios.get(
+          `http://localhost:8080/api/warehouses/usage/${warehouseId}`
+        );
+        const warehouseTypeResponse = await axios.get(
+          `http://localhost:8080/api/purpose/${warehouseId}`
+        );
+>>>>>>> a6035329c3fb797fd1430e1ec668ec046ceab299
 
         const pcsCount = pcsResponse.data.result;
         const locationCount = locationResponse.data.result;
@@ -436,7 +449,13 @@ const Select = (props) => {
         setCards((prevCards) =>
           prevCards.map((card) =>
             card.id === warehouseId
-              ? { ...card, pcsCount, locationCount, usagePercent, warehouseColor }
+              ? {
+                  ...card,
+                  pcsCount,
+                  locationCount,
+                  usagePercent,
+                  warehouseColor,
+                }
               : card
           )
         );
@@ -495,7 +514,9 @@ const Select = (props) => {
 
       <div className={classes.section}>
         <div className={classes.container}>
-          <h3>창고를 선택하세요. ({currentWarehouseCount}/{allowedWarehouseCount})</h3>
+          <h3>
+            창고를 선택하세요. ({currentWarehouseCount}/{allowedWarehouseCount})
+          </h3>
           <GridContainer>
             {cards.map((card) => (
               <GridItem key={card.id} xs={12} sm={12} md={4}>
@@ -508,7 +529,9 @@ const Select = (props) => {
                       <div
                         className={classes.cardHeader}
                         style={{
-                          backgroundColor: getBackgroundColor(card.warehouseColor),
+                          backgroundColor: getBackgroundColor(
+                            card.warehouseColor
+                          ),
                           position: "relative",
                         }}
                       >
@@ -533,24 +556,28 @@ const Select = (props) => {
                             overflow: "hidden",
                             marginTop: "10px",
                             border: "2px solid #ccc",
-                             
                           }}
                         >
                           <div
                             style={{
                               width: `${card.usagePercent}%`,
                               height: "100%",
-                              backgroundColor: getBackgroundColor(card.warehouseColor),
+                              backgroundColor: getBackgroundColor(
+                                card.warehouseColor
+                              ),
                               display: "flex", // 플렉스 박스를 사용하여 중앙 정렬
                               justifyContent: "center", // 수평 중앙 정렬
                               alignItems: "center", // 수직 중앙 정렬
                               color: "white", // 텍스트 색상 (배경과 대비되도록 설정)
                               fontWeight: "bold", // 텍스트 굵게
                             }}
-                          > {`${card.usagePercent}%`}</div>
+                          >
+                            {" "}
+                            {`${card.usagePercent}%`}
+                          </div>
                         </div>
                       </div>
-        
+
                       <div className={classes.cardFooter}>
                         <div className={classes.pcsContainer}>
                           <img
@@ -567,7 +594,9 @@ const Select = (props) => {
                             alt="location"
                             className={classes.containerImage}
                           />
-                          <div className="locationCnt">{card.locationCount}</div>
+                          <div className="locationCnt">
+                            {card.locationCount}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -625,12 +654,9 @@ const Select = (props) => {
                     error={Boolean(validationErrors.containerSize)}
                     helperText={
                       validationErrors.containerSize ||
-                      `창고 부지의 크기: ${
+                      `창고 부지의 크기: ${formData.containerSize} * ${
                         formData.containerSize
-                      } * ${formData.containerSize} = ${Math.pow(
-                        parseInt(formData.containerSize) || 0,
-                        2
-                      )}`
+                      } = ${Math.pow(parseInt(formData.containerSize) || 0, 2)}`
                     }
                     FormHelperTextProps={{
                       style: {

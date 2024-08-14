@@ -1184,6 +1184,7 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
           order: newLocations.length + 1,
           name: `${rowNumber}-${columnNumber}`,
           productStorageType: "상온",
+          fill :"0",
           rotation: 0,
           touchableFloor: 2, // 닿을 수 있는 층수
         });
