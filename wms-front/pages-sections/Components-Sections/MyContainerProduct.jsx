@@ -116,11 +116,11 @@ const useStyles = makeStyles(() => ({
     height: "45px",
     borderRadius: '4px',
     '&:hover': {
-        transform: 'scale(1.05)',
-        backgroundColor: '#7D4A1A',
-        color: 'white',
-      },
-    }
+      transform: 'scale(1.05)',
+      backgroundColor: '#7D4A1A',
+      color: 'white',
+    },
+  }
 }));
 
 // Create the theme with the desired overrides
@@ -458,6 +458,9 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
         console.log("Data posted successfully");
         const result = await response.json();
         console.log(result);
+
+        productGetAPI(businessId);
+        handleNextComponent(0)
       } else {
         console.error("Error posting data");
       }
@@ -491,9 +494,8 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
         console.log("Data posted successfully");
         const result = await response.json();
         console.log(result);
-
-        //result-path-창고이름별
-
+        productGetAPI(businessId)
+        handleNextComponent(0);
       } else {
         console.error("Error posting data");
       }
@@ -888,6 +890,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
 
       if (response.ok) {
         console.log("Product updated successfully");
+        productGetAPI(businessId);
       } else {
         console.error("Failed to update product");
       }
@@ -948,6 +951,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
       locationName: bulkMoveDetails.locationName, // Default to bulk move values
       floorLevel: bulkMoveDetails.floorLevel, // Default to bulk move values
       quantity: bulkMoveDetails.quantity, // Default to bulk move values
+      errors: {}, // 에러값 초기화
     }));
 
     setMoveData(selectedData);
@@ -1009,7 +1013,6 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
 
       product[field] = value;
       product.errors = errors;
-
       return newData;
     });
   };
@@ -1017,6 +1020,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
   // Function to finalize move in bulk mode
   const handleFinalizeBulkMove = () => {
     const quantity = parseInt(bulkMoveDetails.quantity);
+    
     const moveDetails = selectedRows.map((rowIndex) => {
       const product = tableData[rowIndex];
       return {
@@ -1239,25 +1243,25 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
   const handleAddNewProduct = () => {
     let formattedDate = null;
     let formattedDisplayDate = null;
-  
+
     if (newProductData.expirationDate && dayjs(newProductData.expirationDate).isValid()) {
       formattedDate = format(
         new Date(newProductData.expirationDate),
         "yyyy-MM-dd'T'HH:mm"
       );
-  
+
       formattedDisplayDate = format(
         new Date(newProductData.expirationDate),
         "yyyy년 M월 d일 HH시 mm분"
       );
     }
-  
+
     const productData = {
       ...newProductData,
       expirationDate: formattedDate,
       expirationDateDisplay: formattedDisplayDate, // For display purposes
     };
-  
+
     setExpectedImportList((prevList) => [...prevList, productData]);
     setNewProductData({
       barcode: "",
@@ -1266,7 +1270,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
       expirationDate: dayjs(), // Reset to current date
     });
   };
-  
+
   // Delete product from expected import list
   const handleDeleteImportProduct = (index) => {
     setExpectedImportList((prevList) => prevList.filter((_, i) => i !== index));
@@ -1316,8 +1320,8 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
 
   };
 
-   // 새로운 엑셀 상품들을 출고고시키는 API 메서드
-   const EncapsuleAPI = async () => {
+  // 상품 압축기능 - 산재되어있는 각 상품들을 하나로 모은다.
+  const EncapsuleAPI = async () => {
     try {
       const response = await fetch(
         `https://i11a508.p.ssafy.io/api/products/compress?businessId=${businessId}&warehouseId=${WHId}`,
@@ -1333,6 +1337,8 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
         console.log("Data posted successfully");
         const result = await response.json();
         console.log(result);
+        productGetAPI(businessId);
+        handleNextComponent(0);
       } else {
         console.error("Error posting data");
       }
@@ -1464,8 +1470,6 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
         const apiConnection = await response.json();
         const warehouseData = apiConnection.result; // Extract data
 
-        console.log(warehouseData);
-
         // Process location data from the API response
         const locations = warehouseData.locations;
         if (!locations) {
@@ -1501,6 +1505,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
       console.error("Error loading rectangles data:", error);
     }
   };
+  
   const handleLocationSelectChange = (field, value, index = null) => {
     if (isBulkMove) {
       setBulkMoveDetails((prevDetails) => ({
@@ -1582,7 +1587,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
               setShowProductInputSection(false);
               setShowProductExportSection(false);
             }}
-            style={{ width: "70%", backgroundColor:'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }} // Button width matches the sidebar
+            style={{ width: "70%", backgroundColor: 'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }} // Button width matches the sidebar
           >
             제품 목록
           </Button>
@@ -1595,7 +1600,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
               setShowProductExportSection(false);
               handleNextComponent(6); // Close other sections
             }}
-            style={{ width: "70%", backgroundColor:'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }}
+            style={{ width: "70%", backgroundColor: 'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }}
           >
             입고하기
           </Button>
@@ -1608,7 +1613,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
               setShowProductExportSection(true);
               handleNextComponent(6); // Close other sections
             }}
-            style={{ width: "70%", backgroundColor:'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }}
+            style={{ width: "70%", backgroundColor: 'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }}
           >
             출고하기
           </Button>
@@ -1622,7 +1627,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
               setOpenEditModal(true);
               handleNextComponent(0);
             }}
-            style={{ width: "70%", backgroundColor:'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }}
+            style={{ width: "70%", backgroundColor: 'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }}
           >
             수정하기
           </Button>
@@ -1635,12 +1640,12 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
               setShowProductInputSection(false);
               setShowProductExportSection(false);
             }}
-            style={{ width: "70%", backgroundColor:'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }}
+            style={{ width: "70%", backgroundColor: 'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }}
           >
             이동하기
           </Button>
         </div>
-        <div style={{ marginBottom: "10px", textAlign: 'center'}}>
+        <div style={{ marginBottom: "10px", textAlign: 'center' }}>
           <Button
             variant="contained"
             onClick={() => {
@@ -1648,7 +1653,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
               setShowProductInputSection(false);
               setShowProductExportSection(false);
             }}
-            style={{ width: "70%", backgroundColor:'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }}
+            style={{ width: "70%", backgroundColor: 'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }}
           >
             변동내역
           </Button>
@@ -1661,12 +1666,12 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
               setShowProductInputSection(false);
               setShowProductExportSection(false);
             }}
-            style={{ width: "70%", backgroundColor:'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }}
+            style={{ width: "70%", backgroundColor: 'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }}
           >
             분석
           </Button>
         </div>
-        <div style={{ marginBottom: "10px", textAlign: 'center'}}>
+        <div style={{ marginBottom: "10px", textAlign: 'center' }}>
           <Button
             variant="contained"
             onClick={() => {
@@ -1674,18 +1679,18 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
               setShowProductInputSection(false);
               setShowProductExportSection(false);
             }}
-            style={{ width: "70%", backgroundColor:'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }}
+            style={{ width: "70%", backgroundColor: 'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }}
           >
             알림함
           </Button>
         </div>
-        <div style={{ textAlign: 'center'}}>
+        <div style={{ textAlign: 'center' }}>
           <Button
             variant="contained"
             onClick={() => {
               handleEncapsulation();
             }}
-            style={{ width: "70%", backgroundColor:'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }}
+            style={{ width: "70%", backgroundColor: 'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }}
           >
             압축하기
           </Button>
@@ -1874,7 +1879,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
         maxWidth="lg"
         fullWidth
       >
-        <DialogTitle>Move Products to New Location</DialogTitle>
+        <DialogTitle>상품을 원하는 장소로 옮기세요</DialogTitle>
         <DialogContent>
           {isBulkMove ? (
             <>
@@ -1956,7 +1961,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
             moveData.map((product, index) => (
               <div key={product.productId} style={{ marginBottom: "20px" }}>
                 <h3>
-                  {product.name} (Barcode: {product.barcode}) - 수량 :{" "}
+                  {product.name} (바코드: {product.barcode}) - 수량 :{" "}
                   {product.quantityNow}개
                 </h3>
                 <FormControl fullWidth margin="normal">
@@ -2056,7 +2061,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
               color="primary"
               disabled={!isBulkMoveEnabled}
             >
-              Bulk Move
+              전부 옮기기
             </Button>
           ) : (
             <Button
@@ -2064,14 +2069,14 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
               color="primary"
               disabled={!moveData.every((product) => product.floorLevel)}
             >
-              Detail Move
+              각각 옮기기
             </Button>
           )}
           <Button onClick={() => setIsBulkMove(!isBulkMove)} color="secondary">
-            {isBulkMove ? "Switch to Detail Move" : "Switch to Bulk Move"}
+            {isBulkMove ? "각각 옮기기 모드" : "전부 옮기기 모드"}
           </Button>
           <Button onClick={() => setOpenMoveModal(false)} color="primary">
-            Cancel
+            취소
           </Button>
         </DialogActions>
       </Dialog>
@@ -2166,7 +2171,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
                         margin="normal"
                       />
                     </td>
-                    <td style={{ paddingTop: '51px'}}>
+                    <td style={{ paddingTop: '51px' }}>
                       {!noExpirationDate && (
                         <LocalizationProvider dateAdapter={AdapterDayjs}>
                           <DateTimePicker
@@ -2388,7 +2393,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
                     </td>
                   </tr>
                   <tr>
-                    <td style={{ padding: "8px", paddingTop: '30px'}} colSpan={4}>
+                    <td style={{ padding: "8px", paddingTop: '30px' }} colSpan={4}>
                       <label htmlFor="upload-export">
                         <input
                           required

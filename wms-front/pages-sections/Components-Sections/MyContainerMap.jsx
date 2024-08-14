@@ -1590,11 +1590,13 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
             </Layer>
           </Stage>
         </div>
+        {/* 줌 버튼 */}
         <div
           style={{
             position: "absolute",
-            bottom: "10px",
-            right: "10px",
+            content:"center",
+            left:"45%",
+            top: "3rem",
             display: "flex",
             gap: "10px",
           }}
@@ -1605,7 +1607,7 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
             style={{ backgroundColor: "#7D4A1A" }}
             onClick={handleZoomIn}
           >
-            <ZoomInIcon className={classes.icons} />
+            <ZoomInIcon style={{ width:"35px", height:"35px"}} className={classes.icons} />
           </Button>
           <Button
             justIcon
@@ -1613,7 +1615,7 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
             style={{ backgroundColor: "#ADAAA5" }}
             onClick={handleZoomOut}
           >
-            <ZoomOutIcon className={classes.icons} />
+            <ZoomOutIcon style={{ width:"35px", height:"35px"}}  className={classes.icons} />
           </Button>
           <Button
             justIcon
@@ -1621,7 +1623,7 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
             style={{ backgroundColor: "#C2B6A1", marginRight: "40px" }}
             onClick={editContainerAPI}
           >
-            <SaveIcon className={classes.icons} />
+            <SaveIcon style={{ width:"35px", height:"35px"}} className={classes.icons} />
           </Button>
         </div>
       </div>
