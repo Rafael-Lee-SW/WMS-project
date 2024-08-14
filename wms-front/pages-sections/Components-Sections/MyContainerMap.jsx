@@ -70,8 +70,27 @@ const useStyles = makeStyles((theme) => ({
     overflowY: "auto",
   },
   buttonStyle: {
-    marginBottom: "5px",
-    padding: "5px",
+    backgroundColor: "transparent",
+    width: '50px',
+    color: '#7D4A1A',
+    marginLeft: '10px',
+    height: "30px",
+    border: '1px solid #7D4A1A',
+    borderRadius: '4px',
+    '&:hover': {
+        transform: 'scale(1.05)',
+        backgroundColor: '#7D4A1A',
+        color: 'white',
+    },
+  },
+  generateButton: {
+    backgroundColor: "#7D4A1A",
+    '&:hover': {
+        transform: 'scale(1.05)',
+        backgroundColor: 'transparent',
+        border: '1px solid #7D4A1A',
+        color: '#7D4A1A',
+    },
   },
   outOfCanvas: {
     position: "relative",
@@ -1306,7 +1325,6 @@ const handleAddLocation = (type) => {
             className={classes.buttonStyle}
             onClick={() => changeCurrentSetting("location")}
             variant="contained"
-            color="primary"
           >
             재고함
           </Button>
@@ -1314,7 +1332,6 @@ const handleAddLocation = (type) => {
             className={classes.buttonStyle}
             onClick={() => changeCurrentSetting("wall")}
             variant="contained"
-            color="primary"
           >
             벽 생성
           </Button>
@@ -1322,7 +1339,6 @@ const handleAddLocation = (type) => {
             className={classes.buttonStyle}
             onClick={() => changeCurrentSetting("specialObject")}
             variant="contained"
-            color="primary"
           >
             특수 객체
           </Button>
@@ -1330,7 +1346,6 @@ const handleAddLocation = (type) => {
             className={classes.buttonStyle}
             onClick={handleOpen}
             variant="contained"
-            color="primary"
           >
             자동 생성
           </Button>
@@ -1338,20 +1353,26 @@ const handleAddLocation = (type) => {
         <br />
         {currentSetting && currentSetting !== "wall" && (
           <div>
-            <Typography variant="h6" gutterBottom>
+            <Typography variant="h6" gutterBottom style={{ textAlign: 'center', fontWeight: 'bold'}}>
               {currentSetting === "location" ? "로케이션" : "입구-출구"} 설정
             </Typography>
-            <Typography variant="body2" color="textSecondary" gutterBottom>
+
+            <Typography style={{ textAlign: 'center'}} variant="body2" color="textSecondary" gutterBottom>
               단수와 크기를 정하세요
             </Typography>
-            <Box mb={2}>
-              <Typography gutterBottom>
+
+            <Box mb={2} style={{ paddingTop: '20px'}}>
+              <Typography gutterBottom style={{ textAlign: 'center'}}>
                 단수(층): {newLocationZIndex}단/층
               </Typography>
               <Slider
                 value={newLocationZIndex}
+                style={{
+                  color: '#4E4544', 
+                }}
                 onChange={(e, newValue) => setNewLocationZIndex(newValue)}
                 aria-labelledby="z-index-slider"
+                color="#4E4544"
                 valueLabelDisplay="auto"
                 step={1}
                 marks
@@ -1363,6 +1384,9 @@ const handleAddLocation = (type) => {
               <Typography gutterBottom>가로: {newLocationWidth}cm</Typography>
               <Slider
                 value={newLocationWidth}
+                style={{
+                  color: '#4E4544', 
+                }}
                 onChange={(e, newValue) => setNewLocationWidth(newValue)}
                 aria-labelledby="width-slider"
                 valueLabelDisplay="auto"
@@ -1376,6 +1400,9 @@ const handleAddLocation = (type) => {
               <Typography gutterBottom>세로: {newLocationHeight}cm</Typography>
               <Slider
                 value={newLocationHeight}
+                style={{
+                  color: '#4E4544', 
+                }}
                 onChange={(e, newValue) => setNewLocationHeight(newValue)}
                 aria-labelledby="height-slider"
                 valueLabelDisplay="auto"
@@ -1459,10 +1486,10 @@ const handleAddLocation = (type) => {
                 {/* 필요에 따라 더 많은 옵션을 추가할 수 있습니다 */}
               </TextField>
             </Box>
-            <Button
+
+            <Button className={classes.generateButton}
               onClick={() => handleAddLocation(currentSetting)}
               variant="contained"
-              color="primary"
               fullWidth
             >
               생성하기
@@ -1552,13 +1579,13 @@ const handleAddLocation = (type) => {
             gap: "10px",
           }}
         >
-          <Button justIcon round color="success" onClick={handleZoomIn}>
+          <Button justIcon round style={{backgroundColor:"#7D4A1A"}} onClick={handleZoomIn}>
             <ZoomInIcon className={classes.icons} />
           </Button>
-          <Button justIcon round color="primary" onClick={handleZoomOut}>
+          <Button justIcon round style={{backgroundColor:"#ADAAA5"}} onClick={handleZoomOut}>
             <ZoomOutIcon className={classes.icons} />
           </Button>
-          <Button justIcon round color="primary" onClick={editContainerAPI}>
+          <Button justIcon round style={{backgroundColor:"#C2B6A1", marginRight: '40px'}} onClick={editContainerAPI}>
             <SaveIcon className={classes.icons} />
           </Button>
         </div>

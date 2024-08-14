@@ -47,7 +47,11 @@ const useStyles = makeStyles((theme) => ({
     padding: "20px",
   },
   currentWarehouseIndex: {
-    fontSize: "12px",
+    paddingTop: '25px',
+    fontSize: "15px",
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: '#7D4A1A'
   },
   currentWarehouse: {
     marginBottom: "20px",
@@ -60,6 +64,7 @@ const useStyles = makeStyles((theme) => ({
   },
   warehouseDropdown: {
     margin: "10px 0",
+    paddingBottom: '10px'
   },
   warehouseSelect: {
     width: "100%",
@@ -67,8 +72,9 @@ const useStyles = makeStyles((theme) => ({
     fontSize: "12px",
     fontWeight: "bold",
     borderRadius: "4px",
-    border: "1px solid #ccc",
-    backgroundColor: "#fff",
+    textAlign: 'center',
+    border: "1px solid #986c58",
+    backgroundColor: "transparent",
     cursor: "pointer",
     appearance: "none",
     whiteSpace: "normal",
@@ -81,7 +87,26 @@ const useStyles = makeStyles((theme) => ({
     overflow: "hidden",
     padding: "10px",
   },
-}));
+  button: {
+    border: 'none',
+    backgroundColor: 'transparent',
+    paddingTop: '10px',
+    paddingLeft: '20px'
+  },
+  buttonStyle: {
+    width: '100px',
+    color: 'white',
+    marginLeft: '10px',
+    height: "30px",
+    borderRadius: '4px',
+    '&:hover': {
+        transform: 'scale(1.05)',
+        backgroundColor: '#7D4A1A',
+        color: 'white',
+      },
+    },
+  }
+));
 
 export default function Components(props) {
   const classes = useStyles();
@@ -241,7 +266,7 @@ export default function Components(props) {
         {...rest}
       />
       <div className={classes.sidebar}>
-        <button>
+        <button className={classes.button}>
           <Link href="/components" as="/components">
             <img
               style={{ height: "30px", width: "60px", paddingRight: "15px" }}
@@ -272,13 +297,13 @@ export default function Components(props) {
             ))}
           </select>
         </div>
-        <Button color="primary" round onClick={() => handleNextComponent(0)}>
+        <Button className={classes.buttonStyle} style={{ backgroundColor: "#4E4544" }} round onClick={() => handleNextComponent(0)}>
           창고 관리
         </Button>
-        <Button color="info" round onClick={() => handleNextComponent(1)}>
+        <Button className={classes.buttonStyle} style={{ backgroundColor: "#ADAAA5"}} round onClick={() => handleNextComponent(1)}>
           재고 현황
         </Button>
-        <Button color="success" round onClick={() => handleNextComponent(2)}>
+        <Button className={classes.buttonStyle} style={{ backgroundColor: "#C2B6A1"}} round onClick={() => handleNextComponent(2)}>
           재고 관리
         </Button>
       </div>
