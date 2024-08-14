@@ -56,7 +56,6 @@ export default class MyApp extends App {
                 fixed
                 color="transparent"
                 changeColorOnScroll={{ height: 400, color: "white" }}
-      
               />
             )}
             <Component {...pageProps} />
