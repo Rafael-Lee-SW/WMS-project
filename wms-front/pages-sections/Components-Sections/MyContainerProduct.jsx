@@ -23,6 +23,7 @@ import DialogTitle from "@mui/material/DialogTitle";
 import TextField from "@mui/material/TextField";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
+import { FormControlLabel } from "@mui/material";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -1215,31 +1216,36 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
 
   // Add new product to expected import list
   const handleAddNewProduct = () => {
-    const formattedDate = format(
-      newProductData.expirationDate,
-      "yyyy-MM-dd'T'HH:mm"
-    );
-
-    const formattedDisplayDate = format(
-      newProductData.expirationDate,
-      "yyyy년 M월 d일 HH시 mm분"
-    );
-
+    let formattedDate = null;
+    let formattedDisplayDate = null;
+  
+    if (newProductData.expirationDate && dayjs(newProductData.expirationDate).isValid()) {
+      formattedDate = format(
+        new Date(newProductData.expirationDate),
+        "yyyy-MM-dd'T'HH:mm"
+      );
+  
+      formattedDisplayDate = format(
+        new Date(newProductData.expirationDate),
+        "yyyy년 M월 d일 HH시 mm분"
+      );
+    }
+  
     const productData = {
       ...newProductData,
       expirationDate: formattedDate,
-      expirationDateDisplay: formattedDisplayDate, // 보여주기용
+      expirationDateDisplay: formattedDisplayDate, // For display purposes
     };
-
+  
     setExpectedImportList((prevList) => [...prevList, productData]);
     setNewProductData({
       barcode: "",
       name: "",
       quantity: "",
-      expirationDate: null,
+      expirationDate: dayjs(), // Reset to current date
     });
   };
-
+  
   // Delete product from expected import list
   const handleDeleteImportProduct = (index) => {
     setExpectedImportList((prevList) => prevList.filter((_, i) => i !== index));
@@ -1478,6 +1484,16 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
         return newData;
       });
     }
+  };
+
+  const [noExpirationDate, setNoExpirationDate] = useState(false);
+
+  const toggleNoExpirationDate = () => {
+    setNoExpirationDate(!noExpirationDate);
+    handleNewProductInputChange(
+      "expirationDate",
+      noExpirationDate ? dayjs() : null
+    );
   };
 
   const isBulkMoveEnabled =
@@ -2095,21 +2111,38 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
                       />
                     </td>
                     <td style={{ padding: "8px" }}>
-                      <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <DateTimePicker
-                          label="유통기한"
-                          value={newProductData.expirationDate}
-                          onChange={(newValue) =>
-                            handleNewProductInputChange(
-                              "expirationDate",
-                              newValue
-                            )
+                      {!noExpirationDate && (
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                          <DateTimePicker
+                            label="유통기한"
+                            value={newProductData.expirationDate}
+                            onChange={(newValue) =>
+                              handleNewProductInputChange(
+                                "expirationDate",
+                                newValue
+                              )
+                            }
+                            renderInput={(params) => (
+                              <TextField
+                                {...params}
+                                fullWidth
+                                margin="normal"
+                              />
+                            )}
+                          />
+                        </LocalizationProvider>
+                      )}
+                      <div>
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              checked={noExpirationDate}
+                              onChange={toggleNoExpirationDate}
+                            />
                           }
-                          renderInput={(params) => (
-                            <TextField {...params} fullWidth margin="normal" />
-                          )}
+                          label="유통기한 없음"
                         />
-                      </LocalizationProvider>
+                      </div>
                     </td>
                     <td style={{ padding: "8px", textAlign: "center" }}>
                       <Button
