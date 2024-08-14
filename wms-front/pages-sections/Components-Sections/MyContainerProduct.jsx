@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/router";
-import styled from "styled-components";
+import { makeStyles } from '@material-ui/core/styles';
 // Import MUI components
 import Grid from "@mui/material/Grid";
 import Fab from "@mui/material/Fab";
@@ -106,6 +106,23 @@ registerPlugin(DropdownMenu);
 registerPlugin(Filters);
 registerPlugin(HiddenRows);
 
+const useStyles = makeStyles(() => ({
+  buttonStyle: {
+    backgroundColor: "transparent",
+    width: '100px',
+    color: '#7D4A1A',
+    marginTop: '5px',
+    border: '1px solid #7D4A1A',
+    height: "45px",
+    borderRadius: '4px',
+    '&:hover': {
+        transform: 'scale(1.05)',
+        backgroundColor: '#7D4A1A',
+        color: 'white',
+      },
+    }
+}));
+
 // Create the theme with the desired overrides
 const muiDatatableTheme = createTheme({
   components: {
@@ -130,6 +147,7 @@ const muiDatatableTheme = createTheme({
 
 const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
   const router = useRouter();
+  const classes = useStyles();
 
   const [tableData, setTableData] = useState([]);
   const [detailedData, setDetailedData] = useState([]); // Store all import/export data
@@ -1648,7 +1666,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
             분석
           </Button>
         </div>
-        <div style={{ textAlign: 'center'}}>
+        <div style={{ marginBottom: "10px", textAlign: 'center'}}>
           <Button
             variant="contained"
             onClick={() => {
@@ -2148,7 +2166,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
                         margin="normal"
                       />
                     </td>
-                    <td>
+                    <td style={{ paddingTop: '51px'}}>
                       {!noExpirationDate && (
                         <LocalizationProvider dateAdapter={AdapterDayjs}>
                           <DateTimePicker
@@ -2320,7 +2338,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
               <Typography variant="h6" gutterBottom>
                 출고 데이터 입력
               </Typography>
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", marginTop: '31px' }}>
                 <tbody>
                   <tr>
                     <td style={{ padding: "8px" }}>
@@ -2362,15 +2380,15 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
                     <td style={{ padding: "8px", textAlign: "center" }}>
                       <Button
                         variant="contained"
-                        color="primary"
                         onClick={handleAddNewExport}
+                        className={classes.buttonStyle}
                       >
                         출고 추가
                       </Button>
                     </td>
                   </tr>
                   <tr>
-                    <td style={{ padding: "8px" }} colSpan={4}>
+                    <td style={{ padding: "8px", paddingTop: '30px'}} colSpan={4}>
                       <label htmlFor="upload-export">
                         <input
                           required
