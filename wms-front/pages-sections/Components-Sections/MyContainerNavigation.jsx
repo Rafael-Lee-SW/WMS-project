@@ -8,9 +8,6 @@ import React, { useState, useEffect, useRef } from "react";
 // Import MUI components
 import Fab from "@mui/material/Fab";
 import Button from "@mui/material/Button";
-
-import ZoomInIcon from "@mui/icons-material/ZoomIn";
-import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 // 모달 페이지를 위한 Import
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -95,7 +92,6 @@ const useStyles = makeStyles(styles);
 
 // 복합체 시작
 const MyContainerNavigation = ({ WHId, businessId }) => {
-  const classes = useStyles();
   // 로딩 Loading
   const [loading, setLoading] = useState(true); // Overall loading state
 
@@ -1160,45 +1156,24 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
       <div
         style={{
           position: "absolute",
-          content: "center",
-          left: "45%",
-          top: "3rem",
+          bottom: "10px",
+          right: "10px",
           display: "flex",
           gap: "10px",
         }}
       >
         <Button
-          justIcon
           round
           onClick={handleZoomIn}
           style={{ color: "#7D4A1A", fontWeight: "bold" }}
         >
-          <ZoomInIcon
-            style={{
-              width: "35px",
-              height: "35px",
-              borderRadius: "20px",
-              backgroundColor: "#7D4A1A",
-            }}
-            className={classes.icons}
-          />
+          zoomIn
         </Button>
         <Button
           onClick={handleZoomOut}
-          style={{
-            color: "#7D4A1A",
-            fontWeight: "bold",
-          }}
+          style={{ color: "#7D4A1A", fontWeight: "bold" }}
         >
-          <ZoomOutIcon
-            style={{
-              width: "35px",
-              height: "35px",
-              borderRadius: "20px",
-              backgroundColor: "#7D4A1A",
-            }}
-            className={classes.icons}
-          />
+          zoomOut
         </Button>
       </div>
       <div
