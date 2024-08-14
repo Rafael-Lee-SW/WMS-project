@@ -8,8 +8,10 @@ import com.a508.wms.location.domain.Location;
 import com.a508.wms.location.dto.LocationResponseDto;
 import com.a508.wms.location.mapper.LocationMapper;
 import com.a508.wms.location.service.LocationModuleService;
+import com.a508.wms.product.domain.Product;
 import com.a508.wms.product.service.ProductModuleService;
 import com.a508.wms.util.constant.ExportTypeEnum;
+import com.a508.wms.util.constant.FacilityTypeEnum;
 import com.a508.wms.util.constant.ProductStorageTypeEnum;
 import com.a508.wms.warehouse.domain.Warehouse;
 import com.a508.wms.warehouse.dto.LocationsAndWallsRequestDto;
@@ -140,7 +142,7 @@ public class WarehouseService {
 
     private int getMaxFloorCapacity(Location location) {
         List<Floor> floors = floorModuleService.findAllByLocationId(location.getId());
-        
+
         return floors.stream()
             .mapToInt(floorModuleService::getCapacity)
             .max()
@@ -211,4 +213,53 @@ public class WarehouseService {
         // 예를 들어, 레포지토리를 사용하여 비즈니스 ID에 해당하는 창고 수를 조회합니다.
         return warehouseRepository.countByBusinessId(businessId);
     }
+
+    public int findAllPscCount(Long id) {
+        List<Product> products = productModuleService.findByWarehouseId(id);
+        return products.stream()
+            .mapToInt(Product::getQuantity)
+            .sum();
+    }
+
+    public int findLocationCnt(Long id) {
+        List<Location> locations = locationModuleService.findAllByWarehouseId(id);
+        return locations.stream()
+            .mapToInt(Location::getZSize)
+            .sum();
+    }
+
+    public int findUsage(Long id) {
+        List<Location> locations = locationModuleService.findAllByWarehouseId(id);
+
+        int usageSum = 0;
+
+        for (Location location : locations) {
+            for (Floor floor : location.getFloors()) {
+                if (!productModuleService.findByFloor(floor).isEmpty()) {
+                    usageSum++;
+                }
+            }
+        }
+
+        int totalCnt = locations.stream()
+            .mapToInt(Location::getZSize)
+            .sum();
+
+        return Math.max(1, usageSum * 100 / totalCnt);
+    }
+
+    public int findPurpose(Long id) {
+        Warehouse warehouse = warehouseModuleService.findById(id);
+
+        if (warehouse.getFacilityTypeEnum() == FacilityTypeEnum.STORE) {
+            if (warehouse.getPriority() == 1) {
+                return 1;
+            }
+
+            return 2;
+        }
+
+        return 3;
+    }
+
 }
