@@ -22,7 +22,6 @@ export default function ManageEmployees({ businessId }) {
 
     useEffect(() => {
         fetchEmployees();
-        console.log(employees);
     }, [searchResults]);
 
     // 현재 직원 목록 
@@ -35,8 +34,7 @@ export default function ManageEmployees({ businessId }) {
             setEmployees(filteredEmployees)
 
         } catch (error) {
-            console.error("Error fetching employees:", error);
-            router.push('/404')
+            router.push('/404');
         }
     };
 
@@ -52,7 +50,7 @@ export default function ManageEmployees({ businessId }) {
             }
 
         } catch (error) {
-            console.error("Error searching employees:", error);
+            router.push('/404');
             setSearchResults(null);
         }
     };

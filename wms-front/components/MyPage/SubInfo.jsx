@@ -25,7 +25,7 @@ export default function SubInfo() {
       const user = JSON.parse(localStorage.getItem("user"));
 
       if (!user || !user.id) {
-        console.error("User ID is missing from localStorage");
+        router.push('/404');
         return;
       }
 
@@ -34,7 +34,7 @@ export default function SubInfo() {
           `https://i11a508.p.ssafy.io/api/users/${user.id}`
         );
         if (!userResponse.ok) {
-          console.error("Failed to fetch user data");
+          router.push('/404');
           return;
         }
 
@@ -48,7 +48,7 @@ export default function SubInfo() {
           );
 
           if (!subscriptionResponse.ok) {
-            console.error("Failed to fetch subscription data");
+            router.push('/404');
             return;
           }
 
@@ -56,7 +56,7 @@ export default function SubInfo() {
           setSubscriptionData(subscriptionData.result);
         }
       } catch (error) {
-        console.error("Error fetching data:", error);
+        router.push('/404');
       }
     };
 

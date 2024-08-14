@@ -2,12 +2,23 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext'; // AuthContext를 import
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const OAuthCallback = () => {
   const router = useRouter();
   const { login } = useAuth();
   const [loading, setLoading] = useState(true); // 로딩 상태 추가
 
+  const notify = (message) => toast(message, {
+    position: "top-center",
+    autoClose: 2000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+  });
   // 사용자 정보를 가져오는 비동기 함수
   const fetchUserInfo = async (token, userEmail) => {
     try {
@@ -28,12 +39,11 @@ const OAuthCallback = () => {
 
         // 전역 상태에 사용자 정보와 토큰 저장
         login(user, token);
-        alert(`${user.name}님 환영합니다!`);
+        notify(`${user.name}님 환영합니다!`);
         router.push('/'); // 메인 페이지로 이동
       }
     } catch (error) {
-      console.error('Error fetching user info:', error);
-      alert('사용자 정보를 가져오는 중 오류가 발생했습니다.');
+      notify('사용자 정보를 가져오는 중 오류가 발생했습니다.');
       router.push('/signIn');
     } finally {
       setLoading(false); // 로딩 상태 해제
@@ -41,9 +51,6 @@ const OAuthCallback = () => {
   };
 
   const handleCallback = async (response) => {
-    console.log('1차 메서드 체크');
-    console.log(response);
-
     if (response) {
       try {
         // 'response' 쿼리 매개변수 값을 JSON으로 파싱
@@ -51,19 +58,17 @@ const OAuthCallback = () => {
 
         // 상태 코드와 응답 코드가 성공인지 확인
         if (responseData.code === 'SU') {
-          console.log(responseData);
 
           const { userEmail, token } = responseData;
 
           // 이메일과 토큰을 사용하여 사용자 정보 가져오기
           await fetchUserInfo(token, userEmail);
         } else {
-          alert('로그인에 실패하였습니다.');
+          notify('로그인에 실패하였습니다.');
           router.push('/signIn'); // 로그인 페이지로 이동
         }
       } catch (error) {
-        console.error('Error processing OAuth response:', error);
-        alert('인증 처리 중 오류가 발생했습니다.');
+        notify('인증 처리 중 오류가 발생했습니다.');
         router.push('/signIn');
       } finally {
         setLoading(false); // 로딩 상태 해제
@@ -78,10 +83,8 @@ const OAuthCallback = () => {
     const checkQueryAndHandle = async () => {
 
       const { token } = router.query; // 리다이렉션 URL에서 'response' 쿼리 매개변수 가져오기
-      console.log(token);
 
       if (!token) {
-        console.log('리스폰트 못받음');
         // 쿼리가 아직 준비되지 않았다면, 추가적인 로직을 사용하여 다시 확인하거나 사용자에게 대기 메시지를 표시할 수 있습니다.
         return;
       }

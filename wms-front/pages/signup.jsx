@@ -198,7 +198,6 @@ export default function SignUp() {
   const handleEmailCheck = async () => {
     try {
       const response = await axios.post('https://i11a508.p.ssafy.io/api/oauth/email-check', { email });
-      console.log('Email Check Response:', response.data);
       
       if (response.data.code === 'SU') { 
         setEmailCheckMessage('사용 가능한 이메일입니다.');

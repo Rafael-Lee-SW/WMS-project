@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/router";
-import styled from "styled-components";
+import { makeStyles } from '@material-ui/core/styles';
 // Import MUI components
 import Grid from "@mui/material/Grid";
 import Fab from "@mui/material/Fab";
@@ -106,6 +106,23 @@ registerPlugin(DropdownMenu);
 registerPlugin(Filters);
 registerPlugin(HiddenRows);
 
+const useStyles = makeStyles(() => ({
+  buttonStyle: {
+    backgroundColor: "transparent",
+    width: '100px',
+    color: '#7D4A1A',
+    marginTop: '5px',
+    border: '1px solid #7D4A1A',
+    height: "45px",
+    borderRadius: '4px',
+    '&:hover': {
+        transform: 'scale(1.05)',
+        backgroundColor: '#7D4A1A',
+        color: 'white',
+      },
+    }
+}));
+
 // Create the theme with the desired overrides
 const muiDatatableTheme = createTheme({
   components: {
@@ -130,6 +147,7 @@ const muiDatatableTheme = createTheme({
 
 const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
   const router = useRouter();
+  const classes = useStyles();
 
   const [tableData, setTableData] = useState([]);
   const [detailedData, setDetailedData] = useState([]); // Store all import/export data
@@ -473,6 +491,9 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
         console.log("Data posted successfully");
         const result = await response.json();
         console.log(result);
+
+        //result-path-창고이름별
+
       } else {
         console.error("Error posting data");
       }
@@ -1288,6 +1309,38 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
     setShowProductExportSection(false);
   };
 
+  // 압축하기
+  const handleEncapsulation = () => {
+
+    EncapsuleAPI();
+
+  };
+
+   // 새로운 엑셀 상품들을 출고고시키는 API 메서드
+   const EncapsuleAPI = async () => {
+    try {
+      const response = await fetch(
+        `https://i11a508.p.ssafy.io/api/products/compress?businessId=${businessId}&warehouseId=${WHId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        console.log("Data posted successfully");
+        const result = await response.json();
+        console.log(result);
+      } else {
+        console.error("Error posting data");
+      }
+    } catch (error) {
+      console.error("Error posting data:", error);
+    }
+  };
+
   /**
    * UseEffect를 통해 새로고침 때마다 api로 사장님의 재고를 불러옴
    * + 유저정보
@@ -1613,7 +1666,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
             분석
           </Button>
         </div>
-        <div style={{ textAlign: 'center'}}>
+        <div style={{ marginBottom: "10px", textAlign: 'center'}}>
           <Button
             variant="contained"
             onClick={() => {
@@ -1624,6 +1677,17 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
             style={{ width: "70%", backgroundColor:'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }}
           >
             알림함
+          </Button>
+        </div>
+        <div style={{ textAlign: 'center'}}>
+          <Button
+            variant="contained"
+            onClick={() => {
+              handleEncapsulation();
+            }}
+            style={{ width: "70%", backgroundColor:'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }}
+          >
+            압축하기
           </Button>
         </div>
       </div>
@@ -2102,7 +2166,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
                         margin="normal"
                       />
                     </td>
-                    <td>
+                    <td style={{ paddingTop: '51px'}}>
                       {!noExpirationDate && (
                         <LocalizationProvider dateAdapter={AdapterDayjs}>
                           <DateTimePicker
@@ -2274,7 +2338,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
               <Typography variant="h6" gutterBottom>
                 출고 데이터 입력
               </Typography>
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", marginTop: '31px' }}>
                 <tbody>
                   <tr>
                     <td style={{ padding: "8px" }}>
@@ -2316,15 +2380,15 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
                     <td style={{ padding: "8px", textAlign: "center" }}>
                       <Button
                         variant="contained"
-                        color="primary"
                         onClick={handleAddNewExport}
+                        className={classes.buttonStyle}
                       >
                         출고 추가
                       </Button>
                     </td>
                   </tr>
                   <tr>
-                    <td style={{ padding: "8px" }} colSpan={4}>
+                    <td style={{ padding: "8px", paddingTop: '30px'}} colSpan={4}>
                       <label htmlFor="upload-export">
                         <input
                           required

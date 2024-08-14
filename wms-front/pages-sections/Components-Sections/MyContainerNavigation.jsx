@@ -221,13 +221,10 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
     const locationNames = filteredData
       .filter((item) => item.warehouseId === parseInt(WHId))
       .map((item) => item.currentLocationName);
-
     // Find the IDs of the locations that match both the location name and warehouse ID
     const matchedLocationIds = locations
       .filter((location) => locationNames.includes(location.name))
       .map((location) => location.id);
-
-    console.log(matchedLocationIds);
 
     // Store the filtered data and matched location IDs in state
     setDetailedNotificationData(detailedDataForDisplay);
@@ -269,11 +266,9 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
         // 받아온 데이터 중 로케이션 데이터 처리
         const locations = warehouseData.locations;
         if (!locations) {
-          console.error("Locations data not found");
+          //에러
           return;
         }
-        console.log("머여");
-        console.log(locations);
 
         const newLocations = locations.map((location, index) => {
           const startColor = { r: 27, g: 177, b: 231 }; // Starting color (#1bb1e7)
@@ -310,7 +305,7 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
         // 벽 데이터 처리
         const walls = warehouseData.walls;
         if (!walls) {
-          console.error("Walls data not found");
+          //에러
           return;
         }
         clearAnchorsAndLines();
@@ -351,10 +346,10 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
 
         setLocations(newLocations);
       } else {
-        console.error("Error loading locations data");
+        //에러
       }
     } catch (error) {
-      console.error("Error loading locations data:", error);
+      //에러
     }
   };
 
@@ -614,11 +609,11 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
         const rectangleData = jsonData.filter((row) => row[0] === String(id));
         return rectangleData || [];
       } else {
-        console.error("Error loading JSON data");
+        //에러
         return [];
       }
     } catch (error) {
-      console.error("Error loading JSON data:", error);
+      //에러
       return [];
     }
   };
@@ -859,8 +854,6 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
       if (response.ok) {
         const apiConnection = await response.json();
         const products = apiConnection.result;
-        console.log("상품 불러옴");
-        console.log(products); // 삭제해야 할 console.log (콘솔)
 
         // Extract only the required columns
         const formattedData = products.map((product) => ({
@@ -909,16 +902,13 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
           product.warehouseId,
         ]);
 
-        console.log("여기가 문제?");
-        console.log(data); // 삭제해야 할 console.log (콘솔)
-
         setColumns(formattedColumns);
         setTableData(data);
       } else {
-        console.error("Error loading rectangles data");
+        //에러
       }
     } catch (error) {
-      console.error("Error loading rectangles data:", error);
+      //에러
     }
   };
 
@@ -981,10 +971,10 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
           { name: "trackingNumber", label: "송장번호" },
         ]);
       } else {
-        console.error("Error fetching notifications");
+        //에러
       }
     } catch (error) {
-      console.error("Error fetching notifications:", error);
+      //에러
     }
   };
 
@@ -1056,9 +1046,7 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
         expirationDate: product[6] || "없음",
       }));
 
-    // console.log(tableData)
     setModalTableData(selectedData);
-    console.log(selectedData);
   };
 
   // Extract fill percentage from RGBA color
@@ -1097,7 +1085,7 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
         await productGetAPI(businessId);
         await getNotificationsAPI(businessId);
       } catch (error) {
-        console.error("Error during fetch:", error);
+        //에러
       } finally {
         setLoading(false); // End loading
       }
@@ -1395,7 +1383,6 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
                             cursor: "pointer",
                           }}
                           onClick={() => {
-                            console.log(index + 1 + "층입니다.");
                             setSelectedFloor(
                               selectedFloor === index + 1 ? null : index + 1
                             );
@@ -1580,10 +1567,8 @@ const RectangleTransformer = ({
   // Calculate font size for the text inside the rectangle
   const fontSize = Math.min(shapeProps.width, shapeProps.height) / 4;
 
-  // Text to display on the rectangle
-  const mainText = `${shapeProps.name}-${
-    shapeProps.z < 10 ? "0" + shapeProps.z : shapeProps.z
-  }`;
+  // 재고함의 행렬과 높이를 나타내도록 설정한 MainText
+  const floorName = `${shapeProps.z}층`;
 
   // Extract fill percentage from RGBA color
   const extractFillPercentage = (rgbaString) => {
@@ -1628,12 +1613,26 @@ const RectangleTransformer = ({
         shadowOpacity={isHovered || isHoveredLocal ? 0.5 : 0} // Shadow opacity when hovered
       />
       <Text
-        text={mainText}
+        text={floorName}
         x={shapeProps.x}
         y={shapeProps.y}
         z={shapeProps.z}
         width={shapeProps.width}
-        height={shapeProps.height - fontSize}
+        height={shapeProps.height - fontSize * 2}
+        fontSize={Math.min(shapeProps.width, shapeProps.height) / 6}
+        fontFamily="Arial"
+        fill="white"
+        align="center"
+        verticalAlign="middle"
+        listening={false} // Disable interactions with the text
+      />
+      <Text
+        text={shapeProps.name}
+        x={shapeProps.x}
+        y={shapeProps.y}
+        z={shapeProps.z}
+        width={shapeProps.width}
+        height={shapeProps.height}
         fontSize={Math.min(shapeProps.width, shapeProps.height) / 5}
         fontFamily="Arial"
         fill="white"
@@ -1647,8 +1646,8 @@ const RectangleTransformer = ({
         y={shapeProps.y}
         z={shapeProps.z}
         width={shapeProps.width}
-        height={shapeProps.height + fontSize}
-        fontSize={Math.min(shapeProps.width, shapeProps.height) / 5}
+        height={shapeProps.height + fontSize * 2}
+        fontSize={Math.min(shapeProps.width, shapeProps.height) / 6}
         fontFamily="Arial"
         fill="white"
         align="center"

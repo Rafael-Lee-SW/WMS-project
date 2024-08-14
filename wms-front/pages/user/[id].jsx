@@ -4,12 +4,9 @@ import Link from "next/link";
 import { makeStyles } from "@material-ui/core/styles";
 import Header from "/components/Header/UserHeader.jsx";
 import HeaderLinks from "/components/Header/UserHeaderLinks.js";
-import Footer from "/components/Footer/Footer.js";
 import Button from "/components/CustomButtons/Button.js";
-import Parallax from "/components/Parallax/ParallaxUser.js";
 import dynamic from "next/dynamic";
 import styles from "/styles/jss/nextjs-material-kit/pages/users.js";
-import AOS from "aos";
 import "aos/dist/aos.css";
 import { useRouter } from "next/router";
 
@@ -133,7 +130,6 @@ export default function Components(props) {
 
       if (response.ok) {
         const apiConnection = await response.json();
-        console.log(apiConnection);
         const warehouses = apiConnection.result;
 
         const warehouseCards = warehouses.map((warehouse) => ({
@@ -143,10 +139,10 @@ export default function Components(props) {
 
         setCards(warehouseCards);
       } else {
-        console.error("Error loading warehouse data");
+        router.push('/404');
       }
     } catch (error) {
-      console.error("Error loading warehouse data:", error);
+      router.push('/404');
     }
   };
 
@@ -166,14 +162,13 @@ export default function Components(props) {
         const userData = await response.json();
         const businessInfo = userData.result;
         setBusinessData(businessInfo);
-        console.log("Business data loaded:", businessInfo);
 
         getAllWarehouseInfoAPI(businessInfo.businessId);
       } else {
-        console.error("Error fetching user data");
+        router.push('/404');
       }
     } catch (error) {
-      console.error("Error fetching user data:", error);
+      router.push('/404');
     }
   };
 
@@ -184,11 +179,10 @@ export default function Components(props) {
       try {
         const parsedUser = JSON.parse(user);
         setUserData(parsedUser);
-        console.log("User data loaded from localStorage:", parsedUser);
 
         fetchBusinessData(parsedUser.id);
       } catch (error) {
-        console.error("Error parsing user data from localStorage:", error);
+        router.push('/404');
       }
     }
   }, []);
@@ -233,7 +227,6 @@ export default function Components(props) {
       try {
         const parsedUser = JSON.parse(user);
         setUserData(parsedUser);
-        console.log("User[id]에서 불러오기", parsedUser);
       } catch (error) {
         router.push("/");
       }
