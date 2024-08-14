@@ -224,19 +224,17 @@ public class WarehouseService {
     public int findLocationCnt(Long id) {
         List<Location> locations = locationModuleService.findAllByWarehouseId(id);
         return locations.stream()
+            .filter(location -> location.getZSize() > 0)
             .mapToInt(Location::getZSize)
             .sum();
     }
 
     public int findUsage(Long id) {
-        log.info("service usage");
         List<Location> locations = locationModuleService.findAllByWarehouseId(id);
-        log.info("location");
         List<Floor> floors = floorModuleService.findAllNotEmptyFloorByWarehouseId(id);
 
-        log.info("floors");
-
         int totalCnt = locations.stream()
+            .filter(location -> location.getZSize() > 0)
             .mapToInt(Location::getZSize)
             .sum();
 
