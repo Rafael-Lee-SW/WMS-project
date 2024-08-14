@@ -108,16 +108,15 @@ registerPlugin(HiddenRows);
 
 const useStyles = makeStyles(() => ({
   buttonStyle: {
-    backgroundColor: "transparent",
+    backgroundColor: "#C2B6A1",
     width: '100px',
-    color: '#7D4A1A',
+    color: 'white ',
     marginTop: '5px',
-    border: '1px solid #7D4A1A',
-    height: "45px",
+    height: "55px",
     borderRadius: '4px',
     '&:hover': {
       transform: 'scale(1.05)',
-      backgroundColor: '#7D4A1A',
+      backgroundColor: '#C2B6A1',
       color: 'white',
     },
   }
@@ -227,6 +226,11 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
   const [loading, setLoading] = useState(true); // Overall loading state
   const [notificationsFetched, setNotificationsFetched] = useState(false);
   const [analyticsFetched, setAnalyticsFetched] = useState(false);
+
+  const [activeButton, setActiveButton] = useState(null);
+  const handleButtonClick = (index) => {
+    setActiveButton(index); 
+  };
 
   // 엑셀로 입고(import)데이터를 받았을 때 이를 변환하는 메서드
   const convertToArrayOfArraysModal = (data) => {
@@ -1583,11 +1587,17 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
           <Button
             variant="contained"
             onClick={() => {
+              handleButtonClick(0);
               handleNextComponent(0);
               setShowProductInputSection(false);
               setShowProductExportSection(false);
             }}
-            style={{ width: "70%", backgroundColor: 'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }} // Button width matches the sidebar
+            style={{ 
+              width: "70%", 
+              backgroundColor: activeButton === 0 ? '#7D4A1A' : 'transparent',
+              color: activeButton === 0 ? 'white' : '#7D4A1A',
+              outline: activeButton === 0 ? 'none' : '1px solid #7D4A1A'
+            }} 
           >
             제품 목록
           </Button>
@@ -1596,11 +1606,17 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
           <Button
             variant="contained"
             onClick={() => {
+              handleButtonClick(1);
               setShowProductInputSection(true);
               setShowProductExportSection(false);
               handleNextComponent(6); // Close other sections
             }}
-            style={{ width: "70%", backgroundColor: 'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }}
+            style={{ 
+              width: "70%", 
+              backgroundColor: activeButton === 1 ? '#7D4A1A' : 'transparent',
+              color: activeButton === 1 ? 'white' : '#7D4A1A',
+              outline: activeButton === 1 ? 'none' : '1px solid #7D4A1A'
+            }}
           >
             입고하기
           </Button>
@@ -1609,11 +1625,17 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
           <Button
             variant="contained"
             onClick={() => {
+              handleButtonClick(2);
               setShowProductInputSection(false);
               setShowProductExportSection(true);
               handleNextComponent(6); // Close other sections
             }}
-            style={{ width: "70%", backgroundColor: 'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }}
+            style={{ 
+              width: "70%", 
+              backgroundColor: activeButton === 2 ? '#7D4A1A' : 'transparent',
+              color: activeButton === 2 ? 'white' : '#7D4A1A',
+              outline: activeButton === 2 ? 'none' : '1px solid #7D4A1A'
+            }}
           >
             출고하기
           </Button>
@@ -1622,12 +1644,18 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
           <Button
             variant="contained"
             onClick={() => {
+              handleButtonClick(3);
               setShowProductInputSection(false);
               setShowProductExportSection(false);
               setOpenEditModal(true);
               handleNextComponent(0);
             }}
-            style={{ width: "70%", backgroundColor: 'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }}
+            style={{ 
+              width: "70%", 
+              backgroundColor: activeButton === 3 ? '#7D4A1A' : 'transparent',
+              color: activeButton === 3 ? 'white' : '#7D4A1A',
+              outline: activeButton === 3 ? 'none' : '1px solid #7D4A1A' 
+            }}
           >
             수정하기
           </Button>
@@ -1636,11 +1664,17 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
           <Button
             variant="contained"
             onClick={() => {
+              handleButtonClick(4);
               handleNextComponent(1);
               setShowProductInputSection(false);
               setShowProductExportSection(false);
             }}
-            style={{ width: "70%", backgroundColor: 'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }}
+            style={{ 
+              width: "70%", 
+              backgroundColor: activeButton === 4 ? '#7D4A1A' : 'transparent',
+              color: activeButton === 4 ? 'white' : '#7D4A1A',
+              outline: activeButton === 4 ? 'none' : '1px solid #7D4A1A'
+            }}
           >
             이동하기
           </Button>
@@ -1649,11 +1683,17 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
           <Button
             variant="contained"
             onClick={() => {
+              handleButtonClick(5);
               handleNextComponent(2);
               setShowProductInputSection(false);
               setShowProductExportSection(false);
             }}
-            style={{ width: "70%", backgroundColor: 'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }}
+            style={{ 
+              width: "70%", 
+              backgroundColor: activeButton === 5 ? '#7D4A1A' : 'transparent',
+              color: activeButton === 5 ? 'white' : '#7D4A1A',
+              outline: activeButton === 5 ? 'none' : '1px solid #7D4A1A'
+            }}
           >
             변동내역
           </Button>
@@ -1662,11 +1702,17 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
           <Button
             variant="contained"
             onClick={() => {
+              handleButtonClick(6);
               handleNextComponent(5);
               setShowProductInputSection(false);
               setShowProductExportSection(false);
             }}
-            style={{ width: "70%", backgroundColor: 'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }}
+            style={{ 
+              width: "70%", 
+              backgroundColor: activeButton === 6 ? '#7D4A1A' : 'transparent',
+              color: activeButton === 6 ? 'white' : '#7D4A1A',
+              outline: activeButton === 6 ? 'none' : '1px solid #7D4A1A'
+            }}
           >
             분석
           </Button>
@@ -1675,11 +1721,17 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
           <Button
             variant="contained"
             onClick={() => {
+              handleButtonClick(7);
               handleNextComponent(3);
               setShowProductInputSection(false);
               setShowProductExportSection(false);
             }}
-            style={{ width: "70%", backgroundColor: 'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }}
+            style={{ 
+              width: "70%", 
+              backgroundColor: activeButton === 7 ? '#7D4A1A' : 'transparent',
+              color: activeButton === 7 ? 'white' : '#7D4A1A',
+              outline: activeButton === 7 ? 'none' : '1px solid #7D4A1A'
+            }}
           >
             알림함
           </Button>
@@ -1688,9 +1740,15 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
           <Button
             variant="contained"
             onClick={() => {
+              handleButtonClick(8);
               handleEncapsulation();
             }}
-            style={{ width: "70%", backgroundColor: 'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }}
+            style={{ 
+              width: "70%", 
+              backgroundColor: activeButton === 8 ? '#7D4A1A' : 'transparent',
+              color: activeButton === 8 ? 'white' : '#7D4A1A',
+              outline: activeButton === 8 ? 'none' : '1px solid #7D4A1A'
+            }}
           >
             압축하기
           </Button>
@@ -1864,10 +1922,10 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleSaveEdits} color="primary">
+          <Button onClick={handleSaveEdits} style={{ color: '#7D4A1A'}}>
             저장하기
           </Button>
-          <Button onClick={() => setOpenEditModal(false)} color="primary">
+          <Button onClick={() => setOpenEditModal(false)} style={{ color: '#7D4A1A'}}>
             닫기
           </Button>
         </DialogActions>
@@ -2092,7 +2150,6 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
         <DialogActions>
           <Button
             onClick={() => setPrintModalOpen(false)}
-            color="primary"
             autoFocus
           >
             Close
@@ -2210,6 +2267,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
                         variant="contained"
                         color="primary"
                         onClick={handleAddNewProduct}
+                        className={classes.buttonStyle}
                       >
                         제품 추가
                       </Button>
@@ -2227,20 +2285,22 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
                           onChange={importExcel}
                         />
                         <Fab
-                          color="primary"
                           size="small"
                           component="span"
                           aria-label="add"
                           variant="extended"
-                          style={{ marginRight: "10px" }}
+                          style={{ marginRight: "10px", height: '40px', textAlign: 'center' }}
+                          className={classes.buttonStyle}
                         >
-                          엑셀로 제품 추가
+                          엑셀 업로드
                         </Fab>
                       </label>
                       <Button
                         variant="contained"
                         color="secondary"
                         onClick={handleFinalImport}
+                        className={classes.buttonStyle}
+                        style={{ height: '40px', textAlign: 'center' }}
                       >
                         입고하기
                       </Button>
@@ -2409,17 +2469,20 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
                           component="span"
                           aria-label="add"
                           variant="extended"
-                          style={{ marginRight: "10px" }}
+                          style={{ marginRight: "10px", height: '40px' }}
+                          className={classes.buttonStyle}
                         >
-                          엑셀로 데이터 가져오기
+                          엑셀 업로드
                         </Fab>
                       </label>
                       <Button
                         variant="contained"
                         color="secondary"
                         onClick={handleFinalExport}
+                        className={classes.buttonStyle}
+                        style={{ height: '40px' }}
                       >
-                        Final Export
+                        출고하기
                       </Button>
                     </td>
                   </tr>
