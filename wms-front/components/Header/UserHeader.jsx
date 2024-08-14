@@ -66,7 +66,7 @@ export default function Header(props) {
 
   return (
     <AppBar className={appBarClasses}>
-      <Toolbar className={classes.container}>
+      <Toolbar className={classes.container} style={{ marginRight: '10px' }}>
         <div className={classes.flex}>
         </div>
         <Box sx={{ display: { xs: 'none', sm: 'block' } }}>

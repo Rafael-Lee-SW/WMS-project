@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import axios from "axios";
-import Header from "../../components/Header/SelectHeader";
-import HeaderLinks from "/components/Header/SelectHeaderLinks.js";
+import Header from "../../components/Header/HomeHeader";
+import HeaderLinks from "/components/Header/HomeHeaderLinks.js";
 import { makeStyles } from "@material-ui/core/styles";
 import AddCircleOutline from "@material-ui/icons/AddCircleOutline";
 import GridContainer from "/components/Grid/GridContainer.js";
@@ -470,13 +470,13 @@ const Select = (props) => {
   const getBackgroundColor = (color) => {
     switch (color) {
       case 1:
-        return "rgb(27, 177, 231)";
+        return "#D6CABA";
       case 2:
-        return "rgb(21, 137, 181)";
+        return "#C2B6A1";
       case 3:
-        return "rgb(15, 97, 131)";
+        return "#918166";
       default:
-        return "rgb(27, 177, 231)";
+        return "#D6CABA";
     }
   };
 
@@ -569,7 +569,6 @@ const Select = (props) => {
                             right: 10,
                             width: "20px",
                             height: "20px",
-                            cursor: "pointer",
                           }}
                           onClick={(e) => {
                             e.preventDefault(); // 링크 이동 방지

@@ -1537,7 +1537,6 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
         <div style={{ marginBottom: "10px", textAlign: 'center' }}>
           <Button
             variant="contained"
-            color="primary"
             onClick={() => {
               setShowProductInputSection(true);
               setShowProductExportSection(false);
@@ -1551,7 +1550,6 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
         <div style={{ marginBottom: "10px", textAlign: 'center' }}>
           <Button
             variant="contained"
-            color="primary"
             onClick={() => {
               setShowProductInputSection(false);
               setShowProductExportSection(true);
@@ -1565,7 +1563,6 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
         <div style={{ marginBottom: "10px", textAlign: 'center' }}>
           <Button
             variant="contained"
-            color="primary"
             onClick={() => {
               setShowProductInputSection(false);
               setShowProductExportSection(false);
@@ -1580,7 +1577,6 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
         <div style={{ marginBottom: "10px", textAlign: 'center' }}>
           <Button
             variant="contained"
-            color="primary"
             onClick={() => {
               handleNextComponent(1);
               setShowProductInputSection(false);
@@ -1594,7 +1590,6 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
         <div style={{ marginBottom: "10px", textAlign: 'center'}}>
           <Button
             variant="contained"
-            color="primary"
             onClick={() => {
               handleNextComponent(2);
               setShowProductInputSection(false);
@@ -1608,7 +1603,6 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
         <div style={{ marginBottom: "10px", textAlign: 'center' }}>
           <Button
             variant="contained"
-            color="primary"
             onClick={() => {
               handleNextComponent(5);
               setShowProductInputSection(false);
@@ -1622,7 +1616,6 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
         <div style={{ textAlign: 'center'}}>
           <Button
             variant="contained"
-            color="primary"
             onClick={() => {
               handleNextComponent(3);
               setShowProductInputSection(false);
@@ -2073,7 +2066,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <tbody>
                   <tr>
-                    <td style={{ padding: "8px" }}>
+                    <td style={{ padding: '8px' }}>
                       <TextField
                         label="바코드"
                         value={newProductData.barcode}
@@ -2109,7 +2102,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
                         margin="normal"
                       />
                     </td>
-                    <td style={{ padding: "8px" }}>
+                    <td>
                       {!noExpirationDate && (
                         <LocalizationProvider dateAdapter={AdapterDayjs}>
                           <DateTimePicker
