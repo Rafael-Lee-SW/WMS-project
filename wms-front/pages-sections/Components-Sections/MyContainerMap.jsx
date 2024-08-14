@@ -340,12 +340,12 @@ const handleAddLocation = (type) => {
       });
 
       if (response.ok) {
-        console.log("창고 정보 저장 성공");
+        //성공
       } else {
-        console.error("창고 정보 저장에 Error가 발생했습니다.");
+        //실패
       }
     } catch (error) {
-      console.error("에러가 발생했습니다.", error);
+      //에러
     }
   };
 
@@ -376,8 +376,6 @@ const handleAddLocation = (type) => {
     //모든 데이터를 warehouseData로 담아서 전송한다.
     const warehouseData = { locations: locationData, walls: wallData };
 
-    console.log(warehouseData);
-
     try {
       const response = await fetch(
         `https://i11a508.p.ssafy.io/api/warehouses/${warehouseId}/locatons-and-walls`,
@@ -391,8 +389,8 @@ const handleAddLocation = (type) => {
       );
 
       if (response.ok) {
-        console.log("Map data saved successfully");
 
+        // 성공
         // Use router.replace with shallow routing
         router.replace(
           {
@@ -403,10 +401,10 @@ const handleAddLocation = (type) => {
           { shallow: true }
         );
       } else {
-        console.error("Error saving map data");
+        //에러
       }
     } catch (error) {
-      console.error("Error saving map data:", error);
+      //에러
     }
   };
 
@@ -471,10 +469,10 @@ const handleAddLocation = (type) => {
         layerRef.current.batchDraw();
       } else {
         const errorData = await response.json();
-        console.error("Error saving map data:", errorData);
+        // 에러
       }
     } catch (error) {
-      console.error("Error loading map data:", error);
+      //에러
     }
   };
 
@@ -495,12 +493,10 @@ const handleAddLocation = (type) => {
         const apiConnection = await response.json();
         const warehouseData = apiConnection.result; // 데이터 추출
 
-        console.log(warehouseData);
-
         // 받아온 데이터 중 로케이션 데이터 처리
         const locations = warehouseData.locations;
         if (!locations) {
-          console.error("Locations data not found");
+          //에러 발생
           return;
         }
 
@@ -538,7 +534,7 @@ const handleAddLocation = (type) => {
         // 벽 데이터 처리
         const walls = warehouseData.walls;
         if (!walls) {
-          console.error("Walls data not found");
+          //에러 발생
           return;
         }
         clearAnchorsAndLines();
@@ -579,10 +575,10 @@ const handleAddLocation = (type) => {
 
         setLocations(newLocations);
       } else {
-        console.error("Error loading rectangles data");
+        //실패
       }
     } catch (error) {
-      console.error("Error loading rectangles data:", error);
+      //에러
     }
   };
 
@@ -1149,7 +1145,7 @@ const handleAddLocation = (type) => {
         setLoading(true); // Start loading
         await getWarehouseAPI(warehouseId);
       } catch (error) {
-        console.error("Error during fetch:", error);
+        //에러
       } finally {
         setLoading(false); // End loading
       }
