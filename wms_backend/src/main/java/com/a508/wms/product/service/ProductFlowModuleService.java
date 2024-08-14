@@ -9,6 +9,8 @@ import com.a508.wms.product.exception.ProductInvalidRequestException;
 import com.a508.wms.product.mapper.ProductFlowMapper;
 import com.a508.wms.product.repository.ProductFlowRepository;
 import com.a508.wms.warehouse.service.WarehouseModuleService;
+import java.util.Collections;
+import java.util.Comparator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -56,6 +58,12 @@ public class ProductFlowModuleService {
         for(ProductFlow productFlow : productFlows){
             productFlowResponseDtos.add(ProductFlowMapper.toProductFlowResponseDto(productFlow));
         }
+        Collections.sort(productFlowResponseDtos, new Comparator<ProductFlowResponseDto>() {
+            @Override
+            public int compare(ProductFlowResponseDto o1, ProductFlowResponseDto o2) {
+                return o2.getDate().compareTo(o1.getDate());
+            }
+        });
         return productFlowResponseDtos;
     }
 }
