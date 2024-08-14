@@ -303,7 +303,7 @@ export default function Components(props) {
         <Button className={classes.buttonStyle} style={{ backgroundColor: "#ADAAA5"}} round onClick={() => handleNextComponent(1)}>
           재고 현황
         </Button>
-        <Button className={classes.buttonStyle} style={{ backgroundColor: "#C2B6A1"}} color="success" round onClick={() => handleNextComponent(2)}>
+        <Button className={classes.buttonStyle} style={{ backgroundColor: "#C2B6A1"}} round onClick={() => handleNextComponent(2)}>
           재고 관리
         </Button>
       </div>

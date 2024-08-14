@@ -1127,10 +1127,10 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
           gap: "10px",
         }}
       >
-        <Button round onClick={handleZoomIn}>
+        <Button round onClick={handleZoomIn} style={{ color: '#7D4A1A', fontWeight: 'bold' }}>
           zoomIn
         </Button>
-        <Button onClick={handleZoomOut}>zoomOut</Button>
+        <Button onClick={handleZoomOut} style={{ color: '#7D4A1A', fontWeight: 'bold' }}>zoomOut</Button>
       </div>
       <div
         style={{
@@ -1145,14 +1145,14 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
         }}
       >
         <hr />
-        <div style={{ marginBottom: "10px" }}>
-          <Button onClick={() => setShowDetails(true)}>Show Details</Button>
+        <div style={{ marginBottom: "10px", display: 'flex', justifyContent: 'center', flexDirection: 'column' }}>
+          <Button onClick={() => setShowDetails(true)} style={{ color: '#7D4A1A', fontWeight: 'bold', textAlign: 'center' }}>Show Details</Button>
           <Button
+            style={{ color: '#7D4A1A', fontWeight: 'bold' }}
             onClick={() => {
               setShowDetails(false);
               showUniqueDates();
             }}
-            color="primary"
             round
           >
             Show Notifications
@@ -1160,7 +1160,7 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
         </div>
         {showDetails ? (
           <div>
-            <h3>재고함 목록</h3>
+            <h3 style={{ textAlign: 'center' }}>재고함 목록</h3>
             {locations.length !== 0 ? (
               <div
                 style={{
@@ -1210,7 +1210,7 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
           </div>
         ) : (
           <div className="notification">
-            <h3>알림함</h3>
+            <h3 style={{ textAlign: 'center'}}>알림함</h3>
             <ul style={{ listStyle: "none", padding: 0 }}>
               {notificationTableData.map(({ date, type }, index) => (
                 <li

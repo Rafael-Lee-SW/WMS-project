@@ -1475,21 +1475,20 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
           zIndex: 1000, // Ensure it stays above other content
         }}
       >
-        <div style={{ marginBottom: "10px", marginTop: "10vh" }}>
+        <div style={{ marginBottom: "10px", marginTop: "10vh", textAlign: 'center' }}>
           <Button
             variant="contained"
-            color="primary"
             onClick={() => {
               handleNextComponent(0);
               setShowProductInputSection(false);
               setShowProductExportSection(false);
             }}
-            style={{ width: "100%" }} // Button width matches the sidebar
+            style={{ width: "70%", backgroundColor:'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }} // Button width matches the sidebar
           >
             제품 목록
           </Button>
         </div>
-        <div style={{ marginBottom: "10px" }}>
+        <div style={{ marginBottom: "10px", textAlign: 'center' }}>
           <Button
             variant="contained"
             color="primary"
@@ -1498,12 +1497,12 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
               setShowProductExportSection(false);
               handleNextComponent(6); // Close other sections
             }}
-            style={{ width: "100%" }}
+            style={{ width: "70%", backgroundColor:'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }}
           >
             입고하기
           </Button>
         </div>
-        <div style={{ marginBottom: "10px" }}>
+        <div style={{ marginBottom: "10px", textAlign: 'center' }}>
           <Button
             variant="contained"
             color="primary"
@@ -1512,12 +1511,12 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
               setShowProductExportSection(true);
               handleNextComponent(6); // Close other sections
             }}
-            style={{ width: "100%" }}
+            style={{ width: "70%", backgroundColor:'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }}
           >
             출고하기
           </Button>
         </div>
-        <div style={{ marginBottom: "10px" }}>
+        <div style={{ marginBottom: "10px", textAlign: 'center' }}>
           <Button
             variant="contained"
             color="primary"
@@ -1527,12 +1526,12 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
               setOpenEditModal(true);
               handleNextComponent(0);
             }}
-            style={{ width: "100%" }}
+            style={{ width: "70%", backgroundColor:'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }}
           >
             수정하기
           </Button>
         </div>
-        <div style={{ marginBottom: "10px" }}>
+        <div style={{ marginBottom: "10px", textAlign: 'center' }}>
           <Button
             variant="contained"
             color="primary"
@@ -1541,12 +1540,12 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
               setShowProductInputSection(false);
               setShowProductExportSection(false);
             }}
-            style={{ width: "100%" }}
+            style={{ width: "70%", backgroundColor:'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }}
           >
             이동하기
           </Button>
         </div>
-        <div style={{ marginBottom: "10px" }}>
+        <div style={{ marginBottom: "10px", textAlign: 'center'}}>
           <Button
             variant="contained"
             color="primary"
@@ -1555,12 +1554,12 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
               setShowProductInputSection(false);
               setShowProductExportSection(false);
             }}
-            style={{ width: "100%" }}
+            style={{ width: "70%", backgroundColor:'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }}
           >
             변동내역
           </Button>
         </div>
-        <div style={{ marginBottom: "10px" }}>
+        <div style={{ marginBottom: "10px", textAlign: 'center' }}>
           <Button
             variant="contained"
             color="primary"
@@ -1569,12 +1568,12 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
               setShowProductInputSection(false);
               setShowProductExportSection(false);
             }}
-            style={{ width: "100%" }}
+            style={{ width: "70%", backgroundColor:'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }}
           >
             분석
           </Button>
         </div>
-        <div>
+        <div style={{ textAlign: 'center'}}>
           <Button
             variant="contained"
             color="primary"
@@ -1583,7 +1582,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
               setShowProductInputSection(false);
               setShowProductExportSection(false);
             }}
-            style={{ width: "100%" }}
+            style={{ width: "70%", backgroundColor:'transparent', color: '#7D4A1A', outline: '1px solid #7D4A1A' }}
           >
             알림함
           </Button>
