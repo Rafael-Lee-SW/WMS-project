@@ -1,6 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/router";
 import { makeStyles } from '@material-ui/core/styles';
+// 알림창을 위한 import
+import { toast } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
+
 // Import MUI components
 import Grid from "@mui/material/Grid";
 import Fab from "@mui/material/Fab";
@@ -146,6 +150,22 @@ const muiDatatableTheme = createTheme({
 });
 
 const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
+
+  // Find the selected warehouse from the cards array
+  const selectedWarehouse = warehouses.find((warehouse) => warehouse.id === parseInt(WHId));
+
+  // If a warehouse is found, get its title
+  const selectedWarehouseTitle = selectedWarehouse ? selectedWarehouse.title : "Warehouse not found";
+
+  const notify = (message) => toast(message, {
+    position: "top-center",
+    autoClose: 2000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+  });
 
   const router = useRouter();
   const classes = useStyles();
@@ -387,7 +407,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
     }
   };
 
-  // 입고 시에, 최종적으로 선택된 칼럼을 DB에 입고 API를 보내는 메서드
+  // 선별된 엑셀 데이터를 입고 예상 목록에 추가하는 메서드
   const finalizeSelectionImport = () => {
     // 선택된 열의 데이터를 postData에 담는 과정
     const postData = ModalTableData.map((row) => ({
@@ -411,7 +431,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
     });
   };
 
-  // 출고 시에, 최종적으로 선택된 칼럼을 DB에 출고 API를 보내는 메서드
+  // 선별된 엑셀 데이터를 입고 예상 목록에 추가하는 메서드 
   const finalizeSelectionExport = () => {
     // 선택된 열의 데이터를 postData에 담는 과정
     const postData = ModalTableExportData.map((row) => ({
@@ -459,14 +479,17 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
 
       if (response.ok) {
         const result = await response.json();
-
+        notify(`${selectedWarehouseTitle} 창고에 입고되었습니다.`);
         productGetAPI(businessId);
         handleNextComponent(0)
+
       } else {
-        //에러
+        notify(`입고에 실패했습니다.`);
+        handleNextComponent(0)
       }
     } catch (error) {
-      //에러
+      notify(`입고에 실패했습니다.`);
+      handleNextComponent(0)
     }
   };
 
@@ -492,14 +515,17 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
 
       if (response.ok) {
         const accept = await response.json(); // 해당 accept.result.path에 출고 루트가 담겨있다.
-
+        notify(`출고처리가 완료되었습니다.`);
         productGetAPI(businessId) // 새로 데이터를 불러오고
         handleNextComponent(0); // Redirect 처리한다.
       } else {
-        //에러
+        notify(`출고에 실패했습니다.`);
+        handleNextComponent(0)
       }
     } catch (error) {
-      //에러
+
+      notify(`출고에 실패했습니다.`);
+      handleNextComponent(0)
     }
   };
 
@@ -520,12 +546,15 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
       if (response.ok) {
         // 성공
         const result = await response.json();
+        notify(`상품을 이동했습니다.`); 
         productGetAPI(businessId); // 정보가 반영된 테이블을 새로 불러온다.
       } else {
-        // 실패
+        notify(`이동에 실패했습니다.`);
+        handleNextComponent(0)
       }
     } catch (error) {
-      //에러
+      notify(`이동에 실패했습니다.`);
+      handleNextComponent(0)
     }
   };
 
@@ -879,7 +908,10 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
 
   // 상품 정보를 수정하는 API 호출 메서드
   const productEditAPI = async (productsArray) => {
+
+    setLoading(true)
     try {
+
       const response = await fetch(`https://i11a508.p.ssafy.io/api/products`, {
         method: "PUT",
         headers: {
@@ -889,13 +921,18 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
       });
 
       if (response.ok) {
+        setLoading(false)
         // 수정 성공
         productGetAPI(businessId);
+        notify(`데이터를 수정하였습니다.`);
+        handleNextComponent(0)
       } else {
-        // 실패
+        notify(`수정에 실패했습니다.`);
+        handleNextComponent(0)
       }
     } catch (error) {
-      // 에러
+      notify(`수정에 실패했습니다.`);
+      handleNextComponent(0)
     }
   };
 
@@ -1207,13 +1244,13 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
         <Typography variant="h6">재고 분석</Typography>
         <div style={{ marginTop: "20px" }}>
           <Typography variant="subtitle1">
-            로케이션별 재고 현황 {WHId}
+            로케이션별 재고 현황 (창고 : {selectedWarehouseTitle})
           </Typography>
           {quantityByLocationData && <Bar data={quantityByLocationData} />}
         </div>
         <div style={{ marginTop: "40px" }}>
           <Typography variant="subtitle1">
-            Total Import, Export, and Flow by Day
+            일자별 입-출고-이동 추이
           </Typography>
           {flowByDateData && (
             <Bar
@@ -1278,6 +1315,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
       } finally {
         setLoading(false);
         setCurrentIndex(index);
+        setShowAnalytics(index === 5);
       }
     } else {
       setCurrentIndex(index);
@@ -1391,13 +1429,16 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
         //성공
         const result = await response.json();
         productGetAPI(businessId); // 새로 상품 불러오기
+        notify(`상품들을 정렬하였습니다.`)
         handleNextComponent(0);
         // 압축 성공 모달 띄우기
       } else {
-        //실패
+        notify(`압축에 실패하였습니다.`)
+        handleNextComponent(0);
       }
     } catch (error) {
-      //에러
+      notify(`압축에 실패하였습니다.`)
+      handleNextComponent(0);
     }
   };
 

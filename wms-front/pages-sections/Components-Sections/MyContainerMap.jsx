@@ -124,7 +124,7 @@ const useStyles = makeStyles((theme) => ({
  */
 
 const MyContainerMap = ({ warehouseId, businessId }) => {
-  
+
   const router = useRouter();
   const classes = useStyles();
   const stageRef = useRef(null);
@@ -275,10 +275,14 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
         `이름이 "${newName}"인 로케이션이 이미 존재합니다. 다른 이름을 사용하세요.`
       );
       return; // 중복된 이름이 있으면 생성 중단
+    } else {
+      notify(
+        `로케이션 "${newName}"이 생성되었습니다.`
+      );
     }
 
     const newLocation = {
-      id: locations.length.toString(),
+      //Id를 넣어서는 안된다. DB에서 자동으로 처리되도록 해야한다.
       x: 50,
       y: 50,
       z: newLocationZIndex,
@@ -323,50 +327,6 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
     setContainer(newContainer);
   };
 
-  // 컨버스 안에 있는 모든 정보를 Local에 저장한다.
-  const handleSave = async () => {
-    // 적재함들을 전부 기록한다.
-    const locationData = locations.map((location) => ({
-      id: location.id,
-      x: location.x,
-      y: location.y,
-      z: location.z,
-      width: location.width,
-      height: location.height,
-      fill: location.fill,
-      type: location.type,
-      name: location.name,
-      rotation: location.rotation,
-    }));
-
-    // 벽 정보를 전부 기록한다.
-    const wallData = anchorsRef.current.map(({ start, end }) => ({
-      startID: start.id(),
-      startX: start.x(),
-      startY: start.y(),
-      endID: end.id(),
-      endX: end.x(),
-      endY: end.y(),
-    }));
-    try {
-      const response = await fetch("/api/save-map", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ locationData, wallData }),
-      });
-
-      if (response.ok) {
-        //성공
-      } else {
-        //실패
-      }
-    } catch (error) {
-      //에러
-    }
-  };
-
   // 수정된정보를 API를 통해 보냄
   const editContainerAPI = async () => {
     const locationData = locations.map((location) => ({
@@ -408,15 +368,8 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
 
       if (response.ok) {
         // 성공
-        // Use router.replace with shallow routing
-        router.replace(
-          {
-            pathname: `/user/${warehouseId}`,
-            query: { component: "map" },
-          },
-          undefined,
-          { shallow: true }
-        );
+        notify(`현재 상태가 저장되었습니다.`);
+        getWarehouseAPI(warehouseId); // 초기화하기
       } else {
         //에러
       }
@@ -518,6 +471,7 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
         }
 
         const newLocations = locations.map((location, index) => {
+
           const startColor = { r: 27, g: 177, b: 231 }; // Starting color (#1bb1e7)
           const endColor = { r: 0, g: 0, b: 255 }; // Ending color (#0000FF)
 
@@ -1062,11 +1016,11 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
           if (!existingAnchor) {
             const newId = anchorsRef.current.length
               ? Math.max(
-                  ...anchorsRef.current.flatMap(({ start, end }) => [
-                    parseInt(start.id(), 10),
-                    parseInt(end.id(), 10),
-                  ])
-                ) + 1
+                ...anchorsRef.current.flatMap(({ start, end }) => [
+                  parseInt(start.id(), 10),
+                  parseInt(end.id(), 10),
+                ])
+              ) + 1
               : 1;
             existingAnchor = buildAnchor(newId, x, y);
           } else {
@@ -1348,7 +1302,7 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
           >
             벽 생성
           </Button>
-          <Button
+          {/* <Button
             className={classes.buttonStyle}
             onClick={() => changeCurrentSetting("specialObject")}
             variant="contained"
@@ -1361,7 +1315,7 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
             variant="contained"
           >
             자동 생성
-          </Button>
+          </Button> */}
         </div>
         <br />
         {currentSetting && currentSetting !== "wall" && (
@@ -1595,8 +1549,8 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
         <div
           style={{
             position: "absolute",
-            content:"center",
-            left:"45%",
+            content: "center",
+            left: "45%",
             top: "3rem",
             display: "flex",
             gap: "10px",
@@ -1608,7 +1562,7 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
             style={{ backgroundColor: "#7D4A1A" }}
             onClick={handleZoomIn}
           >
-            <ZoomInIcon style={{ width:"35px", height:"35px"}} className={classes.icons} />
+            <ZoomInIcon style={{ width: "35px", height: "35px" }} className={classes.icons} />
           </Button>
           <Button
             justIcon
@@ -1616,7 +1570,7 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
             style={{ backgroundColor: "#ADAAA5" }}
             onClick={handleZoomOut}
           >
-            <ZoomOutIcon style={{ width:"35px", height:"35px"}}  className={classes.icons} />
+            <ZoomOutIcon style={{ width: "35px", height: "35px" }} className={classes.icons} />
           </Button>
           <Button
             justIcon
@@ -1624,7 +1578,7 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
             style={{ backgroundColor: "#C2B6A1", marginRight: "40px" }}
             onClick={editContainerAPI}
           >
-            <SaveIcon style={{ width:"35px", height:"35px"}} className={classes.icons} />
+            <SaveIcon style={{ width: "35px", height: "35px" }} className={classes.icons} />
           </Button>
         </div>
       </div>
@@ -1979,7 +1933,7 @@ const RectangleTransformer = ({
         y={shapeProps.y}
         z={shapeProps.z}
         width={shapeProps.width}
-        height={shapeProps.height + (fontSize)*2}
+        height={shapeProps.height + (fontSize) * 2}
         fontSize={Math.min(shapeProps.width, shapeProps.height) / 6}
         fontFamily="Arial"
         fill="white"

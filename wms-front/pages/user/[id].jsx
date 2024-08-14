@@ -97,12 +97,12 @@ const useStyles = makeStyles((theme) => ({
     height: "30px",
     borderRadius: '4px',
     '&:hover': {
-        transform: 'scale(1.05)',
-        backgroundColor: '#7D4A1A',
-        color: 'white',
-      },
+      transform: 'scale(1.05)',
+      backgroundColor: '#7D4A1A',
+      color: 'white',
     },
-  }
+  },
+}
 ));
 
 export default function Components(props) {
@@ -115,6 +115,8 @@ export default function Components(props) {
   const [userData, setUserData] = useState(null);
   const [businessData, setBusinessData] = useState(null);
   const [selectedWarehouse, setSelectedWarehouse] = useState(id || "");
+  const [selectedWarehouseTitle, setSelectedWarehouseTitle] = useState(""); // State to store the selected warehouse title
+
 
   const getAllWarehouseInfoAPI = async (businessId) => {
     try {
@@ -138,6 +140,7 @@ export default function Components(props) {
         }));
 
         setCards(warehouseCards);
+
       } else {
         router.push('/404');
       }
@@ -191,23 +194,24 @@ export default function Components(props) {
 
   const componentsArray = userData
     ? [
-        <DynamicMyContainerMap
-          key={`map-${selectedWarehouse}`}
-          warehouseId={selectedWarehouse}
-          businessId={userData.businessId}
-        />,
-        <DynamicMyContainerNavigation
-          key={`nav-${selectedWarehouse}`}
-          WHId={selectedWarehouse}
-          businessId={userData.businessId}
-        />,
-        <DynamicMyContainerProduct
-          key={`product-${selectedWarehouse}`}
-          WHId={selectedWarehouse}
-          businessId={userData.businessId}
-          warehouses={cards}
-        />,
-      ]
+      <DynamicMyContainerMap
+        key={`map-${selectedWarehouse}`}
+        warehouseId={selectedWarehouse}
+        businessId={userData.businessId}
+      />,
+      <DynamicMyContainerNavigation
+        key={`nav-${selectedWarehouse}`}
+        WHId={selectedWarehouse}
+        businessId={userData.businessId}
+      />,
+      <DynamicMyContainerProduct
+        key={`product-${selectedWarehouse}`}
+        WHId={selectedWarehouse}
+        businessId={userData.businessId}
+        warehouses={cards}
+        warehouseTitle={selectedWarehouseTitle}
+      />,
+    ]
     : [];
 
   const handleNextComponent = (index) => {
@@ -218,20 +222,10 @@ export default function Components(props) {
     const warehouseId = event.target.value;
     setSelectedWarehouse(warehouseId);
     router.push(`/user/${warehouseId}`, undefined, { shallow: true });
+    
   };
 
-  useEffect(() => {
-    const user = localStorage.getItem("user");
 
-    if (user) {
-      try {
-        const parsedUser = JSON.parse(user);
-        setUserData(parsedUser);
-      } catch (error) {
-        router.push("/");
-      }
-    }
-  }, [selectedWarehouse]);
   useEffect(() => {
     if (router.query.component) {
       switch (router.query.component) {
@@ -293,10 +287,10 @@ export default function Components(props) {
         <Button className={classes.buttonStyle} style={{ backgroundColor: "#4E4544" }} round onClick={() => handleNextComponent(0)}>
           창고 관리
         </Button>
-        <Button className={classes.buttonStyle} style={{ backgroundColor: "#ADAAA5"}} round onClick={() => handleNextComponent(1)}>
+        <Button className={classes.buttonStyle} style={{ backgroundColor: "#ADAAA5" }} round onClick={() => handleNextComponent(1)}>
           재고 현황
         </Button>
-        <Button className={classes.buttonStyle} style={{ backgroundColor: "#C2B6A1"}} round onClick={() => handleNextComponent(2)}>
+        <Button className={classes.buttonStyle} style={{ backgroundColor: "#C2B6A1" }} round onClick={() => handleNextComponent(2)}>
           재고 관리
         </Button>
       </div>
