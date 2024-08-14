@@ -163,10 +163,10 @@ const Select = (props) => {
 
         return { presentCount, MaxCount };
       } else {
-        console.error("Error fetching warehouse or subscription data");
+        router.push('/404');
       }
     } catch (error) {
-      console.error("Error fetching warehouse or subscription data:", error);
+      router.push('/404');
     }
   };
 
@@ -178,7 +178,7 @@ const Select = (props) => {
     }
 
     if (!businessId) {
-      console.error("Business ID is missing");
+      router.push('/404');
       return;
     }
 
@@ -246,8 +246,6 @@ const Select = (props) => {
         await postLocationAPI(locationData, warehousesId);
         await postWallAPI(wallData, warehousesId);
 
-        console.log("New warehouse created:", newWarehouse);
-
         const newCard = {
           id: newWarehouse.result.id,
           title: newWarehouse.result.name,
@@ -261,10 +259,10 @@ const Select = (props) => {
 
         handleClose();
       } else {
-        console.error("Error creating new warehouse");
+        router.push('/404');
       }
     } catch (error) {
-      console.error("Error creating new warehouse:", error);
+      router.push('/404');
     }
   };
 
@@ -294,10 +292,8 @@ const Select = (props) => {
   };
 
   const postLocationAPI = async (requests, warehouseId) => {
-    console.log("로케이션");
 
     const total = { requests, warehouseId };
-    console.log(total);
 
     try {
       const response = await fetch(`https://i11a508.p.ssafy.io/api/locations`, {
@@ -309,19 +305,16 @@ const Select = (props) => {
       });
 
       if (response.ok) {
-        console.log("Location data saved successfully");
       } else {
-        console.error("Error saving map data");
+        router.push('/404');
       }
     } catch (error) {
-      console.error("Error saving map data:", error);
+      router.push('/404');
     }
   };
 
   const postWallAPI = async (wallDtos, warehouseId) => {
-    console.log("벽");
     const total = { wallDtos, warehouseId };
-    console.log(total);
 
     try {
       const response = await fetch(
@@ -336,12 +329,11 @@ const Select = (props) => {
       );
 
       if (response.ok) {
-        console.log("Walls data saved successfully");
       } else {
-        console.error("Error saving map data");
+        router.push('/404');
       }
     } catch (error) {
-      console.error("Error saving map data:", error);
+      router.push('/404');
     }
   };
 
@@ -359,7 +351,6 @@ const Select = (props) => {
 
       if (response.ok) {
         const apiConnection = await response.json();
-        console.log(apiConnection);
         const warehouses = apiConnection.result;
 
         const warehouseCards = await warehouses.map((warehouse) => ({
@@ -376,10 +367,10 @@ const Select = (props) => {
         });
 
       } else {
-        console.error("Error loading warehouse data");
+        router.push('/404');
       }
     } catch (error) {
-      console.error("Error loading warehouse data:", error);
+      router.push('/404');
     }
   };
 
@@ -400,16 +391,15 @@ const Select = (props) => {
         const businessInfo = userData.result;
         setBusinessData(businessInfo);
         setBusinessId(businessInfo.businessId);
-        console.log("Business data loaded:", businessInfo);
 
         fetchWarehouseCounts(businessInfo.businessId);
         getAllWarehouseInfoAPI(businessInfo.businessId);
         
       } else {
-        console.error("Error fetching user data");
+        router.push('/404');
       }
     } catch (error) {
-      console.error("Error fetching user data:", error);
+      router.push('/404');
     }
   };
 
@@ -419,11 +409,10 @@ const Select = (props) => {
       try {
         const parsedUser = JSON.parse(user);
         setUserData(parsedUser);
-        console.log("User data loaded from localStorage:", parsedUser);
 
         fetchBusinessData(parsedUser.id);
       } catch (error) {
-        console.error("Error parsing user data from localStorage:", error);
+        router.push('/404');
       }
     }
   }, []);
@@ -462,7 +451,7 @@ const Select = (props) => {
         )
       );
     } catch (error) {
-      console.error("Error fetching counts:", error);
+      router.push('/404');
     }
   };
 
@@ -504,7 +493,7 @@ const Select = (props) => {
         prevCards.filter((card) => card.id !== warehouseId)
       );
     } catch (error) {
-      console.error("Error deleting warehouse:", error);
+      router.push('/404');
     }
   };
 

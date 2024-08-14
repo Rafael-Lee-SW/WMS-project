@@ -32,7 +32,6 @@ const OAuthCallback = () => {
         router.push('/'); // 메인 페이지로 이동
       }
     } catch (error) {
-      console.error('Error fetching user info:', error);
       alert('사용자 정보를 가져오는 중 오류가 발생했습니다.');
       router.push('/signIn');
     } finally {
@@ -41,9 +40,6 @@ const OAuthCallback = () => {
   };
 
   const handleCallback = async (response) => {
-    console.log('1차 메서드 체크');
-    console.log(response);
-
     if (response) {
       try {
         // 'response' 쿼리 매개변수 값을 JSON으로 파싱
@@ -51,7 +47,6 @@ const OAuthCallback = () => {
 
         // 상태 코드와 응답 코드가 성공인지 확인
         if (responseData.code === 'SU') {
-          console.log(responseData);
 
           const { userEmail, token } = responseData;
 
@@ -62,7 +57,6 @@ const OAuthCallback = () => {
           router.push('/signIn'); // 로그인 페이지로 이동
         }
       } catch (error) {
-        console.error('Error processing OAuth response:', error);
         alert('인증 처리 중 오류가 발생했습니다.');
         router.push('/signIn');
       } finally {
@@ -78,10 +72,8 @@ const OAuthCallback = () => {
     const checkQueryAndHandle = async () => {
 
       const { token } = router.query; // 리다이렉션 URL에서 'response' 쿼리 매개변수 가져오기
-      console.log(token);
 
       if (!token) {
-        console.log('리스폰트 못받음');
         // 쿼리가 아직 준비되지 않았다면, 추가적인 로직을 사용하여 다시 확인하거나 사용자에게 대기 메시지를 표시할 수 있습니다.
         return;
       }

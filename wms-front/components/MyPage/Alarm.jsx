@@ -27,7 +27,6 @@ export default function Alarm({ businessId }) {
                 
                 setNotifications(notifications);
             } catch (error) {
-                console.log(error)
                 router.push('/404');
             }
         } else {
@@ -69,7 +68,8 @@ export default function Alarm({ businessId }) {
                     </Card>
                     ))
                 ) : (
-                <h4 style={{ paddingTop: '30px' }}>알림이 없습니다.</h4>
+                <h4
+                 style={{ paddingTop: '30px' }}>알림이 없습니다.</h4>
                 )}
             </div>
             <Dialog 

@@ -43,7 +43,7 @@ export default function HeaderLinks(props) {
           router.push("/user/select");
         }
       } catch (error) {
-        console.error("Error fetching user data:", error);
+        router.push('/404');
         alert("사용자 정보를 불러오는 중 오류가 발생했습니다.");
       }
     } else {

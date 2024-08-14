@@ -57,7 +57,7 @@ export default function ManageBusiness({ updateBusinessInfo, updateRoleType }) {
           router.push('/signIn');
         }
       } catch (error) {
-        console.error("Error fetching data:", error);
+        router.push('/404');
         alert("데이터를 불러오는 중 오류가 발생했습니다.");
         router.push('/404');
       }
@@ -117,11 +117,11 @@ export default function ManageBusiness({ updateBusinessInfo, updateRoleType }) {
           setModalTitle('사업자 등록 완료');
           handleOpen();
         } else {
-          console.error("User ID is missing");
+          router.push('/404');
         }
       }
     } catch (error) {
-      console.error("Error during registration:", error);
+      router.push('/404');
       router.push('/404');
     }
   };
@@ -135,7 +135,6 @@ export default function ManageBusiness({ updateBusinessInfo, updateRoleType }) {
       handleOpen();
       router.push('/');
     } catch (error) {
-      console.error(error);
       router.push('/404');
     }
   };
@@ -159,7 +158,7 @@ export default function ManageBusiness({ updateBusinessInfo, updateRoleType }) {
         fetchUserData();
         updateRoleType('GENERAL');
     } catch (error) {
-      console.error("Error leaving business:", error);
+      router.push('/404');
       alert("탈퇴 중 오류가 발생했습니다.");
     }
   };

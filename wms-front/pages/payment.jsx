@@ -145,9 +145,8 @@ export default function Payment() {
         warehouseCount: newWarehouseCount
       });
 
-      console.log("구독 정보 업데이트 성공");
     } catch (error) {
-      console.error("구독 정보 업데이트 실패", error);
+      router.push('/404');
     }
   };
 
@@ -206,7 +205,6 @@ export default function Payment() {
           if (rsp.success) {
             handleSuccess();
           } else {
-            console.log(`${rsp.error_msg}`);
             router.push('/components');
           }
         }

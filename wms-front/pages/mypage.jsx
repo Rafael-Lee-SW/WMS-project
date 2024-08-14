@@ -35,7 +35,6 @@ export default function Mypage() {
     const token = localStorage.getItem('token');
 
     if (user && token) {
-      console.log("User found in localStorage:", user);
       setUserId(user.id);
     } else {
       alert("로그인이 필요합니다.");
@@ -69,8 +68,6 @@ export default function Mypage() {
       const response = await fetchUser(userId);
       const { id, name, email, nickname, roleTypeEnum, businessId } = response.data.result;
 
-      console.log("Fetched user info:", response.data.result);
-
       setUserId(id);
       setName(name);
       setEmail(email);
@@ -79,7 +76,6 @@ export default function Mypage() {
       setNickname(nickname);
 
     } catch (error) {
-      console.error("Error fetching user info:", error);
       router.push('/404');
     }
   }
@@ -95,15 +91,12 @@ export default function Mypage() {
     try {
       const response = await fetchBusiness(businessId);
       const { name, businessNumber, createdDate } = response.data.result;
-  
-      console.log("Fetched business info:", response.data.result);
-  
+    
       setBusinessName(name);
       setBusinessNumber(businessNumber);
       setCreatedDate(createdDate);
   
     } catch (error) {
-      console.error("Error fetching business info:", error);
       router.push('/404');
     }
   }
