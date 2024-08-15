@@ -34,35 +34,42 @@ export default function HeaderLinks(props) {
     router.push("/");
   };
 
-  const handleWarehouseManagement = async () => {
-    const user = localStorage.getItem("user");
-    if (user) {
-      const userInfo = JSON.parse(user);
-      const userId = userInfo.id;
-
-      try {
-        const response = await axios.get(`https://i11a508.p.ssafy.io/api/users/${userId}`);
-        const userData = response.data.result;
-
-        if (userData.roleTypeEnum === "GENERAL") {
-          notify("사업자 등록 후 이용해 주세요")
-          router.push({
-            pathname: "/mypage",
-            query: { component: "license" },
-          });
-        } else {
-          router.push("/user/select");
+    const handleWarehouseManagement = async () => {
+      const user = localStorage.getItem("user");
+      if (user) {
+        const userInfo = JSON.parse(user);
+        const userId = userInfo.id;
+    
+        if (!userId) {
+          notify("유저 ID가 존재하지 않습니다.");
+          router.push("/signIn");
         }
-      } catch (error) {
-        router.push('/404');
-        notify("사용자 정보를 불러오는 중 오류가 발생했습니다.");
+    
+      
+    
+        try {
+          const response = await axios.get(`https://i11a508.p.ssafy.io/api/users/${userId}`);
+          const userData = response.data.result;
+    
+          if (userData.roleTypeEnum === "GENERAL") {
+            notify("사업자 등록 후 이용해 주세요");
+            router.push({
+              pathname: "/mypage",
+              query: { component: "license" },
+            });
+          } else {
+            router.push("/user/select");
+          }
+        } catch (error) {
+          console.error("API 호출 중 오류 발생:", error); // 오류를 콘솔에 출력합니다.
+          router.push('/404');
+          notify("사용자 정보를 불러오는 중 오류가 발생했습니다.");
+        }
+      } else {
+        notify("로그인이 필요합니다.");
+        router.push("/signIn");
       }
-    } else {
-      notify("로그인이 필요합니다.");
-      router.push("/signIn");
-    }
-  };
-
+    };
   return (
     <List className={classes.list}>
       <ListItem className={classes.listItem}> {/* Correct casing */}
