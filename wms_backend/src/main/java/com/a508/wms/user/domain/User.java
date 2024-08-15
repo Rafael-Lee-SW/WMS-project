@@ -21,10 +21,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+import org.hibernate.annotations.SQLRestriction;
+
 @Entity
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@SQLRestriction("status_enum = 'Active'")
 @Builder
 @Table(name = "user")
 public class User extends BaseTimeEntity {
@@ -33,10 +37,10 @@ public class User extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, length = 100 ,unique = true)
     private String email;
 
-    @Column(nullable = false, length = 255, unique = true)
+    @Column( length = 255)
     private String password;
 
     @Column(length = 20)
@@ -62,6 +66,9 @@ public class User extends BaseTimeEntity {
 
     @Column(nullable = true)
     private Long businessId;
+
+    @Column
+    private LocalDate businessAddDate;
 
     // 연관 관계 편의 메서드
     public void setBusiness(Business business) {
@@ -90,5 +97,9 @@ public class User extends BaseTimeEntity {
 
     public void updateBusinessId(Long businessId) {
         this.businessId = businessId;
+    }
+
+    public void updateBusinessAddDate(LocalDate businessAddDate) {
+        this.businessAddDate = businessAddDate;
     }
 }

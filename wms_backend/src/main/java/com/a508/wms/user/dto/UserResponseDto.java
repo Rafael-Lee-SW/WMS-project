@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.time.LocalDate;
+
 @Setter
 @Getter
 @ToString
@@ -26,5 +28,6 @@ public class UserResponseDto {
     private RoleTypeEnum roleTypeEnum;
     private LoginTypeEnum loginTypeEnum;
     private StatusEnum statusEnum;
-    private BusinessResponseDto business; // BusinessDto와의 관계를 반영
+    private long businessId;
+    private LocalDate businessAddDate;
 }

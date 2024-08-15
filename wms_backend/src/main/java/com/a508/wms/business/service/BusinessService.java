@@ -29,7 +29,7 @@ public class BusinessService {
      * @return
      */
     @Transactional
-    public void create(Long userId, BusinessRequestDto request) {
+    public BusinessResponseDto create(Long userId, BusinessRequestDto request) {
         log.info("[Service] create Business by userId: {}", userId);
         Business.BusinessBuilder builder = Business.builder();
 
@@ -45,8 +45,10 @@ public class BusinessService {
         }
         Business business = builder.build();
         try {
-            Business saveBusiness = businessModuleService.save(business);
-            user.updateBusinessId(saveBusiness.getId());
+            Business savedBusiness = businessModuleService.save(business);
+            user.updateBusinessId(savedBusiness.getId());
+            // 비즈니스 ID 포함한 ResponseDto 반환
+            return toBusinessResponseDto(savedBusiness);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -102,14 +104,16 @@ public class BusinessService {
         try {
             log.info("[Service] delete Business by id: {}", id);
             Business existingBusiness = businessModuleService.findById(id);
-            Business deletedBusiness = businessModuleService.delete(existingBusiness);
             User user = existingBusiness.getUser();
+            Business deletedBusiness = businessModuleService.delete(existingBusiness);
             user.updateRoleTypeEnum(RoleTypeEnum.GENERAL);
 
             List<User> employees = userModuleService.findByBusinessId(deletedBusiness.getId());
             for (User employee : employees) {
-                employee.updateBusinessId(null);
+                employee.updateBusinessId(-1L);
+                employee.updateRoleTypeEnum(RoleTypeEnum.GENERAL);
             }
+            user.updateBusinessId(-1L);
             return toBusinessResponseDto(deletedBusiness);
         } catch (Exception e) {
             throw new RuntimeException(e);

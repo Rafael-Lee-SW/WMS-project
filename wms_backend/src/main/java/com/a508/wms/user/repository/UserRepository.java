@@ -23,7 +23,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     // businessId에 맞는 모든 사용자를 반환
     @Query("SELECT u FROM User u WHERE u.businessId = :businessId")
-    List<User> findByBusinessId(@Param("businessId") Long businessId);
+    List<User> findAllByBusinessId(@Param("businessId") Long businessId);
 
     User findUserByEmail(String email);
 

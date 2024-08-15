@@ -1,6 +1,7 @@
 package com.a508.wms.location.service;
 
 import com.a508.wms.floor.domain.Floor;
+import com.a508.wms.floor.exception.FloorException;
 import com.a508.wms.floor.service.FloorModuleService;
 import com.a508.wms.location.domain.Location;
 import com.a508.wms.location.repository.LocationRepository;
@@ -38,9 +39,6 @@ public class LocationModuleService {
             .orElseThrow(() -> new IllegalArgumentException("Invalid location ID" + locationId));
     }
 
-    public Location findByName(String name) {
-        return locationRepository.findByName(name);
-    }
 
     /**
      * 특정 창고가 가지고 있는 로케이션 전부 조회
@@ -48,8 +46,8 @@ public class LocationModuleService {
      * @param warehouseId: warehouse id
      * @return 입력 warehouseId를 가지고 있는 Location List
      */
-    public List<Location> findAllByWarehouseIdWithFloors(Long warehouseId) {
-        return locationRepository.findAllByWarehouseIdWithFloors(warehouseId);
+    public List<Location> findAllByWarehouseId(Long warehouseId) {
+        return locationRepository.findAllByWarehouseId(warehouseId);
     }
 
     public Location save(Location location) {
@@ -68,7 +66,7 @@ public class LocationModuleService {
      *
      * @param id: locationId
      */
-    public void delete(Long id) {
+    public void delete(Long id) throws FloorException {
         Location location = locationRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Invalid location ID"));
         location.updateStatusEnum(StatusEnum.DELETED);
@@ -82,6 +80,10 @@ public class LocationModuleService {
         floorModuleService.saveAll(floors); //변경사항 저장
         locationRepository.save(location);
         //변경사항 저장
+    }
+
+    public boolean notExist(Long id) {
+        return !locationRepository.existsById(id);
     }
 
 }

@@ -1,6 +1,7 @@
 package com.a508.wms.business.controller;
 
 import com.a508.wms.business.dto.BusinessRequestDto;
+import com.a508.wms.business.dto.BusinessResponseDto;
 import com.a508.wms.business.service.BusinessService;
 import com.a508.wms.util.BaseSuccessResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -48,8 +49,8 @@ public class BusinessController {
     public BaseSuccessResponse<?> create(@RequestParam(name = "userId") Long userId,
         @RequestBody BusinessRequestDto request) {
         log.info("[Controller] create Business by userId: {}", userId);
-        businessService.create(userId, request);
-        return new BaseSuccessResponse<>(null);
+        BusinessResponseDto responseDto = businessService.create(userId, request);
+        return new BaseSuccessResponse<>(responseDto);
     }
 
     /**

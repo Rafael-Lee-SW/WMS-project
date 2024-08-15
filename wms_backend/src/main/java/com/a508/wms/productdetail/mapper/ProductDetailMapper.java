@@ -1,11 +1,14 @@
 package com.a508.wms.productdetail.mapper;
 
 import com.a508.wms.business.domain.Business;
-import com.a508.wms.product.dto.ProductData;
+import com.a508.wms.product.dto.ProductRequestDto;
 import com.a508.wms.productdetail.domain.ProductDetail;
 import com.a508.wms.productdetail.dto.ProductDetailRequestDto;
 import com.a508.wms.productdetail.dto.ProductDetailResponseDto;
+import com.a508.wms.util.constant.ProductStorageTypeEnum;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 @Component
 public class ProductDetailMapper {
@@ -19,6 +22,7 @@ public class ProductDetailMapper {
     public static ProductDetailResponseDto fromProductDetail(ProductDetail productDetail) {
         return ProductDetailResponseDto.builder()
                 .id(productDetail.getId())
+                .businessId(productDetail.getBusiness().getId())
                 .barcode(productDetail.getBarcode())
                 .name(productDetail.getName())
                 .size(productDetail.getSize())
@@ -26,9 +30,6 @@ public class ProductDetailMapper {
                 .productStorageType(productDetail.getProductStorageType())
                 .originalPrice(productDetail.getOriginalPrice())
                 .sellingPrice(productDetail.getSellingPrice())
-                .createdDate(productDetail.getCreatedDate())
-                .updatedDate(productDetail.getUpdatedDate())
-                .statusEnum(productDetail.getStatusEnum())
                 .build();
     }
 
@@ -58,11 +59,13 @@ public class ProductDetailMapper {
      * @return 변경된 ProductDetail
      */
     public static ProductDetail fromProductImportData(
-            ProductData productImportRequestData,
+            ProductRequestDto productImportRequestData,
             Business business) {
         return ProductDetail.builder()
                 .business(business)
-                .productStorageType(productImportRequestData.getProductStorageType())
+                .productStorageType(Optional.ofNullable(
+                        productImportRequestData.getProductStorageType())
+                        .orElse(ProductStorageTypeEnum.상온))
                 .barcode(productImportRequestData.getBarcode())
                 .name(productImportRequestData.getName())
                 .build();

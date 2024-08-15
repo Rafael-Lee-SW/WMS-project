@@ -29,6 +29,6 @@ public class BaseSuccessResponse<T> {
         this.httpStatus = SUCCESS.getHttpStatus();
         this.message = SUCCESS.getMessage();
         this.result = result;
-        this.timestamp = LocalDateTime.now();
+        this.timestamp = LocalDateTime.now().withNano(0);
     }
 }

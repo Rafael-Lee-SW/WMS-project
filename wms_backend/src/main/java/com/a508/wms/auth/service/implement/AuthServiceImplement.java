@@ -139,8 +139,8 @@ public class AuthServiceImplement implements AuthService {
 
                 log.info("Received certification check request for email: {}", email);
 
-                // 사용자 ID를 기반으로 인증 정보를 데이터베이스에서 조회
-                Certification certificationEntity = certificationRepository.findByEmail(email);
+                // 사용자 이메일을 기반으로 가장 최신 인증 정보를 데이터베이스에서 조회
+                Certification certificationEntity = certificationRepository.findTopByEmailOrderByCreatedDateDesc(email);
 
                 // 인증 정보가 없을 경우 인증 실패 응답 반환
                 if (certificationEntity == null) {
@@ -183,7 +183,7 @@ public class AuthServiceImplement implements AuthService {
             }
 
             String email = dto.getEmail();
-            Certification certificationEntity = certificationRepository.findByEmail(userEmail);
+            Certification certificationEntity = certificationRepository.findTopByEmailOrderByCreatedDateDesc(userEmail);
 
             if (certificationEntity == null) {
                 log.info("No certification information found for email: {}", userEmail);
@@ -202,6 +202,7 @@ public class AuthServiceImplement implements AuthService {
 
             // User 엔티티 저장
             userRepository.save(user);
+
             log.info("User saved for email: {}", userEmail);
 
             // 인증 정보 삭제
@@ -216,45 +217,45 @@ public class AuthServiceImplement implements AuthService {
         return SignUpResponseDto.success();
     }
 
-    /**
-     * 1.email 뽑아오기
-     * 2.비밀번호 == encoding된 비밀번호
-     * 3. 매치되면 jwtToken 생성
-     * 4. 토큰담아서 response
-     * @param dto
-     * @return
-     */
-    /**
-     * 로그인 메서드
-     *
-     * @param dto : 로그인 요청 정보가 담긴 DTO
-     * @return 로그인 결과가 담긴 응답 DTO
-     */
-    @Override
-    public ResponseEntity<? super SignInResponseDto> signIn(SignInRequestDto dto) {
-        try {
-            String userEmail = dto.getEmail();
-            User user = userRepository.findUserByEmail(userEmail);
-            if (user == null) {
-                return SignInResponseDto.signInFail(); // 사용자 없음 처리
+        /**
+         * 1.email 뽑아오기
+         * 2.비밀번호 == encoding된 비밀번호
+         * 3. 매치되면 jwtToken 생성
+         * 4. 토큰담아서 response
+         * @param dto
+         * @return
+         */
+        /**
+         * 로그인 메서드
+         *
+         * @param dto : 로그인 요청 정보가 담긴 DTO
+         * @return 로그인 결과가 담긴 응답 DTO
+         */
+        @Override
+        public ResponseEntity<? super SignInResponseDto> signIn(SignInRequestDto dto) {
+            try {
+                String userEmail = dto.getEmail();
+                User user = userRepository.findUserByEmail(userEmail);
+                if (user == null) {
+                    return SignInResponseDto.signInFail(); // 사용자 없음 처리
+                }
+
+                String password = dto.getPassword();
+                String encodedPassword = user.getPassword();
+                boolean isMatched = passwordEncoder.matches(password, encodedPassword);
+                if (!isMatched) {
+                    return SignInResponseDto.signInFail(); // 비밀번호 불일치 처리
+                }
+
+                // JWT 토큰 생성
+                String token = jwtProvider.create(userEmail);
+
+                // 성공적인 로그인 응답 반환
+                return SignInResponseDto.success(token, user);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                return ResponseDto.databaseError(); // 예외 처리
             }
-
-            String password = dto.getPassword();
-            String encodedPassword = user.getPassword();
-            boolean isMatched = passwordEncoder.matches(password, encodedPassword);
-            if (!isMatched) {
-                return SignInResponseDto.signInFail(); // 비밀번호 불일치 처리
-            }
-
-            // JWT 토큰 생성
-            String token = jwtProvider.create(userEmail);
-
-            // 성공적인 로그인 응답 반환
-            return SignInResponseDto.success(token);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseDto.databaseError(); // 예외 처리
         }
-    }
 }

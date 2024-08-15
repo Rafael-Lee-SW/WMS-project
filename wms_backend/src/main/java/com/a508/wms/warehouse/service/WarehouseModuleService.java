@@ -51,4 +51,8 @@ public class WarehouseModuleService {
         warehouse.setStatusEnum(StatusEnum.DELETED);
         return save(warehouse);
     }
+
+    public boolean notExist(Long warehouseId) {
+        return !warehouseRepository.existsById(warehouseId);
+    }
 }

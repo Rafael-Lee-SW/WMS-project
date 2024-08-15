@@ -5,14 +5,21 @@ import com.a508.wms.business.service.BusinessModuleService;
 import com.a508.wms.user.domain.User;
 import com.a508.wms.user.dto.UserRequestDto;
 import com.a508.wms.user.dto.UserResponseDto;
+import com.a508.wms.user.exception.UserException;
 import com.a508.wms.user.mapper.UserMapper;
 import com.a508.wms.user.repository.UserRepository;
+import com.a508.wms.util.constant.RoleTypeEnum;
 import com.a508.wms.util.constant.StatusEnum;
+
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import static com.a508.wms.util.constant.ProductConstant.DEFAULT_BUSINESS_ID;
 
 @Slf4j
 @Service
@@ -42,9 +49,9 @@ public class UserService {
      * @param businessId
      * @return List<EmployeeDto> (특정 사업체의 전체 직원)
      */
-    public List<UserResponseDto> findByBusinessId(Long businessId) {
-        log.info("[Service] find Employee User by BusinessId: {}", businessId);
-        List<User> users = userRepository.findByBusinessId(businessId);
+    public List<UserResponseDto> findAllByBusinessId(Long businessId) {
+        log.info("[Service] find All User by BusinessId: {}", businessId);
+        List<User> users = userRepository.findAllByBusinessId(businessId);
         return users.stream()
             .map(UserMapper::toUserResponseDto)
             .collect(Collectors.toList());
@@ -83,5 +90,36 @@ public class UserService {
         }
         User deletedUser = userModuleService.save(user);
         return UserMapper.toUserResponseDto(deletedUser);
+    }
+
+    public User findByEmail(String email) {
+        return userRepository.findUserByEmail(email);
+    }
+
+    public void updateByBusinessIdAndId(Long businessId, Long id) throws UserException {
+        try {
+            User user = userModuleService.findById(id);
+            if (user.getRoleTypeEnum().equals(RoleTypeEnum.GENERAL)) {
+                user.updateBusinessId(businessId);
+                user.updateBusinessAddDate(LocalDate.now());
+                user.updateRoleTypeEnum(RoleTypeEnum.EMPLOYEE);
+            }
+            else throw new IllegalArgumentException();
+            userRepository.save(user);
+        } catch (IllegalArgumentException e) {
+             throw new UserException.InvalidRoleTypeException();
+        }
+    }
+    public void deleteByBusinessIdAndId(Long businessId, Long id) throws UserException {
+        try {
+            User user = userModuleService.findById(id);
+            if (user.getRoleTypeEnum().equals(RoleTypeEnum.EMPLOYEE)) {
+                user.updateBusinessId(DEFAULT_BUSINESS_ID.longValue());
+                user.updateRoleTypeEnum(RoleTypeEnum.GENERAL);
+            } else throw new IllegalArgumentException();
+            userRepository.save(user);
+        } catch (IllegalArgumentException e) {
+            throw new UserException.InvalidRoleTypeException();
+        }
     }
 }

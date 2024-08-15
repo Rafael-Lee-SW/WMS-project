@@ -2,20 +2,14 @@ package com.a508.wms.user.controller;
 
 import com.a508.wms.user.dto.UserRequestDto;
 import com.a508.wms.user.dto.UserResponseDto;
+import com.a508.wms.user.exception.UserException;
+import com.a508.wms.user.service.UserModuleService;
 import com.a508.wms.user.service.UserService;
 import com.a508.wms.util.BaseSuccessResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
@@ -25,30 +19,27 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
     private final UserService userService;
+    private final UserModuleService userModuleService;
 
-    /**
-     * 특정 사업체의 전체 직원을 조회하는 메서드
-     *
-     * @param businessId : 특정 사업체의 전체 직원을 조회하는 경우 사업체 고유 번호 입력
-     * @return List<UserDto> (전체 직원), List<UserDto> (특정 사업체의 전체 직원)
-     */
-    @GetMapping
-    public BaseSuccessResponse<List<UserResponseDto>> findByBusinessId(
-        @RequestParam(value = "businessId") Long businessId) {
-        log.info("[Controller] find User by businessId: {}", businessId);
-        return new BaseSuccessResponse<>(userService.findByBusinessId(businessId));
+    @GetMapping("/{id}")
+    public BaseSuccessResponse<UserResponseDto> findById(@PathVariable Long id) {
+        if (id != null) {
+            log.info("[Controller] find User by id: {}", id);
+            return new BaseSuccessResponse<>(userService.findById(id));
+        }  return new BaseSuccessResponse<>(null);
     }
 
-    /**
-     * 특정 유저 1명을 조회하는 메서드
-     *
-     * @param id : 유저의 고유 번호
-     * @return UserDto
-     */
-    @GetMapping("/{id}")
-    public BaseSuccessResponse<UserResponseDto> findById(@PathVariable("id") Long id) {
-        log.info("[Controller] find User by id: {}", id);
-        return new BaseSuccessResponse<>(userService.findById(id));
+    @GetMapping
+    public BaseSuccessResponse<?> find(@RequestParam(required = false, name = "businessId") Long businessId,
+                                       @RequestParam(required = false, name = "email") String email) {
+        if (businessId != null) {
+            log.info("[Controller] find User by businessId: {}", businessId);
+            return new BaseSuccessResponse<>(userService.findAllByBusinessId(businessId));
+        } else if (email != null) {
+            log.info("[Controller] find User by email: {}", email);
+            return new BaseSuccessResponse<>(userService.findByEmail(email));
+        }
+        return new BaseSuccessResponse<>(null);
     }
 
     /**
@@ -75,5 +66,25 @@ public class UserController {
     public BaseSuccessResponse<UserResponseDto> delete(@PathVariable("id") Long id) {
         log.info("[Controller] delete user by id: {}", id);
         return new BaseSuccessResponse<>(userService.delete(id));
+    }
+    /**
+     * userId, businessId로 해당 user의 businessId를 수정
+     * @param businessId
+     * @param id
+     * @return
+     */
+    @PutMapping
+    public BaseSuccessResponse<Void> updateByBusinessIdAndId(@RequestParam("businessId") Long businessId,
+                                                             @RequestParam("id") Long id) throws UserException {
+        log.info("[Controller] update User by businessId: {}", businessId);
+        userService.updateByBusinessIdAndId(businessId, id);
+        return new BaseSuccessResponse<>(null);
+    }
+    @PatchMapping
+    public BaseSuccessResponse<Void> deleteByBusinessIdAndId(@RequestParam("businessId") Long businessId,
+                                                             @RequestParam("id") Long id) throws UserException{
+        log.info("[Controller] delete User by businessId and id: {}", businessId);
+        userService.deleteByBusinessIdAndId(businessId, id);
+        return new BaseSuccessResponse<>(null);
     }
 }

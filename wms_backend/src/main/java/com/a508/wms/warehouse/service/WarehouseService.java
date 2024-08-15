@@ -8,15 +8,21 @@ import com.a508.wms.location.domain.Location;
 import com.a508.wms.location.dto.LocationResponseDto;
 import com.a508.wms.location.mapper.LocationMapper;
 import com.a508.wms.location.service.LocationModuleService;
+import com.a508.wms.product.domain.Product;
+import com.a508.wms.product.service.ProductModuleService;
+import com.a508.wms.util.constant.ExportTypeEnum;
+import com.a508.wms.util.constant.FacilityTypeEnum;
 import com.a508.wms.util.constant.ProductStorageTypeEnum;
 import com.a508.wms.warehouse.domain.Warehouse;
 import com.a508.wms.warehouse.dto.LocationsAndWallsRequestDto;
 import com.a508.wms.warehouse.dto.WallDto;
+import com.a508.wms.warehouse.dto.WallRequestDto;
 import com.a508.wms.warehouse.dto.WarehouseByBusinessDto;
 import com.a508.wms.warehouse.dto.WarehouseDetailResponseDto;
 import com.a508.wms.warehouse.dto.WarehouseDto;
 import com.a508.wms.warehouse.mapper.WallMapper;
 import com.a508.wms.warehouse.mapper.WarehouseMapper;
+import com.a508.wms.warehouse.repository.WarehouseRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +39,8 @@ public class WarehouseService {
     private final LocationModuleService locationModuleService;
     private final FloorModuleService floorModuleService;
     private final WallModuleService wallModuleService;
+    private final ProductModuleService productModuleService;
+    private final WarehouseRepository warehouseRepository;
 
     /**
      * 최초 창고를 생성하는 메서드
@@ -53,6 +61,8 @@ public class WarehouseService {
 
         Floor defaultFloor = Floor.builder()
             .location(defaultLocation)
+            .exportTypeEnum(ExportTypeEnum.IMPORT)
+            .floorLevel(-1)
             .build();
         floorModuleService.save(defaultFloor);
 
@@ -86,10 +96,11 @@ public class WarehouseService {
         log.info("[Service] find Warehouse with id {}", id);
         Warehouse warehouse = warehouseModuleService.findById(id);
 
-        List<LocationResponseDto> locations = locationModuleService.findAllByWarehouseIdWithFloors(
+        List<LocationResponseDto> locations = locationModuleService.findAllByWarehouseId(
                 id)
             .stream()
-            .map(LocationMapper::toLocationResponseDto)
+            .map(location -> LocationMapper.toLocationResponseDto(location,
+                getMaxFloorCapacity(location)))
             .toList();
 
         List<WallDto> walls = wallModuleService.findByWarehouseId(id)
@@ -116,7 +127,8 @@ public class WarehouseService {
         List<LocationResponseDto> locations = request.getLocations().stream()
             .map(location -> LocationMapper.fromLocationUpdateDto(location, warehouse))
             .map(locationModuleService::save)
-            .map(LocationMapper::toLocationResponseDto)
+            .map(location -> LocationMapper.toLocationResponseDto(location,
+                getMaxFloorCapacity(location)))
             .toList();
 
         List<WallDto> walls = request.getWalls().stream()
@@ -126,6 +138,15 @@ public class WarehouseService {
             .toList();
 
         return WarehouseMapper.toWarehouseDetailResponseDto(warehouse, locations, walls);
+    }
+
+    private int getMaxFloorCapacity(Location location) {
+        List<Floor> floors = floorModuleService.findAllByLocationId(location.getId());
+
+        return floors.stream()
+            .mapToInt(floorModuleService::getCapacity)
+            .max()
+            .orElse(0);
     }
 
     /**
@@ -145,10 +166,24 @@ public class WarehouseService {
         return (int) Math.sqrt(sizeInSquareMeters); // 제곱근 계산
     }
 
-    private Warehouse createWarehouse(WarehouseDto warehouseDto) {
+    private Warehouse createWarehouse(WarehouseDto warehouseDto) /*throws WarehouseException */ {
 
-        // 사업체 ID로 사업체를 조회
         Business business = businessModuleService.findById(warehouseDto.getBusinessId());
+
+//        if(business == null)
+//            throw new WarehouseException.BusinessNotFoundException("businessId가 올바르지 않습니다.",ResponseEnum.BAD_REQUEST);
+//        if (warehouseDto.getSize() <= 0) {
+//            throw new WarehouseException.InvalidInputException("유효하지 않은 창고 크기입니다.", ResponseEnum.BAD_REQUEST);
+//        }
+//        if (warehouseDto.getName() == null || warehouseDto.getName().trim().isEmpty()) {
+//            throw new WarehouseException.InvalidInputException("창고 이름이 입력되지 않았습니다.", ResponseEnum.BAD_REQUEST);
+//        }
+//        if (warehouseDto.getPriority() == 0) {
+//            throw new WarehouseException.InvalidInputException("창고 우선순위가 입력되지 않았습니다.", ResponseEnum.BAD_REQUEST);
+//        }
+//        if (warehouseDto.getFacilityTypeEnum() == null) {
+//            throw new WarehouseException.InvalidInputException("창고 유형이 입력되지 않았습니다.", ResponseEnum.BAD_REQUEST);
+//        }
 
         //수직 배치수 수평 배치수 계산
         int rowCnt = calculateRowCount(warehouseDto.getSize());
@@ -163,6 +198,63 @@ public class WarehouseService {
             .priority(warehouseDto.getPriority())
             .facilityTypeEnum(warehouseDto.getFacilityTypeEnum())
             .build();
+    }
+
+    public void saveAllWall(WallRequestDto saveRequest) {
+        log.info("[Service] save All Wall");
+        Warehouse warehouse = warehouseModuleService.findById(saveRequest.getWarehouseId());
+        for (WallDto request : saveRequest.getWallDtos()) {
+            wallModuleService.save(WallMapper.fromDto(request, warehouse));
+        }
+    }
+
+    public int findWarehouseCntByBusinessId(Long businessId) {
+        // 실제 로직을 여기에 구현합니다.
+        // 예를 들어, 레포지토리를 사용하여 비즈니스 ID에 해당하는 창고 수를 조회합니다.
+        return warehouseRepository.countByBusinessId(businessId);
+    }
+
+    public int findAllPscCount(Long id) {
+        List<Product> products = productModuleService.findByWarehouseId(id);
+        return products.stream()
+            .mapToInt(Product::getQuantity)
+            .sum();
+    }
+
+    public int findLocationCnt(Long id) {
+        List<Location> locations = locationModuleService.findAllByWarehouseId(id);
+        return locations.stream()
+            .filter(location -> location.getZSize() > 0)
+            .mapToInt(Location::getZSize)
+            .sum();
+    }
+
+    public int findUsage(Long id) {
+        List<Location> locations = locationModuleService.findAllByWarehouseId(id);
+        List<Floor> floors = floorModuleService.findAllNotEmptyFloorByWarehouseId(id);
+
+        int totalCnt = locations.stream()
+            .filter(location -> location.getZSize() > 0)
+            .mapToInt(Location::getZSize)
+            .sum();
+
+        if(totalCnt == 0){
+            return 0;
+        }
+
+        return Math.max(1, floors.size() * 100 / totalCnt);
+    }
+
+    public int findPurpose(Long id) {
+        Warehouse warehouse = warehouseModuleService.findById(id);
+
+        if (warehouse.getFacilityTypeEnum() == FacilityTypeEnum.STORE) {
+            return 1;
+        } else if (warehouse.getPriority() == 1) {
+            return 2;
+        }
+
+        return 3;
     }
 
 }

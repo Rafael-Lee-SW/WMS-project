@@ -1,10 +1,19 @@
 package com.a508.wms.product.service;
 
+import com.a508.wms.floor.domain.Floor;
+import com.a508.wms.floor.repository.FloorRepository;
+import com.a508.wms.location.domain.Location;
+import com.a508.wms.location.repository.LocationRepository;
 import com.a508.wms.product.domain.Product;
 import com.a508.wms.product.dto.ProductPickingLocationDto;
 import com.a508.wms.product.dto.ProductQuantityDto;
-import com.a508.wms.product.dto.ProductRequestDto;
+import com.a508.wms.product.dto.ProductUpdateRequestDto;
+import com.a508.wms.product.dto.ProductWithBusinessResponseDto;
+import com.a508.wms.product.mapper.ProductMapper;
 import com.a508.wms.product.repository.ProductRepository;
+import com.a508.wms.productdetail.repository.ProductDetailRepository;
+import com.a508.wms.productdetail.service.ProductDetailModuleService;
+import com.a508.wms.productdetail.service.ProductDetailService;
 import com.a508.wms.util.constant.StatusEnum;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -12,6 +21,7 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -19,6 +29,11 @@ import org.springframework.stereotype.Service;
 public class ProductModuleService {
 
     private final ProductRepository productRepository;
+    private final LocationRepository locationRepository;
+    private final FloorRepository floorRepository;
+    private final ProductDetailService productDetailService;
+    private final ProductDetailModuleService productDetailModuleService;
+    private final ProductDetailRepository productDetailRepository;
 
     /**
      * 서비스의 모든 상품을 반환하는 기능
@@ -60,6 +75,12 @@ public class ProductModuleService {
      * @return
      */
 
+    public List<ProductWithBusinessResponseDto> findAllByBusinessId(Long businessId) {
+        return productRepository.findAllByBusinessId(businessId)
+            .stream().map((ProductMapper::toProductWithBusinessDto))
+            .toList();
+    }
+
     public List<Product> findByBusinessId(Long businessId) {
         return productRepository.findByBusinessId(businessId);
     }
@@ -76,6 +97,10 @@ public class ProductModuleService {
 
     public List<Product> findByLocationId(Long locationId) {
         return productRepository.findByLocationId(locationId);
+    }
+
+    public List<Product> findByFloor(Floor floor) {
+        return productRepository.findByFloor(floor);
     }
 
     /**
@@ -135,20 +160,20 @@ public class ProductModuleService {
     /**
      * 기존 상품 데이터를 조회하여 수정하는 기능
      *
-     * @param id      상품 id
      * @param request 수정할 상품 데이터
      */
-    public void update(Long id, ProductRequestDto request) {
-        Product product = productRepository.findById(id)
+    @Transactional
+    public void update(ProductUpdateRequestDto request) {
+        Product product = productRepository.findById(request.getProductId())
             .orElseThrow(() -> new IllegalArgumentException("Invalid Product Id"));
-
-        product.updateData(
-            (request.getQuantity() == -1) ? product.getQuantity()
-                : request.getQuantity(),
-            (request.getExpirationDate() == null) ? product.getExpirationDate()
-                : request.getExpirationDate(),
-            (request.getComment() == null) ? product.getComment() : request.getComment()
-        );
+        Location location = locationRepository.findByNameAndWarehouseId(request.getLocationName(),
+            request.getProductRequestDto().getWarehouseId());
+        Floor floor = floorRepository.findByLocationIdAndFloorLevel(location.getId(),
+            request.getFloorLevel());
+        if (floor == null) {
+            throw new IllegalArgumentException("Invalid Floor Level");
+        }
+        product.updateWithProductDetail(request, floor);
 
         productRepository.save(product);
     }

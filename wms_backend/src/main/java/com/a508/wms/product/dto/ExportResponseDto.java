@@ -15,14 +15,13 @@ import java.time.LocalDateTime;
 @ToString
 public class ExportResponseDto {
 
-
     private String trackingNumber;
     private Long barcode;
     private String locationName;
     private String productName;
     private int quantity;
     private int floorLevel;
-    private LocalDate date;
+    private LocalDateTime date;
     private LocalDateTime expirationDate;
     private ProductStorageTypeEnum productStorageType;
 

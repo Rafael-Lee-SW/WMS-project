@@ -1,7 +1,9 @@
 package com.a508.wms.location.controller;
 
+import com.a508.wms.floor.exception.FloorException;
 import com.a508.wms.location.dto.LocationRequestDto;
 import com.a508.wms.location.dto.LocationResponseDto;
+import com.a508.wms.location.dto.LocationSaveRequestDto;
 import com.a508.wms.location.service.LocationService;
 import com.a508.wms.util.BaseSuccessResponse;
 import java.util.List;
@@ -31,10 +33,11 @@ public class LocationController {
      */
     @GetMapping
     public BaseSuccessResponse<List<LocationResponseDto>> findAllByWarehouseId(
-        @RequestParam(name = "warehouseId") Long warehouseId) {
+        @RequestParam(name = "warehouseId") Long warehouseId) throws FloorException {
         log.info("[Controller] find Locations by warehouseId: {}", warehouseId);
         return new BaseSuccessResponse<>(
             locationService.findAllByWarehouseId(warehouseId));
+
     }
 
     /**
@@ -44,7 +47,8 @@ public class LocationController {
      * @return location이 있으면 locationDto, 없으면 null
      */
     @GetMapping("/{id}")
-    public BaseSuccessResponse<LocationResponseDto> findById(@PathVariable Long id) {
+    public BaseSuccessResponse<LocationResponseDto> findById(@PathVariable Long id)
+        throws FloorException {
         log.info("[Controller] find Location by id: {}", id);
         return new BaseSuccessResponse<>(locationService.findById(id));
     }
@@ -55,7 +59,7 @@ public class LocationController {
      * @param request
      */
     @PostMapping
-    public BaseSuccessResponse<Void> save(@RequestBody LocationRequestDto request) {
+    public BaseSuccessResponse<Void> save(@RequestBody LocationSaveRequestDto request) {
         log.info("[Controller] save Location");
         locationService.save(request);
         return new BaseSuccessResponse<>(null);
@@ -69,7 +73,7 @@ public class LocationController {
      */
     @PutMapping("/{id}")
     public BaseSuccessResponse<LocationResponseDto> update(@PathVariable Long id,
-        @RequestBody LocationRequestDto locationDto) {
+        @RequestBody LocationRequestDto locationDto) throws FloorException {
         log.info("[Controller] update Location by id: {}", id);
         return new BaseSuccessResponse<>(locationService.update(id, locationDto));
     }
@@ -80,7 +84,8 @@ public class LocationController {
      * @param id -> locationId
      */
     @PatchMapping("/{id}")
-    public BaseSuccessResponse<Void> delete(@PathVariable Long id) {
+    public BaseSuccessResponse<Void> delete(@PathVariable Long id)
+        throws Exception, FloorException {
         log.info("[Controller] delete Location by id: {}", id);
         locationService.delete(id);
         return new BaseSuccessResponse<>(null);

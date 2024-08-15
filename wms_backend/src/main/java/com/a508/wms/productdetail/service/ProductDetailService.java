@@ -21,7 +21,6 @@ public class ProductDetailService {
 
     private final ProductDetailModuleService productDetailModuleService;
     private final BusinessModuleService businessModuleService;
-    private final ProductModuleService productModuleService;
 
 
     /**
@@ -100,8 +99,8 @@ public class ProductDetailService {
                 request.getProductStorageType(),
                 request.getBarcode(),
                 request.getName(),
-                (request.getSize() == null) ? productDetail.getSize() : request.getSize(),
-                (request.getUnit() == null) ? productDetail.getUnit() : request.getUnit(),
+                (request.getSize() == 0) ? productDetail.getSize() : request.getSize(),
+                (request.getUnit() == 0) ? productDetail.getUnit() : request.getUnit(),
                 (request.getOriginalPrice() == 0) ? productDetail.getOriginalPrice()
                         : request.getOriginalPrice(),
                 (request.getSellingPrice() == 0) ? productDetail.getSellingPrice()
@@ -117,11 +116,11 @@ public class ProductDetailService {
      */
     @Transactional
     public void delete(Long id) {
-        log.info("[Service] delete ProductDetail by id: {}", id);
+        /*log.info("[Service] delete ProductDetail by id: {}", id);
         ProductDetail productDetail = productDetailModuleService.findById(id);
 
         productDetailModuleService.delete(productDetail);
 
-        productDetail.getProducts().forEach(productModuleService::delete);
+        productDetail.getProducts().forEach(productModuleService::delete);*/
     }
 }

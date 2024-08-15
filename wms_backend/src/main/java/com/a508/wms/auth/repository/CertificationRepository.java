@@ -8,7 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public interface CertificationRepository extends JpaRepository<Certification, String> {
 
-
+    // 최신 인증 정보를 가져오기 위해 생성일(createdDate)을 기준으로 정렬
+    Certification findTopByEmailOrderByCreatedDateDesc(String email);
 
     Certification findByEmail(String email);
 

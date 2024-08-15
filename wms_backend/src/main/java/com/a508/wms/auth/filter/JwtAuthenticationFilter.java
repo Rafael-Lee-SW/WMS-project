@@ -1,5 +1,4 @@
 package com.a508.wms.auth.filter;
-
 import com.a508.wms.auth.provider.JwtProvider;
 import com.a508.wms.user.domain.User;
 import com.a508.wms.user.repository.UserRepository;
@@ -55,8 +54,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             logger.info("UserId: {}", userId);
 
             // 4. 유효하지 않은 토큰이면 다음 필터로 진행
-            if (userId == null) {
-                logger.info("Invalid token, proceeding to next filter.");
+           try {
+                userId = jwtProvider.validate(token);
+                logger.info("UserId: {}", userId);
+            } catch (Exception e) {
+                logger.error("Invalid JWT token", e);
                 filterChain.doFilter(request, response);
                 return;
             }
