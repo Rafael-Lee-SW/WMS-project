@@ -10,18 +10,14 @@
 
 - [📌 프로젝트 소개](#-프로젝트-소개)
 - [📦 도메인 소개](#-도메인-소개)
-- [⏱ 개발 기간](#-개발-기간)
 - [👥 팀 소개](#-팀-소개)
+- [⏱ 개발 기간](#-개발-기간)
 - [🛠️ 기술 스택](#-기술-스택)
-- [❓ 채택 이유](#-채택-이유)
+- [🎋 브랜치 전략](#-브랜치-전략)
 - [📜 커밋 컨벤션](#-커밋-컨벤션)
+- [📄 프로젝트 구조](#-프로젝트-구조)
 - [🌐 포팅 매뉴얼](#-포팅-매뉴얼)
 - [💻 서비스 화면](#-서비스-화면)
-- [📄 설계 문서](#-설계-문서)
-- [할까말까](#할까-말까)
-- [🐞 트러블 슈팅](#-트러블-슈팅)
-- [💡 주요 기능](#-주요-기능)
-- [🎯 개선 목표](#-개선-목표)
 - [📝 프로젝트 후기](#-프로젝트-후기)
 
 <br>
@@ -52,15 +48,6 @@
 
 <br>
 
-# ⏱ 개발 기간
-
-- 전체 개발 기간 : 2024-07-08 ~ 2024-08-16 (7주)
-- BE 구현 :
-- FE 구현 :
-- 배포  :
-
-
-<br>
 
 # 👥 팀 소개
 
@@ -73,14 +60,14 @@
             </a>
         </td>
         <td style="min-width: 250px;">
-            <a href="https://github.com/hyeonjong-kim">
-              <b>이수완</b>
-            </a>
-        </td>
-        <td style="min-width: 250px;">
             <a href="https://github.com/solmysoul1">
               <b>이한솔</b>
             </a> 
+        </td>
+        <td style="min-width: 250px;">
+            <a href="https://github.com/hyeonjong-kim">
+              <b>이수완</b>
+            </a>
         </td>
     </tr>
     <tr align="center">
@@ -88,25 +75,23 @@
               <img src="/READMEfile/yuseok.jpg" width="100">
         </td>
         <td style="min-width: 250px;">
-              <img src="/READMEfile/soowan.jpg" width="100">
+              <img src="/READMEfile/hansol.jpg" width="100">
         </td>
         <td style="min-width: 250px;">
-              <img src="/READMEfile/hansol.jpg" width="100">
+              <img src="/READMEfile/soowan.jpg" width="100">
         </td>
     </tr>
     <tr align="center">
         <td>
-        <b>Team Leader, Backend</b><br>텃밭꾸미기 API<br/>
-채팅 API<br/>
+        <b>Team Leader, Project Manager</b><b><br/>Backend<br/>Frontend<br></b>소셜로그인<br/>유저/사업체<br/>
         </td>
         <td>
-        <b>Infrastructure, Backend, IoT</b><br>텃밭 일지 API<br/>텃밭 API<br/>
+        <b>Frontend Leader</b><br>여기에 작성하기<br/>
         </td>
         <td>
-        <b>Backend</b><br>소셜로그인<br>회원 API<br>기관 API<br>기부 API<br>운영자 API
+        <b>Frontend</b><br>여기에 작성하기<br/>
         </td>
     </tr>
-  </tr>
   <tr>
     <tr align="center">
         <td style="min-width: 250px;">
@@ -138,21 +123,21 @@
     </tr>
     <tr align="center">
         <td>
-        <b>Frontend</b><br>유저/운영자<br/>
-        상태관리
+        <b>Backend Leader, Infra</b><br>CI/CD 구축<br/>담당한 기능 작성<br/>
         </td>
         <td>
-        <b>Frontend</b><br>텃밭 일기<br/>기부하기<br/>마이페이지 내 밭 목록
+        <b>Backend</b><br/>상품 이동<br/>재고 압축<br/>리팩토링 
         </td>
         <td>
-        <b>Frontend</b><br>텃밭꾸미기<br/>
-        마이페이지-꾸미기 목록
+        <b>Backend</b><br>여기에 작성<br/>
         </td>
     </tr>
-  </tr>
-
 </table>
 
+# ⏱ 개발 기간
+
+- 전체 개발 기간 : 2024-07-08 ~ 2024-08-16 (7주)
+<br>
 
 
 <br>
@@ -174,12 +159,6 @@
 ![MUI DataTable](https://img.shields.io/badge/MUI%20DataTable-007FFF?logo=mui&logoColor=white)
 ![Konva](https://img.shields.io/badge/Konva-FF6347?logo=canvas&logoColor=white)
 
-![npm](https://img.shields.io/npm/v/handsontable?logo=npm&label=HandsonTable)
-![npm](https://img.shields.io/npm/v/xlsx?logo=npm&label=SheetJS)
-![npm](https://img.shields.io/npm/v/mui-datatables?logo=npm&label=MUI%20DataTable)
-![npm](https://img.shields.io/npm/v/konva?logo=npm&label=Konva)
-
-
 
 ##### 💻 Backend
 
@@ -194,7 +173,7 @@
 ##### 🚀 Infra
 
 ![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
-![Kubernetes](https://img.shields.io/badge/Kubernetes-326CE5?logo=kubernetes&logoColor=white)
+![Jenkins](https://img.shields.io/badge/Jenkins-FFA500?logo=jenkins&logoColor=white)
 
 ##### ⚙️ Management Tools
 
@@ -211,123 +190,23 @@
 ![VS Code](https://img.shields.io/badge/VS_Code-007ACC?logo=visual-studio-code&logoColor=white)
 
 
-<br>
-
-# ❓ 채택 이유
-
-##### React.js
-1. 우리의 프로젝트에서 핵심 기능을 담당하는 재고관리의 시각화(2D 시각화 - 실시간 연동) 기술에 대한 Library 및 예시가 React.js에 풍부하게 존재하는 점
-2. React를 통해 최소한의 DOM 수정으로 효율적이고 Interactive한 기능을 제공하기 위함
-
-##### Next.js
-1. React.js 만을 사용하여 client-side-rendering으로는 한꺼번에 오가는 수많은 데이터를 처리하는데 성능 및 속도 저하가 예상되어 이를 Server-side-rendering으로 처리할 수 있으며, React.js Library를 사용할 수 있는 Next.js를 사용하기로 결정
-2. Backend와 잦은 데이터 교환 및 API 통신에 따라 그에 유리한 FrontEnd Framework로 선택됨.
-    
-### 브랜치 전략 < 이거 모르겠어요 넣어야하나
+# 🎋 브랜치 전략
 <img src="/READMEfile/Branch strategy.png">
 
 # 📜 커밋 컨벤션
-> **태그**: 제목의 형태이며 : 뒤에만 space가 있음에 유의한다.
-- ![✨](https://img.shields.io/badge/-✨%20feat-brightgreen) **`feat`**: 새로운 기능 추가
-- ![🐛](https://img.shields.io/badge/-🐛%20fix-orange) **`fix`**: 버그 수정
-- ![📝](https://img.shields.io/badge/-📝%20docs-blue) **`docs`**: 문서 수정
-- ![🎨](https://img.shields.io/badge/-🎨%20style-ff69b4) **`style`**: 코드 포맷팅, 세미콜론 누락
-- ![♻️](https://img.shields.io/badge/-♻️%20refactor-yellowgreen) **`refactor`**: 코드 리팩토링
-- ![✅](https://img.shields.io/badge/-✅%20test-blueviolet) **`test`**: 테스트 코드 작성 및 수정
-- ![🔧](https://img.shields.io/badge/-🔧%20chore-lightgrey) **`chore`**: 빌드 업무 수정, 패키지 매니저 수정
+> **태그**: 제목의 형태이며 ':' 뒤에만 space가 있음에 유의한다.
+- **`feat`**: 새로운 기능 추가
+- **`fix`**: 버그 수정
+- **`docs`**: 문서 수정
+- **`style`**: 코드 포맷팅, 세미콜론 누락
+- **`refactor`**: 코드 리팩토링
+- **`test`**: 테스트 코드 작성 및 수정
+- **`chore`**: 빌드 업무 수정, 패키지 매니저 수정
 <br>
 
-## 3. 프로젝트 구조
-```
+# 📄 프로젝트 구조
+![프로젝트 구조.png](project-structure.png)
 
-wms/
-├── auth/
-│ ├── common/
-│ ├── config/
-│ ├── controller/
-│ ├── domain/
-│ ├── dto/
-│ │ ├── request/
-│ │ │ └── auth/
-│ │ ├── response/
-│ │ │ └── auth/
-│ ├── exception/
-│ ├── filter/
-│ ├── handler/
-│ ├── provider/
-│ ├── repository/
-│ └── service/
-│ └── implement/
-├── business/
-│ ├── controller/
-│ ├── domain/
-│ ├── dto/
-│ ├── exception/
-│ ├── mapper/
-│ ├── repository/
-│ └── service/
-├── config/
-├── floor/
-│ ├── controller/
-│ ├── domain/
-│ ├── dto/
-│ ├── exception/
-│ ├── mapper/
-│ ├── repository/
-│ └── service/
-├── location/
-│ ├── controller/
-│ ├── domain/
-│ ├── dto/
-│ ├── exception/
-│ ├── mapper/
-│ ├── repository/
-│ └── service/
-├── notification/
-│ └── dto/
-├── product/
-│ ├── controller/
-│ ├── domain/
-│ ├── dto/
-│ ├── exception/
-│ ├── mapper/
-│ ├── repository/
-│ └── service/
-├── productdetail/
-│ ├── controller/
-│ ├── domain/
-│ ├── dto/
-│ ├── exception/
-│ ├── mapper/
-│ ├── repository/
-│ └── service/
-├── subscription/
-│ ├── controller/
-│ ├── domain/
-│ ├── dto/
-│ ├── exception/
-│ ├── mapper/
-│ ├── repository/
-│ └── service/
-├── user/
-│ ├── controller/
-│ ├── domain/
-│ ├── dto/
-│ ├── exception/
-│ ├── mapper/
-│ ├── repository/
-│ └── service/
-├── util/
-│ └── constant/
-└── warehouse/
-├── controller/
-├── domain/
-├── dto/
-├── exception/
-├── mapper/
-├── repository/
-└── service/
-```
 <br>
 
 # 🌐 포팅 매뉴얼
@@ -354,53 +233,6 @@ wms/
 
 <br>
 
-# 📄 설계 문서
-[🤎 API Docs](https://www.notion.so/ddongyul/5019c105775c49328b2dd05239bd79fb?v=7555c3e79d614c748f1552a56685cfe0)
-[💙Front Method](https://www.notion.so/ddongyul/Front-Method-7f12e0bbf2cb478e9f4de70411b1a68c)
-
----
-# 할까말까
-
-# 🐞 트러블 슈팅
-
-## 2024-07-18 문제 해결 내용
-### Soft Delete 적용
-- **문제 상황**: 프로젝트에서 JPA를 사용하여 소프트 딜리트(Soft Delete)를 일괄적으로 적용해야 하는 상황이 발생했습니다.
-- **해결 방안**: `@SQLRestriction` 어노테이션을 통해 소프트 딜리트 기능을 구현하여 문제를 해결했습니다.
-
-    ```java
-    @Entity
-    @Getter
-    @NoArgsConstructor
-    @SQLRestriction("status_enum = 'Active'")
-    @Table(name = "product")
-    public class Product extends BaseTimeEntity {
-        // ...
-    }
-    ```
-- **시도했던 방법**: 최초에는 `@Where` 어노테이션을 통해 문제를 해결하려고 했습니다.
-    - 그러나 현재 Hibernate 버전에서는 해당 어노테이션이 Deprecated 상태입니다.
-- **최종 해결 방법**: `@SQLRestriction` 어노테이션을 통해 소프트 딜리트를 구현했습니다.
-    - 적용이 되지 않아야 하는 쿼리에 대해서는 JPA Repository에서 `@Query` 어노테이션을 사용하여 해결했습니다.
-
-## 2024-07-19 문제 해결 내용
-### Entity 순환참조 해결
-- **문제 상황**: A엔티티 안에 B엔티티 정보가 있고, B엔티티 안에 A엔티티가 있어서 발생한 순환참조 문제
-- **해결 방안**: 객체를 그대로 리턴하는 것이 아닌, Dto에 담아서 리턴.
-
-
-
-<br>
-
-# 🎯 개선 목표
-
-- **24-00-00 성능 개선 내용**
-### indexing 
-- 물류 데이터 속도 개선
-
-### 정규화 반정규화
-- 물류 데이터 속도 개선 
-    
 <br>
 
 # 📝 프로젝트 후기
