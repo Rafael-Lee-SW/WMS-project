@@ -1,13 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { makeStyles } from '@material-ui/core/styles';
+// nodejs library that concatenates classes
+import classNames from "classnames";
+// react components for routing our app without refresh
+import Link from "next/link";
+// @material-ui/core components
+import { makeStyles } from "@material-ui/core/styles";
+// core components
 import Header from "/components/Header/HomeHeader.js";
-import HeaderLinks from "/components/Header/HeaderLinks.js";
+import HeaderLinks from "/components/Header/HomeHeaderLinks.js";
 import LoginHeaderLinks from "../components/Header/LogInHomeHeaderLinks";
 import Footer from "/components/Footer/Footer.js";
 import Slider from "react-slick"; 
 import ServiceInfo1 from '/components/Main/ServiceInfo1';
 import ServiceInfo2 from '/components/Main/ServiceInfo2';
 import ServiceInfo3 from '/components/Main/ServiceInfo3';
+
 import styles from "/styles/jss/nextjs-material-kit/pages/components.js";
 import AOS from 'aos';
 import 'aos/dist/aos.css';
