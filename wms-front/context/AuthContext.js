@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      axios.get('http://localhost:8080/api/oauth/refresh/token', { headers: { Authorization: `Bearer ${token}` } })
+      axios.get('https://i11a508.p.ssafy.io/api/oauth/refresh/token', { headers: { Authorization: `Bearer ${token}` } })
         .then(response => {
           const userData = response.data;
           login(userData, token);

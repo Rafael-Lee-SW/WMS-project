@@ -255,560 +255,234 @@ const Select = (props) => {
 
         const warehousesId = warehouses.id;
 
-        await postLocationAPI(locationData, warehousesId);
-        await postWallAPI(wallData, warehousesId);
+        const locationsResponse = await fetch(
+          `https://i11a508.p.ssafy.io/api/warehouses/${warehousesId}/locations`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(locationData),
+          }
+        );
 
-        const newCard = {
-          id: newWarehouse.result.id,
-          title: newWarehouse.result.name,
-          image: "/img/sign.jpg",
-        };
+        if (locationsResponse.ok) {
+          const newLocations = await locationsResponse.json();
 
-        await setCards((prev) => [...prev, newCard]);
+          const wallsResponse = await fetch(
+            `https://i11a508.p.ssafy.io/api/warehouses/${warehousesId}/walls`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(wallData),
+            }
+          );
 
-        // 각 창고 카드에 대한 pcsCount 및 locationCount 요청
-        fetchCounts(newCard.id);
-
-        handleClose();
-      } else {
-        router.push('/404');
-      }
-    } catch (error) {
-      router.push('/404');
-    }
-  };
-
-  const generateWalls = (generatedLocations) => {
-    if (generatedLocations.length === 0) return null;
-
-    let minX = Number.MAX_VALUE,
-      minY = Number.MAX_VALUE,
-      maxX = 0,
-      maxY = 0;
-
-    generatedLocations.forEach((location) => {
-      minX = Math.min(minX, location.xPosition);
-      minY = Math.min(minY, location.yPosition);
-      maxX = Math.max(maxX, location.xPosition + location.xSize);
-      maxY = Math.max(maxY, location.yPosition + location.ySize);
-    });
-
-    const wallData = [
-      { startX: minX, startY: minY, endX: maxX, endY: minY },
-      { startX: maxX, startY: minY, endX: maxX, endY: maxY },
-      { startX: maxX, startY: maxY, endX: minX, endY: maxY },
-      { startX: minX, startY: maxY, endX: minX, endY: minY },
-    ];
-
-    return wallData;
-  };
-
-  const postLocationAPI = async (requests, warehouseId) => {
-
-    const total = { requests, warehouseId };
-
-    try {
-      const response = await fetch(`https://i11a508.p.ssafy.io/api/locations`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(total),
-      });
-
-      if (response.ok) {
-      } else {
-        router.push('/404');
-      }
-    } catch (error) {
-      router.push('/404');
-    }
-  };
-
-  const postWallAPI = async (wallDtos, warehouseId) => {
-    const total = { wallDtos, warehouseId };
-
-    try {
-      const response = await fetch(
-        `https://i11a508.p.ssafy.io/api/warehouses/walls`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(total),
+          if (wallsResponse.ok) {
+            notify("생성되었습니다.");
+            setCards([...cards, postData]);
+            setOpen(false);
+          } else {
+            notify("Wall creation failed");
+          }
+        } else {
+          notify("Location creation failed");
         }
-      );
-
-      if (response.ok) {
       } else {
-        router.push('/404');
+        notify("Container creation failed");
       }
     } catch (error) {
-      router.push('/404');
+      notify("An error occurred. Please try again.");
     }
   };
 
-  const getAllWarehouseInfoAPI = async (businessId) => {
-    try {
-      const response = await fetch(
-        `https://i11a508.p.ssafy.io/api/warehouses?businessId=${businessId}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (response.ok) {
-        const apiConnection = await response.json();
-        const warehouses = apiConnection.result;
-
-        const warehouseCards = await warehouses.map((warehouse) => ({
-          id: warehouse.id,
-          title: warehouse.name,
-          image: "/img/storeroom.webp",
-        }));
-
-        await setCards(warehouseCards);
-        //모든 카드 정보를 받은 다음에 움직인다.
-        // 각 창고 카드에 대한 pcsCount 및 locationCount 요청
-        warehouseCards.forEach((card) => {
-          fetchCounts(card.id);
+  const handleDelete = async (id, e) => {
+    e.stopPropagation();
+    const confirmDelete = window.confirm("정말 삭제하시겠습니까?");
+    if (confirmDelete) {
+      try {
+        const response = await fetch(`https://i11a508.p.ssafy.io/api/warehouses/${id}`, {
+          method: "DELETE",
         });
 
-      } else {
-        router.push('/404');
-      }
-    } catch (error) {
-      router.push('/404');
-    }
-  };
-
-  const fetchBusinessData = async (userId) => {
-    try {
-      const response = await fetch(
-        `https://i11a508.p.ssafy.io/api/users/${userId}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
+        if (response.ok) {
+          notify("삭제되었습니다.");
+          setCards(cards.filter((card) => card.id !== id));
+        } else {
+          notify("삭제 실패");
         }
-      );
-
-      if (response.ok) {
-        const userData = await response.json();
-        const businessInfo = userData.result;
-        setBusinessData(businessInfo);
-        setBusinessId(businessInfo.businessId);
-
-        fetchWarehouseCounts(businessInfo.businessId);
-        getAllWarehouseInfoAPI(businessInfo.businessId);
-        
-      } else {
-        router.push('/404');
+      } catch (error) {
+        notify("삭제 중 오류 발생");
       }
-    } catch (error) {
-      router.push('/404');
     }
   };
 
   useEffect(() => {
-    const user = localStorage.getItem("user");
-    if (user) {
+    // Fetch user and business data
+    (async () => {
       try {
-        const parsedUser = JSON.parse(user);
-        setUserData(parsedUser);
+        const userResponse = await axios.get("https://i11a508.p.ssafy.io/api/user");
+        setUserData(userResponse.data);
 
-        fetchBusinessData(parsedUser.id);
+        const businessResponse = await axios.get(`https://i11a508.p.ssafy.io/api/business/${userResponse.data.businessId}`);
+        setBusinessData(businessResponse.data);
+        setBusinessId(userResponse.data.businessId);
+
+        const { presentCount, MaxCount } = await fetchWarehouseCounts(userResponse.data.businessId);
+        setCurrentWarehouseCount(presentCount);
+        setAllowedWarehouseCount(MaxCount);
       } catch (error) {
+        console.error("Error fetching data", error);
         router.push('/404');
       }
-    }
-  }, []);
-
-  const fetchCounts = async (warehouseId) => {
-    try {
-      const pcsResponse = await axios.get(
-        `https://i11a508.p.ssafy.io/api/warehouses/pcscnt/${warehouseId}`
-      );
-      const locationResponse = await axios.get(
-        `https://i11a508.p.ssafy.io/api/warehouses/locationcnt/${warehouseId}`
-      );
-      const usageResponse = await axios.get(
-        `https://i11a508.p.ssafy.io/api/warehouses/usage/${warehouseId}`
-      );
-      const warehouseTypeResponse = await axios.get(
-        `https://i11a508.p.ssafy.io/api/warehouses/purpose/${warehouseId}`
-      );
-
-      const pcsCount = pcsResponse.data.result;
-      const locationCount = locationResponse.data.result;
-      const usagePercent = usageResponse.data.result; // 1부터 100까지
-      const warehouseColor = warehouseTypeResponse.data.result; // 1부터 3까지
-
-      setCards((prevCards) =>
-        prevCards.map((card) =>
-          card.id === warehouseId
-            ? {
-                ...card,
-                pcsCount,
-                locationCount,
-                usagePercent,
-                warehouseColor,
-              }
-            : card
-        )
-      );
-    } catch (error) {
-      router.push('/404');
-    }
-  };
-
-  // warehouseColor에 따른 배경 색상 및 usagePercent에 따른 색상 높이
-  const getBackgroundColor = (color) => {
-    switch (color) {
-      case 1:
-        return "#D6CABA";
-      case 2:
-        return "#C2B6A1";
-      case 3:
-        return "#918166";
-      default:
-        return "#D6CABA";
-    }
-  };
-
-  const getWarehouseImage = (color) => {
-    switch (color) {
-      case 1:
-        return "/img/warehouse1.png";
-      case 2:
-        return "/img/warehouse2.png";
-      case 3:
-        return "/img/warehouse3.png";
-      default:
-        return "/img/warehouse1.png";
-    }
-  };
-
-  const handleDelete = async (warehouseId, e) => {
-    e.stopPropagation(); // 이벤트 버블링을 막아 Link의 기본 동작이 실행되지 않도록 함
-
-    try {
-      await axios.patch(`https://i11a508.p.ssafy.io/api/warehouses/${warehouseId}`, {
-        isDeleted: true,
-      });
-
-      // 삭제 후 카드 목록에서 해당 창고 제거
-      setCards((prevCards) =>
-        prevCards.filter((card) => card.id !== warehouseId)
-      );
-    } catch (error) {
-      router.push('/404');
-    }
-  };
+    })();
+  }, [router]);
 
   return (
-    <div>
+    <>
       <Header
-        brand="FIT-BOX"
+        color="transparent"
+        brand="Your Brand"
         rightLinks={<HeaderLinks />}
         fixed
-        color="white"
-        opacity="0.5"
         changeColorOnScroll={{
           height: 400,
           color: "white",
         }}
         {...rest}
       />
-
-      <div className={classes.section}>
+      <div className={classes.pageHeader}>
         <div className={classes.container}>
-          <h3>
-            창고를 선택하세요. ({currentWarehouseCount}/{allowedWarehouseCount})
-          </h3>
+          <div className={classes.title}>
+            <h1>생성된 창고 리스트</h1>
+          </div>
           <GridContainer>
             {cards.map((card) => (
-              <GridItem key={card.id} xs={12} sm={12} md={4}>
-                <Link href={`/user/${card.id}`} passHref>
-                  <CardSelect
-                    component="a"
-                    className={`${classes.cardLink} ${classes.imageCard}`}
-                  >
-                    <div className={classes.cardSelect}>
-                      <div
-                        className={classes.cardHeader}
-                        style={{
-                          backgroundColor: getBackgroundColor(
-                            card.warehouseColor
-                          ),
-                          position: "relative",
-                        }}
-                      >
-                        <img
-                          src={getWarehouseImage(card.warehouseColor)}
-                          alt="warehouse"
-                          style={{
-                            position: "absolute",
-                            bottom: 0,
-                            width: "30%", // 이미지 너비를 30%로 조정
-                            height: "auto", // 높이를 자동으로 조정하여 비율 유지
-                            borderLeft: "4px solid #000", // 왼쪽 테두리
-                            borderRight: "4px solid #000", // 오른쪽 테두리
-                            borderTop: "4px solid #000", // 위쪽 테두리
-                            borderBottom: "none", // 아래쪽 테두리는 없음
-                          }}
-                        />
-                        <img
-                          src="/img/delete.png"
-                          alt="delete"
-                          style={{
-                            position: "absolute",
-                            top: 10,
-                            right: 10,
-                            width: "20px",
-                            height: "20px",
-                          }}
-                          onClick={(e) => {
-                            handleDelete(card.id, e);
-                          }}
-                        />
-                      </div>
-                      <div className={classes.cardBody}>
-                        <h3>{card.title}</h3>
-                        <div
-                          style={{
-                            width: "80%",
-                            height: "30px",
-                            backgroundColor: "lightgray",
-                            borderRadius: "20px",
-                            overflow: "hidden",
-                            marginTop: "10px",
-                            border: "2px solid #ccc",
-                          }}
-                        >
-                          <div
-                            style={{
-                              width: `${card.usagePercent}%`,
-                              height: "100%",
-                              backgroundColor: getBackgroundColor(
-                                card.warehouseColor
-                              ),
-                              display: "flex", // 플렉스 박스를 사용하여 중앙 정렬
-                              justifyContent: "center", // 수평 중앙 정렬
-                              alignItems: "center", // 수직 중앙 정렬
-                              color: "white", // 텍스트 색상 (배경과 대비되도록 설정)
-                              fontWeight: "bold", // 텍스트 굵게
-                            }}
-                          >
-                            {" "}
-                            {`${card.usagePercent}%`}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className={classes.cardFooter}>
-                        <div className={classes.pcsContainer}>
-                          <img
-                            src="/img/box.png"
-                            alt="pcsContainer"
-                            className={classes.containerImage}
-                          />
-                          <div className="pcsCnt">{card.pcsCount}</div>
-                        </div>
-
-                        <div className={classes.locationContainer}>
-                          <img
-                            src="/img/location.png"
-                            alt="location"
-                            className={classes.containerImage}
-                          />
-                          <div className="locationCnt">
-                            {card.locationCount}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardSelect>
-                </Link>
+              <GridItem xs={12} sm={6} md={4} lg={3} key={card.id}>
+                <CardSelect
+                  image={card.image || "/img/placeholder.jpg"} // default image
+                  title={card.title}
+                  description={card.description}
+                  onDelete={(e) => handleDelete(card.id, e)}
+                />
               </GridItem>
             ))}
-            <GridItem xs={12} sm={12} md={4} className={classes.plusCard}>
-              <div className={classes.buttonCard} onClick={handleOpen}>
-                <AddCircleOutline className={classes.plusButton} />
-              </div>
+            <GridItem xs={12} sm={6} md={4} lg={3}>
+              <Button
+                color="primary"
+                onClick={handleOpen}
+                startIcon={<AddCircleOutline />}
+              >
+                Add New
+              </Button>
             </GridItem>
           </GridContainer>
+
           <Modal
-            className={classes.modal}
             open={open}
             onClose={handleClose}
             closeAfterTransition
+            BackdropProps={{ timeout: 500 }}
           >
-            <Fade
-              in={open}
-              style={{
-                justifyContent: "center",
-              }}
-            >
-              <div className={classes.paper}>
-                <h2>새 창고 정보 입력</h2>
+            <Fade in={open}>
+              <div className={classes.modal}>
+                <h2>Create New Warehouse</h2>
                 <form onSubmit={handleSubmit}>
                   <TextField
+                    label="Container Name"
                     name="containerName"
-                    label="창고 이름"
-                    fullWidth
-                    variant="outlined"
-                    className={classes.formControl}
                     value={formData.containerName}
                     onChange={handleChange}
-                    error={Boolean(validationErrors.containerName)}
-                    helperText={
-                      validationErrors.containerName || "20글자까지 가능합니다."
-                    }
-                    FormHelperTextProps={{
-                      style: {
-                        color: validationErrors.containerName ? "red" : "blue",
-                      },
-                    }}
+                    error={!!validationErrors.containerName}
+                    helperText={validationErrors.containerName}
+                    fullWidth
                   />
                   <TextField
+                    label="Container Size (px)"
                     name="containerSize"
-                    label="창고 크기"
-                    fullWidth
-                    variant="outlined"
-                    className={classes.formControl}
+                    type="number"
                     value={formData.containerSize}
                     onChange={handleChange}
-                    error={Boolean(validationErrors.containerSize)}
-                    helperText={
-                      validationErrors.containerSize ||
-                      `창고 부지의 크기: ${formData.containerSize} * ${
-                        formData.containerSize
-                      } = ${Math.pow(parseInt(formData.containerSize) || 0, 2)}`
-                    }
-                    FormHelperTextProps={{
-                      style: {
-                        color: validationErrors.containerSize ? "red" : "blue",
-                      },
-                    }}
+                    error={!!validationErrors.containerSize}
+                    helperText={validationErrors.containerSize}
+                    fullWidth
                   />
                   <TextField
+                    label="Location X (px)"
                     name="locationX"
-                    label="Location(적재함) 가로 크기"
-                    fullWidth
-                    variant="outlined"
-                    className={classes.formControl}
+                    type="number"
                     value={formData.locationX}
                     onChange={handleChange}
-                    error={Boolean(validationErrors.locations)}
+                    error={!!validationErrors.locations}
+                    helperText={validationErrors.locations}
+                    fullWidth
                   />
                   <TextField
+                    label="Location Y (px)"
                     name="locationY"
-                    label="Location(적재함) 세로 크기"
-                    fullWidth
-                    variant="outlined"
-                    className={classes.formControl}
+                    type="number"
                     value={formData.locationY}
                     onChange={handleChange}
-                    error={Boolean(validationErrors.locations)}
+                    error={!!validationErrors.locations}
+                    helperText={validationErrors.locations}
+                    fullWidth
                   />
                   <TextField
+                    label="Location Z (px)"
                     name="locationZ"
-                    label="Location(적재함) 층수"
-                    fullWidth
-                    variant="outlined"
-                    className={classes.formControl}
+                    type="number"
                     value={formData.locationZ}
                     onChange={handleChange}
-                    error={Boolean(validationErrors.locationZ)}
-                    helperText={
-                      validationErrors.locationZ ||
-                      "1~10층까지 설정 가능합니다."
-                    }
-                    FormHelperTextProps={{
-                      style: {
-                        color: validationErrors.locationZ ? "red" : "blue",
-                      },
-                    }}
+                    error={!!validationErrors.locationZ}
+                    helperText={validationErrors.locationZ}
+                    fullWidth
                   />
                   <TextField
+                    label="Row"
                     name="row"
-                    label="행"
-                    fullWidth
-                    variant="outlined"
-                    className={classes.formControl}
+                    type="number"
                     value={formData.row}
                     onChange={handleChange}
-                    error={Boolean(validationErrors.locations)}
-                    helperText={
-                      validationErrors.locations ||
-                      "적재함 크기와 개수가 창고 크기를 초과할 수 없습니다."
-                    }
-                    FormHelperTextProps={{
-                      style: {
-                        color: validationErrors.locations ? "red" : "blue",
-                      },
-                    }}
+                    error={!!validationErrors.locations}
+                    helperText={validationErrors.locations}
+                    fullWidth
                   />
                   <TextField
+                    label="Column"
                     name="column"
-                    label="열"
-                    fullWidth
-                    variant="outlined"
-                    className={classes.formControl}
+                    type="number"
                     value={formData.column}
                     onChange={handleChange}
-                    error={Boolean(validationErrors.locations)}
+                    error={!!validationErrors.locations}
+                    helperText={validationErrors.locations}
+                    fullWidth
                   />
-                  <FormControl
-                    component="fieldset"
-                    className={classes.formControl}
-                  >
-                    <FormLabel component="legend">시설 유형</FormLabel>
+                  <FormControl component="fieldset" className={classes.formControl}>
+                    <FormLabel component="legend">Facility Type</FormLabel>
                     <RadioGroup
                       aria-label="facilityType"
                       name="facilityType"
                       value={facilityType}
                       onChange={handleFacilityTypeChange}
                     >
-                      <FormControlLabel
-                        value="STORE"
-                        control={<Radio />}
-                        label="매장"
-                      />
-                      <FormControlLabel
-                        value="WAREHOUSE"
-                        control={<Radio />}
-                        label="창고"
-                      />
+                      <FormControlLabel value="STORE" control={<Radio />} label="Store" />
+                      <FormControlLabel value="OTHER" control={<Radio />} label="Other" />
                     </RadioGroup>
                   </FormControl>
-                  {facilityType === "WAREHOUSE" && (
+                  {facilityType === "OTHER" && (
                     <TextField
+                      label="Priority"
                       name="priority"
-                      label="창고 출고 우선순위"
-                      fullWidth
-                      variant="outlined"
-                      className={classes.formControl}
+                      type="number"
                       value={priority}
                       onChange={handlePriorityChange}
-                      type="number"
+                      fullWidth
                     />
                   )}
-
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    color="primary"
-                    fullWidth
-                    disabled={Object.keys(validationErrors).length > 0}
-                  >
-                    Finish
+                  <Button type="submit" color="primary">
+                    Submit
                   </Button>
                 </form>
               </div>
@@ -816,7 +490,7 @@ const Select = (props) => {
           </Modal>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
