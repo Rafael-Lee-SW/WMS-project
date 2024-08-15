@@ -1452,6 +1452,7 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
                   setDetailedNotificationData([]);
                   setHoveredLocations([]); // Reset hovered locations
                 }}
+                style={{ color: "#7D4A1A"}}
               >
                 Close
               </Button>
@@ -1469,15 +1470,16 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
                       id="상자 숫자 정보"
                       style={{
                         width: "45%",
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        alignItems: 'center'
                       }}
                     >
-                      <h3>재고함 : {selectedLocation.name}</h3>
+                      <h3 style={{ marginTop: 0}}>재고함 : {selectedLocation.name}</h3>
                       <b>가로 : {selectedLocation.width}cm</b>
-                      <br />
                       <b>세로 : {selectedLocation.height}cm</b>
-                      <br />
                       <b>단수(층) : {selectedLocation.z}단/층</b>
-                      <br />
                       <b>
                         현재 재고율 :{" "}
                         {extractFillPercentage(selectedLocation.fill)}%{" "}
@@ -1502,11 +1504,12 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
                           <Button
                             key={index + 1}
                             style={{
-                              display: "block",
+                              display: "flex",
                               width: "90%",
                               height: "30px",
                               backgroundColor:
-                                selectedFloor === index + 1 ? "blue" : "white",
+                                selectedFloor === index + 1 ? "#7D4A1A" : "transparent",
+                              color: selectedFloor === index + 1 ? 'white' : '#7D4A1A',
                               marginBottom: "5px",
                               borderRadius: "5px",
                               border: "1px solid black",
@@ -1528,13 +1531,13 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
                             onMouseEnter={(e) => {
                               e.target.style.backgroundColor =
                                 selectedFloor === index + 1
-                                  ? "blue"
-                                  : "lightgray";
-                              e.target.style.border = "2px solid red";
+                                  ? "#7D4A1A"
+                                  : "transparent";
+                              e.target.style.border = "2px solid #7D4A1A";
                             }}
                             onMouseLeave={(e) => {
                               e.target.style.backgroundColor =
-                                selectedFloor === index + 1 ? "blue" : "white";
+                                selectedFloor === index + 1 ? "#7D4A1A" : "transparent";
                               e.target.style.border = "1px solid black";
                             }}
                           >
@@ -1754,7 +1757,7 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
         <DialogActions>
           <Button
             onClick={() => setPrintModalOpen(false)}
-            color="primary"
+            color="#7D4A1A"
             autoFocus
           >
             Close
