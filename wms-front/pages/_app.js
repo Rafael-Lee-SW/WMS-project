@@ -34,6 +34,7 @@ export default class MyApp extends App {
       "/signIn",
       "/signup",
       "/components",
+      "/fitbox",
     ]; // 새로운 페이지가 생기면 추가한다.
 
     // 헤더를 사용하지 않을 페이지인지 체크

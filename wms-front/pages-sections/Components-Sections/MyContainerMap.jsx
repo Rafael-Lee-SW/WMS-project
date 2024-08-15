@@ -343,8 +343,8 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
     }));
 
     // 벽 데이터를 기록합니다.
-    const wallData = anchorsRef.current.map(({ start, end }, index) => ({
-      id: index + 1,
+    const wallData = anchorsRef.current.map(({ start, end, line }) => ({
+      id: line.attrs.id ? parseInt(line.attrs.id) : null, // Use ID from the API or null for new walls
       startX: start.x(),
       startY: start.y(),
       endX: end.x(),
@@ -353,6 +353,8 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
 
     //모든 데이터를 warehouseData로 담아서 전송한다.
     const warehouseData = { locations: locationData, walls: wallData };
+
+    console.log(warehouseData)
 
     try {
       const response = await fetch(
@@ -508,6 +510,7 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
           //에러 발생
           return;
         }
+
         clearAnchorsAndLines();
         const existingAnchors = [];
         const newAnchors = [];
@@ -522,15 +525,16 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
           return existingAnchor;
         };
 
-        walls.forEach(({ startID, startX, startY, endID, endX, endY }) => {
-          const startAnchor = getOrCreateAnchor(startID, startX, startY);
-          const endAnchor = getOrCreateAnchor(endID, endX, endY);
+        walls.forEach(({ id, startX, startY, endX, endY }) => {
+          const startAnchor = getOrCreateAnchor(id, startX, startY);
+          const endAnchor = getOrCreateAnchor(id, endX, endY);
 
           const newLine = new Konva.Line({
             points: [startX, startY, endX, endY],
             stroke: "brown",
             strokeWidth: 10,
             lineCap: "round",
+            id: id.toString(), // Preserve the original ID
           });
 
           newAnchors.push({
