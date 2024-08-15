@@ -23,8 +23,8 @@
 <br>
 
 - 배포 URL : https://i11a508.p.ssafy.io
-- Test ID :
-- Test PW :
+- Test ID : ssafytest@naver.com
+- Test PW : ssafy123!
 
 <br>
 
