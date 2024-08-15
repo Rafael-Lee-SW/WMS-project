@@ -66,7 +66,7 @@ export default function Header({
 
   const brandComponent = (
     <Link href="/components" as="/components">
-      <Button className={classes.title}>{brand}</Button>
+      <Button className={classes.title}><img style={{ height: "30px" , width: "60px", paddingRight: "15px" }} src="/img/logo1.png" alt="logo"/>{brand}</Button>
     </Link>
   );
 
@@ -84,7 +84,7 @@ export default function Header({
         <div className={classes.hiddenSmDown}>{rightLinks}</div>
         <div className={classes.hiddenMdUp}>
           <IconButton
-            color="inherit"
+            color="#986C58"
             aria-label="open drawer"
             onClick={handleDrawerToggle}
           >

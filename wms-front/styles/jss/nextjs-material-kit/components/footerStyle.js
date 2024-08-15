@@ -1,8 +1,8 @@
-import { container, primaryColor } from "/styles/jss/nextjs-material-kit.js";
+import { container } from "/styles/jss/nextjs-material-kit.js";
 
 const footerStyle = {
   block: {
-    color: "inherit",
+    color: "#785006",
     padding: "0.9375rem",
     fontWeight: "500",
     fontSize: "12px",
@@ -10,13 +10,17 @@ const footerStyle = {
     borderRadius: "3px",
     textDecoration: "none",
     position: "relative",
-    display: "block"
+    display: "block",
+    "&:hover": {
+      fontWeight: "bold",
+    },
   },
   left: {
     float: "left!important",
     display: "block"
   },
   right: {
+    color: "#785006",
     padding: "15px 0",
     margin: "0",
     float: "right!important"
@@ -29,13 +33,13 @@ const footerStyle = {
     position: "relative"
   },
   a: {
-    color: primaryColor,
+    color: "#785006",
     textDecoration: "none",
-    backgroundColor: "transparent"
+    backgroundColor: "transparent",
   },
   footerWhiteFont: {
     "&,&:hover,&:focus": {
-      color: "#FFFFFF"
+      color: "black"
     }
   },
   container,
@@ -47,7 +51,7 @@ const footerStyle = {
   inlineBlock: {
     display: "inline-block",
     padding: "0px",
-    width: "auto"
+    width: "auto",
   },
   icon: {
     width: "18px",
