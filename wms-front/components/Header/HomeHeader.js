@@ -4,14 +4,12 @@ import Link from "next/link";
 import classNames from "classnames";
 // nodejs library to set properties for components
 import PropTypes from "prop-types";
+
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
-import AppBar from "@material-ui/core/AppBar";
-import Toolbar from "@material-ui/core/Toolbar";
-import IconButton from "@material-ui/core/IconButton";
-import Button from "@material-ui/core/Button";
-import Hidden from "@material-ui/core/Hidden";
-import Drawer from "@material-ui/core/Drawer";
+
+import { AppBar, Toolbar, IconButton, Drawer, Button} from "@mui/material";
+
 // @material-ui/icons
 import Menu from "@material-ui/icons/Menu";
 // core components
@@ -19,27 +17,34 @@ import styles from "/styles/jss/nextjs-material-kit/components/headerStyle.js";
 
 const useStyles = makeStyles(styles);
 
-export default function Header(props) {
+export default function Header({
+  color = "white", // Default value for color
+  rightLinks,
+  leftLinks,
+  brand,
+  fixed,
+  absolute,
+  changeColorOnScroll,
+}) {
   const classes = useStyles();
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  
+
   React.useEffect(() => {
-    if (props.changeColorOnScroll) {
+    if (changeColorOnScroll) {
       window.addEventListener("scroll", headerColorChange);
     }
     return function cleanup() {
-      if (props.changeColorOnScroll) {
+      if (changeColorOnScroll) {
         window.removeEventListener("scroll", headerColorChange);
       }
     };
-  });
+  }, [changeColorOnScroll]);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
   const headerColorChange = () => {
-    const { color, changeColorOnScroll } = props;
     const windowsScrollTop = window.pageYOffset;
     const header = document.body.getElementsByTagName("header")[0];
 
@@ -52,7 +57,6 @@ export default function Header(props) {
     }
   };
 
-  const { color, rightLinks, leftLinks, brand, fixed, absolute } = props;
   const appBarClasses = classNames({
     [classes.appBar]: true,
     [classes[color]]: color,
@@ -62,7 +66,7 @@ export default function Header(props) {
 
   const brandComponent = (
     <Link href="/components" as="/components">
-      <Button className={classes.title}>{brand}</Button>
+      <Button className={classes.title}><img style={{ height: "30px" , width: "60px", paddingRight: "15px" }} src="/img/logo1.png" alt="logo"/>{brand}</Button>
     </Link>
   );
 
@@ -72,27 +76,23 @@ export default function Header(props) {
         {leftLinks !== undefined ? brandComponent : null}
         <div className={classes.flex}>
           {leftLinks !== undefined ? (
-            <Hidden smDown implementation="css">
-              {leftLinks}
-            </Hidden>
+            <div className={classes.hiddenSmDown}>{leftLinks}</div>
           ) : (
             brandComponent
           )}
         </div>
-        <Hidden smDown implementation="css">
-          {rightLinks}
-        </Hidden>
-        <Hidden mdUp>
+        <div className={classes.hiddenSmDown}>{rightLinks}</div>
+        <div className={classes.hiddenMdUp}>
           <IconButton
-            color="inherit"
+            color="#986C58"
             aria-label="open drawer"
             onClick={handleDrawerToggle}
           >
             <Menu />
           </IconButton>
-        </Hidden>
+        </div>
       </Toolbar>
-      <Hidden mdUp implementation="js">
+      <div className={classes.hiddenMdUp}>
         <Drawer
           variant="temporary"
           anchor={"right"}
@@ -107,14 +107,10 @@ export default function Header(props) {
             {rightLinks}
           </div>
         </Drawer>
-      </Hidden>
+      </div>
     </AppBar>
   );
 }
-
-Header.defaultProps = {
-  color: "white"
-};
 
 Header.propTypes = {
   color: PropTypes.oneOf([

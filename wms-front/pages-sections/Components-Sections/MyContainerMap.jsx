@@ -1,5 +1,8 @@
 //MyContainerMap.jsx
 import React, { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/router";
+import { toast } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 // Library of konva and color Checker
 import {
   Stage,
@@ -10,18 +13,19 @@ import {
   Circle,
   Transformer,
 } from "react-konva";
-import { SketchPicker } from "react-color";
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
 // @material-ui/icons
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import SaveIcon from "@mui/icons-material/Save";
-import UnarchiveIcon from "@mui/icons-material/Unarchive";
+import CircularProgress from "@mui/material/CircularProgress";
 // core components
 import Button from "/components/CustomButtons/Button.js";
 // CSS스타일
 import styles from "/styles/jss/nextjs-material-kit/pages/componentsSections/MyContainerStyle.jsx";
+//Material UI 창고 생성 테스트를 위한
+import { Typography, Slider, Box, Modal, Fade, TextField } from "@mui/material";
 
 // 상수 설정(그리드, 컨버스 등)
 const GRID_SIZE = 100;
@@ -29,15 +33,115 @@ const GRID_SIZE_SUB_50 = 50;
 const GRID_SIZE_SUB_10 = 10;
 const CANVAS_SIZE = 1000;
 
-const useStyles = makeStyles(styles);
+const useStyles = makeStyles((theme) => ({
+  ...styles,
+  canvasContainer: {
+    position: "relative",
+    width: "100%",
+    height: "100vh",
+    overflow: "hidden",
+  },
+  leftSidebar: {
+    position: "absolute",
+    top: "10vh",
+    left: 0,
+    width: "200px",
+    height: "80vh",
+    backgroundColor: "rgba(247, 247, 247, 0.9)",
+    boxShadow: "2px 0 5px rgba(0, 0, 0, 0.1)",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    zIndex: 1100,
+    padding: "10px 5px 10px 15px",
+    overflowY: "auto",
+  },
+  rightSidebar: {
+    position: "absolute",
+    top: "10vh",
+    right: 15,
+    width: "220px",
+    height: "80vh",
+    backgroundColor: "rgba(247, 247, 247, 0.9)",
+    boxShadow: "-2px 0 5px rgba(0, 0, 0, 0.1)",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    zIndex: 1100,
+    padding: "10px 0",
+    overflowY: "auto",
+  },
+  buttonStyle: {
+    backgroundColor: "transparent",
+    width: "50px",
+    color: "#7D4A1A",
+    marginLeft: "10px",
+    height: "30px",
+    border: "1px solid #7D4A1A",
+    borderRadius: "4px",
+    "&:hover": {
+      transform: "scale(1.05)",
+      backgroundColor: "#7D4A1A",
+      color: "white",
+    },
+  },
+  generateButton: {
+    backgroundColor: "#7D4A1A",
+    "&:hover": {
+      transform: "scale(1.05)",
+      backgroundColor: "transparent",
+      border: "1px solid #7D4A1A",
+      color: "#7D4A1A",
+    },
+  },
+  outOfCanvas: {
+    position: "relative",
+    width: "100%",
+    height: "100vh",
+  },
+  inOfCanvas: {
+    width: "100%",
+    height: "100vh",
+    cursor: "default",
+  },
+  modal: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  paper: {
+    backgroundColor: theme.palette.background.paper,
+    border: "2px solid #000",
+    boxShadow: theme.shadows[5],
+    padding: theme.spacing(2, 4, 3),
+    maxWidth: "500px",
+    width: "90%",
+  },
+}));
 
 /**
  * 창고 관리 Component
  */
-const MyContainerMap = () => {
+
+const MyContainerMap = ({ warehouseId, businessId }) => {
+
+  const router = useRouter();
   const classes = useStyles();
   const stageRef = useRef(null);
   const layerRef = useRef(null);
+
+  const notify = (message) => toast(message, {
+    position: "top-center",
+    autoClose: 2000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+  });
+
+  // 로딩 Loading
+  const [loading, setLoading] = useState(true); // Overall loading state
 
   // 창고 배열을 저장하기 위한 초기 세팅
   const initialContainer = Array.from({ length: CANVAS_SIZE }, () =>
@@ -50,7 +154,11 @@ const MyContainerMap = () => {
   const [container, setContainer] = useState(initialContainer);
 
   // 줌 인, 줌 아웃을 위한 Scale
-  const [scale, setScale] = useState(1); // 초기 줌 값
+  const [scale, setScale] = useState(0.8); // 초기 줌 값
+  // 처음 시작 위치를 지정하기 위함
+  const [stagePosition, setStagePosition] = useState({ x: 0, y: 0 });
+  const VIEWPORT_WIDTH = window.innerWidth; // 현재 창의 가로세로 길이를 받아서 창을 구한다.
+  const VIEWPORT_HEIGHT = window.innerHeight;
 
   // 사각형을 추가하고 관리하는 State 추가
   const [locations, setLocations] = useState([
@@ -69,6 +177,27 @@ const MyContainerMap = () => {
       rotation: 0,
     },
   ]);
+  // Check if position is within bounds
+  const isPositionWithinBounds = (x, y, width, height) => {
+    return (
+      x >= 0 && y >= 0 && x + width <= CANVAS_SIZE && y + height <= CANVAS_SIZE
+    );
+  };
+  // Function to handle dragging
+  const handleDragMove = (e, rect) => {
+    const node = e.target;
+    const newX = Math.max(Math.min(node.x(), CANVAS_SIZE - rect.width), 0);
+    const newY = Math.max(Math.min(node.y(), CANVAS_SIZE - rect.height), 0);
+
+    // Update location only if it's within bounds
+    if (isPositionWithinBounds(newX, newY, rect.width, rect.height)) {
+      setLocations((prevLocations) =>
+        prevLocations.map((loc) =>
+          loc.id === rect.id ? { ...loc, x: newX, y: newY } : loc
+        )
+      );
+    }
+  };
 
   // 마지막으로 클릭한 상자를 추적하는 상태 추가
   const [selectedLocation, setSelectedLocation] = useState(null);
@@ -78,7 +207,6 @@ const MyContainerMap = () => {
 
   // 현재 벽 생성 / 일반 커서 를 선택하기 위한 State
   const [currentSetting, setCurrentSetting] = useState("location");
-  const [showColorPicker, setShowColorPicker] = useState(false);
 
   // 새롭게 생성되는 적재함(location)의 속성 설정을 위한 State
   const [newLocationColor, setNewLocationColor] = useState("blue");
@@ -86,7 +214,13 @@ const MyContainerMap = () => {
   const [newLocationHeight, setNewLocationHeight] = useState(50);
   const [newLocationZIndex, setNewLocationZIndex] = useState(1);
   const [newLocationName, setNewLocationName] = useState("");
-  const [newLocationType, setNewLocationType] = useState(""); // 속성 추가 예정
+  // 상온, 냉장, 보관, 위험 등의 옵션 추가
+  const [newLocationType, setNewLocationType] = useState("상온");
+
+  // 상태 추가: nameMode가 'text'이면 텍스트 입력, 'rowColumn'이면 행/열 입력
+  const [nameMode, setNameMode] = useState("text");
+  const [rowNumber, setRowNumber] = useState("");
+  const [columnNumber, setColumnNumber] = useState("");
 
   // New State for wall settings(벽 관련 설정)
   const [newWallColor, setNewWallColor] = useState("brown");
@@ -115,9 +249,40 @@ const MyContainerMap = () => {
   const currentShapeRef = useRef(null);
 
   // 로케이션을 추가하는 메서드
-  const handleAddLocation = (type) => {
+  const handleAddLocation = async (type) => {
+    let newName;
+
+    // nameMode에 따라 name을 설정
+    if (nameMode === "text") {
+      // 텍스트 모드에서는 사용자가 입력한 name을 사용하거나, 기본 값으로 '적재함-{마지막번호+1}' 사용
+      const latestId =
+        locations.length > 0 ? parseInt(locations[locations.length - 1].id) : 0;
+      newName = newLocationName || `적재함-${latestId + 1}`;
+    } else if (nameMode === "rowColumn") {
+      // 행/열 선택 모드에서는 '00-00' 형식으로 이름을 생성
+      const formattedRow = rowNumber.padStart(2, "0");
+      const formattedColumn = columnNumber.padStart(2, "0");
+      newName = `${formattedRow}-${formattedColumn}`;
+    }
+
+    // 중복된 이름이 있는지 확인
+    const isDuplicateName = locations.some(
+      (location) => location.name === newName
+    );
+
+    if (isDuplicateName) {
+      notify(
+        `이름이 "${newName}"인 로케이션이 이미 존재합니다. 다른 이름을 사용하세요.`
+      );
+      return; // 중복된 이름이 있으면 생성 중단
+    } else {
+      notify(
+        `로케이션 "${newName}"이 생성되었습니다.`
+      );
+    }
+
     const newLocation = {
-      id: null,
+      //Id를 넣어서는 안된다. DB에서 자동으로 처리되도록 해야한다.
       x: 50,
       y: 50,
       z: newLocationZIndex,
@@ -126,22 +291,68 @@ const MyContainerMap = () => {
       fill: newLocationColor,
       draggable: true,
       order: locations.length + 1,
-      name:
-        newLocationName ||
-        `적재함 ${parseInt(locations[locations.length - 1].id) + 1}`,
+      name: newName, // 생성된 name 사용
       type: type,
       rotation: 0,
     };
+
     setLocations([...locations, newLocation]);
     updateContainer(newLocation, "location", `location${newLocation.id}`);
-    //적재함 추가 후 값 초기화
+
+    // API 요청을 위한 location 데이터를 작성
+    const locationData = {
+      xPosition: newLocation.x,
+      yPosition: newLocation.y,
+      zSize: newLocation.z,
+      xSize: newLocation.width,
+      ySize: newLocation.height,
+      name: newLocation.name,
+      productStorageType: newLocationType, // 상온, 냉장 등등
+      rotation: newLocation.rotation,
+      touchableFloor: 2, // 임시로 2로 설정
+    };
+
+    // API 호출 - 생성된 로케이션을 서버에 POST
+    try {
+      await postLocationAPI([locationData], warehouseId);
+    } catch (error) {
+      console.error("Error adding location:", error);
+      notify("로케이션 추가 중 오류가 발생했습니다.");
+    }
+
+    // 적재함 추가 후 값 초기화
     setNewLocationColor("blue");
     setNewLocationWidth(50);
     setNewLocationHeight(50);
     setNewLocationZIndex(1);
     setNewLocationName("");
+    setRowNumber(""); // 행/열 선택 모드 초기화
+    setColumnNumber(""); // 행/열 선택 모드 초기화
   };
-  //
+
+  const postLocationAPI = async (requests, warehouseId) => {
+
+    const total = { requests, warehouseId };
+
+    try {
+      const response = await fetch(`https://i11a508.p.ssafy.io/api/locations`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(total),
+      });
+
+      if (response.ok) {
+        getWarehouseAPI(warehouseId)
+      } else {
+        router.push('/404');
+      }
+    } catch (error) {
+      router.push('/404');
+    }
+  };
+
   // 창고 배열 저장
   const updateContainer = (location, type, code) => {
     const newContainer = container.map((row, x) =>
@@ -160,56 +371,12 @@ const MyContainerMap = () => {
     setContainer(newContainer);
   };
 
-  // 컨버스 안에 있는 모든 정보를 Local에 저장한다.
-  const handleSave = async () => {
-    // 적재함들을 전부 기록한다.
-    const locationData = locations.map((location) => ({
-      id: location.id,
-      x: location.x,
-      y: location.y,
-      z: location.z,
-      width: location.width,
-      height: location.height,
-      fill: location.fill,
-      type: location.type,
-      name: location.name,
-      rotation: location.rotation,
-    }));
-
-    // 벽 정보를 전부 기록한다.
-    const wallData = anchorsRef.current.map(({ start, end }) => ({
-      startID: start.id(),
-      startX: start.x(),
-      startY: start.y(),
-      endID: end.id(),
-      endX: end.x(),
-      endY: end.y(),
-    }));
-    try {
-      const response = await fetch("/api/save-map", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ locationData, wallData }),
-      });
-
-      if (response.ok) {
-        console.log("창고 정보 저장 성공");
-      } else {
-        console.error("창고 정보 저장에 Error가 발생했습니다.");
-      }
-    } catch (error) {
-      console.error("에러가 발생했습니다.", error);
-    }
-  };
-
   // 수정된정보를 API를 통해 보냄
   const editContainerAPI = async () => {
     const locationData = locations.map((location) => ({
       id: parseInt(location.id),
       name: location.name,
-      fill: 0,
+      // fill: location.fill,
       xposition: location.x,
       yposition: location.y,
       xsize: location.width,
@@ -220,8 +387,8 @@ const MyContainerMap = () => {
     }));
 
     // 벽 데이터를 기록합니다.
-    const wallData = anchorsRef.current.map(({ start, end }, index) => ({
-      id: index + 1,
+    const wallData = anchorsRef.current.map(({ start, end, line }) => ({
+      id: line.attrs.id ? parseInt(line.attrs.id) : null, // Use ID from the API or null for new walls
       startX: start.x(),
       startY: start.y(),
       endX: end.x(),
@@ -231,9 +398,11 @@ const MyContainerMap = () => {
     //모든 데이터를 warehouseData로 담아서 전송한다.
     const warehouseData = { locations: locationData, walls: wallData };
 
+    console.log(warehouseData)
+
     try {
       const response = await fetch(
-        "https://i11a508.p.ssafy.io/api/warehouses/2/locatons-and-walls",
+        `https://i11a508.p.ssafy.io/api/warehouses/${warehouseId}/locatons-and-walls`,
         {
           method: "PUT",
           headers: {
@@ -244,12 +413,14 @@ const MyContainerMap = () => {
       );
 
       if (response.ok) {
-        console.log("Map data saved successfully");
+        // 성공
+        notify(`현재 상태가 저장되었습니다.`);
+        getWarehouseAPI(warehouseId); // 초기화하기
       } else {
-        console.error("Error saving map data");
+        //에러
       }
     } catch (error) {
-      console.error("Error saving map data:", error);
+      //에러
     }
   };
 
@@ -314,18 +485,18 @@ const MyContainerMap = () => {
         layerRef.current.batchDraw();
       } else {
         const errorData = await response.json();
-        console.error("Error saving map data:", errorData);
+        // 에러
       }
     } catch (error) {
-      console.error("Error loading map data:", error);
+      //에러
     }
   };
 
   // API를 통해 해당하는 창고(번호)의 모든 location(적재함)과 wall(벽)을 가져오는 메서드
-  const getWarehouseAPI = async () => {
+  const getWarehouseAPI = async (warehouseId) => {
     try {
       const response = await fetch(
-        "https://i11a508.p.ssafy.io/api/warehouses/2",
+        `https://i11a508.p.ssafy.io/api/warehouses/${warehouseId}`,
         {
           method: "GET",
           headers: {
@@ -341,18 +512,34 @@ const MyContainerMap = () => {
         // 받아온 데이터 중 로케이션 데이터 처리
         const locations = warehouseData.locations;
         if (!locations) {
-          console.error("Locations data not found");
+          //에러 발생
           return;
         }
+
         const newLocations = locations.map((location, index) => {
+
+          const startColor = { r: 27, g: 177, b: 231 }; // Starting color (#1bb1e7)
+          const endColor = { r: 0, g: 0, b: 255 }; // Ending color (#0000FF)
+
+          // Calculate the color components based on the fill value
+          const red = Math.round(
+            startColor.r + ((endColor.r - startColor.r) * location.fill) / 100
+          );
+          const green = Math.round(
+            startColor.g + ((endColor.g - startColor.g) * location.fill) / 100
+          );
+          const blue = Math.round(
+            startColor.b + ((endColor.b - startColor.b) * location.fill) / 100
+          );
+
           return {
             id: location.id.toString(),
             x: location.xposition,
             y: location.yposition,
             width: location.xsize || 50,
             height: location.ysize || 50,
-            z: 5,
-            fill: "blue",
+            z: location.zsize,
+            fill: `rgba(${red}, ${green}, ${blue}, 1)`, // Calculate RGB with alpha as 1
             draggable: true,
             order: index,
             name: location.name || `적재함 ${index}`,
@@ -364,9 +551,10 @@ const MyContainerMap = () => {
         // 벽 데이터 처리
         const walls = warehouseData.walls;
         if (!walls) {
-          console.error("Walls data not found");
+          //에러 발생
           return;
         }
+
         clearAnchorsAndLines();
         const existingAnchors = [];
         const newAnchors = [];
@@ -381,15 +569,16 @@ const MyContainerMap = () => {
           return existingAnchor;
         };
 
-        walls.forEach(({ startID, startX, startY, endID, endX, endY }) => {
-          const startAnchor = getOrCreateAnchor(startID, startX, startY);
-          const endAnchor = getOrCreateAnchor(endID, endX, endY);
+        walls.forEach(({ id, startX, startY, endX, endY }) => {
+          const startAnchor = getOrCreateAnchor(id, startX, startY);
+          const endAnchor = getOrCreateAnchor(id, endX, endY);
 
           const newLine = new Konva.Line({
             points: [startX, startY, endX, endY],
             stroke: "brown",
             strokeWidth: 10,
             lineCap: "round",
+            id: id.toString(), // Preserve the original ID
           });
 
           newAnchors.push({
@@ -405,19 +594,19 @@ const MyContainerMap = () => {
 
         setLocations(newLocations);
       } else {
-        console.error("Error loading rectangles data");
+        //실패
       }
     } catch (error) {
-      console.error("Error loading rectangles data:", error);
+      //에러
     }
   };
 
   // 줌-인 / 줌-아웃 함수
   const handleZoomIn = () => {
-    setScale(scale * 1.2);
+    setScale((prevScale) => prevScale * 1.2);
   };
   const handleZoomOut = () => {
-    setScale(scale / 1.2);
+    setScale((prevScale) => prevScale / 1.2);
   };
 
   // 그리드 라인 생성하는 함수
@@ -553,7 +742,7 @@ const MyContainerMap = () => {
       id: id,
       x: Math.round(x),
       y: Math.round(y),
-      radius: 20,
+      radius: 10,
       stroke: "#666",
       fill: "#ddd",
       opacity: 0,
@@ -875,11 +1064,11 @@ const MyContainerMap = () => {
           if (!existingAnchor) {
             const newId = anchorsRef.current.length
               ? Math.max(
-                  ...anchorsRef.current.flatMap(({ start, end }) => [
-                    parseInt(start.id(), 10),
-                    parseInt(end.id(), 10),
-                  ])
-                ) + 1
+                ...anchorsRef.current.flatMap(({ start, end }) => [
+                  parseInt(start.id(), 10),
+                  parseInt(end.id(), 10),
+                ])
+              ) + 1
               : 1;
             existingAnchor = buildAnchor(newId, x, y);
           } else {
@@ -968,374 +1157,711 @@ const MyContainerMap = () => {
     };
   }, [line, startPos, currentSetting, hoveredAnchor]);
 
+  // 최초 한번 실행된다.
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true); // Start loading
+        await getWarehouseAPI(warehouseId);
+      } catch (error) {
+        //에러
+      } finally {
+        setLoading(false); // End loading
+      }
+    };
+    fetchData();
+  }, []);
+
+  // 중앙에서 시작하기 위함
+  useEffect(() => {
+    const centerCanvas = () => {
+      const centerX = (VIEWPORT_WIDTH - CANVAS_SIZE) / 2;
+      const centerY = (VIEWPORT_HEIGHT - CANVAS_SIZE) / 1.5;
+
+      setStagePosition({ x: centerX, y: centerY });
+    };
+
+    centerCanvas();
+  }, [CANVAS_SIZE, VIEWPORT_WIDTH, VIEWPORT_HEIGHT]);
+  /**
+   * 창고 자동 생성 로직을 위한 부분
+   */
+
+  const [openContainerCreation, setOpenContainerCreation] = useState(false);
+  const [formData, setFormData] = useState({
+    containerName: "",
+    containerXSize: "",
+    containerYSize: "",
+    locationX: "",
+    locationY: "",
+    locationZ: "",
+    row: "",
+    column: "",
+  });
+
+  const handleOpen = () => {
+    setOpenContainerCreation(true);
+  };
+
+  const handleClose = () => {
+    setOpenContainerCreation(false);
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    // Extract values from formData
+    const { locationX, locationY, locationZ, row, column } = formData;
+
+    // Calculate fixed spacing between columns and rows
+    const columnSpacing = 10; // Fixed spacing of 10px between columns
+    const rowSpacing = parseInt(locationY); // Distance between rows equal to the height of each location
+
+    // 위치 자동 생성을 위한 부분
+    const newLocations = [];
+    for (let i = 0; i < row; i++) {
+      for (let j = 0; j < column; j++) {
+        // Format row and column numbers as two-digit strings
+        const rowNumber = (i + 1).toString().padStart(2, "0"); // Convert to string and pad with zeros
+        const columnNumber = (j + 1).toString().padStart(2, "0"); // Convert to string and pad with zeros
+
+        // Calculate x and y positions with new spacing logic
+        const xPosition = j * (parseInt(locationX) + columnSpacing);
+        const yPosition = i * (parseInt(locationY) + rowSpacing);
+
+        newLocations.push({
+          id: null,
+          x: xPosition,
+          y: yPosition,
+          z: parseInt(locationZ),
+          width: Math.round(parseInt(locationX)),
+          height: Math.round(parseInt(locationY)),
+          draggable: true,
+          order: newLocations.length + 1,
+          name: `${rowNumber}-${columnNumber}`,
+          productStorageType: "상온",
+          fill: "0",
+          rotation: 0,
+          touchableFloor: 2, // 닿을 수 있는 층수
+        });
+      }
+    }
+
+    // Update locations state
+    setLocations((prevLocations) => [...prevLocations, ...newLocations]);
+
+    // Automatically create walls around the generated locations
+    generateWalls(newLocations);
+
+    handleClose();
+  };
+
+  // 벽 자동생성을 위한 것
+  const generateWalls = (generatedLocations) => {
+    if (generatedLocations.length === 0) return;
+
+    // Calculate the bounding box for the new locations
+    let minX = Number.MAX_VALUE,
+      minY = Number.MAX_VALUE,
+      maxX = 0,
+      maxY = 0;
+
+    generatedLocations.forEach((location) => {
+      minX = Math.min(minX, location.x);
+      minY = Math.min(minY, location.y);
+      maxX = Math.max(maxX, location.x + location.width);
+      maxY = Math.max(maxY, location.y + location.height);
+    });
+
+    // Create four corner anchors for the perimeter
+    const topLeft = buildAnchor(null, minX, minY);
+    const topRight = buildAnchor(null, maxX, minY);
+    const bottomLeft = buildAnchor(null, minX, maxY);
+    const bottomRight = buildAnchor(null, maxX, maxY);
+
+    // Create walls (lines) between the corner anchors
+    const newLines = [
+      { start: topLeft, end: topRight },
+      { start: topRight, end: bottomRight },
+      { start: bottomRight, end: bottomLeft },
+      { start: bottomLeft, end: topLeft },
+    ];
+
+    // Add the lines to the layer
+    newLines.forEach(({ start, end }) => {
+      const line = new Konva.Line({
+        points: [start.x(), start.y(), end.x(), end.y()],
+        stroke: newWallColor,
+        strokeWidth: newWallWidth,
+      });
+      layerRef.current.add(line);
+
+      anchorsRef.current.push({ start, end, line });
+    });
+
+    layerRef.current.batchDraw();
+  };
+
+  // RGB 색깔로 재고율 퍼센트(%)를 추출하는 함수
+  const extractFillPercentage = (rgbaString) => {
+    const matches = rgbaString.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+
+    if (matches) {
+      const red = parseInt(matches[1], 10);
+      const green = parseInt(matches[2], 10);
+
+      // Calculate the percentage using both red and green components
+      // Both red and green start at a higher value and decrease to 0 as the fill increases
+      const redPercentage = (27 - red) / 27;
+      const greenPercentage = (177 - green) / 177;
+
+      // The fill percentage is determined by averaging the percentage contribution from red and green
+      const fillPercentage = ((redPercentage + greenPercentage) / 2) * 100;
+
+      return fillPercentage.toFixed(1);
+    }
+
+    return "0.0"; // Default to 0% if unable to parse
+  };
+
   //--- 리턴 Part ---
 
   return (
-    <div>
-      {/** Main 영역 시작 */}
-      <main className={classes.mainBody}>
-        {/* Left-SideBar / 좌측 사이드바  */}
-        <div className={classes.leftSideBar}>
+    <div className={classes.canvasContainer}>
+      {/* Left Sidebar */}
+      <div className={classes.leftSidebar}>
+        <div>
           <Button
             className={classes.buttonStyle}
             onClick={() => changeCurrentSetting("location")}
+            variant="contained"
           >
             재고함
           </Button>
           <Button
             className={classes.buttonStyle}
             onClick={() => changeCurrentSetting("wall")}
+            variant="contained"
           >
-            벽
+            벽 생성
           </Button>
-          <Button
+          {/* <Button
             className={classes.buttonStyle}
             onClick={() => changeCurrentSetting("specialObject")}
+            variant="contained"
           >
             특수 객체
           </Button>
-          {currentSetting && currentSetting !== "wall" && (
-            <div>
-              <h3>{currentSetting} 설정</h3>
-              <div>
-                <label
-                  style={{
-                    display: "flex",
-                  }}
-                >
-                  <div
-                    onClick={() => setShowColorPicker(!showColorPicker)}
-                    style={{
-                      width: "3vh",
-                      height: "3vh",
-                      background: newLocationColor,
-                      border: "1px solid #000",
-                      cursor: "pointer",
-                    }}
-                  />
-                  <div
-                    style={{
-                      marginLeft: "1vh",
-                    }}
-                  >
-                    색상을 지정하세요
-                  </div>
-                  {showColorPicker && (
-                    <SketchPicker
-                      styles={{
-                        width: "1000px",
-                      }}
-                      color={newLocationColor}
-                      onChangeComplete={(color) =>
-                        setNewLocationColor(color.hex)
-                      }
-                    />
-                  )}
-                </label>
-                <hr
-                  style={{
-                    color: "#aaaaaa",
-                  }}
-                />
-              </div>
-              <p
-                style={{
-                  color: "#aaaaaa",
-                }}
-              >
-                단수와 크기를 정하세요
-              </p>
-              <div>
-                <div>
-                  <label>
-                    Zndex :
-                    <input
-                      type="range"
-                      min="1"
-                      max="10"
-                      value={newLocationZIndex}
-                      onChange={(e) =>
-                        setNewLocationZIndex(Number(e.target.value))
-                      }
-                    />
-                    {newLocationZIndex}
-                  </label>
-                </div>
-                <label>
-                  Width:
-                  <input
-                    type="range"
-                    min="10"
-                    max="500"
-                    value={newLocationWidth}
-                    onChange={(e) =>
-                      setNewLocationWidth(
-                        Math.round(Number(e.target.value) / 10) * 10
-                      )
-                    }
-                  />
-                  {newLocationWidth}
-                </label>
-              </div>
-              <div>
-                <label>
-                  Height:
-                  <input
-                    type="range"
-                    min="10"
-                    max="500"
-                    value={newLocationHeight}
-                    onChange={(e) =>
-                      setNewLocationHeight(
-                        Math.round(Number(e.target.value) / 10) * 10
-                      )
-                    }
-                  />
-                  {newLocationHeight}
-                </label>
-              </div>
-              <hr />
-              <p
-                style={{
-                  color: "#aaaaaa",
-                }}
-              >
-                이름과 속성을 지정해주세요
-              </p>
-              <div>
-                <label>
-                  Name :
-                  <input
-                    type="text"
-                    value={newLocationName}
-                    onChange={(e) => setNewLocationName(e.target.value)}
-                    style={{
-                      marginLeft: "3px",
-                      width: "14vh",
-                    }}
-                  />
-                </label>
-              </div>
-              <div>
-                <label>
-                  속성 :
-                  <input
-                    type="text"
-                    value={newLocationName}
-                    onChange={(e) => setNewLocationName(e.target.value)}
-                    style={{
-                      marginLeft: "3px",
-                      width: "15vh",
-                    }}
-                  />
-                </label>
-              </div>
-              <Button
-                onClick={() => handleAddLocation(currentSetting)}
-                style={{
-                  width: "100%",
-                  marginTop: "50%",
-                  fontSize: "18px",
-                }}
-              >
-                생성하기
-              </Button>
-            </div>
-          )}
-          {currentSetting === "wall" && (
-            <>
-              <h3>Set Properties for Wall</h3>
-              <div>
-                <label>
-                  Color:
-                  <div
-                    onClick={() => setShowColorPicker(!showColorPicker)}
-                    style={{
-                      width: "36px",
-                      height: "14px",
-                      background: newWallColor,
-                      border: "1px solid #000",
-                      cursor: "pointer",
-                    }}
-                  />
-                  {showColorPicker && (
-                    <SketchPicker
-                      color={newWallColor}
-                      onChangeComplete={(color) => setNewWallColor(color.hex)}
-                    />
-                  )}
-                </label>
-              </div>
-              <div>
-                <label>
-                  Width:
-                  <input
-                    type="range"
-                    min="5"
-                    max="50"
-                    value={newWallWidth}
-                    onChange={(e) => setNewWallWidth(Number(e.target.value))}
-                  />
-                  {newWallWidth}
-                </label>
-              </div>
-            </>
-          )}
+          <Button
+            className={classes.buttonStyle}
+            onClick={handleOpen}
+            variant="contained"
+          >
+            자동 생성
+          </Button> */}
         </div>
-
-        {/* Canvas 영역  */}
-
-        <div className={classes.outOfCanvas}>
-          <div className={classes.inOfCanvas} style={{ cursor: customCursor }}>
-            <Stage
-              width={CANVAS_SIZE} // 1000cm = 10m
-              height={CANVAS_SIZE} // 1000cm = 10cm
-              scaleX={scale}
-              scaleY={scale}
-              draggable={currentSetting === "wall" ? false : true}
-              ref={stageRef} // Assign the reference to the stage
-              onPointerMove={Pointer}
-              onMouseDown={checkDeselect} // 마우스 다운 시 선택 해체
-              onTouchStart={checkDeselect} // 처시 시작 시 선택 해체
+        <br />
+        {currentSetting && currentSetting !== "wall" && (
+          <div>
+            <Typography
+              variant="h6"
+              gutterBottom
+              style={{ textAlign: "center", fontWeight: "bold" }}
             >
-              <Layer ref={layerRef}>
-                {generateGridLines()}
+              {currentSetting === "location" ? "로케이션" : "입구-출구"} 설정
+            </Typography>
 
-                {locations.map((rect, i) => (
-                  <RectangleTransformer
-                    key={rect.id} // 각 사각형에 고유 키 설정
-                    x={rect.x} // 텍스트를 띄우기 위한 위치 정보
-                    y={rect.y}
-                    width={rect.width}
-                    height={rect.height}
-                    fill={rect.fill}
-                    shapeProps={rect} // 모양 속성 전달
-                    isSelected={rect.id === selectedLocationTransform} // 사각형이 선택되었는지 확인
-                    onSelect={() => {
-                      setSelectedLocationTransform(rect.id); // 클릭시 변환 시작
-                      setSelectedLocation(rect); // 클릭 시 사각형 선택
-                    }}
-                    onChange={(newAttrs) => {
-                      const rects = locations.slice();
-                      rects[i] = newAttrs;
-                      setLocations(rects); // 사각형 속성 업데이트
-                    }}
-                  />
-                ))}
-              </Layer>
-            </Stage>
+            <Typography
+              style={{ textAlign: "center" }}
+              variant="body2"
+              color="textSecondary"
+              gutterBottom
+            >
+              단수와 크기를 정하세요
+            </Typography>
+
+            <Box mb={2} style={{ paddingTop: "20px" }}>
+              <Typography gutterBottom style={{ textAlign: "center" }}>
+                단수(층): {newLocationZIndex}단/층
+              </Typography>
+              <Slider
+                value={newLocationZIndex}
+                style={{
+                  color: "#4E4544",
+                }}
+                onChange={(e, newValue) => setNewLocationZIndex(newValue)}
+                aria-labelledby="z-index-slider"
+                color="#4E4544"
+                valueLabelDisplay="auto"
+                step={1}
+                marks
+                min={1}
+                max={10}
+              />
+            </Box>
+            <Box mb={2}>
+              <Typography gutterBottom>가로: {newLocationWidth}cm</Typography>
+              <Slider
+                value={newLocationWidth}
+                style={{
+                  color: "#4E4544",
+                }}
+                onChange={(e, newValue) => setNewLocationWidth(newValue)}
+                aria-labelledby="width-slider"
+                valueLabelDisplay="auto"
+                step={10}
+                marks
+                min={10}
+                max={500}
+              />
+            </Box>
+            <Box mb={2}>
+              <Typography gutterBottom>세로: {newLocationHeight}cm</Typography>
+              <Slider
+                value={newLocationHeight}
+                style={{
+                  color: "#4E4544",
+                }}
+                onChange={(e, newValue) => setNewLocationHeight(newValue)}
+                aria-labelledby="height-slider"
+                valueLabelDisplay="auto"
+                step={10}
+                marks
+                min={10}
+                max={500}
+              />
+            </Box>
+            <hr />
+            <Typography variant="body2" color="textSecondary" gutterBottom>
+              이름과 속성을 지정해주세요
+            </Typography>
+            <Button
+              className={classes.buttonStyle}
+              variant="contained"
+              onClick={() => setNameMode("text")}
+            >
+              직접 입력
+            </Button>
+            <Button
+              className={classes.buttonStyle}
+              variant="contained"
+              onClick={() => setNameMode("rowColumn")}
+            >
+              행/열 선택
+            </Button>
+            {/* name 입력 부분 - 텍스트 모드와 행/열 모드에 따라 다른 입력 필드 표시 */}
+            {nameMode === "text" ? (
+              <TextField
+                label="이름"
+                value={newLocationName}
+                onChange={(e) => setNewLocationName(e.target.value)}
+                variant="outlined"
+                fullWidth
+                size="small"
+                margin="dense"
+              />
+            ) : (
+              <Box display="flex" justifyContent="space-between">
+                <TextField
+                  label="행"
+                  value={rowNumber}
+                  onChange={(e) => setRowNumber(e.target.value)}
+                  variant="outlined"
+                  size="small"
+                  margin="dense"
+                  type="number"
+                />
+                <TextField
+                  label="열"
+                  value={columnNumber}
+                  onChange={(e) => setColumnNumber(e.target.value)}
+                  variant="outlined"
+                  size="small"
+                  margin="dense"
+                  type="number"
+                />
+              </Box>
+            )}
+            <Box mb={2}>
+              <TextField
+                select
+                label="Type"
+                value={newLocationType}
+                onChange={(e) => setNewLocationType(e.target.value)}
+                variant="outlined"
+                fullWidth
+                size="small"
+                margin="dense"
+                SelectProps={{
+                  native: true,
+                }}
+              >
+                <option value="상온">상온</option>
+                <option value="냉장">냉장</option>
+                <option value="보관">보관</option>
+                <option value="위험">위험</option>
+                {/* 필요에 따라 더 많은 옵션을 추가할 수 있습니다 */}
+              </TextField>
+            </Box>
+
+            <Button
+              className={classes.generateButton}
+              onClick={() => handleAddLocation(currentSetting)}
+              variant="contained"
+              fullWidth
+            >
+              생성하기
+            </Button>
           </div>
-          <div
-            style={{
-              position: "absolute",
-              bottom: "10px",
-              right: "10px",
-              display: "flex",
-              gap: "10px",
+        )}
+        {currentSetting === "wall" && (
+          <>
+            <h3>Set Properties for Wall</h3>
+            <div>
+              <label>
+                Width:
+                <input
+                  type="range"
+                  min="5"
+                  max="50"
+                  value={newWallWidth}
+                  onChange={(e) => setNewWallWidth(Number(e.target.value))}
+                />
+                {newWallWidth}
+              </label>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Canvas 영역  */}
+      <div className={classes.outOfCanvas}>
+        <div className={classes.inOfCanvas} style={{ cursor: customCursor }}>
+          <Stage
+            width={window.innerWidth}
+            height={window.innerHeight}
+            scaleX={scale}
+            scaleY={scale}
+            x={stagePosition.x}
+            y={stagePosition.y}
+            draggable={currentSetting === "wall" ? false : true}
+            ref={stageRef}
+            onPointerMove={Pointer}
+            onMouseDown={checkDeselect}
+            onTouchStart={checkDeselect}
+            dragBoundFunc={(pos) => {
+              // Restrict dragging to within 150% of the CANVAS_SIZE
+              const minX = -(CANVAS_SIZE * 0.25);
+              const minY = -(CANVAS_SIZE * 0.25);
+              const maxX = CANVAS_SIZE * 0.75;
+              const maxY = CANVAS_SIZE * 0.75;
+              return {
+                x: Math.max(minX, Math.min(maxX, pos.x)),
+                y: Math.max(minY, Math.min(maxY, pos.y)),
+              };
             }}
           >
-            <Button justIcon round color="success" onClick={handleZoomIn}>
-              <ZoomInIcon className={classes.icons} />
-            </Button>
-            <Button justIcon round color="primary" onClick={handleZoomOut}>
-              <ZoomOutIcon className={classes.icons} />
-            </Button>
-            <Button justIcon round color="primary" onClick={handleSave}>
-              <SaveIcon className={classes.icons} />
-            </Button>
-            <Button justIcon round color="primary" onClick={loadMapFromLocal}>
-              <UnarchiveIcon className={classes.icons} />
-            </Button>
-            <Button color="primary" onClick={getWarehouseAPI}>
-              API 불러오기
-            </Button>
-            <Button color="primary" onClick={editContainerAPI}>
-              API 저장하기
-            </Button>
-          </div>
-        </div>
+            <Layer ref={layerRef}>
+              {generateGridLines()}
 
-        {/* Right-Sidebar / 우측 사이드바 영역  */}
-        <div
-          className={classes.rightSideBar}
-        >
-          <h3>재고함 목록</h3>
-          {locations.length !== 0 ? (
-            <div>
-              <ul
-                style={{
-                  height: "40vh",
-                  overflowY: "auto", // Add this line to make the ul scrollable
-                }}
-              >
-                {locations
-                  .filter((locations) => locations.type === "location")
-                  .map((locations, index) => (
-                    <li key={index}>{locations.id}번</li>
-                  ))}
-              </ul>
-            </div>
-          ) : (
-            <p>현재 재고함이 없습니다.</p>
-          )}
-          <hr />
-          <h3>선택된 재고함</h3>
-          {selectedLocation ? (
-            <div>
-              <p>ID : {selectedLocation.id}</p>
-              <p>Number : {selectedLocation.order}</p>
-              <p>Name : {selectedLocation.name}</p>
-              <p>Type : {selectedLocation.type}</p>
-              <p>층수 : {selectedLocation.z}</p>
-            </div>
-          ) : (
-            <p>No rectangle selected</p>
-          )}
+              {locations.map((rect, i) => (
+                <RectangleTransformer
+                  key={rect.id}
+                  x={rect.x}
+                  y={rect.y}
+                  width={rect.width}
+                  height={rect.height}
+                  fill={rect.fill}
+                  shapeProps={rect}
+                  isSelected={rect.id === selectedLocationTransform}
+                  onSelect={() => {
+                    setSelectedLocationTransform(rect.id);
+                    setSelectedLocation(rect);
+                  }}
+                  onChange={(newAttrs) => {
+                    const rects = locations.slice();
+                    rects[i] = newAttrs;
+                    setLocations(rects);
+                  }}
+                />
+              ))}
+            </Layer>
+          </Stage>
         </div>
+        {/* 줌 버튼 */}
         <div
-          id="menu"
-          ref={menuRef}
           style={{
-            display: "none",
             position: "absolute",
-            width: "60px",
-            backgroundColor: "white",
-            boxShadow: "0 0 5px grey",
-            borderRadius: "3px",
+            content: "center",
+            left: "45%",
+            top: "3rem",
+            display: "flex",
+            gap: "10px",
           }}
         >
-          <div>
-            <button
-              id="pulse-button"
-              style={{
-                width: "100%",
-                backgroundColor: "white",
-                border: "none",
-                margin: 0,
-                padding: "10px",
-              }}
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
-            >
-              Pulse
-            </button>
-            <button
-              id="delete-button"
-              style={{
-                width: "100%",
-                backgroundColor: "white",
-                border: "none",
-                margin: 0,
-                padding: "10px",
-              }}
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
-            >
-              Delete
-            </button>
-          </div>
+          <Button
+            justIcon
+            round
+            style={{ backgroundColor: "#7D4A1A" }}
+            onClick={handleZoomIn}
+          >
+            <ZoomInIcon style={{ width: "35px", height: "35px" }} className={classes.icons} />
+          </Button>
+          <Button
+            justIcon
+            round
+            style={{ backgroundColor: "#ADAAA5" }}
+            onClick={handleZoomOut}
+          >
+            <ZoomOutIcon style={{ width: "35px", height: "35px" }} className={classes.icons} />
+          </Button>
+          <Button
+            justIcon
+            round
+            style={{ backgroundColor: "#C2B6A1", marginRight: "40px" }}
+            onClick={editContainerAPI}
+          >
+            <SaveIcon style={{ width: "35px", height: "35px" }} className={classes.icons} />
+          </Button>
         </div>
-      </main>
+      </div>
+
+      {/* Right Sidebar */}
+      <div className={classes.rightSidebar}>
+        <h3>재고함 목록</h3>
+        {locations.length !== 0 ? (
+          <div
+            style={{
+              width: "100%",
+            }}
+          >
+            <ul
+              style={{
+                height: "30vh",
+                overflowY: "auto",
+                listStyle: "none",
+                padding: 0,
+              }}
+            >
+              {locations
+                .filter(
+                  (locations) =>
+                    locations.type === "location" && locations.name !== "00-00"
+                )
+                .map((locations, index) => (
+                  <li
+                    key={index}
+                    onClick={() => {
+                      setSelectedLocation(locations);
+                      setSelectedLocationTransform(locations.id);
+                    }}
+                    style={{
+                      cursor: "pointer",
+                      padding: "5px",
+                      borderBottom: "1px solid #ccc",
+                      textAlign: "center",
+                      backgroundColor:
+                        selectedLocation && selectedLocation.id === locations.id
+                          ? "#f0f0f0" // Highlight color for selected item
+                          : "transparent", // Default color for unselected items
+                      transition: "background-color 0.3s", // Smooth transition effect
+                    }}
+                  >
+                    {locations.name}
+                  </li>
+                ))}
+            </ul>
+          </div>
+        ) : (
+          <p>현재 재고함이 없습니다.</p>
+        )}
+        <hr />
+        <h3>선택된 재고함</h3>
+        {selectedLocation ? (
+          <div>
+            <p>이름 : {selectedLocation.name}</p>
+            <p>타입 : {selectedLocation.type}</p>
+            <p>층수 : {selectedLocation.z}</p>
+            <p>
+              현재 재고율 : {extractFillPercentage(selectedLocation.fill)}%{" "}
+              {/* Extract fill percentage from RGBA */}
+            </p>
+            <p>
+              가로 :{selectedLocation.width}cm | 세로 :{" "}
+              {selectedLocation.height}cm
+            </p>
+          </div>
+        ) : (
+          <p>재고함이 선택되지 않았습니다.</p>
+        )}
+      </div>
+      <div
+        id="menu"
+        ref={menuRef}
+        style={{
+          display: "none",
+          position: "absolute",
+          width: "60px",
+          backgroundColor: "white",
+          boxShadow: "0 0 5px grey",
+          borderRadius: "3px",
+        }}
+      >
+        <div>
+          <button
+            id="pulse-button"
+            style={{
+              width: "100%",
+              backgroundColor: "white",
+              border: "none",
+              margin: 0,
+              padding: "10px",
+            }}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          >
+            Pulse
+          </button>
+          <button
+            id="delete-button"
+            style={{
+              width: "100%",
+              backgroundColor: "white",
+              border: "none",
+              margin: 0,
+              padding: "10px",
+            }}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+
+      <Modal
+        className={classes.modal}
+        open={openContainerCreation}
+        onClose={handleClose}
+        closeAfterTransition
+      >
+        <Fade
+          in={openContainerCreation}
+          style={{
+            justifyContent: "center",
+          }}
+        >
+          <div className={classes.paper}>
+            <h2>새 창고 정보 입력</h2>
+            <form onSubmit={handleSubmit}>
+              <TextField
+                name="containerName"
+                label="창고 이름"
+                fullWidth
+                variant="outlined"
+                className={classes.formControl}
+                value={formData.containerName}
+                onChange={handleChange}
+              />
+              <TextField
+                name="containerXSize"
+                label="창고 가로 크기"
+                fullWidth
+                variant="outlined"
+                className={classes.formControl}
+                value={formData.containerXSize}
+                onChange={handleChange}
+              />
+              <TextField
+                name="containerYSize"
+                label="창고 세로 크기"
+                fullWidth
+                variant="outlined"
+                className={classes.formControl}
+                value={formData.containerYSize}
+                onChange={handleChange}
+              />
+              <TextField
+                name="locationX"
+                label="Location(적재함) 가로 크기"
+                fullWidth
+                variant="outlined"
+                className={classes.formControl}
+                value={formData.locationX}
+                onChange={handleChange}
+              />
+              <TextField
+                name="locationY"
+                label="Location(적재함) 세로 크기"
+                fullWidth
+                variant="outlined"
+                className={classes.formControl}
+                value={formData.locationY}
+                onChange={handleChange}
+              />
+              <TextField
+                name="locationZ"
+                label="Location(적재함) 층수"
+                fullWidth
+                variant="outlined"
+                className={classes.formControl}
+                value={formData.locationZ}
+                onChange={handleChange}
+              />
+              <TextField
+                name="row"
+                label="행"
+                fullWidth
+                variant="outlined"
+                className={classes.formControl}
+                value={formData.row}
+                onChange={handleChange}
+              />
+              <TextField
+                name="column"
+                label="열"
+                fullWidth
+                variant="outlined"
+                className={classes.formControl}
+                value={formData.column}
+                onChange={handleChange}
+              />
+
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                fullWidth
+              >
+                Finish
+              </Button>
+            </form>
+          </div>
+        </Fade>
+      </Modal>
+      {loading && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(255, 255, 255, 0.8)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 2000,
+          }}
+        >
+          <CircularProgress />
+        </div>
+      )}
     </div>
   );
 };
@@ -1349,6 +1875,34 @@ const RectangleTransformer = ({
 }) => {
   const shapeRef = useRef();
   const trRef = useRef();
+
+  // 폰트사이즈 계산
+  const fontSize = Math.min(shapeProps.width, shapeProps.height) / 4;
+
+  // 재고함의 행렬과 높이를 나타내도록 설정한 MainText
+  const floorName = `${shapeProps.z}층`;
+
+  // RGB 색깔로 재고율 퍼센트(%)를 추출하는 함수
+  const extractFillPercentage = (rgbaString) => {
+    const matches = rgbaString.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+
+    if (matches) {
+      const red = parseInt(matches[1], 10);
+      const green = parseInt(matches[2], 10);
+
+      // Calculate the percentage using both red and green components
+      // Both red and green start at a higher value and decrease to 0 as the fill increases
+      const redPercentage = (27 - red) / 27;
+      const greenPercentage = (177 - green) / 177;
+
+      // The fill percentage is determined by averaging the percentage contribution from red and green
+      const fillPercentage = ((redPercentage + greenPercentage) / 2) * 100;
+
+      return fillPercentage.toFixed(1);
+    }
+
+    return "0.0"; // Default to 0% if unable to parse
+  };
 
   // 사각형이 선택되었을 때 변형기를 연결하기 위한 Effect 훅
   useEffect(() => {
@@ -1394,6 +1948,20 @@ const RectangleTransformer = ({
         }}
       />
       <Text
+        text={floorName}
+        x={shapeProps.x}
+        y={shapeProps.y}
+        z={shapeProps.z}
+        width={shapeProps.width}
+        height={shapeProps.height - fontSize * 2}
+        fontSize={Math.min(shapeProps.width, shapeProps.height) / 6}
+        fontFamily="Arial"
+        fill="white"
+        align="center"
+        verticalAlign="middle"
+        listening={false} // Disable interactions with the text
+      />
+      <Text
         text={shapeProps.name}
         x={shapeProps.x}
         y={shapeProps.y}
@@ -1401,6 +1969,20 @@ const RectangleTransformer = ({
         width={shapeProps.width}
         height={shapeProps.height}
         fontSize={Math.min(shapeProps.width, shapeProps.height) / 5}
+        fontFamily="Arial"
+        fill="white"
+        align="center"
+        verticalAlign="middle"
+        listening={false} // Disable interactions with the text
+      />
+      <Text
+        text={`${extractFillPercentage(shapeProps.fill)}%`}
+        x={shapeProps.x}
+        y={shapeProps.y}
+        z={shapeProps.z}
+        width={shapeProps.width}
+        height={shapeProps.height + (fontSize) * 2}
+        fontSize={Math.min(shapeProps.width, shapeProps.height) / 6}
         fontFamily="Arial"
         fill="white"
         align="center"

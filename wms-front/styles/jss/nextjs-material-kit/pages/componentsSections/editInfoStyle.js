@@ -2,46 +2,71 @@ const editInfoStyle = {
     container: {
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'flex-start',
+        alignItems: 'center',
         height: '100vh',
         textAlign: 'center',
         padding: "10px",
-        paddingTop: '50px',
-        position: 'relative'
+        paddingTop: '30px',
     },
-    h3: {
-        position: 'absolute',
-        top: '10px',
-        left: '10px',
-        margin: '0'
+    table: {
+        width: '70%',
+        borderCollapse: 'collapse',
+        border: '1px solid #ddd',
+        '& td': {
+            padding: '8px',
+            borderBottom: '1px solid #ddd',
+        },
+        '& tr:not(:last-child) td': {
+            borderBottom: '1px solid #ccc',
+        },
     },
-    form: {
-        padding: '40px',
-        display: 'grid',
-        gridTemplateColumns: 'auto 2fr',
-        gap: '10px',
-        alignItems: 'center',
-        width: '80%',
-        maxWidth: '600px'
-    },
-    label: {
+    labelCell: {
+        backgroundColor: '#f0f0f0',
         textAlign: 'right',
-        paddingRight: '10px'
+        paddingRight: '10px',
+        fontWeight: 'bold',
+        width: '30%',
+        height: '50px',
+    },
+    text: {
+        paddingRight: '20px',
+    },
+    valueCell: {
+        paddingLeft: '10px',
+        width: '70%',
     },
     input: {
-        width: '100%'
+        width: '100%',
     },
     buttonContainer: {
-        gridColumn: 'span 2',  
         display: 'flex',
-        justifyContent: 'flex-end'
+        justifyContent: 'flex-end',
+        width: '70%',
+        marginTop: '20px',
     },
     button: {
-        marginTop: '20px',
-        width: '20%',
-        backgroundColor: "lightgray",
-        height: "30px"
-    }
+        backgroundColor: "#7D4A1A",
+        width: '100px',
+        color: 'white',
+        height: "30px",
+        border: '1px solid #7D4A1A',
+        borderRadius: '4px',
+        '&:hover': {
+            transform: 'scale(1.05)',
+            backgroundColor: '#7D4A1A',
+            color: 'white',
+        },
+    },
+    modalTitle: {
+        display: 'flex',
+        justifyContent: 'center',
+        textAlign: 'center'
+    },
+    modalCloseButton: {
+        backgroundColor: "transparent",
+        border: "none",
+        cursor: 'pointer'
+    },
 }
 
 export default editInfoStyle;

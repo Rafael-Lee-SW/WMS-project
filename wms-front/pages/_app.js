@@ -1,12 +1,13 @@
 import React from "react";
 import App from "next/app";
 import Head from "next/head";
-import { SessionProvider } from "next-auth/react";
-import Header from "/components/Header/UserHeader.jsx";
+import Header from "/components/Header/HomeHeader.js";
 import HeaderLinks from "/components/Header/HomeHeaderLinks.js";
 import "/styles/scss/nextjs-material-kit.scss?v=1.2.0";
 import "../styles/globals.css";
-// material-kit을 쓰기 위한 글로벌 css 선언
+import { AuthProvider } from "../context/AuthContext";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default class MyApp extends App {
   componentDidMount() {
@@ -24,7 +25,20 @@ export default class MyApp extends App {
   }
 
   render() {
-    const { Component, pageProps } = this.props;
+    const { Component, pageProps, router } = this.props;
+
+    // 헤더가 출력되지 않는 페이지
+    const noHeaderRoutes = [
+      "/user/[id]",
+      "/user/select",
+      "/signIn",
+      "/signup",
+      "/components",
+      "/fitbox",
+    ]; // 새로운 페이지가 생기면 추가한다.
+
+    // 헤더를 사용하지 않을 페이지인지 체크
+    const shouldDisplayHeader = !noHeaderRoutes.includes(router.pathname);
 
     return (
       <React.Fragment>
@@ -33,18 +47,23 @@ export default class MyApp extends App {
             name="viewport"
             content="width=device-width, initial-scale=1, shrink-to-fit=no"
           />
-          <title>ADN project Template finding</title>
+          <title>Fit-Box</title>
         </Head>
-        <SessionProvider session={pageProps.session}>
-          <Header
-            brand="ADN Project for Inventory Manangement"
-            rightLinks={<HeaderLinks />}
-            fixed
-            color="transparent"
-            changeColorOnScroll={{ height: 400, color: "white" }}
-          />
-          <Component {...pageProps} />
-        </SessionProvider>
+          <AuthProvider>
+            {shouldDisplayHeader && (
+              <Header
+                brand="FIT-BOX"
+                rightLinks={<HeaderLinks />}
+                fixed
+                color="transparent"
+                changeColorOnScroll={{ height: 400, color: "white" }}
+      
+              />
+            )}
+            <Component {...pageProps} />
+            <ToastContainer/>
+          </AuthProvider>
+
       </React.Fragment>
     );
   }

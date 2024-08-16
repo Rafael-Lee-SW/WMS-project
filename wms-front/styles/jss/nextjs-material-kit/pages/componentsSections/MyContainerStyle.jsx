@@ -87,6 +87,24 @@ const basicsStyle = {
     height: "80vh",
     overflowY: "auto",
   },
+  modal: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
+  },
+  paper: {
+    backgroundColor: "white",
+    border: "2px solid #000",
+    boxShadow: "5",
+    padding: "20px",
+    outline: "none",
+    borderRadius: "8px",
+    width: "80%", // Width of the modal content
+    maxWidth: "500px", // Ensure the modal does not exceed this width
+    margin: "auto",
+  },
+
   ...customCheckboxRadioSwitch,
 };
 
