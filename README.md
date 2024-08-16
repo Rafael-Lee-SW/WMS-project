@@ -115,7 +115,7 @@
               <img src="/READMEfile/dongyeol.jpg" width="100">
         </td>
         <td style="min-width: 250px;">
-              <img src="/READMEfile/junhyeok.jpg" width="100">
+              <img src="/READMEfile/junhyeok.png" width="100">
         </td>
         <td style="min-width: 250px;">
               <img src="/READMEfile/kyunil.jpg" width="100">
@@ -223,9 +223,9 @@
 
 |                                                                                                                   |                                                                                                                   |
 |-------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|
-| <img src="https://user-images.githubusercontent.com/59721896/220111432-dd13f339-0940-4611-9390-e1173c9ad521.png"> | <img src="https://user-images.githubusercontent.com/59721896/220107195-65eb367a-7972-4020-b663-02f505731362.png"> |
+| <img src="/READMEfile/로그인.PNG"> | <img src="/READMEfile/회원가입.PNG"> |
 | <div align=center> `로그인` </div>                                                                                   | <div align=center> `회원가입` </div>                                                                                  |
-| <img src="https://user-images.githubusercontent.com/59721896/220107977-1375385a-36f4-4d89-b31d-33c5348c5e3e.png"> | <img src="https://user-images.githubusercontent.com/59721896/220108925-7f1437be-b2be-42db-8971-472f47f3aa20.png"> |
+| <img src="/READMEfile/창고목록.PNG"> | <img src="/READMEfile/재고관리영상.mp4"> |
 | <div align=center> `창고 등록` </div>                                                                                 | <div align=center> `창고 관리` </div>                                                                                 |
 | <img src="https://user-images.githubusercontent.com/59721896/220112349-0e0f9b2b-3c39-46e1-ba71-6366bd30c7bc.png"> | <img src="https://user-images.githubusercontent.com/59721896/220109116-c9199710-99b1-48a8-b807-ea1d2516ded6.png"> |
 | <div align=center> `재고 조회` </div>                                                                                 | <div align=center> `재고 관리` </div>                                                                                 |
