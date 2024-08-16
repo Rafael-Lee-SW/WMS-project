@@ -8,8 +8,8 @@
 
 # 목차
 
-- [📌 프로젝트 소개](#-프로젝트-소개)
 - [📦 도메인 소개](#-도메인-소개)
+- [📌 프로젝트 소개](#-Web-WMS-프로젝트-소개)
 - [👥 팀 소개](#-팀-소개)
 - [⏱ 개발 기간](#-개발-기간)
 - [🛠️ 기술 스택](#-기술-스택)
@@ -26,24 +26,75 @@
 - Test ID : ssafytest@naver.com
 - Test PW : ssafy123!
 
-<br>
-
-# 📌 프로젝트 소개
-
-**Web WMS는 무인 매장이나 창고에서 여러 위치의 재고를 효율적으로 관리할 수 있는 재고 관리 시스템입니다.** <br><br>
-**다음과 같은 기능으로 다중 로케이션의 재고를 효율적으로 관리합니다.**
-- 적정 재고 수준 유지
-- 매장 품절율 최소화
-- 재고 공간 최적화
-- 작업자 동선 최소화 
-- 수요 예측
 
 <br>
 
-# 📦 도메인 소개
+# 📦 물류 도메인 소개
 
-1. 창고 용적 줄이기
-2. 인건비 줄이기
+물류 도메인은 상품, 서비스, 정보, 자원의 물리적 이동을 계획하고 실행하며 관리하는 시스템을 포함합니다. 공급망의 중요한 부분으로, 다양한 산업에서 핵심적인 역할을 합니다.
+
+## 주요 요소
+
+### 🏢 창고 관리(Warehouse Management)
+- 상품을 보관하는 공간을 관리하고, 상품의 입출고, 재고 관리 등을 포함합니다.
+- 적절한 창고 관리는 제품의 신속한 배송과 고객 만족도 향상에 기여합니다.
+
+### 📦 재고 관리(Inventory Management)
+- 제품이나 자재의 양을 적절하게 유지하는 과정입니다. 과도한 재고나 부족한 재고를 방지하기 위한 전략이 포함됩니다.
+- 재고 관리는 비용 절감과 운영 효율성을 높이기 위해 중요합니다.
+
+### 📑 포장 및 취급(Packaging and Handling)
+- 제품의 포장, 라벨링, 취급 절차를 관리하는 부분입니다.
+- 올바른 포장은 제품의 손상 방지 및 고객의 만족도를 높이는 데 기여합니다.
+
+### 📋 주문 처리(Order Fulfillment)
+- 고객의 주문을 처리하고, 제품을 적시에 배송하기 위한 과정입니다.
+- 이 과정은 물류의 신속성과 정확성에 크게 영향을 미칩니다.
+
+### 🖥 물류 정보 시스템(Logistics Information Systems)
+- 물류 활동을 모니터링, 관리, 분석하는 데 사용되는 IT 시스템입니다.
+- 실시간 데이터와 분석을 통해 물류 프로세스를 최적화할 수 있습니다.
+
+## 물류 도메인의 중요성
+
+- **효율성**: 물류 도메인은 제품이 적시에 정확한 장소에 도착하도록 함으로써 전체 공급망의 효율성을 높입니다.
+- **비용 절감**: 최적화된 물류 관리는 운송비, 보관비 등의 비용을 절감할 수 있습니다.
+- **고객 만족**: 신속하고 정확한 물류 서비스는 고객 만족도를 높이고, 회사의 신뢰도를 향상시킵니다.
+- **경쟁력**: 물류는 많은 산업에서 경쟁력을 결정짓는 요소로, 빠르고 효율적인 물류 시스템을 구축한 기업이 시장에서 우위를 점할 수 있습니다.
+
+
+<br>
+
+# 📌 Web WMS 프로젝트 소개
+
+**Web WMS**는 무인 매장이나 창고에서 여러 위치의 재고를 효율적으로 관리할 수 있는 재고 관리 시스템입니다. 다양한 기능을 통해 다중 로케이션의 재고를 최적화하여 관리합니다.
+
+## 주요 기능
+
+### 📊 적정 재고 수준 유지
+- 재고가 과도하게 쌓이거나 부족하지 않도록 최적의 재고 수준을 유지합니다.
+- 효율적인 재고 관리를 통해 비용을 절감하고 운영의 안정성을 높입니다.
+
+### 🛒 매장 품절율 최소화
+- 실시간 재고 모니터링과 자동화된 알림 시스템을 통해 품절을 예방하고, 매출 손실을 최소화합니다.
+
+### 🗄 재고 공간 최적화
+- 공간을 효율적으로 사용하여 창고 및 매장의 재고 보관 능력을 극대화합니다.
+- 재고 배치를 최적화하여 빠르고 효율적인 접근이 가능하도록 설계합니다.
+
+### 🚶 작업자 동선 최소화
+- 작업자의 이동 동선을 분석하여 최소화하고, 생산성을 높이는 배치 전략을 제공합니다.
+- 이를 통해 작업 효율성을 극대화하고, 시간 낭비를 줄일 수 있습니다.
+
+### 🔮 수요 예측
+- 과거의 판매 데이터와 트렌드를 기반으로 수요를 예측하여 재고 계획을 지원합니다.
+- 수요 변화에 신속히 대응할 수 있도록 예측 모델을 지속적으로 업데이트합니다.
+
+## Web WMS의 가치
+
+- **효율성**: 다양한 기능을 통해 재고 관리의 효율성을 극대화하여 운영 비용을 절감합니다.
+- **최적화**: 재고 공간 및 작업자 동선을 최적화하여 생산성을 높입니다.
+- **예측성**: 수요 예측 기능을 통해 미래의 재고 필요량을 정확히 예측하고, 공급망 관리의 안정성을 높입니다.
 
 
 <br>
@@ -115,7 +166,7 @@
               <img src="/READMEfile/dongyeol.jpg" width="100">
         </td>
         <td style="min-width: 250px;">
-              <img src="/READMEfile/junhyeok.jpg" width="100">
+              <img src="/READMEfile/junhyeok.png" width="100">
         </td>
         <td style="min-width: 250px;">
               <img src="/READMEfile/kyunil.jpg" width="100">
@@ -216,25 +267,25 @@
 
 [포팅 매뉴얼 보러 가기](https://ddongyul.notion.site/13d3341fb6a54d76bd78ab94609820f3?pvs=74)
 <br>
-
+[git 루트](https://lab.ssafy.com/s11-webmobile2-sub2/S11P12A508/-/tree/dev-readme/exec?ref_type=heads)
 
 # 💻 서비스 화면
 
 
-|                                                                                                                   |                                                                                                                   |
-|-------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|
-| <img src="https://user-images.githubusercontent.com/59721896/220111432-dd13f339-0940-4611-9390-e1173c9ad521.png"> | <img src="https://user-images.githubusercontent.com/59721896/220107195-65eb367a-7972-4020-b663-02f505731362.png"> |
-| <div align=center> `로그인` </div>                                                                                   | <div align=center> `회원가입` </div>                                                                                  |
-| <img src="https://user-images.githubusercontent.com/59721896/220107977-1375385a-36f4-4d89-b31d-33c5348c5e3e.png"> | <img src="https://user-images.githubusercontent.com/59721896/220108925-7f1437be-b2be-42db-8971-472f47f3aa20.png"> |
-| <div align=center> `창고 등록` </div>                                                                                 | <div align=center> `창고 관리` </div>                                                                                 |
-| <img src="https://user-images.githubusercontent.com/59721896/220112349-0e0f9b2b-3c39-46e1-ba71-6366bd30c7bc.png"> | <img src="https://user-images.githubusercontent.com/59721896/220109116-c9199710-99b1-48a8-b807-ea1d2516ded6.png"> |
-| <div align=center> `재고 조회` </div>                                                                                 | <div align=center> `재고 관리` </div>                                                                                 |
-| <img src="https://user-images.githubusercontent.com/59721896/220109650-545b0608-0a1b-42cb-84d6-910361531461.png"> | <img src="https://user-images.githubusercontent.com/59721896/220109690-7302aec9-dd97-48c4-969c-da3a8fa3317e.png"> |
-| <div align=center> `상품 입고` </div>                                                                                 | <div align=center> `상품 출고` </div>                                                                                 |
-| <img src="https://user-images.githubusercontent.com/59721896/220109650-545b0608-0a1b-42cb-84d6-910361531461.png"> | <img src="https://user-images.githubusercontent.com/59721896/220109690-7302aec9-dd97-48c4-969c-da3a8fa3317e.png"> |
-| <div align=center> `상품 이동` </div>                                                                                 | <div align=center> `재고 분석` </div>                                                                                 |
-| <img src="https://user-images.githubusercontent.com/59721896/220109650-545b0608-0a1b-42cb-84d6-910361531461.png"> | <img src="https://user-images.githubusercontent.com/59721896/220109690-7302aec9-dd97-48c4-969c-da3a8fa3317e.png"> |
-| <div align=center> `상품 압축` </div>                                                                                 | <div align=center> `알림 조회` </div>                                                                                 |
+|                                     |                                      |
+|-------------------------------------|--------------------------------------|
+| <img src="/READMEfile/로그인.png">     | <img src="/READMEfile/회원가입.PNG">     |
+| <div align=center> `로그인` </div>     | <div align=center> `회원가입` </div>     |
+| <img src="/READMEfile/창고목록.PNG">    | <img src="/READMEfile/재고관리영상.mp4">   |
+| <div align=center> `창고 등록` </div>   | <div align=center> `창고 관리` </div>    |
+| <img src="/READMEfile/창고구매.mp4">    | <img src="/READMEfile/창고생성.mp4">     |
+| <div align=center> `창고 구매` </div>   | <div align=center> `창고 생성` </div>    |
+| <img src="/READMEfile/로케이션생성.mp4">  | <img src="/READMEfile/벽생성.mp4">      |
+| <div align=center> `로케이션 생성` </div> | <div align=center> `벽 생성` </div>     |
+| <img src="/READMEfile/입고.mp4">      | <img src="/READMEfile/출고.mp4">       |
+| <div align=center> `상품 입고` </div>   | <div align=center> `상품 출고 ` </div>   |
+| <img src="/READMEfile/상품이동.mp4">    | <img src="/READMEfile/마이페이지_알람.mp4"> |
+| <div align=center> `상품 이동` </div>   | <div align=center> `알림 내역` </div>    |
 
 
 <br>
