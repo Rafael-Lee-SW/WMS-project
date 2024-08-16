@@ -9,7 +9,7 @@ export default function HowToUse5() {
     return (
         <div className={classes.container} style={{ backgroundColor: "#918166" }}>
             <div className={classes.section1}>
-                <h4>입고출고알림화면</h4>
+                <img className={classes.mainImg} src="/img/notification.png" alt="notification" />
             </div>
             <div className={classes.section2}>
                 <h2 className={classes.title} style={{ color: "#F7F2E9" }}>입출고 내역을 확인할 수 있습니다.</h2> 

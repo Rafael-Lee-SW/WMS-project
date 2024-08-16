@@ -23,7 +23,6 @@ import HowToUse2 from "../components/Main/HowToUse2";
 import HowToUse3 from "../components/Main/HowToUse3";
 import HowToUse4 from "../components/Main/HowToUse4";
 import HowToUse5 from "../components/Main/HowToUse5";
-import HowToUse6 from "../components/Main/HowToUse6";
 import HowToUseStart from "../components/Main/HowToUseStart";
 import MainEnd from "../components/Main/MainEnd";
 
@@ -99,7 +98,6 @@ const Components = (props) => {
             <HowToUse3/>
             <HowToUse4/>
             <HowToUse5/>
-            <HowToUse6/>
           </Slider>
         </div>
         <div>

@@ -124,6 +124,7 @@ const useStyles = makeStyles((theme) => ({
  */
 
 const MyContainerMap = ({ warehouseId, businessId }) => {
+
   const router = useRouter();
   const classes = useStyles();
   const stageRef = useRef(null);
@@ -248,7 +249,7 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
   const currentShapeRef = useRef(null);
 
   // 로케이션을 추가하는 메서드
-  const handleAddLocation = (type) => {
+  const handleAddLocation = async (type) => {
     let newName;
 
     // nameMode에 따라 name을 설정
@@ -274,10 +275,14 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
         `이름이 "${newName}"인 로케이션이 이미 존재합니다. 다른 이름을 사용하세요.`
       );
       return; // 중복된 이름이 있으면 생성 중단
+    } else {
+      notify(
+        `로케이션 "${newName}"이 생성되었습니다.`
+      );
     }
 
     const newLocation = {
-      id: locations.length.toString(),
+      //Id를 넣어서는 안된다. DB에서 자동으로 처리되도록 해야한다.
       x: 50,
       y: 50,
       z: newLocationZIndex,
@@ -294,6 +299,27 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
     setLocations([...locations, newLocation]);
     updateContainer(newLocation, "location", `location${newLocation.id}`);
 
+    // API 요청을 위한 location 데이터를 작성
+    const locationData = {
+      xPosition: newLocation.x,
+      yPosition: newLocation.y,
+      zSize: newLocation.z,
+      xSize: newLocation.width,
+      ySize: newLocation.height,
+      name: newLocation.name,
+      productStorageType: newLocationType, // 상온, 냉장 등등
+      rotation: newLocation.rotation,
+      touchableFloor: 2, // 임시로 2로 설정
+    };
+
+    // API 호출 - 생성된 로케이션을 서버에 POST
+    try {
+      await postLocationAPI([locationData], warehouseId);
+    } catch (error) {
+      console.error("Error adding location:", error);
+      notify("로케이션 추가 중 오류가 발생했습니다.");
+    }
+
     // 적재함 추가 후 값 초기화
     setNewLocationColor("blue");
     setNewLocationWidth(50);
@@ -302,6 +328,29 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
     setNewLocationName("");
     setRowNumber(""); // 행/열 선택 모드 초기화
     setColumnNumber(""); // 행/열 선택 모드 초기화
+  };
+
+  const postLocationAPI = async (requests, warehouseId) => {
+
+    const total = { requests, warehouseId };
+
+    try {
+      const response = await fetch(`https://i11a508.p.ssafy.io/api/locations`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(total),
+      });
+
+      if (response.ok) {
+        getWarehouseAPI(warehouseId)
+      } else {
+        router.push('/404');
+      }
+    } catch (error) {
+      router.push('/404');
+    }
   };
 
   // 창고 배열 저장
@@ -322,50 +371,6 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
     setContainer(newContainer);
   };
 
-  // 컨버스 안에 있는 모든 정보를 Local에 저장한다.
-  const handleSave = async () => {
-    // 적재함들을 전부 기록한다.
-    const locationData = locations.map((location) => ({
-      id: location.id,
-      x: location.x,
-      y: location.y,
-      z: location.z,
-      width: location.width,
-      height: location.height,
-      fill: location.fill,
-      type: location.type,
-      name: location.name,
-      rotation: location.rotation,
-    }));
-
-    // 벽 정보를 전부 기록한다.
-    const wallData = anchorsRef.current.map(({ start, end }) => ({
-      startID: start.id(),
-      startX: start.x(),
-      startY: start.y(),
-      endID: end.id(),
-      endX: end.x(),
-      endY: end.y(),
-    }));
-    try {
-      const response = await fetch("/api/save-map", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ locationData, wallData }),
-      });
-
-      if (response.ok) {
-        //성공
-      } else {
-        //실패
-      }
-    } catch (error) {
-      //에러
-    }
-  };
-
   // 수정된정보를 API를 통해 보냄
   const editContainerAPI = async () => {
     const locationData = locations.map((location) => ({
@@ -382,8 +387,8 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
     }));
 
     // 벽 데이터를 기록합니다.
-    const wallData = anchorsRef.current.map(({ start, end }, index) => ({
-      id: index + 1,
+    const wallData = anchorsRef.current.map(({ start, end, line }) => ({
+      id: line.attrs.id ? parseInt(line.attrs.id) : null, // Use ID from the API or null for new walls
       startX: start.x(),
       startY: start.y(),
       endX: end.x(),
@@ -392,6 +397,8 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
 
     //모든 데이터를 warehouseData로 담아서 전송한다.
     const warehouseData = { locations: locationData, walls: wallData };
+
+    console.log(warehouseData)
 
     try {
       const response = await fetch(
@@ -407,15 +414,8 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
 
       if (response.ok) {
         // 성공
-        // Use router.replace with shallow routing
-        router.replace(
-          {
-            pathname: `/user/${warehouseId}`,
-            query: { component: "map" },
-          },
-          undefined,
-          { shallow: true }
-        );
+        notify(`현재 상태가 저장되었습니다.`);
+        getWarehouseAPI(warehouseId); // 초기화하기
       } else {
         //에러
       }
@@ -517,6 +517,7 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
         }
 
         const newLocations = locations.map((location, index) => {
+
           const startColor = { r: 27, g: 177, b: 231 }; // Starting color (#1bb1e7)
           const endColor = { r: 0, g: 0, b: 255 }; // Ending color (#0000FF)
 
@@ -553,6 +554,7 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
           //에러 발생
           return;
         }
+
         clearAnchorsAndLines();
         const existingAnchors = [];
         const newAnchors = [];
@@ -567,15 +569,16 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
           return existingAnchor;
         };
 
-        walls.forEach(({ startID, startX, startY, endID, endX, endY }) => {
-          const startAnchor = getOrCreateAnchor(startID, startX, startY);
-          const endAnchor = getOrCreateAnchor(endID, endX, endY);
+        walls.forEach(({ id, startX, startY, endX, endY }) => {
+          const startAnchor = getOrCreateAnchor(id, startX, startY);
+          const endAnchor = getOrCreateAnchor(id, endX, endY);
 
           const newLine = new Konva.Line({
             points: [startX, startY, endX, endY],
             stroke: "brown",
             strokeWidth: 10,
             lineCap: "round",
+            id: id.toString(), // Preserve the original ID
           });
 
           newAnchors.push({
@@ -1061,11 +1064,11 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
           if (!existingAnchor) {
             const newId = anchorsRef.current.length
               ? Math.max(
-                  ...anchorsRef.current.flatMap(({ start, end }) => [
-                    parseInt(start.id(), 10),
-                    parseInt(end.id(), 10),
-                  ])
-                ) + 1
+                ...anchorsRef.current.flatMap(({ start, end }) => [
+                  parseInt(start.id(), 10),
+                  parseInt(end.id(), 10),
+                ])
+              ) + 1
               : 1;
             existingAnchor = buildAnchor(newId, x, y);
           } else {
@@ -1347,7 +1350,7 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
           >
             벽 생성
           </Button>
-          <Button
+          {/* <Button
             className={classes.buttonStyle}
             onClick={() => changeCurrentSetting("specialObject")}
             variant="contained"
@@ -1360,7 +1363,7 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
             variant="contained"
           >
             자동 생성
-          </Button>
+          </Button> */}
         </div>
         <br />
         {currentSetting && currentSetting !== "wall" && (
@@ -1590,11 +1593,13 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
             </Layer>
           </Stage>
         </div>
+        {/* 줌 버튼 */}
         <div
           style={{
             position: "absolute",
-            bottom: "10px",
-            right: "10px",
+            content: "center",
+            left: "45%",
+            top: "3rem",
             display: "flex",
             gap: "10px",
           }}
@@ -1605,7 +1610,7 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
             style={{ backgroundColor: "#7D4A1A" }}
             onClick={handleZoomIn}
           >
-            <ZoomInIcon className={classes.icons} />
+            <ZoomInIcon style={{ width: "35px", height: "35px" }} className={classes.icons} />
           </Button>
           <Button
             justIcon
@@ -1613,7 +1618,7 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
             style={{ backgroundColor: "#ADAAA5" }}
             onClick={handleZoomOut}
           >
-            <ZoomOutIcon className={classes.icons} />
+            <ZoomOutIcon style={{ width: "35px", height: "35px" }} className={classes.icons} />
           </Button>
           <Button
             justIcon
@@ -1621,7 +1626,7 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
             style={{ backgroundColor: "#C2B6A1", marginRight: "40px" }}
             onClick={editContainerAPI}
           >
-            <SaveIcon className={classes.icons} />
+            <SaveIcon style={{ width: "35px", height: "35px" }} className={classes.icons} />
           </Button>
         </div>
       </div>
@@ -1976,7 +1981,7 @@ const RectangleTransformer = ({
         y={shapeProps.y}
         z={shapeProps.z}
         width={shapeProps.width}
-        height={shapeProps.height + (fontSize)*2}
+        height={shapeProps.height + (fontSize) * 2}
         fontSize={Math.min(shapeProps.width, shapeProps.height) / 6}
         fontFamily="Arial"
         fill="white"
