@@ -223,7 +223,7 @@
 
 |                                     |                                      |
 |-------------------------------------|--------------------------------------|
-| <img src="/READMEfile/로그인.PNG">     | <img src="/READMEfile/회원가입.PNG">     |
+| <img src="/READMEfile/로그인.png">     | <img src="/READMEfile/회원가입.PNG">     |
 | <div align=center> `로그인` </div>     | <div align=center> `회원가입` </div>     |
 | <img src="/READMEfile/창고목록.PNG">    | <img src="/READMEfile/재고관리영상.mp4">   |
 | <div align=center> `창고 등록` </div>   | <div align=center> `창고 관리` </div>    |
