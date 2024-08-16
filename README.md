@@ -221,20 +221,20 @@
 # 💻 서비스 화면
 
 
-|                                                                                                                   |                                                                                                                   |
-|-------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|
-| <img src="/READMEfile/로그인.PNG"> | <img src="/READMEfile/회원가입.PNG"> |
-| <div align=center> `로그인` </div>                                                                                   | <div align=center> `회원가입` </div>                                                                                  |
-| <img src="/READMEfile/창고목록.PNG"> | <img src="/READMEfile/재고관리영상.mp4"> |
-| <div align=center> `창고 등록` </div>                                                                                 | <div align=center> `창고 관리` </div>                                                                                 |
-| <img src="https://user-images.githubusercontent.com/59721896/220112349-0e0f9b2b-3c39-46e1-ba71-6366bd30c7bc.png"> | <img src="https://user-images.githubusercontent.com/59721896/220109116-c9199710-99b1-48a8-b807-ea1d2516ded6.png"> |
-| <div align=center> `재고 조회` </div>                                                                                 | <div align=center> `재고 관리` </div>                                                                                 |
-| <img src="https://user-images.githubusercontent.com/59721896/220109650-545b0608-0a1b-42cb-84d6-910361531461.png"> | <img src="https://user-images.githubusercontent.com/59721896/220109690-7302aec9-dd97-48c4-969c-da3a8fa3317e.png"> |
-| <div align=center> `상품 입고` </div>                                                                                 | <div align=center> `상품 출고` </div>                                                                                 |
-| <img src="https://user-images.githubusercontent.com/59721896/220109650-545b0608-0a1b-42cb-84d6-910361531461.png"> | <img src="https://user-images.githubusercontent.com/59721896/220109690-7302aec9-dd97-48c4-969c-da3a8fa3317e.png"> |
-| <div align=center> `상품 이동` </div>                                                                                 | <div align=center> `재고 분석` </div>                                                                                 |
-| <img src="https://user-images.githubusercontent.com/59721896/220109650-545b0608-0a1b-42cb-84d6-910361531461.png"> | <img src="https://user-images.githubusercontent.com/59721896/220109690-7302aec9-dd97-48c4-969c-da3a8fa3317e.png"> |
-| <div align=center> `상품 압축` </div>                                                                                 | <div align=center> `알림 조회` </div>                                                                                 |
+|                                     |                                      |
+|-------------------------------------|--------------------------------------|
+| <img src="/READMEfile/로그인.PNG">     | <img src="/READMEfile/회원가입.PNG">     |
+| <div align=center> `로그인` </div>     | <div align=center> `회원가입` </div>     |
+| <img src="/READMEfile/창고목록.PNG">    | <img src="/READMEfile/재고관리영상.mp4">   |
+| <div align=center> `창고 등록` </div>   | <div align=center> `창고 관리` </div>    |
+| <img src="/READMEfile/창고구매.mp4">    | <img src="/READMEfile/창고생성.mp4">     |
+| <div align=center> `창고 구매` </div>   | <div align=center> `창고 생성` </div>    |
+| <img src="/READMEfile/로케이션생성.mp4">  | <img src="/READMEfile/벽생성.mp4">      |
+| <div align=center> `로케이션 생성` </div> | <div align=center> `벽 생성` </div>     |
+| <img src="/READMEfile/입고.mp4">      | <img src="/READMEfile/출고.mp4">       |
+| <div align=center> `상품 입고` </div>   | <div align=center> `상품 출고 ` </div>   |
+| <img src="/READMEfile/상품이동.mp4">    | <img src="/READMEfile/마이페이지_알람.mp4"> |
+| <div align=center> `상품 이동` </div>   | <div align=center> `알림 내역` </div>    |
 
 
 <br>
