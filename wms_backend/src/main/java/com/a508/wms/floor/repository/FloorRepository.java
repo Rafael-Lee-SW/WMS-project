@@ -24,12 +24,12 @@ public interface FloorRepository extends JpaRepository<Floor, Long> {
     Floor findByLocationIdAndFloorLevel(Long locationId, int floorLevel);
 
     @Query(value =
-        "SELECT f.* " +
+            "SELECT f.* " +
             "FROM floor f " +
             "JOIN location l ON l.id = f.location_id " +
-            "WHERE floor_level > 1 " +
+            "WHERE f.floor_level > 1 " +
             "AND l.warehouse_id = :warehouseId " +
-            "ORDER BY substr(l.name,2), substr(l.name from 3)", nativeQuery = true)
+            "ORDER BY substr(l.name,2), substr(l.name from 3), f.floor_level", nativeQuery = true)
     List<Floor> findAllEmptyFloorByWarehouseId(@Param("warehouseId") Long warehouseId);
 
     @Query("SELECT f FROM Floor f " +
@@ -37,9 +37,10 @@ public interface FloorRepository extends JpaRepository<Floor, Long> {
         "JOIN f.location l " +
         "JOIN l.warehouse w " +
         "WHERE w.id = :warehouseId "
-        + "AND f.floorLevel>0 "
+        + "AND f.floorLevel > 0 "
         + "AND p.quantity>0 ")
     List<Floor> findAllNotEmptyFloorByWarehouseId(@Param("warehouseId") Long warehouseId);
+
 
     //SELECT e FROM Employee e
     // LEFT JOIN e.department d
