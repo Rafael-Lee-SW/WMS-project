@@ -48,7 +48,7 @@ public interface FloorRepository extends JpaRepository<Floor, Long> {
             "FROM floor f " +
             "JOIN location l on f.location_id = l.id " +
             "WHERE f.floor_level = 1 " +
-            "AND l.warehouse_id = 19 " +
+            "AND l.warehouse_id = :warehouseId " +
             "ORDER BY CAST(SUBSTRING_INDEX(l.name, '-', 1) AS UNSIGNED), " +
             "CAST(SUBSTRING_INDEX(l.name, '-', -1) AS UNSIGNED) ", nativeQuery = true)
     List<ProductCompressDtoInterface> findAllDisplayFloorByWarehouseId(@Param("warehouseId") Long warehouseId);
