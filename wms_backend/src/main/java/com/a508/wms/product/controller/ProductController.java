@@ -1,6 +1,7 @@
 package com.a508.wms.product.controller;
 
 
+import com.a508.wms.floor.exception.FloorException;
 import com.a508.wms.notification.dto.NotificationResponseDto;
 import com.a508.wms.product.dto.*;
 import com.a508.wms.product.exception.ProductException;
@@ -157,7 +158,7 @@ public class ProductController {
 
     @GetMapping("/compress")
     public BaseSuccessResponse<Void> compressProducts(@RequestParam(value = "warehouseId") Long warehouseId,
-                                                      @RequestParam(value = "businessId") Long businessId) throws ProductException {
+                                                      @RequestParam(value = "businessId") Long businessId) throws ProductException, FloorException {
         log.info("[Controller] compress Products");
         productService.compress(warehouseId,businessId);
         return new BaseSuccessResponse<>(null);

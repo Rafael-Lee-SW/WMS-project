@@ -5,27 +5,15 @@ import static java.util.stream.Collectors.groupingBy;
 import com.a508.wms.business.domain.Business;
 import com.a508.wms.business.service.BusinessModuleService;
 import com.a508.wms.floor.domain.Floor;
-import com.a508.wms.floor.mapper.FloorMapper;
+import com.a508.wms.floor.exception.FloorException;
 import com.a508.wms.floor.service.FloorModuleService;
 import com.a508.wms.floor.service.FloorService;
 import com.a508.wms.location.domain.Location;
-import com.a508.wms.location.dto.LocationStorageResponseDto;
 import com.a508.wms.location.repository.LocationRepository;
 import com.a508.wms.location.service.LocationModuleService;
 import com.a508.wms.location.service.LocationService;
 import com.a508.wms.product.domain.Product;
-import com.a508.wms.product.dto.ExpirationProductResponseDto;
-import com.a508.wms.product.dto.ExportResponseDto;
-import com.a508.wms.product.dto.ProductCompressDto;
-import com.a508.wms.product.dto.ProductExportRequestDto;
-import com.a508.wms.product.dto.ProductExportResponseDto;
-import com.a508.wms.product.dto.ProductMoveRequestDto;
-import com.a508.wms.product.dto.ProductMoveResponseDto;
-import com.a508.wms.product.dto.ProductPickingLocationDto;
-import com.a508.wms.product.dto.ProductQuantityDto;
-import com.a508.wms.product.dto.ProductRequestDto;
-import com.a508.wms.product.dto.ProductResponseDto;
-import com.a508.wms.product.dto.ProductUpdateRequestDto;
+import com.a508.wms.product.dto.*;
 import com.a508.wms.product.exception.ProductException;
 import com.a508.wms.product.exception.ProductInvalidRequestException;
 import com.a508.wms.product.mapper.ProductMapper;
@@ -53,6 +41,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
@@ -1231,94 +1220,43 @@ public class ProductService {
             a.getYPosition() - b.getYPosition(), 2));
     }
 
-    //    층별 고려가 아니고 로케이션별 고려
-//    로케이션 앞에서부터 돌면서, 1층에 중복된 상품이 있는 경우: 위로 올리고 해당 로케이션 비우기
-//    빈 로케이션에 뒤에 남아있는 로케이션 땡기기
-    public void compress(Long businessId, Long warehouseId) throws ProductException {
-        List<ProductCompressDto> MultipleProduct = findAllMultipleProductByFloorLevel(1, businessId,
-            warehouseId)
-            .stream().map(ProductMapper::toProductCompressDto)
-            .toList();
-        findOptimalLocation(MultipleProduct);
-    }
+    @Transactional
+    public void compress(Long warehouseId, Long businessId) throws FloorException, ProductException {
+        List<ProductCompressDtoInterface> displayFloors = floorService.findAllDisplayFloorByWarehouseId(warehouseId);
 
-    /**
-     * FloorLevel별로 여러 곳에 분포되어있는 상품 찾기:1층만 하면 됨
-     *
-     * @param floorLevel
-     * @return
-     */
-    public List<Product> findAllMultipleProductByFloorLevel(Integer floorLevel, Long businessId,
-        Long warehouseId) {
-        log.info("[Service] find All Multiple Product By FloorLevel : {} {}", floorLevel,
-            warehouseId);
-        return productRepository.findAllMultipleProductByFloorLevel(floorLevel, businessId,
-            warehouseId);
-    }
+        List<ProductCompressDtoInterface> existDisplayProducts = productRepository.findAllDisplayByFloorLevelAndWarehouseId(warehouseId);
 
-    public Product findOptimalLocation(List<ProductCompressDto> products) throws ProductException {
-        log.info("[Service] find Optimal Location : {}", products);
-        List<LocationStorageResponseDto> locations = locationService.findAllMaxStorage();
-        Map<Long, List<ProductCompressDto>> productsByDetailId = products.stream()
-            .collect(Collectors.groupingBy(ProductCompressDto::getProductDetailId));
+        List<Product> saveProducts = new ArrayList<>();
 
-        // 각 productDetailId에 대해 처리
-        for (Map.Entry<Long, List<ProductCompressDto>> entry : productsByDetailId.entrySet()) {
-            Long productDetailId = entry.getKey();
-            List<ProductCompressDto> productList = entry.getValue();
-
-            List<ProductCompressDto> sortedProducts = new ArrayList<>(productList.stream()
-                .sorted((p1, p2) -> {
-                    String[] location1Parts = p1.getLocationName().split("-");
-                    String[] location2Parts = p2.getLocationName().split("-");
-
-                    // '-' 앞의 2자리 숫자를 비교
-                    int major1 = Integer.parseInt(location1Parts[0]);
-                    int major2 = Integer.parseInt(location2Parts[0]);
-
-                    if (major1 != major2) {
-                        return Integer.compare(major1, major2);
-                    }
-
-                    // '-' 뒤의 2자리 숫자를 비교
-                    int minor1 = Integer.parseInt(location1Parts[1]);
-                    int minor2 = Integer.parseInt(location2Parts[1]);
-
-                    return Integer.compare(minor1, minor2);
-                })
-                .toList());
-            // 첫번째 상품(로케이션의 번호가 가장 작은 상품)쪽으로 해당 로케이션의 수량만큼 모으기
-            ProductCompressDto firstProduct = sortedProducts.get(0);
-            Optional<LocationStorageResponseDto> locationOpt = locations.stream()
-                .filter(location -> location.getId().equals(firstProduct.getLocationId()))
-                .findFirst();
-//            first 제외하고 다 위로 올려
-            if (locationOpt.isPresent()) {
-                sortedProducts.remove(0);
-//                moveTo에 들어갈 locationName과 floorLevel 찾기: 선형으로
-//                로케이션 번호가 가장 작은 순으로 정렬한 다음, 해당 로케이션의 1층을 제외하고 
-//                비어있는 로케이션을 찾기
-
-                List<Floor> floors = floorService
-                    .findAllEmptyFloorByWarehouseId(firstProduct.getWarehouseId());
-                List<ProductMoveRequestDto> moveRequestDtos = floors.stream()
-                    .map(FloorMapper::toProductMoveRequestDto).toList();
-                for (int i = 0; i < Math.min(moveRequestDtos.size(), sortedProducts.size()); i++) {
-                    moveRequestDtos.get(i).setLocationName(sortedProducts.get(i).getLocationName());
-                    moveRequestDtos.get(i).setProductId(sortedProducts.get(i).getId());
-                    moveRequestDtos.get(i).setQuantity(sortedProducts.get(i).getQuantity());
-                    moveRequestDtos.get(i).setWarehouseId(sortedProducts.get(i).getWarehouseId());
-                }
-                moveRequestDtos = moveRequestDtos.stream()
-                    .filter(e -> e.getProductId() != null)
-                    .collect(Collectors.toList());
-                log.info("size : {}", moveRequestDtos.size());
-                moveProducts(moveRequestDtos);
-            }
+        for(ProductCompressDtoInterface dto : existDisplayProducts) {
+            deleteByProductDetailIdAndWarehouseId(dto.getProductDetailId(),warehouseId);
         }
+//        List<ProductMoveRequestDto> moveProductList = new ArrayList<>();
 
-//        특정 floor 이동시키기: moveTe update 하기
-//        moveTo의 floor를 먼저 이동시키고 나서 비어있는 1층이 선택됨: 상품 이동 처리하기
-        return null;
+        for (int i = 0; i < Math.min(existDisplayProducts.size(), displayFloors.size()); i++) {
+            saveProducts.add(Product.builder()
+                    .quantity(existDisplayProducts.get(i).getQuantity())
+                    .productDetail(productDetailModuleService.findById(existDisplayProducts.get(i).getProductDetailId()))
+                    .floor(floorModuleService.findById(displayFloors.get(i).getFloorId()))
+                    .build());
+//            List<Product> current = productRepository.findByProductDetailId(existDisplayProducts.get(i).getProductDetailId());
+//            for (Product product : current) {
+//                moveProductList.add(ProductMoveRequestDto.builder()
+//                                .productId(product.getId())
+//                                .warehouseId(warehouseId)
+//                                .locationName(displayFloors.get(i).getLocationName())
+//                                .quantity(product.getQuantity())
+//                                .floorLevel(1)
+//                        .build());
+//            }
+        }
+        productRepository.saveAll(saveProducts);
+//        moveProducts(moveProductList);
     }
+
+    @Modifying
+    public void deleteByProductDetailIdAndWarehouseId(Long productDetailId, Long warehouseId) {
+        productRepository.deleteByProductDetailIdAndWarehouseId(productDetailId,warehouseId);
+    }
+
 }

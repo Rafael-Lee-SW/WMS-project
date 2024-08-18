@@ -8,11 +8,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.a508.wms.floor.repository.FloorRepository;
-import com.a508.wms.product.dto.ProductMoveRequestDto;
+import com.a508.wms.product.dto.ProductCompressDtoInterface;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
 
 @Service
 @Slf4j
@@ -42,7 +41,7 @@ public class FloorService {
      * @param id: 층 id
      * @return FloorDto
      */
-    public FloorResponseDto findById(@PathVariable Long id) throws FloorException {
+    public FloorResponseDto findById(Long id) throws FloorException {
         log.info("[Service] find Floor by id: {}", id);
         try {
             Floor floor = floorModuleService.findById(id);
@@ -60,7 +59,15 @@ public class FloorService {
 
 
     public List<Floor> findAllEmptyFloorByWarehouseId(Long warehouseId) {
-        log.info("[Service] findAllEmptyLocationByWarehouseId: {}", warehouseId);
+        log.info("[Service] findAllEmptyFloorByWarehouseId: {}", warehouseId);
         return floorRepository.findAllEmptyFloorByWarehouseId(warehouseId);
+    }
+    public List<ProductCompressDtoInterface> findAllDisplayFloorByWarehouseId(Long warehouseId) {
+        log.info("[Service] findAllDisplayFloorByWarehouseId: {}", warehouseId);
+        return floorRepository.findAllDisplayFloorByWarehouseId(warehouseId);
+    }
+    public List<Floor> findAllEmptyKeepFloorByWarehouseId(Long warehouseId) {
+        log.info("[Service] findAllEmptyKeepFloorByWarehouseId: {}", warehouseId);
+        return floorRepository.findAllEmptyKeepFloorByWarehouseId(warehouseId);
     }
 }

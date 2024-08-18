@@ -19,7 +19,10 @@ public interface LocationRepository extends JpaRepository<Location, Long> {
     @Query("SELECT l FROM Location l WHERE l.zSize > 0 ")
     List<Location> findAllMaxStorage();
 
-
-
+    @Query(value = " SELECT * FROM location l " +
+            "WHERE l.warehouse_id = :warehouseId " +
+            "ORDER BY CAST(SUBSTRING_INDEX(l.name, '-', 1) AS UNSIGNED), " +
+            "CAST(SUBSTRING_INDEX(l.name, '-', -1) AS UNSIGNED) ", nativeQuery = true)
+    List<Location> findAllSortedByWarehouseId(@Param("warehouseId") Long warehouseId);
 }
 
