@@ -4,13 +4,14 @@ import com.a508.wms.floor.domain.Floor;
 import com.a508.wms.product.domain.Product;
 import com.a508.wms.product.dto.ProductPickingLocationDto;
 import com.a508.wms.product.dto.ProductQuantityDto;
+import com.a508.wms.product.dto.ProductCompressDtoInterface;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
     List<Product> findByProductDetailId(Long id);
@@ -115,6 +116,70 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "ORDER BY p.quantity DESC ", nativeQuery = true)
     List<Product> findAllMultipleProductByFloorLevel(@Param("floorLevel") Integer floorLevel, @Param("businessId") Long businessId,
                                                      @Param("warehouseId") Long warehouseId);
+    //    2. findAllMultipleDisplayProductByWarehouseId, findAllMultipleKeepProductByWarehouseId 찾기
+    //     1. 1층에 있는 상품중 0개 초과하는 상품을 product_detail_id로 묶기
+//    여기 product_detail_id을 location 01-01부터 순차적으로 1층에 적재하기
+    @Query(value =
+            "SELECT product_detail_id, sum(quantity) AS quantity " +
+                    "FROM product p " +
+                    "WHERE p.product_detail_id IN ( " +
+                    "SELECT p.product_detail_id " +
+                    "FROM product p " +
+                    "JOIN floor f ON p.floor_id = f.id " +
+                    "JOIN location l ON l.id = f.location_id " +
+                    "WHERE f.floor_level = 1 " +
+                    "AND p.quantity > 0 " +
+                    "GROUP BY p.product_detail_id )" +
+                    "GROUP BY product_detail_id " , nativeQuery = true)
+    List<Product> findALlMultipleDisplayProductByWarehouseId(@Param("warehouseId") Long warehouseId);
+    @Query(value =
+        "SELECT * " +
+                "FROM product p " +
+                "WHERE p.product_detail_id IN ( " +
+                "SELECT p.product_detail_id " +
+                "FROM product p " +
+                "JOIN floor f ON p.floor_id = f.id " +
+                "JOIN Location l ON l.id = f.location_id " +
+                "WHERE f.floor_level > 1 " +
+                "AND l.warehouse_id = :warehouseId " +
+                "AND p.quantity > 0 " +
+                "GROUP BY p.product_detail_id ) " , nativeQuery = true)
+List<Product> findALlMultipleKeepProductByWarehouseId(@Param("warehouseId") Long warehouseId);
 
+    @Query(value =
+            "SELECT product_detail_id, sum(quantity) AS quantity "+
+                    "FROM product p " +
+                    "JOIN floor f ON p.floor_id = f.id " +
+                    "JOIN location l ON l.id = f.location_id " +
+                    "WHERE f.floor_level = 1 " +
+                    "AND p.quantity > 0 " +
+                    "AND l.warehouse_id = :warehouseId " +
+                    "GROUP BY product_detail_id " +
+                    "ORDER BY CAST(SUBSTRING_INDEX(l.name, '-', 1) AS UNSIGNED), " +
+                    "CAST(SUBSTRING_INDEX(l.name, '-', -1) AS UNSIGNED)" , nativeQuery = true)
+    List<ProductCompressDtoInterface> findAllDisplayByFloorLevelAndWarehouseId(@Param("warehouseId") Long warehouseId);
+    @Query(value =
+            "SELECT * " +
+                    "FROM product p " +
+                    "JOIN floor f ON p.floor_id = f.id " +
+                    "JOIN Location l ON l.id = f.location_id " +
+                    "WHERE f.floor_level > 1 " +
+                    "AND p.quantity > 0 " +
+                    "AND l.warehouse_id = :warehouseId " +
+                    "ORDER BY CAST(SUBSTRING_INDEX(l.name, '-', 1) AS UNSIGNED)," +
+                    "CAST(SUBSTRING_INDEX(l.name, '-', -1) AS UNSIGNED), " +
+                    "f.floor_level ", nativeQuery = true)
+    List<Product> findAllKeepByFloorLevelAndWarehouseId(@Param("warehouseId") Long warehouseId);
+    @Query(value =
+    "DELETE p FROM product p " +
+            "JOIN floor f ON f.id = p.floor_id " +
+            "JOIN location l on f.location_id = l.id " +
+            "WHERE p.product_detail_id = :productDetailId " +
+            "AND f.floor_level = 1 " +
+            "AND p.quantity != 0 " +
+            "AND l.warehouse_id = :warehouseId", nativeQuery = true)
+    @Modifying
+    void deleteByProductDetailIdAndWarehouseId(@Param("productDetailId") Long productDetailId,
+                                               @Param("warehouseId") Long warehouseId);
 }
 

@@ -164,4 +164,10 @@ public class LocationService {
                 .map(LocationMapper::toLocationStorageResponseDto)
                 .toList();
     }
+    public List<Location> findAllLocationByWarehouseId(Long warehouseId) {
+        return locationRepository.findAllByWarehouseId(warehouseId);
+    }
+    public List<Location> findAllSortedByWarehouseId(Long warehouseId) {
+        return locationRepository.findAllSortedByWarehouseId(warehouseId);
+    }
 }

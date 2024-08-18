@@ -2,6 +2,8 @@ package com.a508.wms.floor.repository;
 
 import com.a508.wms.floor.domain.Floor;
 import java.util.List;
+
+import com.a508.wms.product.dto.ProductCompressDtoInterface;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -38,10 +40,30 @@ public interface FloorRepository extends JpaRepository<Floor, Long> {
         "JOIN l.warehouse w " +
         "WHERE w.id = :warehouseId "
         + "AND f.floorLevel > 0 "
-        + "AND p.quantity>0 ")
+        + "AND p.quantity > 0 ")
     List<Floor> findAllNotEmptyFloorByWarehouseId(@Param("warehouseId") Long warehouseId);
+    //    1. findAllEmptyDisplayFloorByWarehouseId, findAllEmptyKeepFloorByWarehouseId 찾기
+
+    @Query(value= "SELECT f.floor_level, f.id as floorId, l.name as locationName, l.id as locationId " +
+            "FROM floor f " +
+            "JOIN location l on f.location_id = l.id " +
+            "WHERE f.floor_level = 1 " +
+            "AND l.warehouse_id = 19 " +
+            "ORDER BY CAST(SUBSTRING_INDEX(l.name, '-', 1) AS UNSIGNED), " +
+            "CAST(SUBSTRING_INDEX(l.name, '-', -1) AS UNSIGNED) ", nativeQuery = true)
+    List<ProductCompressDtoInterface> findAllDisplayFloorByWarehouseId(@Param("warehouseId") Long warehouseId);
 
 
+    @Query(value= " SELECT f " +
+            "FROM floor f " +
+            "JOIN product p ON f.id = p.floor_id " +
+            "WHERE ( SELECT sum(p.quantity) " +
+            "FROM product p " +
+            "JOIN location l on f.location_id = l.id " +
+            "WHERE f.floor_level > 1 " +
+            "AND p.floor_id = f.id " +
+            "AND l.warehouse_id = :warehouseId) = 0 ", nativeQuery = true)
+    List<Floor> findAllEmptyKeepFloorByWarehouseId(@Param("warehouseId") Long warehouseId);
     //SELECT e FROM Employee e
     // LEFT JOIN e.department d
     // WHERE d.name = :departmentName")
