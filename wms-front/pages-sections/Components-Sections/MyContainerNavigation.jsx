@@ -97,7 +97,7 @@ const useStyles = makeStyles(styles);
 // --- 창고 관련 끝
 
 // 복합체 시작
-const MyContainerNavigation = ({ WHId, businessId }) => {
+const MyContainerNavigation = ({ WHId, businessId, warehouses }) => {
   const classes = makeStyles();
   // 로딩 Loading
   const [loading, setLoading] = useState(true); // Overall loading state
@@ -199,6 +199,9 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
 
     // Prepare the detailed data based on the notification type
     const detailedDataForDisplay = filteredData.map((item) => {
+      const warehouse = warehouses.find((wh) => wh.id === item.warehouseId);
+      const warehouseTitle = warehouse ? warehouse.title : "Unknown Warehouse"; // Fallback to 'Unknown Warehouse' if not found
+
       const commonData = {
         date: new Date(item.date).toLocaleDateString(),
         name: item.name,
@@ -207,6 +210,7 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
         currentLocationName: item.currentLocationName,
         currentFloorLevel: item.currentFloorLevel,
         warehouseId: item.warehouseId,
+        warehouseTitle: warehouseTitle, // Replace warehouseId with title
       };
 
       if (type === "IMPORT") {
@@ -1417,7 +1421,7 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
           <div className="notification" style={{ textAlign: "center" }}>
             <h3 style={{ textAlign: "center" }}>알림함</h3>
             <ul style={{ listStyle: "none", padding: 0 }}>
-              {notificationTableData.map(({ date, type }, index) => (
+              {notificationTableData.slice().reverse().map(({ date, type }, index) => (
                 <li
                   key={index}
                   onClick={() => handleCellClick(date, type)}
@@ -1727,7 +1731,7 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
                           >
                             {/* Show different content based on type */}
                             {selectedType === "IMPORT" && (
-                              <span>{item.warehouseId}</span>
+                              <span>{item.warehouseTitle}</span>
                             )}
                             {selectedType === "EXPORT" && (
                               <div>
@@ -1742,7 +1746,7 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
                                     color: "#666",
                                   }}
                                 >
-                                  창고 : {item.warehouseId}
+                                  창고 : {item.warehouseTitle}
                                 </span>
                               </div>
                             )}
@@ -1760,7 +1764,7 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
                                     color: "#666",
                                   }}
                                 >
-                                  창고 : {item.warehouseId}
+                                  창고 : {item.warehouseTitle}
                                 </span>
                               </div>
                             )}
