@@ -251,7 +251,7 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
   const currentShapeRef = useRef(null);
 
   // 로케이션을 추가하는 메서드
-  const handleAddLocation = (type) => {
+  const handleAddLocation = async (type) => {
     let newName;
 
     // nameMode에 따라 name을 설정
@@ -301,6 +301,27 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
     setLocations([...locations, newLocation]);
     updateContainer(newLocation, "location", `location${newLocation.id}`);
 
+    // API 요청을 위한 location 데이터를 작성
+    const locationData = {
+      xPosition: newLocation.x,
+      yPosition: newLocation.y,
+      zSize: newLocation.z,
+      xSize: newLocation.width,
+      ySize: newLocation.height,
+      name: newLocation.name,
+      productStorageType: newLocationType, // 상온, 냉장 등등
+      rotation: newLocation.rotation,
+      touchableFloor: 2, // 임시로 2로 설정
+    };
+
+    // API 호출 - 생성된 로케이션을 서버에 POST
+    try {
+      await postLocationAPI([locationData], warehouseId);
+    } catch (error) {
+      console.error("Error adding location:", error);
+      notify("로케이션 추가 중 오류가 발생했습니다.");
+    }
+
     // 적재함 추가 후 값 초기화
     setNewLocationColor("blue");
     setNewLocationWidth(50);
@@ -309,6 +330,29 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
     setNewLocationName("");
     setRowNumber(""); // 행/열 선택 모드 초기화
     setColumnNumber(""); // 행/열 선택 모드 초기화
+  };
+
+  const postLocationAPI = async (requests, warehouseId) => {
+
+    const total = { requests, warehouseId };
+
+    try {
+      const response = await fetch(`https://i11a508.p.ssafy.io/api/locations`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(total),
+      });
+
+      if (response.ok) {
+        getWarehouseAPI(warehouseId)
+      } else {
+        router.push('/404');
+      }
+    } catch (error) {
+      router.push('/404');
+    }
   };
 
   // 창고 배열 저장

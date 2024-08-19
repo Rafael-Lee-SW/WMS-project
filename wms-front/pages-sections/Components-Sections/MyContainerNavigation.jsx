@@ -1757,7 +1757,6 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
         <DialogActions>
           <Button
             onClick={() => setPrintModalOpen(false)}
-            color="#7D4A1A"
             autoFocus
           >
             Close
