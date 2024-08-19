@@ -1932,10 +1932,10 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
           )}
           {columnSelectionStep === 3 && (
             <div>
-              <Button onClick={() => setColumnSelectionStep(4)} color="primary">
+              <Button onClick={() => setColumnSelectionStep(4)} style={{ color: '#7D4A1A' }}>
                 Yes
               </Button>
-              <Button onClick={() => setColumnSelectionStep(5)} color="primary">
+              <Button onClick={() => setColumnSelectionStep(5)} style={{ color: '#7D4A1A' }}>
                 No
               </Button>
             </div>
@@ -1965,11 +1965,11 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
         </DialogContent>
         <DialogActions>
           {columnSelectionStep === 5 && (
-            <Button onClick={finalizeSelectionImport} color="primary">
+            <Button onClick={finalizeSelectionImport} style={{ color: '#7D4A1A' }}>
               네
             </Button>
           )}
-          <Button onClick={() => setOpenModal(false)} color="primary">
+          <Button onClick={() => setOpenModal(false)} style={{ color: '#7D4A1A' }}>
             닫기
           </Button>
         </DialogActions>
@@ -2019,11 +2019,11 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
         </DialogContent>
         <DialogActions>
           {columnExportSelectionStep === 2 && (
-            <Button onClick={finalizeSelectionExport} color="primary">
+            <Button onClick={finalizeSelectionExport} style={{ color: '#7D4A1A' }}>
               네
             </Button>
           )}
-          <Button onClick={() => setOpenExportModal(false)} color="primary">
+          <Button onClick={() => setOpenExportModal(false)} style={{ color: '#7D4A1A' }}>
             닫기
           </Button>
         </DialogActions>
@@ -2264,7 +2264,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
           {isBulkMove ? (
             <Button
               onClick={handleFinalizeBulkMove}
-              color="primary"
+              style={{ color: '#7D4A1A' }}
               disabled={!isBulkMoveEnabled}
             >
               전부 옮기기
@@ -2272,16 +2272,16 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
           ) : (
             <Button
               onClick={handleFinalizeDetailMove}
-              color="primary"
+              style={{ color: '#7D4A1A' }}
               disabled={!moveData.every((product) => product.floorLevel)}
             >
               각각 옮기기
             </Button>
           )}
-          <Button onClick={() => setIsBulkMove(!isBulkMove)} color="secondary">
+          <Button onClick={() => setIsBulkMove(!isBulkMove)} style={{ color: '#7D4A1A' }}>
             {isBulkMove ? "각각 옮기기 모드" : "전부 옮기기 모드"}
           </Button>
-          <Button onClick={() => setOpenMoveModal(false)} color="primary">
+          <Button onClick={() => setOpenMoveModal(false)} style={{ color: '#7D4A1A' }}>
             취소
           </Button>
         </DialogActions>
@@ -2299,6 +2299,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
           <Button
             onClick={() => setPrintModalOpen(false)}
             autoFocus
+            style={{ color: '#7D4A1A' }}
           >
             Close
           </Button>
@@ -2317,6 +2318,7 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
           <Button
             onClick={() => setExportPrintModalOpen(false)}
             autoFocus
+            style={{ color: '#7D4A1A' }}
           >
             Close
           </Button>
@@ -2431,7 +2433,6 @@ const MyContainerProduct = ({ WHId, businessId, warehouses }) => {
                     <td style={{ padding: "8px", textAlign: "center" }}>
                       <Button
                         variant="contained"
-                        color="primary"
                         onClick={handleAddNewProduct}
                         className={classes.buttonStyle}
                       >
