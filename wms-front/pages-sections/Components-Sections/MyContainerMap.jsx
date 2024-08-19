@@ -76,6 +76,7 @@ const useStyles = makeStyles((theme) => ({
     width: "50px",
     color: "#7D4A1A",
     marginLeft: "10px",
+    marginTop: '30px',
     height: "30px",
     border: "1px solid #7D4A1A",
     borderRadius: "4px",
@@ -87,6 +88,7 @@ const useStyles = makeStyles((theme) => ({
   },
   generateButton: {
     backgroundColor: "#7D4A1A",
+    fontSize: '15px',
     "&:hover": {
       transform: "scale(1.05)",
       backgroundColor: "transparent",
@@ -1327,13 +1329,13 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
             <Typography
               variant="h6"
               gutterBottom
-              style={{ textAlign: "center", fontWeight: "bold" }}
+              style={{ textAlign: "center", fontWeight: "bold", paddingTop: '10px' }}
             >
               {currentSetting === "location" ? "로케이션" : "입구-출구"} 설정
             </Typography>
 
             <Typography
-              style={{ textAlign: "center" }}
+              style={{ textAlign: "center"}}
               variant="body2"
               color="textSecondary"
               gutterBottom
@@ -1420,6 +1422,7 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
                 fullWidth
                 size="small"
                 margin="dense"
+                style={{ marginTop: '20px'}}
               />
             ) : (
               <Box display="flex" justifyContent="space-between">
