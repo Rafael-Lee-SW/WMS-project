@@ -53,7 +53,6 @@ import {
   alignHeaders,
 } from "/components/Test/hooksCallbacks.jsx";
 
-
 // Register cell types and plugins
 registerCellType(CheckboxCellType);
 registerCellType(NumericCellType);
@@ -98,8 +97,7 @@ const useStyles = makeStyles(styles);
 // --- 창고 관련 끝
 
 // 복합체 시작
-const MyContainerNavigation = ({ WHId, businessId }) => {
-
+const MyContainerNavigation = ({ WHId, businessId, warehouses }) => {
   const classes = makeStyles();
   // 로딩 Loading
   const [loading, setLoading] = useState(true); // Overall loading state
@@ -184,10 +182,13 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
   // State to hold hovered location IDs
   const [hoveredLocations, setHoveredLocations] = useState([]);
 
+  // state for 현재 선택된 알림의 상태
+  const [selectedType, setSelectedType] = useState();
+
   // 그룹된 알림을 클릭했을 때에 알림 상세 내역과 해당하는 로케이션이 나온다.
   const handleCellClick = (date, type) => {
-
     const title = `${date} | ${mapTypeToKorean(type)} 내역`;
+    setSelectedType(type); // 현재 선택된 타입을 저장한다.
     setSelectedNotificationTitle(title);
     // Filter the detailedData based on the selected date and type
     const filteredData = detailedData.filter(
@@ -198,6 +199,9 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
 
     // Prepare the detailed data based on the notification type
     const detailedDataForDisplay = filteredData.map((item) => {
+      const warehouse = warehouses.find((wh) => wh.id === item.warehouseId);
+      const warehouseTitle = warehouse ? warehouse.title : "Unknown Warehouse"; // Fallback to 'Unknown Warehouse' if not found
+
       const commonData = {
         date: new Date(item.date).toLocaleDateString(),
         name: item.name,
@@ -206,6 +210,7 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
         currentLocationName: item.currentLocationName,
         currentFloorLevel: item.currentFloorLevel,
         warehouseId: item.warehouseId,
+        warehouseTitle: warehouseTitle, // Replace warehouseId with title
       };
 
       if (type === "IMPORT") {
@@ -225,6 +230,9 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
 
       return commonData; // Fallback if type doesn't match
     });
+
+    console.log("선별데이터");
+    console.log(filteredData);
 
     // Extract the location names and warehouse IDs from the filtered data
     const locationNames = filteredData
@@ -766,11 +774,11 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
           if (!existingAnchor) {
             const newId = anchorsRef.current.length
               ? Math.max(
-                ...anchorsRef.current.flatMap(({ start, end }) => [
-                  parseInt(start.id(), 10),
-                  parseInt(end.id(), 10),
-                ])
-              ) + 1
+                  ...anchorsRef.current.flatMap(({ start, end }) => [
+                    parseInt(start.id(), 10),
+                    parseInt(end.id(), 10),
+                  ])
+                ) + 1
               : 1;
             existingAnchor = buildAnchor(newId, x, y);
           } else {
@@ -1118,10 +1126,10 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
    * 프린트 옵션
    */
 
-
   // 프린트 로직
   const [printModalOpen, setPrintModalOpen] = useState(false);
-  const [selectedNotificationTitle, setSelectedNotificationTitle] = useState("");
+  const [selectedNotificationTitle, setSelectedNotificationTitle] =
+    useState("");
 
   const PrintableTable = ({ title, columns, data }) => (
     <div className="printable-content" style={{ padding: "20px" }}>
@@ -1145,7 +1153,7 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
                   backgroundColor: "#f2f2f2",
                 }}
               >
-                {typeof column === 'string' ? column : column.label}
+                {typeof column === "string" ? column : column.label}
               </th>
             ))}
           </tr>
@@ -1209,7 +1217,6 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
     }
   }, [printModalOpen]);
 
-
   // options for printing but fail
   const listOptions = {
     fixedHeader: true,
@@ -1237,7 +1244,6 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
       );
     },
   };
-
 
   return (
     <div
@@ -1304,13 +1310,19 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
           onClick={handleZoomIn}
           style={{ color: "#7D4A1A", fontWeight: "bold" }}
         >
-          <ZoomInIcon style={{ width: "35px", height: "35px" }} className={classes.icons} />
+          <ZoomInIcon
+            style={{ width: "35px", height: "35px" }}
+            className={classes.icons}
+          />
         </Button>
         <Button
           onClick={handleZoomOut}
           style={{ color: "#7D4A1A", fontWeight: "bold" }}
         >
-          <ZoomOutIcon style={{ width: "35px", height: "35px" }} className={classes.icons} />
+          <ZoomOutIcon
+            style={{ width: "35px", height: "35px" }}
+            className={classes.icons}
+          />
         </Button>
       </div>
       <div
@@ -1390,7 +1402,7 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
                           textAlign: "center",
                           backgroundColor:
                             selectedLocation &&
-                              selectedLocation.id === locations.id
+                            selectedLocation.id === locations.id
                               ? "#f0f0f0" // Highlight color for selected item
                               : "transparent", // Default color for unselected items
                           transition: "background-color 0.3s", // Smooth transition effect
@@ -1406,10 +1418,10 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
             )}
           </div>
         ) : (
-          <div className="notification">
+          <div className="notification" style={{ textAlign: "center" }}>
             <h3 style={{ textAlign: "center" }}>알림함</h3>
             <ul style={{ listStyle: "none", padding: 0 }}>
-              {notificationTableData.map(({ date, type }, index) => (
+              {notificationTableData.slice().reverse().map(({ date, type }, index) => (
                 <li
                   key={index}
                   onClick={() => handleCellClick(date, type)}
@@ -1417,9 +1429,10 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
                     cursor: "pointer",
                     padding: "5px",
                     borderBottom: "1px solid #ccc",
+                    justifyContent: "center",
                   }}
                 >
-                  {date.slice(0, 10)} / {mapTypeToKorean(type)}
+                  {date.slice(0, -1)} / {mapTypeToKorean(type)}
                 </li>
               ))}
             </ul>
@@ -1430,238 +1443,344 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
       {(selectedLocation ||
         ModalTableData.length > 0 ||
         detailedNotificationData.length > 0) && (
-          <div
-            style={{
-              position: "absolute",
-              top: "10vh",
-              right: "10px",
-              padding: "10px",
-              border: "2px solid black",
-              borderRadius: "10px",
-              width: "36%",
-              height: "80vh",
-              overflowY: "auto",
-              backgroundColor: "rgba(255, 255, 255, 0.9)",
-            }}
-          >
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              <Button
-                onClick={() => {
-                  setSelectedLocation(null);
-                  setModalTableData([]);
-                  setDetailedNotificationData([]);
-                  setHoveredLocations([]); // Reset hovered locations
-                }}
-                style={{ color: "#7D4A1A"}}
-              >
-                Close
-              </Button>
-            </div>
-            {showDetails && selectedLocation ? (
+        <div
+          style={{
+            position: "absolute",
+            top: "10vh",
+            right: "10px",
+            padding: "10px",
+            border: "2px solid black",
+            borderRadius: "10px",
+            width: "36%",
+            height: "80vh",
+            overflowY: "auto",
+            backgroundColor: "rgba(255, 255, 255, 0.9)",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <Button
+              onClick={() => {
+                setSelectedLocation(null);
+                setModalTableData([]);
+                setDetailedNotificationData([]);
+                setSelectedType(null);
+                setHoveredLocations([]); // Reset hovered locations
+              }}
+              style={{ color: "#7D4A1A" }}
+            >
+              Close
+            </Button>
+          </div>
+          {showDetails && selectedLocation ? (
+            <div>
               <div>
-                <div>
+                <div
+                  id="상자 정보"
+                  style={{
+                    display: "flex",
+                  }}
+                >
                   <div
-                    id="상자 정보"
+                    id="상자 숫자 정보"
                     style={{
+                      width: "45%",
                       display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                      alignItems: "center",
                     }}
                   >
-                    <div
-                      id="상자 숫자 정보"
-                      style={{
-                        width: "45%",
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'center',
-                        alignItems: 'center'
-                      }}
-                    >
-                      <h3 style={{ marginTop: 0}}>재고함 : {selectedLocation.name}</h3>
-                      <b>가로 : {selectedLocation.width}cm</b>
-                      <b>세로 : {selectedLocation.height}cm</b>
-                      <b>단수(층) : {selectedLocation.z}단/층</b>
-                      <b>
-                        현재 재고율 :{" "}
-                        {extractFillPercentage(selectedLocation.fill)}%{" "}
-                      </b>
-                    </div>
-                    <div
-                      id="상자의 z Index를 시각화"
-                      style={{
-                        marginLeft: "10px",
-                        height: "200px",
-                        width: "65%",
-                        overflowY: "auto",
-                        border: "1px solid gray",
-                        borderRadius: "5px",
-                        padding: "5px",
-                        display: "flex",
-                        flexDirection: "column-reverse",
-                      }}
-                    >
-                      {Array.from({ length: selectedLocation.z }).map(
-                        (_, index) => (
-                          <Button
-                            key={index + 1}
-                            style={{
-                              display: "flex",
-                              width: "90%",
-                              height: "30px",
-                              backgroundColor:
-                                selectedFloor === index + 1 ? "#7D4A1A" : "transparent",
-                              color: selectedFloor === index + 1 ? 'white' : '#7D4A1A',
-                              marginBottom: "5px",
-                              borderRadius: "5px",
-                              border: "1px solid black",
-                              textAlign: "center",
-                              lineHeight: "30px",
-                              marginLeft: "auto",
-                              marginRight: "auto",
-                              cursor: "pointer",
-                            }}
-                            onClick={() => {
-                              setSelectedFloor(
-                                selectedFloor === index + 1 ? null : index + 1
-                              );
-                              handleSelectedData(
-                                selectedLocation.name,
-                                index + 1
-                              );
-                            }}
-                            onMouseEnter={(e) => {
-                              e.target.style.backgroundColor =
-                                selectedFloor === index + 1
-                                  ? "#7D4A1A"
-                                  : "transparent";
-                              e.target.style.border = "2px solid #7D4A1A";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.target.style.backgroundColor =
-                                selectedFloor === index + 1 ? "#7D4A1A" : "transparent";
-                              e.target.style.border = "1px solid black";
-                            }}
-                          >
-                            {index + 1} 단
-                          </Button>
-                        )
-                      )}
-                    </div>
+                    <h3 style={{ marginTop: 0 }}>
+                      재고함 : {selectedLocation.name}
+                    </h3>
+                    <b>가로 : {selectedLocation.width}cm</b>
+                    <b>세로 : {selectedLocation.height}cm</b>
+                    <b>단수(층) : {selectedLocation.z}단/층</b>
+                    <b>
+                      현재 재고율 :{" "}
+                      {extractFillPercentage(selectedLocation.fill)}%{" "}
+                    </b>
                   </div>
-                  <hr />
-                  {ModalTableData.length > 0 && (
-                    <div style={{ marginTop: "20px" }}>
-                      <h3>재고 목록</h3>
-                      <table
-                        style={{ width: "100%", borderCollapse: "collapse" }}
-                      >
-                        <tbody>
-                          {ModalTableData.map((item, index) => (
-                            <tr
-                              key={index}
-                              style={{ borderBottom: "1px solid #ccc" }}
-                            >
-                              <td
-                                style={{
-                                  padding: "10px",
-                                  width: "70%",
-                                  fontSize: "18px",
-                                }}
-                              >
-                                <strong>{item.name}</strong>
-                                <div style={{ fontSize: "12px", color: "#666" }}>
-                                  바코드 : {item.barcode}
-                                </div>
-                              </td>
-                              <td
-                                style={{
-                                  padding: "10px",
-                                  width: "30%",
-                                  textAlign: "right",
-                                  fontSize: "16px",
-                                }}
-                              >
-                                {item.quantity} 개
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
+                  <div
+                    id="상자의 z Index를 시각화"
+                    style={{
+                      marginLeft: "10px",
+                      height: "200px",
+                      width: "65%",
+                      overflowY: "auto",
+                      border: "1px solid gray",
+                      borderRadius: "5px",
+                      padding: "5px",
+                      display: "flex",
+                      flexDirection: "column-reverse",
+                    }}
+                  >
+                    {Array.from({ length: selectedLocation.z }).map(
+                      (_, index) => (
+                        <Button
+                          key={index + 1}
+                          style={{
+                            display: "flex",
+                            width: "90%",
+                            height: "30px",
+                            backgroundColor:
+                              selectedFloor === index + 1
+                                ? "#7D4A1A"
+                                : "transparent",
+                            color:
+                              selectedFloor === index + 1 ? "white" : "#7D4A1A",
+                            marginBottom: "5px",
+                            borderRadius: "5px",
+                            border: "1px solid black",
+                            textAlign: "center",
+                            lineHeight: "30px",
+                            marginLeft: "auto",
+                            marginRight: "auto",
+                            cursor: "pointer",
+                          }}
+                          onClick={() => {
+                            setSelectedFloor(
+                              selectedFloor === index + 1 ? null : index + 1
+                            );
+                            handleSelectedData(
+                              selectedLocation.name,
+                              index + 1
+                            );
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor =
+                              selectedFloor === index + 1
+                                ? "#7D4A1A"
+                                : "transparent";
+                            e.target.style.border = "2px solid #7D4A1A";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor =
+                              selectedFloor === index + 1
+                                ? "#7D4A1A"
+                                : "transparent";
+                            e.target.style.border = "1px solid black";
+                          }}
+                        >
+                          {index + 1} 단
+                        </Button>
+                      )
+                    )}
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <div>
-                <h3>알림 상세</h3>
-                {detailedNotificationData.length > 0 ? (
-                  <MUIDataTable
-                    data={detailedNotificationData.map((item) => {
-                      const commonData = [
-                        item.date,
-                        item.name,
-                        item.barcode,
-                        item.quantity,
-                        item.currentLocationName,
-                        item.currentFloorLevel,
-                        item.warehouseId,
-                      ];
-                      if (item.trackingNumber) {
-
-                        return [...commonData, item.trackingNumber];
-
-                      } else if (item.previousLocationName && item.previousFloorLevel) {
-
-                        return [
-                          ...commonData,
-                          item.previousLocationName,
-                          item.previousFloorLevel,
-                        ];
-                      }
-
-                      return commonData;
-                    })}
-                    columns={
-                      detailedNotificationData[0].trackingNumber
-                        ? [
-                          "날짜",
-                          "상품명",
-                          "바코드",
-                          "수량",
-                          "적재함",
-                          "층수",
-                          "창고",
-                          "송장번호",
-                        ]
-                        : detailedNotificationData[0].previousLocationName &&
-                          detailedNotificationData[0].previousFloorLevel
-                          ? [
-                            "날짜",
-                            "상품명",
-                            "바코드",
-                            "수량",
-                            "이동한 로케이션",
-                            "이동한 층수",
-                            "이동한 창고",
-                          ]
-                          : [
-                            "날짜",
-                            "상품명",
-                            "바코드",
-                            "수량",
-                            "적재함",
-                            "층수",
-                            "창고",
-                          ]
-                    }
-                    options={listOptions}
-                  />
-                ) : (
-                  <p>알림이 선택되지 않았습니다.</p>
+                <hr />
+                {ModalTableData.length > 0 && (
+                  <div style={{ marginTop: "20px" }}>
+                    <h3>재고 목록</h3>
+                    <table
+                      style={{ width: "100%", borderCollapse: "collapse" }}
+                    >
+                      <tbody>
+                        {ModalTableData.map((item, index) => (
+                          <tr
+                            key={index}
+                            style={{ borderBottom: "1px solid #ccc" }}
+                          >
+                            <td
+                              style={{
+                                padding: "10px",
+                                width: "70%",
+                                fontSize: "18px",
+                              }}
+                            >
+                              <strong>{item.name}</strong>
+                              <div style={{ fontSize: "12px", color: "#666" }}>
+                                바코드 : {item.barcode}
+                              </div>
+                            </td>
+                            <td
+                              style={{
+                                padding: "10px",
+                                width: "30%",
+                                textAlign: "right",
+                                fontSize: "16px",
+                              }}
+                            >
+                              {item.quantity} 개
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 )}
               </div>
-            )}
-          </div>
-        )}
+            </div>
+          ) : (
+            <div>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  marginTop: "20px",
+                }}
+              >
+                {/* Title showing the selected date and type */}
+                <h3 style={{ textAlign: "center", marginBottom: "20px" }}>
+                  {selectedNotificationTitle}
+                </h3>
+                {/* Print button */}
+                <Button
+                  onClick={() => setPrintModalOpen(true)}
+                  style={{ color: "#7D4A1A" }}
+                >
+                  <PrintIcon /> 프린트
+                </Button>
+              </div>
+              {/* Detailed Notification Data Rendering */}
+              {detailedNotificationData.length > 0 ? (
+                <div>
+                  {/* Render Table Based on Notification Type */}
+                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead>
+                      {/* Conditional column headers based on the type */}
+                      <tr>
+                        <th
+                          style={{
+                            borderBottom: "2px solid #ccc",
+                            padding: "10px",
+                            textAlign: "left",
+                            backgroundColor: "#f2f2f2",
+                            fontSize: "18px",
+                          }}
+                        >
+                          상품
+                        </th>
+                        <th
+                          style={{
+                            borderBottom: "2px solid #ccc",
+                            padding: "10px",
+                            textAlign: "center",
+                            backgroundColor: "#f2f2f2",
+                            fontSize: "18px",
+                          }}
+                        >
+                          수량
+                        </th>
+                        <th
+                          style={{
+                            borderBottom: "2px solid #ccc",
+                            padding: "10px",
+                            textAlign: "center",
+                            backgroundColor: "#f2f2f2",
+                            fontSize: "18px",
+                          }}
+                        >
+                          {/* Different headers based on type */}
+                          {selectedType === "IMPORT"
+                            ? "입고된 창고"
+                            : selectedType === "EXPORT"
+                            ? "출고 위치"
+                            : "이동한 위치"}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {detailedNotificationData.map((item, index) => (
+                        <tr key={index}>
+                          {/* Product Name and Barcode in same cell */}
+                          <td
+                            style={{
+                              padding: "10px",
+                              verticalAlign: "top",
+                            }}
+                          >
+                            <strong
+                              style={{
+                                display: "block",
+                                fontSize: "16px",
+                                marginBottom: "5px",
+                              }}
+                            >
+                              {item.name}
+                            </strong>
+                            <span
+                              style={{
+                                display: "block",
+                                fontSize: "12px",
+                                color: "#666",
+                              }}
+                            >
+                              {item.barcode}
+                            </span>
+                          </td>
+                          {/* Quantity */}
+                          <td
+                            style={{
+                              padding: "10px",
+                              textAlign: "center",
+                              fontSize: "16px",
+                              verticalAlign: "middle",
+                            }}
+                          >
+                            {item.quantity} 개
+                          </td>
+                          {/* Location based on type */}
+                          <td
+                            style={{
+                              padding: "10px",
+                              textAlign: "center",
+                              fontSize: "16px",
+                              verticalAlign: "middle",
+                            }}
+                          >
+                            {/* Show different content based on type */}
+                            {selectedType === "IMPORT" && (
+                              <span>{item.warehouseTitle}</span>
+                            )}
+                            {selectedType === "EXPORT" && (
+                              <div>
+                                <span>
+                                  {item.currentLocationName}{" "}
+                                  {item.currentFloorLevel}층
+                                </span>
+                                <span
+                                  style={{
+                                    display: "block",
+                                    fontSize: "12px",
+                                    color: "#666",
+                                  }}
+                                >
+                                  창고 : {item.warehouseTitle}
+                                </span>
+                              </div>
+                            )}
+                            {selectedType === "FLOW" && (
+                              <div>
+                                <span>
+                                  {item.currentLocationName}
+                                  {" - "}
+                                  {item.currentFloorLevel}층
+                                </span>
+                                <span
+                                  style={{
+                                    display: "block",
+                                    fontSize: "12px",
+                                    color: "#666",
+                                  }}
+                                >
+                                  창고 : {item.warehouseTitle}
+                                </span>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p>알림이 선택되지 않았습니다.</p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
       {/* 로딩 Part */}
       {loading && (
         <div
@@ -1694,18 +1813,18 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
               columns={
                 detailedNotificationData[0].trackingNumber
                   ? [
-                    "날짜",
-                    "상품명",
-                    "바코드",
-                    "수량",
-                    "적재함",
-                    "층수",
-                    "창고",
-                    "송장번호",
-                  ]
+                      "날짜",
+                      "상품명",
+                      "바코드",
+                      "수량",
+                      "적재함",
+                      "층수",
+                      "창고",
+                      "송장번호",
+                    ]
                   : detailedNotificationData[0].previousLocationName &&
                     detailedNotificationData[0].previousFloorLevel
-                    ? [
+                  ? [
                       "날짜",
                       "상품명",
                       "바코드",
@@ -1716,7 +1835,7 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
                       "이전 적재함",
                       "이전 층수",
                     ]
-                    : [
+                  : [
                       "날짜",
                       "상품명",
                       "바코드",
@@ -1725,7 +1844,8 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
                       "층수",
                       "창고",
                     ]
-              } data={detailedNotificationData.map((item) => {
+              }
+              data={detailedNotificationData.map((item) => {
                 const commonData = [
                   item.date,
                   item.name,
@@ -1749,16 +1869,14 @@ const MyContainerNavigation = ({ WHId, businessId }) => {
                 }
 
                 return commonData;
-              })} />
+              })}
+            />
           ) : (
             <p>프린트할 내용이 없습니다.</p>
           )}
         </DialogContent>
         <DialogActions>
-          <Button
-            onClick={() => setPrintModalOpen(false)}
-            autoFocus
-          >
+          <Button onClick={() => setPrintModalOpen(false)} autoFocus>
             Close
           </Button>
         </DialogActions>

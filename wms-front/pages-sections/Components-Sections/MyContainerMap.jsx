@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import { toast } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css';
+import "react-toastify/dist/ReactToastify.css";
 // Library of konva and color Checker
 import {
   Stage,
@@ -53,7 +53,7 @@ const useStyles = makeStyles((theme) => ({
     flexDirection: "column",
     alignItems: "center",
     zIndex: 1100,
-    padding: "10px 5px 10px 15px",
+    padding: "10px 10px 10px 15px",
     overflowY: "auto",
   },
   rightSidebar: {
@@ -76,7 +76,7 @@ const useStyles = makeStyles((theme) => ({
     width: "50px",
     color: "#7D4A1A",
     marginLeft: "10px",
-    marginTop: '30px',
+    marginTop: "30px",
     height: "30px",
     border: "1px solid #7D4A1A",
     borderRadius: "4px",
@@ -88,7 +88,7 @@ const useStyles = makeStyles((theme) => ({
   },
   generateButton: {
     backgroundColor: "#7D4A1A",
-    fontSize: '15px',
+    fontSize: "15px",
     "&:hover": {
       transform: "scale(1.05)",
       backgroundColor: "transparent",
@@ -126,21 +126,21 @@ const useStyles = makeStyles((theme) => ({
  */
 
 const MyContainerMap = ({ warehouseId, businessId }) => {
-
   const router = useRouter();
   const classes = useStyles();
   const stageRef = useRef(null);
   const layerRef = useRef(null);
 
-  const notify = (message) => toast(message, {
-    position: "top-center",
-    autoClose: 2000,
-    hideProgressBar: false,
-    closeOnClick: true,
-    pauseOnHover: true,
-    draggable: true,
-    progress: undefined,
-  });
+  const notify = (message) =>
+    toast(message, {
+      position: "top-center",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
 
   // 로딩 Loading
   const [loading, setLoading] = useState(true); // Overall loading state
@@ -214,7 +214,7 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
   const [newLocationColor, setNewLocationColor] = useState("blue");
   const [newLocationWidth, setNewLocationWidth] = useState(50);
   const [newLocationHeight, setNewLocationHeight] = useState(50);
-  const [newLocationZIndex, setNewLocationZIndex] = useState(1);
+  const [newLocationZIndex, setNewLocationZIndex] = useState(2);
   const [newLocationName, setNewLocationName] = useState("");
   // 상온, 냉장, 보관, 위험 등의 옵션 추가
   const [newLocationType, setNewLocationType] = useState("상온");
@@ -278,9 +278,7 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
       );
       return; // 중복된 이름이 있으면 생성 중단
     } else {
-      notify(
-        `로케이션 "${newName}"이 생성되었습니다.`
-      );
+      notify(`로케이션 "${newName}"이 생성되었습니다.`);
     }
 
     const newLocation = {
@@ -326,14 +324,13 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
     setNewLocationColor("blue");
     setNewLocationWidth(50);
     setNewLocationHeight(50);
-    setNewLocationZIndex(1);
+    setNewLocationZIndex(2);
     setNewLocationName("");
     setRowNumber(""); // 행/열 선택 모드 초기화
     setColumnNumber(""); // 행/열 선택 모드 초기화
   };
 
   const postLocationAPI = async (requests, warehouseId) => {
-
     const total = { requests, warehouseId };
 
     try {
@@ -346,12 +343,12 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
       });
 
       if (response.ok) {
-        getWarehouseAPI(warehouseId)
+        getWarehouseAPI(warehouseId);
       } else {
-        router.push('/404');
+        router.push("/404");
       }
     } catch (error) {
-      router.push('/404');
+      router.push("/404");
     }
   };
 
@@ -400,7 +397,7 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
     //모든 데이터를 warehouseData로 담아서 전송한다.
     const warehouseData = { locations: locationData, walls: wallData };
 
-    console.log(warehouseData)
+    console.log(warehouseData);
 
     try {
       const response = await fetch(
@@ -519,7 +516,6 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
         }
 
         const newLocations = locations.map((location, index) => {
-
           const startColor = { r: 27, g: 177, b: 231 }; // Starting color (#1bb1e7)
           const endColor = { r: 0, g: 0, b: 255 }; // Ending color (#0000FF)
 
@@ -1066,11 +1062,11 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
           if (!existingAnchor) {
             const newId = anchorsRef.current.length
               ? Math.max(
-                ...anchorsRef.current.flatMap(({ start, end }) => [
-                  parseInt(start.id(), 10),
-                  parseInt(end.id(), 10),
-                ])
-              ) + 1
+                  ...anchorsRef.current.flatMap(({ start, end }) => [
+                    parseInt(start.id(), 10),
+                    parseInt(end.id(), 10),
+                  ])
+                ) + 1
               : 1;
             existingAnchor = buildAnchor(newId, x, y);
           } else {
@@ -1373,13 +1369,17 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
             <Typography
               variant="h6"
               gutterBottom
-              style={{ textAlign: "center", fontWeight: "bold", paddingTop: '10px' }}
+              style={{
+                textAlign: "center",
+                fontWeight: "bold",
+                paddingTop: "10px",
+              }}
             >
               {currentSetting === "location" ? "로케이션" : "입구-출구"} 설정
             </Typography>
 
             <Typography
-              style={{ textAlign: "center"}}
+              style={{ textAlign: "center" }}
               variant="body2"
               color="textSecondary"
               gutterBottom
@@ -1387,7 +1387,7 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
               단수와 크기를 정하세요
             </Typography>
 
-            <Box mb={2} style={{ paddingTop: "20px" }}>
+            <Box mb={2} style={{ paddingTop: "20px", marginLeft:"5px" }}>
               <Typography gutterBottom style={{ textAlign: "center" }}>
                 단수(층): {newLocationZIndex}단/층
               </Typography>
@@ -1395,6 +1395,9 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
                 value={newLocationZIndex}
                 style={{
                   color: "#4E4544",
+                  width: "140px", // Set the width of the slider
+                  margin: "0 auto", // Center the slider
+                  alignItems: "center", // Centers the content horizontally
                 }}
                 onChange={(e, newValue) => setNewLocationZIndex(newValue)}
                 aria-labelledby="z-index-slider"
@@ -1406,12 +1409,15 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
                 max={10}
               />
             </Box>
-            <Box mb={2}>
+            <Box mb={2} style={{ marginLeft:"5px" }}>
               <Typography gutterBottom>가로: {newLocationWidth}cm</Typography>
               <Slider
                 value={newLocationWidth}
                 style={{
                   color: "#4E4544",
+                  width: "140px", // Set the width of the slider
+                  margin: "0 auto", // Center the slider
+                  alignItems: "center", // Centers the content horizontally
                 }}
                 onChange={(e, newValue) => setNewLocationWidth(newValue)}
                 aria-labelledby="width-slider"
@@ -1422,12 +1428,15 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
                 max={500}
               />
             </Box>
-            <Box mb={2}>
+            <Box mb={2} style={{ marginLeft:"5px" }}>
               <Typography gutterBottom>세로: {newLocationHeight}cm</Typography>
               <Slider
                 value={newLocationHeight}
                 style={{
                   color: "#4E4544",
+                  width: "140px", // Set the width of the slider
+                  margin: "0 auto", // Center the slider
+                  alignItems: "center", // Centers the content horizontally
                 }}
                 onChange={(e, newValue) => setNewLocationHeight(newValue)}
                 aria-labelledby="height-slider"
@@ -1466,7 +1475,7 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
                 fullWidth
                 size="small"
                 margin="dense"
-                style={{ marginTop: '20px'}}
+                style={{ marginTop: "20px" }}
               />
             ) : (
               <Box display="flex" justifyContent="space-between">
@@ -1613,7 +1622,10 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
             style={{ backgroundColor: "#7D4A1A" }}
             onClick={handleZoomIn}
           >
-            <ZoomInIcon style={{ width: "35px", height: "35px" }} className={classes.icons} />
+            <ZoomInIcon
+              style={{ width: "35px", height: "35px" }}
+              className={classes.icons}
+            />
           </Button>
           <Button
             justIcon
@@ -1621,7 +1633,10 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
             style={{ backgroundColor: "#ADAAA5" }}
             onClick={handleZoomOut}
           >
-            <ZoomOutIcon style={{ width: "35px", height: "35px" }} className={classes.icons} />
+            <ZoomOutIcon
+              style={{ width: "35px", height: "35px" }}
+              className={classes.icons}
+            />
           </Button>
           <Button
             justIcon
@@ -1629,7 +1644,10 @@ const MyContainerMap = ({ warehouseId, businessId }) => {
             style={{ backgroundColor: "#C2B6A1", marginRight: "40px" }}
             onClick={editContainerAPI}
           >
-            <SaveIcon style={{ width: "35px", height: "35px" }} className={classes.icons} />
+            <SaveIcon
+              style={{ width: "35px", height: "35px" }}
+              className={classes.icons}
+            />
           </Button>
         </div>
       </div>
@@ -1984,7 +2002,7 @@ const RectangleTransformer = ({
         y={shapeProps.y}
         z={shapeProps.z}
         width={shapeProps.width}
-        height={shapeProps.height + (fontSize) * 2}
+        height={shapeProps.height + fontSize * 2}
         fontSize={Math.min(shapeProps.width, shapeProps.height) / 6}
         fontFamily="Arial"
         fill="white"
