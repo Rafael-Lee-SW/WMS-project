@@ -203,6 +203,7 @@ export default function Components(props) {
         key={`nav-${selectedWarehouse}`}
         WHId={selectedWarehouse}
         businessId={userData.businessId}
+        warehouses={cards}
       />,
       <DynamicMyContainerProduct
         key={`product-${selectedWarehouse}`}
