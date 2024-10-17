@@ -276,15 +276,15 @@
 |-------------------------------------|--------------------------------------|
 | <img src="/READMEfile/로그인.png">     | <img src="/READMEfile/회원가입.PNG">     |
 | <div align=center> `로그인` </div>     | <div align=center> `회원가입` </div>     |
-| <img src="/READMEfile/창고목록.PNG">    | <img src="/READMEfile/재고관리영상.mp4">   |
+| <img src="/READMEfile/창고목록.PNG">    | <img src="/READMEfile/재고관리영상.gif">   |
 | <div align=center> `창고 등록` </div>   | <div align=center> `창고 관리` </div>    |
-| <img src="/READMEfile/창고구매.mp4">    | <img src="/READMEfile/창고생성.mp4">     |
+| <img src="/READMEfile/창고구매.gif">    | <img src="/READMEfile/창고생성.gif">     |
 | <div align=center> `창고 구매` </div>   | <div align=center> `창고 생성` </div>    |
-| <img src="/READMEfile/로케이션생성.mp4">  | <img src="/READMEfile/벽생성.mp4">      |
+| <img src="/READMEfile/로케이션생성.gif">  | <img src="/READMEfile/벽생성.gif">      |
 | <div align=center> `로케이션 생성` </div> | <div align=center> `벽 생성` </div>     |
-| <img src="/READMEfile/입고.mp4">      | <img src="/READMEfile/출고.mp4">       |
+| <img src="/READMEfile/입고.gif">      | <img src="/READMEfile/출고.gif">       |
 | <div align=center> `상품 입고` </div>   | <div align=center> `상품 출고 ` </div>   |
-| <img src="/READMEfile/상품이동.mp4">    | <img src="/READMEfile/마이페이지_알람.mp4"> |
+| <img src="/READMEfile/상품이동.gif">    | <img src="/READMEfile/마이페이지_알람.gif"> |
 | <div align=center> `상품 이동` </div>   | <div align=center> `알림 내역` </div>    |
 
 
